@@ -143,6 +143,55 @@ var pathoschild = pathoschild || {};
 				if (window.localStorage && window.JSON)
 					localStorage.removeItem(key);
 			}
+		},
+
+		/**
+		 * Provides generic hooks to the MediaWiki UI.
+		 */
+		mediawiki: {
+			/**
+			 * Add a navigation menu portlet to the sidebar.
+			 * @param {string} id The unique portlet ID.
+			 * @param {string} name The display name displayed in the portlet header.
+			 */
+			AddPortlet: function (id, name) {
+				// copy the portlet structure for the current skin
+				var $sidebar = $('#p-tb').clone().attr('id', id);
+				$sidebar.find('h5').text(name);
+				$sidebar.find('ul').empty();
+
+				// if this is Vector, apply the collapsible magic (derived from the woefully-not-reusable https://gerrit.wikimedia.org/r/gitweb?p=mediawiki/extensions/Vector.git;a=blob;f=modules/ext.vector.collapsibleNav.js )
+				var vectorModules = mw.config.get('wgVectorEnabledModules');
+				if (vectorModules && vectorModules.collapsiblenav) {
+					var collapsed = $.cookie('vector-nav-' + id) === 'false';
+					$sidebar
+						.toggleClass('collapsed', collapsed)
+						.toggleClass('expanded', !collapsed);
+					$sidebar.find('div:first').css({ 'display': 'block' });
+				}
+
+				// add to sidebar
+				$('#p-tb').parent().append($sidebar);
+
+				return $sidebar;
+			},
+
+			/**
+			 * Add a link to a navigation sidebar menu.
+			 * @param {string} portletID The unique navigation portlet ID.
+			 * @param {string} text The link text.
+			 * @param {string|function} target The link URI or callback.
+			 * @return
+			 */
+			AddPortletLink: function (portletID, text, target) {
+				var isCallback = $.isFunction(target);
+				var uri = isCallback ? '#' : target;
+				var $link = $(mw.util.addPortletLink(portletID, uri, text));
+				if (isCallback)
+					$link.click(function (e) { e.preventDefault(); target(e); });
+
+				return $link;
+			}
 		}
 	};
 }());

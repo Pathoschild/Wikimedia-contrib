@@ -2,13 +2,13 @@
 
 
 TemplateScript adds a menu of configurable templates and scripts to the sidebar.
-For more information, see <http://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/TemplateScript>.
+For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#readme>.
 
 
 */
 /*jshint bitwise:true, eqeqeq:true, forin:false, immed:true, latedef:true, loopfunc:true, noarg:true, noempty:true, nonew:true, smarttabs:true, strict:true, trailing:true, undef:true*/
 /*global $:true, mw:true, pathoschild:true*/
-$.ajax({url:'https://raw.github.com/pathoschild/wikimedia-contrib/master/pathoschild.util.js', dataType:'script', cache:true, success: function () {
+$.getScript('https://raw.github.com/pathoschild/wikimedia-contrib/master/pathoschild.util.js?v=0.9.8', function () {
 	"use strict";
 	if (pathoschild.TemplateScript) {
 		return; // already initialized, don't overwrite
@@ -20,7 +20,6 @@ $.ajax({url:'https://raw.github.com/pathoschild/wikimedia-contrib/master/pathosc
 	/**
 	 * Singleton responsible for handling user-defined templates available through a sidebar menu.
 	 * @author Pathoschild
-	 * @version 0.9.7-alpha
 	 * @class
 	 * @property {Template[]} _templates The registered templates.
 	 * @property {string} _defaultHeaderText The sidebar header text label for the default group.
@@ -30,7 +29,7 @@ $.ajax({url:'https://raw.github.com/pathoschild/wikimedia-contrib/master/pathosc
 	 * @property {string} _revision The unique revision number, for debug purposes.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '0.9.7-alpha',
+		_version: '0.9.8-alpha',
 
 		/*********
 		** Objects
@@ -44,20 +43,15 @@ $.ajax({url:'https://raw.github.com/pathoschild/wikimedia-contrib/master/pathosc
 		 * @property {int[]} forNamespaces The namespaces in which the template is enabled, or null to enable in all namespaces.
 		 *
 		 * @property {string} template The template text to insert.
-		 * @property {string} position The position at which to insert the template, matching a {pathoschild.TemplateScript.Position} value.
-		 *                    The default value is 'cursor' when editing a page, and 'replace' in all other cases.
+		 * @property {string} position The position at which to insert the template, matching a {pathoschild.TemplateScript.Position} value. The default value is 'cursor' when editing a page, and 'replace' in all other cases.
 		 * @property {string} editSummary The edit summary to use (if applicable).
-		 * @property {string} editSummaryPosition The position at which to insert the edit summary, matching a {pathoschild.TemplateScript.Position} value.
-		 *                    The default value is 'replace'.
+		 * @property {string} editSummaryPosition The position at which to insert the edit summary, matching a {pathoschild.TemplateScript.Position} value. The default value is 'replace'.
 		 * @property {string} headline The subject or headline summary to use (if applicable). This appears when editing a page with &section=new in the URL.
-		 * @property {string} headlinePosition The position at which to insert the headline, matching a {pathoschild.TemplateScript.Position} value.
-		 *                    The default value is 'replace'.
+		 * @property {string} headlinePosition The position at which to insert the headline, matching a {pathoschild.TemplateScript.Position} value. The default value is 'replace'.
 		 * @property {boolean} isMinorEdit Whether to mark the edit as minor (if applicable).
 		 *
 		 * @property {boolean} autoSubmit Whether to submit the form automatically after insertion.
-		 * @property {function} script An arbitrary JavaScript function that is called after the template and edit summary
-		 *                             are applied, but before autoSubmit is applied (if true). It is passed a reference
-		 *                             to the context object.
+		 * @property {function} script An arbitrary JavaScript function that is called after the template and edit summary are applied, but before autoSubmit is applied (if true). It is passed a reference to the context object.
 		 *
 		 * @property {int} id The internal template ID. (Modifying this value may cause unexpected behaviour.)
 		 * @class
@@ -103,8 +97,7 @@ $.ajax({url:'https://raw.github.com/pathoschild/wikimedia-contrib/master/pathosc
 		},
 
 		/**
-		 * Provides convenient access to singleton properties about the current page. (Changing the values may cause
-		 * unexpected behaviour.)
+		 * Provides convenient access to singleton properties about the current page. (Changing the values may cause unexpected behaviour.)
 		 * @property {int} namespace The number of the current MediaWiki namespace.
 		 * @property {string} action The string representing the current MediaWiki action.
 		 * @property {pathoschild.TemplateScript} singleton The TemplateScript instance for the page.
@@ -155,36 +148,20 @@ $.ajax({url:'https://raw.github.com/pathoschild/wikimedia-contrib/master/pathosc
 		},
 
 		/**
-		 * Create a TemplateScript menu box (if not already created) and return its unique ID.
-		 * @param {string} [name=null] The display name of the header to retrieve, or a false value to get the default sidebar.
+		 * Get the unique ID for a TemplateScript sidebar portlet, creating it if necessary.
+		 * @param {string} [name=null] The display name of the header to retrieve, or null to get the default sidebar.
 		 * @returns {string} Returns the unique ID of the sidebar.
 		 * @private
 		 */
 		_GetSidebar: function (name) {
-			/* set default text */
-			if (!name) {
+			// set default text
+			if (name === null || typeof(name) === typeof(undefined))
 				name = this._defaultHeaderText;
-			}
 
-			/* create menu if missing */
+			// create menu if missing
 			if (!(name in this._menus)) {
-				var id = 'p-templatescript-' + this._menuCount;
-
-				/* copy the toolbox, so it matches the format used in the current skin */
-				var $sidebar = $('#p-tb').clone().attr('id', id);
-
-				/* make sure it's expanded (Vector skin) */
-				$sidebar.removeClass('collapsed').addClass('expanded');
-				$sidebar.find('div:first').css({ 'display': 'block' });
-
-				/* update values */
-				$sidebar.find('h5').text(name);
-				$sidebar.find('ul').empty();
-
-				/* add toolbar */
-				$('#p-tb').parent().append($sidebar);
-
-				this._menus[name] = id;
+				var id = this._menus[name] = 'p-templatescript-' + this._menuCount;
+				pathoschild.util.mediawiki.AddPortlet(id, name);
 				++this._menuCount;
 			}
 
@@ -197,10 +174,8 @@ $.ajax({url:'https://raw.github.com/pathoschild/wikimedia-contrib/master/pathosc
 		 * @param {pathoschild.TemplateScript.Template} template The template for which to create an entry.
 		 */
 		_CreateSidebarEntry: function (template) {
-			var sidebarID = this._GetSidebar(template.category);
-			var item = $(mw.util.addPortletLink(sidebarID, '#' + template.id, template.name));
-			item.find('a').click(function () { pathoschild.TemplateScript.Apply(template.id); return false; });
-
+			var id = this._GetSidebar(template.category);
+			pathoschild.util.mediawiki.AddPortletLink(id, template.name, function () { pathoschild.TemplateScript.Apply(template.id); });
 		},
 
 		/*
@@ -225,8 +200,7 @@ $.ajax({url:'https://raw.github.com/pathoschild/wikimedia-contrib/master/pathosc
 		/**
 		 * Add templates to the sidebar menu.
 		 * @param {pathoschild.TemplateScript.Template | pathoschild.TemplateScript.Template[]} opts The template(s) to add.
-		 * @return {int} Returns the identifier of the added template (or the last added template if given an array), or -1
-		 *               if the template could not be added.
+		 * @return {int} Returns the identifier of the added template (or the last added template if given an array), or -1 if the template could not be added.
 		 */
 		Add: function (opts) {
 			/* handle multiple templates */
@@ -286,8 +260,7 @@ $.ajax({url:'https://raw.github.com/pathoschild/wikimedia-contrib/master/pathosc
 		 * Add templates to the sidebar menu.
 		 * @property {pathoschild.TemplateScript.Template} fields A Template-like object containing fields to merge into the templates.
 		 * @param {pathoschild.TemplateScript.Template | pathoschild.TemplateScript.Template[]} templates The template(s) to add.
-		 * @return {int} Returns the identifier of the added template (or the last added template if given an array), or -1
-		 *               if the template could not be added.
+		 * @return {int} Returns the identifier of the added template (or the last added template if given an array), or -1 if the template could not be added.
 		 */
 		AddWith: function (fields, templates) {
 			/* merge templates */
@@ -512,7 +485,7 @@ $.ajax({url:'https://raw.github.com/pathoschild/wikimedia-contrib/master/pathosc
 			var $warning = $('#' + this.ContainerID + ' .tsre-warning');
 
 			// add CSS
-			mw.loader.load('//meta.wikimedia.org/w/index.php?title=User:Pathoschild/Scripts/TemplateScript.css&action=raw&ctype=text/css', 'text/css');
+			mw.loader.load('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/pathoschild.templatescript.css', 'text/css');
 
 			// display reset warning if already open (unless it's already displayed)
 			if ($container.length) {
@@ -872,4 +845,4 @@ $.ajax({url:'https://raw.github.com/pathoschild/wikimedia-contrib/master/pathosc
 		script: function ($target) { pathoschild.TemplateScript.RegexEditor.Create($target.$target); },
 		forActions: 'edit'
 	});
-}});
+});
