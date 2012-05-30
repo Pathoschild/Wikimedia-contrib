@@ -370,9 +370,8 @@ var pathoschild = pathoschild || {};
 		 * @returns {boolean} Returns whether the value is equal to or in the haystack.
 		 */
 		_IsEqualOrIn: function (value, haystack) {
-			if ($.isArray(haystack)) {
+			if ($.isArray(haystack))
 				return $.inArray(value, haystack) !== -1;
-			}
 			return value === haystack;
 		},
 
@@ -388,12 +387,16 @@ var pathoschild = pathoschild || {};
 		 * @return {int} Returns the identifier of the added template (or the last added template if given an array), or -1 if the template could not be added.
 		 */
 		Add: function (opts) {
+			var log = function (message) {
+				opts = opts || {};
+				pathoschild.util.Log('Add "' + (opts.name || 'unnamed') + '": ' + message);
+			};
+
 			/* handle multiple templates */
 			if ($.isArray(opts)) {
 				var id = -1;
-				for (var t = 0; t < opts.length; t++) {
+				for (var t = 0; t < opts.length; t++)
 					id = this.Add(opts[t]);
-				}
 				return id;
 			}
 
@@ -405,33 +408,28 @@ var pathoschild = pathoschild || {};
 				opts.headlinePosition = pathoschild.util.ApplyEnumeration('Position', opts.headlinePosition, pathoschild.TemplateScript.Position);
 			}
 			catch (err) {
-				pathoschild.util.Log('TemplateScript::Add() failed: normalization error: ' + err);
-				return -1;
+				return log('normalization error: ' + err) || -1;
 			}
 
 			/* validate */
-			if (!opts.name) {
-				pathoschild.util.Log('TemplateScript::Add() failed: template must have a name.');
-				return -1;
+			if (opts.script && !$.isFunction(opts.script)) {
+				log('ignoring non-function value passed to "script" option: ' + opts.script);
+				delete opts.script;
 			}
-			if (!opts.template && !opts.script) {
-				pathoschild.util.Log('TemplateScript::Add() failed, template "' + opts.name + '" must have either a template or a script.');
+			if (!opts.name)
+				return log('template must have a name') || -1;
+			if (!opts.template && !opts.script)
+				return log('template must have either a template or a script.') || -1;
+			if (!pathoschild.TemplateScript.IsEnabled(opts))
 				return -1;
-			}
-			if (!pathoschild.TemplateScript.IsEnabled(opts)) {
-				return -1;
-			}
 
 			/* set defaults */
-			if (!opts.position) {
+			if (!opts.position)
 				opts.position = (pathoschild.TemplateScript.Context.action === 'edit' ? 'cursor' : 'replace');
-			}
-			if (!opts.editSummaryPosition) {
+			if (!opts.editSummaryPosition)
 				opts.editSummaryPosition = 'replace';
-			}
-			if (!opts.headlinePosition) {
+			if (!opts.headlinePosition)
 				opts.headlinePosition = 'replace';
-			}
 
 			/* add template */
 			opts.id = this._templates.push(opts) - 1;
@@ -982,9 +980,8 @@ var pathoschild = pathoschild || {};
 		DeleteSession: function (sessionName) {
 			var sessions = pathoschild.util.storage.Read('tsre-sessions') || [];
 			var index = $.inArray(sessionName, sessions);
-			if (index === -1) {
+			if (index === -1)
 				return;
-			}
 
 			sessions.splice(index, 1);
 
