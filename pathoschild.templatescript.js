@@ -171,7 +171,7 @@ var pathoschild = pathoschild || {};
 					$sidebar
 						.toggleClass('collapsed', collapsed)
 						.toggleClass('expanded', !collapsed);
-					$sidebar.find('div:first').css({ 'display': 'block' });
+					$sidebar.find('div:first').toggle(!collapsed);
 				}
 
 				// add to sidebar
