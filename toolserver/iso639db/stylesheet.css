@@ -1,0 +1,33 @@
+.search {
+	padding:0 2em;
+	margin:0.5em;
+	margin-bottom:1em;
+	border-bottom:1px solid #666;
+	border-radius:10px;
+	-moz-border-radius:10px;
+	-webkit-border-radius:10px;
+	-khtml-border-radius:10px;
+}
+
+.search h2 {
+	margin-left:-1.5em;
+	border:0;
+	font-size:1em;
+}
+
+table {
+	border-collapse:collapse;
+}
+
+table tr {
+	border-bottom:1px dotted #BBB;
+}
+
+table th {
+	text-align:left;
+	color:#666;
+}
+
+table td, table th {
+	padding:0.2em 0.5em;
+}
