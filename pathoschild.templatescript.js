@@ -214,7 +214,7 @@ var pathoschild = pathoschild || {};
 	 * @property {string} _revision The unique revision number, for debug purposes.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '0.9.9-alpha',
+		_version: '0.9.10-alpha',
 
 		/*********
 		** Objects
