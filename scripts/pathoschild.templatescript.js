@@ -28,6 +28,7 @@ var pathoschild = pathoschild || {};
 	 * @property {int} _menuCount The number of registered menus (excluding the default menu).
 	 * @property {boolean} _isInitialized Whether the singleton has been initialized and hooked into the DOM.
 	 * @property {string} _revision The unique revision number, for debug purposes.
+	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
 		_version: '0.9.11-alpha',
@@ -128,21 +129,43 @@ var pathoschild = pathoschild || {};
 		_defaultHeaderText: 'TemplateScript',
 		_menus: {},
 		_menuCount: 0,
+		_dependencies: {},
 
 		/*********
 		** Private methods
 		*********/
 		/**
-		 * Load the scripts required by TemplateScript.
+		 * Asynchronously load a script and invoke the callback when loaded. This method can be invoked multiple times to queue callbacks.
 		 * @param {string} url The URL of the script to load.
-		 * @param {bool} test A boolean-like value which indicates whether the dependency is already loaded.
 		 * @param {function} callback The method to invoke (with no arguments) when the dependencies have been loaded.
 		 */
-		LoadDependency: function (url, test, callback) {
-			if (test)
+		_LoadDependency: function (url, callback) {
+			// already loaded
+			if (this._dependencies[url])
 				callback();
-			else
-				$.ajax({url:url, dataType:'script', crossDomain:true, cached:true, success:callback });
+			else {
+				// bind event
+				var event = 'pathoschild.templatescript.dependencyloaded.' + url;
+				$(document).bind(event, callback);
+
+				// fetch dependency
+				if (typeof(this._dependencies[url]) !== typeof(undefined)) {
+					this._dependencies[url] = false;
+					var _this = this;
+					$.ajax({url:url, dataType:'script', crossDomain:true, cached:true, success:function () {
+						_this._dependencies[url] = true;
+						$(document).trigger(event).unbind(event);
+					}});
+				}
+			}
+		},
+
+		/**
+		 * Load the dependencies required by TemplateScript.
+		 * @param {function} callback The method to invoke (with no arguments) when the dependencies have been loaded.
+		 */
+		_LoadBackend: function(callback) {
+			this._LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.util.js', callback);
 		},
 
 		/**
@@ -159,7 +182,7 @@ var pathoschild = pathoschild || {};
 			_this.Context.$editSummary = $('#wpSummary:first');
 
 			// load utilities & hook into page
-			_this.LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.util.js', pathoschild.util, function() {
+			_this._LoadBackend(function () {
 				for (var t = 0; t < _this._templates.length; t++)
 					_this._CreateSidebarEntry(_this._templates[t]);
 			});
@@ -217,59 +240,57 @@ var pathoschild = pathoschild || {};
 		/**
 		 * Add templates to the sidebar menu.
 		 * @param {pathoschild.TemplateScript.Template | pathoschild.TemplateScript.Template[]} opts The template(s) to add.
-		 * @return {int} Returns the identifier of the added template (or the last added template if given an array), or -1 if the template could not be added.
 		 */
 		Add: function (opts) {
-			var log = function (message) {
-				opts = opts || {};
-				pathoschild.util.Log('Add "' + (opts.name || 'unnamed') + '": ' + message);
-			};
+			this._LoadBackend(function () {
+				var log = function (message) {
+					opts = opts || {};
+					pathoschild.util.Log('Add "' + (opts.name || 'unnamed') + '": ' + message);
+				};
 
-			/* handle multiple templates */
-			if ($.isArray(opts)) {
-				var id = -1;
-				for (var t = 0; t < opts.length; t++)
-					id = this.Add(opts[t]);
-				return id;
-			}
+				/* handle multiple templates */
+				if ($.isArray(opts)) {
+					for (var t = 0; t < opts.length; t++)
+						this.Add(opts[t]);
+				}
 
-			/* normalize option types */
-			try {
-				opts = pathoschild.util.ApplyArgumentSchema("AddTemplate", opts, this.Template);
-				opts.position = pathoschild.util.ApplyEnumeration('Position', opts.position, pathoschild.TemplateScript.Position);
-				opts.editSummaryPosition = pathoschild.util.ApplyEnumeration('Position', opts.editSummaryPosition, pathoschild.TemplateScript.Position);
-				opts.headlinePosition = pathoschild.util.ApplyEnumeration('Position', opts.headlinePosition, pathoschild.TemplateScript.Position);
-			}
-			catch (err) {
-				return log('normalization error: ' + err) || -1;
-			}
+				/* normalize option types */
+				try {
+					opts = pathoschild.util.ApplyArgumentSchema("AddTemplate", opts, this.Template);
+					opts.position = pathoschild.util.ApplyEnumeration('Position', opts.position, pathoschild.TemplateScript.Position);
+					opts.editSummaryPosition = pathoschild.util.ApplyEnumeration('Position', opts.editSummaryPosition, pathoschild.TemplateScript.Position);
+					opts.headlinePosition = pathoschild.util.ApplyEnumeration('Position', opts.headlinePosition, pathoschild.TemplateScript.Position);
+				}
+				catch (err) {
+					return log('normalization error: ' + err);
+				}
 
-			/* validate */
-			if (opts.script && !$.isFunction(opts.script)) {
-				log('ignoring non-function value passed to "script" option: ' + opts.script);
-				delete opts.script;
-			}
-			if (!opts.name)
-				return log('template must have a name') || -1;
-			if (!opts.template && !opts.script)
-				return log('template must have either a template or a script.') || -1;
-			if (!pathoschild.TemplateScript.IsEnabled(opts))
-				return -1;
+				/* validate */
+				if (opts.script && !$.isFunction(opts.script)) {
+					log('ignoring non-function value passed to "script" option: ' + opts.script);
+					delete opts.script;
+				}
+				if (!opts.name)
+					return log('template must have a name');
+				if (!opts.template && !opts.script)
+					return log('template must have either a template or a script.');
+				if (!pathoschild.TemplateScript.IsEnabled(opts))
+					return;
 
-			/* set defaults */
-			if (!opts.position)
-				opts.position = (pathoschild.TemplateScript.Context.action === 'edit' ? 'cursor' : 'replace');
-			if (!opts.editSummaryPosition)
-				opts.editSummaryPosition = 'replace';
-			if (!opts.headlinePosition)
-				opts.headlinePosition = 'replace';
+				/* set defaults */
+				if (!opts.position)
+					opts.position = (pathoschild.TemplateScript.Context.action === 'edit' ? 'cursor' : 'replace');
+				if (!opts.editSummaryPosition)
+					opts.editSummaryPosition = 'replace';
+				if (!opts.headlinePosition)
+					opts.headlinePosition = 'replace';
 
-			/* add template */
-			opts.id = this._templates.push(opts) - 1;
-			if (this._isInitialized) {
-				this._CreateSidebarEntry(opts);
-			}
-			return opts.id;
+				/* add template */
+				opts.id = this._templates.push(opts) - 1;
+				if (this._isInitialized) {
+					this._CreateSidebarEntry(opts);
+				}
+			});
 		},
 
 		/**
@@ -279,18 +300,20 @@ var pathoschild = pathoschild || {};
 		 * @return {int} Returns the identifier of the added template (or the last added template if given an array), or -1 if the template could not be added.
 		 */
 		AddWith: function (fields, templates) {
-			/* merge templates */
-			if (!$.isArray(templates)) {
-				templates = [templates];
-			}
-			for (var i in templates) {
-				for (var attr in fields) {
-					templates[i][attr] = fields[attr];
+			this._LoadBackend(function() {
+				/* merge templates */
+				if (!$.isArray(templates)) {
+					templates = [templates];
 				}
-			}
+				for (var i in templates) {
+					for (var attr in fields) {
+						templates[i][attr] = fields[attr];
+					}
+				}
 
-			/* add templates */
-			return this.Add(templates);
+				/* add templates */
+				return this.Add(templates);
+			});
 		},
 
 		/**
@@ -460,7 +483,7 @@ var pathoschild = pathoschild || {};
 	pathoschild.TemplateScript.Add({
 		name: 'Regex editor',
 		script: function ($target) {
-			pathoschild.TemplateScript.LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.regexeditor.js', pathoschild.RegexEditor, function () {
+			pathoschild.TemplateScript._LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.regexeditor.js', function () {
 				pathoschild.TemplateScript.RegexEditor.Create($target.$target);
 			});
 		},
