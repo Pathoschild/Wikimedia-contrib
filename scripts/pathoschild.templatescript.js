@@ -15,190 +15,6 @@ var pathoschild = pathoschild || {};
 		return; // already initialized, don't overwrite
 	}
 
-	/**
-	 * Self-contained utility methods.
-	 * @namespace
-	 */
-	pathoschild.util = {
-		/**
-		 * Enforce a schema defining valid arguments and default values on a key:value object.
-		 * @param {string} method The name of the method for which the schema is applied, for error-logging purposes.
-		 * @param {object} args An argument object to conform to the schema.
-		 * @param {object} schema An argument schema to apply. Every argument key must have an equivalent key in the schema. If a schema key is missing from the args object, the default value is assigned.
-		 * @returns {object} The schema-conforming object.
-		 */
-		ApplyArgumentSchema: function (method, args, schema) {
-			// check key validity
-			var i;
-			if (args) {
-				for (i in args) {
-					if (typeof (schema[i]) === typeof (undefined)) {
-						// throw error if invalid
-						var validArgs = [];
-						var x;
-						for (x in schema)
-							validArgs.push(x);
-						pathoschild.util.Log('Ignoring invalid argument "' + i + '"; valid arguments for method "' + method + '" are [' + validArgs.toString() + '].');
-						delete args[i];
-					}
-				}
-			}
-			else
-				args = {};
-
-			// enforce default values
-			var n;
-			for (n in schema) {
-				if (typeof (args[n]) === typeof (undefined) || args[n] === null)
-					args[n] = schema[n];
-			}
-
-			// return schema-conformant object
-			return args;
-		},
-
-		/**
-		 * Check a value against an enumeration, throw an error if it does not represent an enumeration value, and return the matched enumeration value.
-		 * @param {string} enumName The name of the enumeration, for error-logging purposes.
-		 * @param {string} value The value to check against the enum, which may be either a key or value in the enumeration.
-		 * @param {object | string[]} enumObj The enumeration to check, consisting of a one-dimensional string:string mapping or an array.
-		 * @returns {string} The matched enumeration value.
-		 * @throws  Error    An exception indicating that some arguments were invalid.
-		 */
-		ApplyEnumeration: function (enumName, value, enumObj) {
-			// enumeration is undefined or empty
-			if (!enumObj)
-				return null;
-
-			// ...or value is an enumeration key
-			if (typeof (enumObj[value]) !== typeof (undefined))
-				return enumObj[value];
-
-			// ...or value is an enumeration value
-			if ($.isArray(enumObj)) {
-				if ($.inArray(value, enumObj))
-					return value;
-			}
-			else {
-				var i;
-				for (i in enumObj) {
-					if (enumObj[i] === value)
-						return value;
-				}
-			}
-
-			// ...or value is invalid
-			var valid = [];
-			var k;
-			for (k in enumObj)
-				valid.push(enumObj[k]);
-			throw new Error('The value "' + value + '" is not a valid ' + enumName + ' enumeration value, expected one of [' + valid.toString() + '].');
-		},
-
-		/**
-		 * Write a message to the browser debugging console.
-		 * @param {string} message The message to log.
-		 */
-		Log: function (message) {
-			if (window.console && window.console.log)
-				console.log(message);
-			else
-				mw.log(message);
-		},
-
-		/**
-		 * Provides access to the browser's local storage.
-		 */
-		storage: {
-			/**
-			 * Get whether the browser supports HTML local storage.
-			 * See http://caniuse.com/json and http://caniuse.com/localstorage
-			 */
-			IsAvailable: function () {
-				return window.localStorage && window.JSON;
-			},
-
-			/**
-			 * Save a JavaScript object to local browser storage (if the browser supports it).
-			 * @param {string} key The unique key which identifies the value in storage.
-			 * @param {object} value An arbitrary object to store.
-			 */
-			Write: function (key, value) {
-				if (this.IsAvailable())
-					localStorage.setItem(key, JSON.stringify(value));
-			},
-
-			/**
-			 * Read a JavaScript object from local browser storage (if the browser supports it).
-			 * If not supported, returns null.
-			 * @param {string} key The unique key which identifies the value in storage.
-			 */
-			Read: function (key) {
-				if (window.localStorage && window.JSON)
-					return JSON.parse(localStorage.getItem(key));
-				return null;
-			},
-
-			/**
-			 * Delete a value from local browser storage (if the browser supports it).
-			 * @param {string} key The unique key which identifies the value in storage.
-			 */
-			Delete: function (key) {
-				if (window.localStorage && window.JSON)
-					localStorage.removeItem(key);
-			}
-		},
-
-		/**
-		 * Provides generic hooks to the MediaWiki UI.
-		 */
-		mediawiki: {
-			/**
-			 * Add a navigation menu portlet to the sidebar.
-			 * @param {string} id The unique portlet ID.
-			 * @param {string} name The display name displayed in the portlet header.
-			 */
-			AddPortlet: function (id, name) {
-				// copy the portlet structure for the current skin
-				var $sidebar = $('#p-tb').clone().attr('id', id);
-				$sidebar.find('h5').text(name);
-				$sidebar.find('ul').empty();
-
-				// if this is Vector, apply the collapsible magic (derived from the woefully-not-reusable https://gerrit.wikimedia.org/r/gitweb?p=mediawiki/extensions/Vector.git;a=blob;f=modules/ext.vector.collapsibleNav.js )
-				var vectorModules = mw.config.get('wgVectorEnabledModules');
-				if (vectorModules && vectorModules.collapsiblenav) {
-					var collapsed = $.cookie('vector-nav-' + id) === 'false';
-					$sidebar
-						.toggleClass('collapsed', collapsed)
-						.toggleClass('expanded', !collapsed);
-					$sidebar.find('div:first').toggle(!collapsed);
-				}
-
-				// add to sidebar
-				$('#p-tb').parent().append($sidebar);
-
-				return $sidebar;
-			},
-
-			/**
-			 * Add a link to a navigation sidebar menu.
-			 * @param {string} portletID The unique navigation portlet ID.
-			 * @param {string} text The link text.
-			 * @param {string|function} target The link URI or callback.
-			 * @return
-			 */
-			AddPortletLink: function (portletID, text, target) {
-				var isCallback = $.isFunction(target);
-				var uri = isCallback ? '#' : target;
-				var $link = $(mw.util.addPortletLink(portletID, uri, text));
-				if (isCallback)
-					$link.click(function (e) { e.preventDefault(); target(e); });
-
-				return $link;
-			}
-		}
-	};
-
 	/*********
 	** TemplateScript
 	*********/
@@ -214,7 +30,7 @@ var pathoschild = pathoschild || {};
 	 * @property {string} _revision The unique revision number, for debug purposes.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '0.9.10-alpha',
+		_version: '0.9.11-alpha',
 
 		/*********
 		** Objects
@@ -317,19 +133,36 @@ var pathoschild = pathoschild || {};
 		** Private methods
 		*********/
 		/**
+		 * Load the scripts required by TemplateScript.
+		 * @param {string} url The URL of the script to load.
+		 * @param {bool} test A boolean-like value which indicates whether the dependency is already loaded.
+		 * @param {function} callback The method to invoke (with no arguments) when the dependencies have been loaded.
+		 */
+		LoadDependency: function (url, test, callback) {
+			if (test)
+				callback();
+			else
+				$.ajax({url:url, dataType:'script', crossDomain:true, cached:true, success:callback });
+		},
+
+		/**
 		 * Initialize the template script.
 		 */
 		_Initialize: function () {
+			// initialize
 			var _this = pathoschild.TemplateScript;
-
+			if (_this._isInitialized)
+				return;
+			_this._isInitialized = true;
 			_this.Context.singleton = _this;
 			_this.Context.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
 			_this.Context.$editSummary = $('#wpSummary:first');
 
-			for (var t = 0; t < _this._templates.length; t++) {
-				_this._CreateSidebarEntry(_this._templates[t]);
-			}
-			_this._isInitialized = true;
+			// load utilities & hook into page
+			_this.LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.util.js', pathoschild.util, function() {
+				for (var t = 0; t < _this._templates.length; t++)
+					_this._CreateSidebarEntry(_this._templates[t]);
+			});
 		},
 
 		/**
@@ -624,407 +457,13 @@ var pathoschild = pathoschild || {};
 		$(pathoschild.TemplateScript._Initialize);
 	}
 
-	/*********
-	** Regex editor tool for TemplateScript
-	*********/
-	/**
-	 * Singleton that lets the user define custom regular expressions using a dynamic form and execute them against the text.
-	 * @author Pathoschild
-	 * @version 0.1-alpha
-	 * @class
-	 * @property {string} ContainerID The unique ID of the regex editor container.
-	 * @property {string} UndoText The original text before the last patterns were applied.
-	 * @property {jQuery} $target The text input element to which to apply regular expressions.
-	*/
-	pathoschild.TemplateScript.RegexEditor = {
-		/*********
-		** Properties
-		*********/
-		ContainerID: 'templatescript-regex-editor',
-		UndoText: null,
-		$target: null,
-
-
-		/*********
-		** Methods
-		*********/
-		/**
-		 * Construct a DOM element.
-		 * @param {string} tag The name of the DOM element to construct.
-		 */
-		Make: function (tag) {
-			return $(document.createElement(tag));
-		},
-
-		/**
-		 * Construct the regex editor and add it to the page.
-		 * @param {jQuery} $target The text input element to which to apply regular expressions.
-		 */
-		Create: function ($target) {
-			// initialize state
-			var _this = this;
-			this.$target = $target;
-			var $container = $('#' + this.ContainerID);
-			var $warning = $('#' + this.ContainerID + ' .tsre-warning');
-
-			// add CSS
-			mw.loader.load('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/pathoschild.templatescript.css', 'text/css');
-
-			// display reset warning if already open (unless it's already displayed)
-			if ($container.length) {
-				if (!$warning.length) {
-					$warning = this
-						.Make('div')
-						.attr('class', 'tsre-warning')
-						.text('You are launching the regex editor tool, but it\'s already open. Do you want to ')
-						.append(this
-							.Make('a')
-							.text('reset the form')
-							.attr({ 'title': 'reset the form', 'class': 'tsre-reset', 'href': '#' })
-							.click(function () { _this.Reset(); return false; })
-						)
-						.append(' or ')
-						.append(this
-							.Make('a')
-							.text('cancel the new launch')
-							.attr({ 'title': 'cancel the new launch', 'class': 'tsre-cancel', 'href': '#' })
-							.click(function () { $warning.remove(); return false; })
-						)
-						.append('?')
-						.prependTo($container);
-				}
-			}
-
-				// build form
-			else {
-				// container
-				$container = this
-					// form
-					.Make('div')
-					.attr('id', this.ContainerID)
-					.append(this
-						.Make('h3')
-						.text('Regex editor')
-					)
-
-					// instructions
-					.append(this
-						.Make('p')
-						.attr('class', 'tsre-instructions')
-						.append('Enter any number of regular expressions to execute. The search pattern can be like "')
-						.append(this.Make('code').text('search pattern'))
-						.append('" or "')
-						.append(this.Make('code').text('/pattern/modifiers'))
-						.append('", and the replace pattern can contain reference groups like "')
-						.append(this.Make('code').text('$1'))
-						.append('" (see a ')
-						.append(this
-							.Make('a')
-							.text('tutorial')
-							.attr({ 'title': 'JavaScript regex tutorial', 'class': 'external text', 'href': 'http://www.regular-expressions.info/javascript.html', 'target': '_blank' })
-						)
-						.append(').')
-					)
-
-					// form
-					.append(this
-						.Make('form')
-						.append(this
-							.Make('ol') // inputlist
-						)
-						// exit button
-						.append(this
-							.Make('div')
-							.attr('class', 'tsre-close')
-							.append(this
-								.Make('a')
-								.attr({ 'title': 'Close the regex editor', href: '#' })
-								.click(function () { _this.Remove(); return false; })
-								.append(this
-									.Make('img')
-									.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/4/47/Noun_project_-_supprimer_round.svg/16px-Noun_project_-_supprimer_round.svg.png')
-								)
-							)
-						)
-						// field buttons
-						.append(this
-							.Make('div')
-							.attr('class', 'tsre-buttons')
-							.append(this
-								.Make('a')
-								.append(this
-									.Make('img')
-									.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Noun_project_-_plus_round.svg/16px-Noun_project_-_plus_round.svg.png')
-								)
-								.append(' add patterns')
-								.attr({ 'title': 'Add search & replace boxes', 'class': 'tsre-add', 'href': '#' })
-								.click(function () { _this.AddInputs(); return false; })
-							)
-							.append(' | ')
-							.append(this
-								.Make('a')
-								.append(this
-									.Make('img')
-									.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/5/57/Noun_project_-_crayon.svg/16px-Noun_project_-_crayon.svg.png')
-								)
-								.append(' apply')
-								.attr({ 'title': 'Perform the above patterns', 'class': 'tsre-execute', 'href': '#' })
-								.click(function () { _this.Execute(); return false; })
-							)
-							.append(this
-								.Make('span')
-								.attr('class', 'tsre-undo')
-								.append(' | ')
-								.append(this
-									.Make('a')
-									.append(this
-										.Make('img')
-										.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/1/13/Noun_project_-_Undo.svg/16px-Noun_project_-_Undo.svg.png')
-									)
-									.append(' undo the last apply')
-									.attr({ 'title': 'Undo the last apply', 'href': '#' })
-									.click(function () { _this.Undo(); return false; })
-								)
-								.hide()
-							)
-							// session buttons
-							.append(this
-								.Make('span')
-								.attr('class', 'tsre-session-buttons')
-								.append(' | ')
-								.append(this
-									.Make('a')
-									.append(this
-										.Make('img')
-										.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Noun_project_-_USB.svg/16px-Noun_project_-_USB.svg.png')
-									)
-									.append(' save')
-									.attr({ 'title': 'Save this session for later use', 'class': 'tsre-save', 'href': '#' })
-									.click(function () { _this.SaveSession(); return false; })
-								)
-								.append(' ')
-								.append(this
-									.Make('span')
-									.attr('class', 'tsre-sessions')
-								)
-							)
-						)
-					)
-					.prependTo(_this.$target.parent());
-
-				// add first pair of input boxes
-				this.AddInputs();
-				this.PopulateSessionList();
-
-				// hide sessions if browser doesn't support it
-				if (!pathoschild.util.storage.IsAvailable()) {
-					$('.tsre-session-buttons').hide();
-				}
-			}
-		},
-
-		/**
-		 * Reset the regex editor.
-		 */
-		Reset: function () {
-			this.Remove();
-			this.Create(this.$target);
-		},
-
-		/**
-		 * Add a pair of regular expression input boxes to the regex editor.
-		 */
-		AddInputs: function () {
-			var id = $('.tsre-pattern').length + 1;
-			$('#' + this.ContainerID + ' ol:first')
-				.append(this
-					.Make('li')
-					.attr('class', 'tsre-pattern')
-					.append(this
-						.Make('label')
-						.attr('for', 'tsre-search-' + id)
-						.text('Search:')
-					)
-					.append(this
-						.Make('textarea')
-						.attr({ 'name': 'tsre-search-' + id, 'tabindex': id + 100 })
-					)
-					.append(this.Make('br'))
-					.append(this
-						.Make('label')
-						.attr('for', 'tsre-replace-' + id)
-						.text('Replace:')
-					)
-					.append(this
-						.Make('textarea')
-						.attr({ 'name': 'tsre-replace-' + id, 'tabindex': id + 101 })
-					)
-				);
-		},
-
-		/**
-		 * Get the regular expression patterns defined by the user.
-		 */
-		GetPatterns: function () {
-			var patterns = [];
-			$('.tsre-pattern').each(function (i, item) {
-				// extract input
-				var $item = $(item);
-				var pattern = {
-					'input': $item.find('textarea:eq(0)').val(),
-					'replace': $item.find('textarea:eq(1)').val()
-				};
-
-				// parse search expression
-				if (!pattern.input.match(/^\s*\/[\s\S]*\/[a-z]*\s*$/i)) {
-					pattern.search = new RegExp(pattern.input);
-				}
-				else {
-					var search = pattern.input.replace(/^\s*\/([\s\S]*)\/[a-z]*\s*$/i, '$1');
-					var modifiers = pattern.input.replace(/^\s*\/[\s\S]*\/([a-z]*)\s*$/, '$1');
-					modifiers = modifiers.replace(/[^gim]/ig, '');
-					pattern.search = new RegExp(search, modifiers);
-				}
-
-				// store
-				patterns.push(pattern);
-			});
-
-			return patterns;
-		},
-
-		/**
-		 * Apply the defined regular expressions to the text.
-		 */
-		Execute: function () {
-			// enable undo
-			var oldText = this.$target.val();
-
-			// execute
-			var patterns = this.GetPatterns();
-			for (var i = 0, len = patterns.length; i < len; i++) {
-				this.$target.val(this.$target.val().replace(patterns[i].search, patterns[i].replace));
-			}
-
-			if (this.$target.val() !== oldText) {
-				this.UndoText = oldText;
-				$('.tsre-undo').show();
-			}
-		},
-
-		/**
-		 * Revert the text to its state before the regular expressions were last applied.
-		 */
-		Undo: function () {
-			if (this.$target.val() === this.UndoText || this.UndoText === null) {
-				return;
-			}
-
-			this.$target.val(this.UndoText);
-			this.UndoText = null;
-			$('.tsre-undo').hide();
-		},
-
-		/**
-		 * Remove the regex editor.
-		 */
-		Remove: function () {
-			$('#' + this.ContainerID).remove();
-		},
-
-		/**
-		 * Save the regex editor patterns for later reuse.
-		 */
-		SaveSession: function () {
-			// get session name
-			var sessionName = prompt('Enter a name for this session:', '');
-			if (!sessionName) {
-				return;
-			}
-
-			// save patterns
-			var patterns = this.GetPatterns();
-			var sessions = pathoschild.util.storage.Read('tsre-sessions') || [];
-			sessions.push(sessionName);
-			sessions.sort();
-			pathoschild.util.storage.Write('tsre-sessions', sessions);
-			pathoschild.util.storage.Write('tsre-sessions.' + sessionName, patterns);
-
-			// update list
-			var $list = $('.tsre-session-buttons select:first');
-			this.PopulateSessionList();
-		},
-
-		/**
-		 * Load a previously saved set of patterns.
-		 * @param {string} sessionName The unique name of the session to load.
-		 */
-		LoadSession: function (sessionName) {
-			var patterns = pathoschild.util.storage.Read('tsre-sessions.' + sessionName);
-			this.Reset();
-			for (var i = 1, len = patterns.length; i < len; i++) {
-				this.AddInputs();
-			}
-
-			$('.tsre-pattern').each(function (i, item) {
-				var $item = $(item);
-				$item.find('textarea:eq(0)').val(patterns[i].input);
-				$item.find('textarea:eq(1)').val(patterns[i].replace);
-			});
-		},
-
-		/**
-		 * Delete a previously saved set of patterns.
-		 * @param {string} sessionName The unique name of the session to delete.
-		 */
-		DeleteSession: function (sessionName) {
-			var sessions = pathoschild.util.storage.Read('tsre-sessions') || [];
-			var index = $.inArray(sessionName, sessions);
-			if (index === -1)
-				return;
-
-			sessions.splice(index, 1);
-
-			pathoschild.util.storage.Write('tsre-sessions', sessions);
-			pathoschild.util.storage.Delete(sessionName);
-
-			this.PopulateSessionList();
-		},
-
-		/**
-		 * Populate the list of sessions.
-		 */
-		PopulateSessionList: function () {
-			var _this = this;
-			var sessions = pathoschild.util.storage.Read('tsre-sessions') || [];
-
-			var $box = $('.tsre-sessions').empty();
-			for (var i = 0, len = sessions.length; i < len; i++) {
-				$box
-					.append(this
-						.Make('span')
-						.attr('class', 'tsre-session-tag')
-						.append(this
-							.Make('a')
-							.text(sessions[i])
-							.attr({ 'title': 'Load session "' + sessions[i] + '"', 'href': '#', 'data-key': sessions[i] })
-							.click(function () { _this.LoadSession($(this).attr('data-key')); return false; })
-						)
-						.append(' ')
-						.append(this
-							.Make('a')
-							.text('x')
-							.attr({ 'title': 'Delete session "' + sessions[i] + '"', 'href': '#', 'class': 'tsre-delete-session', 'data-key': sessions[i] })
-							.click(function () { _this.DeleteSession($(this).attr('data-key')); return false; })
-						)
-					);
-			}
-		}
-	};
-
 	pathoschild.TemplateScript.Add({
 		name: 'Regex editor',
-		script: function ($target) { pathoschild.TemplateScript.RegexEditor.Create($target.$target); },
+		script: function ($target) {
+			pathoschild.TemplateScript.LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.regexeditor.js', pathoschild.RegexEditor, function () {
+				pathoschild.TemplateScript.RegexEditor.Create($target.$target);
+			});
+		},
 		forActions: 'edit'
 	});
 }());
