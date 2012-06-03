@@ -1,0 +1,10 @@
+*.cs
+*.csproj
+*.sln
+*.suo
+*.user
+bin/
+obj/
+toolserver/backend/modules/cache/wikimedia-wikis.dat
+toolserver/backend/modules/external
+toolserver/gusersearch/sekret_key.php
