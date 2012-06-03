@@ -31,7 +31,7 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '0.9.13-alpha',
+		_version: '0.9.14-alpha',
 
 		/*********
 		** Objects
@@ -141,30 +141,30 @@ var pathoschild = pathoschild || {};
 		 * @param {function} callback The method to invoke (with no arguments) when the dependencies have been loaded.
 		 */
 		_LoadDependency: function(url, test, callback) {
+			var invokeCallback = function() { callback.call(pathoschild.TemplateScript); };
 			if (test)
-				callback();
+				invokeCallback();
 			else
-				$.ajax({url:url, dataType:'script', crossDomain:true, cached:true, success:function() { callback(); }});
+				$.ajax({ url:url, dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
 		},
 		
 		/**
 		 * Initialize the template script.
 		 */
 		_Initialize: function() {
-			var _this = pathoschild.TemplateScript;
-			if (_this.Context.singleton)
+			if (this.Context.singleton)
 				return;
 
 			// initialize
-			_this.Context.singleton = _this;
-			_this.Context.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
-			_this.Context.$editSummary = $('#wpSummary:first');
+			this.Context.singleton = this;
+			this.Context.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
+			this.Context.$editSummary = $('#wpSummary:first');
 
 			// load utilities & hook into page
-			_this._LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.util.js', pathoschild.util, function() {
-				_this._isReady = true;
-				for (var i = 0; i < _this._queue.length; i++)
-					_this.Add(_this._queue[i]);
+			this._LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.util.js', pathoschild.util, function() {
+				this._isReady = true;
+				for (var i = 0; i < this._queue.length; i++)
+					this.Add(this._queue[i]);
 			});
 		},
 
@@ -452,19 +452,18 @@ var pathoschild = pathoschild || {};
 	};
 
 	// initialize menu (and wait for Vector if needed)
+	var init = function() { pathoschild.TemplateScript._Initialize(); };
 	var vectorModules = mw.config.get('wgVectorEnabledModules');
-	if (vectorModules && vectorModules.collapsiblenav) {
-		mw.loader.using(['ext.vector.collapsibleNav'], function() { $(pathoschild.TemplateScript._Initialize); });
-	}
-	else {
-		$(pathoschild.TemplateScript._Initialize);
-	}
+	if (vectorModules && vectorModules.collapsiblenav)
+		mw.loader.using(['ext.vector.collapsibleNav'], function() { $(init); });
+	else
+		$(init);
 
 	pathoschild.TemplateScript.Add({
 		name: 'Regex editor',
-		script: function($target) {
+		script: function(context) {
 			pathoschild.TemplateScript._LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.regexeditor.js', pathoschild.RegexEditor, function() {
-				pathoschild.TemplateScript.RegexEditor.Create($target.$target);
+				pathoschild.RegexEditor.Create(context.$target);
 			});
 		},
 		forActions: 'edit'

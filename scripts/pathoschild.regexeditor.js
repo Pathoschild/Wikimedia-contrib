@@ -27,8 +27,8 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Properties
 		*********/
-		_version: '0.9.11-alpha',
-		ContainerID: 'templatescript-regex-editor',
+		_version: '0.9.12-alpha',
+		ContainerID: 'tsre',
 		UndoText: null,
 		$target: null,
 
@@ -48,18 +48,19 @@ var pathoschild = pathoschild || {};
 		 * Load the scripts required by the regex editor.
 		 * @param {function} callback The method to invoke (with no arguments) when the dependencies have been loaded.
 		 */
-		LoadDependencies: function (callback) {
+		LoadDependencies: function(callback) {
+			var invokeCallback = function() { callback.call(pathoschild.RegexEditor); };
 			if (pathoschild.util)
-				callback();
+				invokeCallback();
 			else
-				$.ajax({url:'https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.util.js', dataType:'script', crossDomain:true, cached:true, success:callback});
+				$.ajax({ url:'https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.util.js', dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
 		},
 
 		/**
 		 * Construct the regex editor and add it to the page.
 		 * @param {jQuery} $target The text input element to which to apply regular expressions.
 		 */
-		Create: function ($target) {
+		Create: function($target) {
 			this.LoadDependencies(function () {
 				// initialize state
 				var _this = this;
@@ -68,7 +69,7 @@ var pathoschild = pathoschild || {};
 				var $warning = $('#' + this.ContainerID + ' .tsre-warning');
 
 				// add CSS
-				mw.loader.load('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/pathoschild.regexeditor.css', 'text/css');
+				mw.loader.load('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.regexeditor.css', 'text/css');
 
 				// display reset warning if already open (unless it's already displayed)
 				if ($container.length) {
@@ -210,7 +211,7 @@ var pathoschild = pathoschild || {};
 								)
 							)
 						)
-						.prependTo(_this.$target.parent());
+						.prependTo(this.$target.parent());
 
 					// add first pair of input boxes
 					this.AddInputs();
