@@ -31,7 +31,7 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '0.9.12-alpha',
+		_version: '0.9.13-alpha',
 
 		/*********
 		** Objects
@@ -230,18 +230,19 @@ var pathoschild = pathoschild || {};
 
 			var log = function(message) {
 				opts = opts || {};
-				pathoschild.util.Log('Add "' + (opts.name || 'unnamed') + '": ' + message);
+				pathoschild.util.Log('pathoschild.TemplateScript::Add(name:"' + (opts.name || 'unnamed') + '"): ' + message);
 			};
 
 			/* handle multiple templates */
 			if ($.isArray(opts)) {
 				for (var t = 0; t < opts.length; t++)
 					this.Add(opts[t]);
+				return;
 			}
 
 			/* normalize option types */
 			try {
-				opts = pathoschild.util.ApplyArgumentSchema('AddTemplate', opts, this.Template);
+				opts = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript::Add(name:' + (opts.name || 'unnamed') + ')', opts, this.Template);
 				opts.position = pathoschild.util.ApplyEnumeration('Position', opts.position, pathoschild.TemplateScript.Position);
 				opts.editSummaryPosition = pathoschild.util.ApplyEnumeration('Position', opts.editSummaryPosition, pathoschild.TemplateScript.Position);
 				opts.headlinePosition = pathoschild.util.ApplyEnumeration('Position', opts.headlinePosition, pathoschild.TemplateScript.Position);
@@ -302,14 +303,14 @@ var pathoschild = pathoschild || {};
 		Apply: function(id) {
 			/* get template */
 			if (!(id in this._templates)) {
-				pathoschild.util.Log('TemplateScript::Apply() failed, there is no template with ID "' + id + '".');
+				pathoschild.util.Log('pathoschild.TemplateScript::Apply() failed, there is no template with ID "' + id + '".');
 				return;
 			}
 			var opts = this._templates[id];
 
 			/* validate target input box */
 			if (!this.Context.$target.length) {
-				pathoschild.util.Log('TemplateScript::Apply() failed, no recognized form found.');
+				pathoschild.util.Log('pathoschild.TemplateScript::Apply() failed, no recognized form found.');
 				return;
 			}
 
