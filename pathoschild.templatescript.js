@@ -161,7 +161,7 @@ var pathoschild = pathoschild || {};
 			this.Context.$editSummary = $('#wpSummary:first');
 
 			// load utilities & hook into page
-			this._LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.util.js', pathoschild.util, function() {
+			this._LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/pathoschild.util.js', pathoschild.util, function() {
 				this._isReady = true;
 				for (var i = 0; i < this._queue.length; i++)
 					this.Add(this._queue[i]);
@@ -462,7 +462,7 @@ var pathoschild = pathoschild || {};
 	pathoschild.TemplateScript.Add({
 		name: 'Regex editor',
 		script: function(context) {
-			pathoschild.TemplateScript._LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.regexeditor.js', pathoschild.RegexEditor, function() {
+			pathoschild.TemplateScript._LoadDependency('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/pathoschild.regexeditor.js', pathoschild.RegexEditor, function() {
 				pathoschild.RegexEditor.Create(context.$target);
 			});
 		},

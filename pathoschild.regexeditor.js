@@ -53,7 +53,7 @@ var pathoschild = pathoschild || {};
 			if (pathoschild.util)
 				invokeCallback();
 			else
-				$.ajax({ url:'https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.util.js', dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
+				$.ajax({ url:'https://raw.github.com/Pathoschild/Wikimedia-contrib/master/pathoschild.util.js', dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
 		},
 
 		/**
@@ -69,7 +69,7 @@ var pathoschild = pathoschild || {};
 				var $warning = $('#' + this.ContainerID + ' .tsre-warning');
 
 				// add CSS
-				mw.loader.load('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/scripts/pathoschild.regexeditor.css', 'text/css');
+				mw.loader.load('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/pathoschild.regexeditor.css', 'text/css');
 
 				// display reset warning if already open (unless it's already displayed)
 				if ($container.length) {
