@@ -101,8 +101,18 @@ var pathoschild = pathoschild || {};
 		Log: function (message) {
 			if (window.console && window.console.log)
 				console.log(message);
-			else
+			else if(window.mw)
 				mw.log(message);
+		},
+
+		/**
+		 * Load a CSS stylesheet. Scripts only used with MediaWiki should call mw.loader.load(...) instead.
+		 * @param {string} url The URL of the stylesheet to load.
+		 */
+		AddCss: function(url) {
+			$(document.createElement('link'))
+				.attr({rel:'stylesheet', type:'text/css', href:url})
+				.appendTo('head:first');
 		},
 
 		/**

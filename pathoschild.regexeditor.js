@@ -10,7 +10,8 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 
 */
 /*jshint bitwise:true, eqeqeq:true, forin:false, immed:true, latedef:true, loopfunc:true, noarg:true, noempty:true, nonew:true, smarttabs:true, strict:true, trailing:true, undef:true*/
-/*global $:true, mw:true, pathoschild:true*/
+/*global $:true, pathoschild:true*/
+/// <reference path="pathoschild.util.js" />
 var pathoschild = pathoschild || {};
 (function () {
 	"use strict";
@@ -69,7 +70,7 @@ var pathoschild = pathoschild || {};
 				var $warning = $('#' + this.ContainerID + ' .tsre-warning');
 
 				// add CSS
-				mw.loader.load('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/pathoschild.regexeditor.css', 'text/css');
+				pathoschild.util.AddCss('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/pathoschild.regexeditor.css');
 
 				// display reset warning if already open (unless it's already displayed)
 				if ($container.length) {
