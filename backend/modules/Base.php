@@ -150,7 +150,7 @@ abstract class Base {
 	* @return string The formatted string.
 	*/
 	public function FormatFormValue( $str ) {
-		return htmlentities($str, ENT_QUOTES);
+		return htmlentities($str, ENT_QUOTES, 'UTF-8');
 	}
 	
 	/**

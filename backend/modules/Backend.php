@@ -155,15 +155,12 @@ class Backend extends Base {
 			<ul>';
 			
 			foreach($links as $link) {
-				$title = $link[0];
+				$title = isset($link[2]) ? $link[2] : $link[0];
 				$desc  = isset( $link[1] ) ? $link[1] : '';
 				$desc  = str_replace( '\'', '&#38;', $desc ); 
-				$url   = isset( $link[2] ) ? $link[2] : $this->config['root_url'];
-				$url  .= $this->strip_nonlatin( str_replace(' ', '', $title) );
+				$url   = $this->config['root_url'] . $this->strip_nonlatin( str_replace(' ', '', $link[0]) );
 				
-				echo '<li><a href="', $url, '" title="', $desc, '"',
-					(isset($link[2]) ? ' class="is-legacy"' : ''),
-					'>', $title, '</a></li>';
+				echo '<li><a href="', $url, '" title="', $desc, '">', $title, '</a></li>';
 			}
 			echo '</ul>';
 		}
