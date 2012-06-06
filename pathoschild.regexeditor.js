@@ -23,6 +23,7 @@ var pathoschild = pathoschild || {};
 	 * @property {string} ContainerID The unique ID of the regex editor container.
 	 * @property {string} UndoText The original text before the last patterns were applied.
 	 * @property {jQuery} $target The text input element to which to apply regular expressions.
+	 * @property {object} config Configuration settings primarily intended for usage outside MediaWiki.
 	*/
 	pathoschild.RegexEditor = {
 		/*********
@@ -32,6 +33,9 @@ var pathoschild = pathoschild || {};
 		ContainerID: 'tsre',
 		UndoText: null,
 		$target: null,
+		config: {
+			alwaysVisible: false
+		},
 
 
 		/*********
@@ -110,23 +114,7 @@ var pathoschild = pathoschild || {};
 						)
 
 						// instructions
-						.append(this
-							.Make('p')
-							.attr('class', 'tsre-instructions')
-							.append('Enter any number of regular expressions to execute. The search pattern can be like "')
-							.append(this.Make('code').text('search pattern'))
-							.append('" or "')
-							.append(this.Make('code').text('/pattern/modifiers'))
-							.append('", and the replace pattern can contain reference groups like "')
-							.append(this.Make('code').text('$1'))
-							.append('" (see a ')
-							.append(this
-								.Make('a')
-								.text('tutorial')
-								.attr({ 'title': 'JavaScript regex tutorial', 'class': 'external text', 'href': 'http://www.regular-expressions.info/javascript.html', 'target': '_blank' })
-							)
-							.append(').')
-						)
+						.append(this.CreateInstructions(this.Make('p')))
 
 						// form
 						.append(this
@@ -141,7 +129,13 @@ var pathoschild = pathoschild || {};
 								.append(this
 									.Make('a')
 									.attr({ 'title': 'Close the regex editor', href: '#' })
-									.click(function () { _this.Remove(); return false; })
+									.click(function() {
+										if(_this.config.alwaysVisible)
+											_this.Reset();
+										else
+											_this.Remove();
+										return false;
+									})
 									.append(this
 										.Make('img')
 										.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/4/47/Noun_project_-_supprimer_round.svg/16px-Noun_project_-_supprimer_round.svg.png')
@@ -212,7 +206,7 @@ var pathoschild = pathoschild || {};
 								)
 							)
 						)
-						.prependTo(this.$target.parent());
+						.insertBefore(this.$target);
 
 					// add first pair of input boxes
 					this.AddInputs();
@@ -224,6 +218,30 @@ var pathoschild = pathoschild || {};
 					}
 				}
 			});
+		},
+
+		/**
+		 * Populate a container with the regex tool instructions.
+		 * @param {jQuery} $container The element to populate.
+		 */
+		CreateInstructions: function($container) {
+			$container
+				.attr('class', 'tsre-instructions')
+				.empty()
+				.append('Enter any number of regular expressions to execute. The search pattern can be like "')
+				.append(this.Make('code').text('search pattern'))
+				.append('" or "')
+				.append(this.Make('code').text('/pattern/modifiers'))
+				.append('", and the replace pattern can contain reference groups like "')
+				.append(this.Make('code').text('$1'))
+				.append('" (see a ')
+				.append(this
+					.Make('a')
+					.text('tutorial')
+					.attr({ 'title': 'JavaScript regex tutorial', 'class': 'external text', 'href': 'http://www.regular-expressions.info/javascript.html', 'target': '_blank' })
+				)
+				.append(').');
+			return $container;
 		},
 
 		/**
