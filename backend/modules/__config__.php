@@ -32,17 +32,17 @@ $gconfig['tools'] = array(
 		array( 'stewardry', 'analyze user activity by group on a Wikimedia wiki.' ),
 		array( 'magicredirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.' )
 	),
-	'lists' => array(
-		array( 'set operations', 'perform set operations on two lists.', $other_root ),
-		array( 'sort', 'sort an input list.', $other_root ),
-		array( 'increment','increment numbers and repeat text with $new and $last magic words.', $other_root ),
-		array( 'timecount','calculate time elapsed in multiple time ranges.', $other_root )
-	),
 	'strings' => array(
 		array( 'regextoy', 'perform regex search and replace' ),
 		array( 'etymology reader','convert etymology shorthand into legible text.', $other_root ),
 		array( 'line numbers','add line numbers to text for proofreading.', $other_root ),
 		array( 'poem formatting','convert HTML and wikiML formatting to &lt;poem&gt; formatting.', $other_root )
+	),
+	'lists' => array(
+		array( 'set operations', 'perform set operations on two lists.', $other_root ),
+		array( 'sort', 'sort an input list.', $other_root ),
+		array( 'increment','increment numbers and repeat text with $new and $last magic words.', $other_root ),
+		array( 'timecount','calculate time elapsed in multiple time ranges.', $other_root )
 	),
 	'databases' => array(
 		array( 'iso639db','search ISO 639 codes.', $other_root )
@@ -57,9 +57,9 @@ $gconfig['tools'] = array(
 ## Footer
 #############################
 /* default licensing */
-$gconfig['license'] = "This script and layout are by Jesse Plamondon-Willard (<a href='//meta.wikimedia.org/wiki/User:Pathoschild' title='Pathoschild&#39;s wiki userpage'>Pathoschild</a>), released under the terms of the <a href='//creativecommons.org/licenses/by/3.0/' title='Creative Commons Attribution 3.0 license text'>CC-BY 3.0 license</a>. Logo is <a href='//commons.wikimedia.org/wiki/File:Gear_3.svg' title='gear_3'>Ainali's <em>gear_3</em></a>.";
+$gconfig['license'] = 'This toy is open-source and released under the <a href="//creativecommons.org/licenses/by/3.0/" title="Creative Commons Attribution 3.0 license">CC-BY 3.0 license</a> (except the <a href="//commons.wikimedia.org/wiki/File:Gear_3.svg" title="gear_3">gear logo</a>).';
 
 /* benchmark precision */
-$gconfig['profile_time_precision'] = 4;
+$gconfig['profile_time_precision'] = 3;
 $gconfig['profile_perc_precision'] = 2;
 ?>

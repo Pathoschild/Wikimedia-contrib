@@ -1,22 +1,14 @@
 <?php
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/Database.php');
+$backend = Backend::create('ISO 639 database', 'A searchable database of languages and ISO 639 codes augmented by native language names from Wikipedia. This script is but an egg; see the <a href="http://jpwillard.com/tools/iso639db" title="ISO639db (stable version)">current stable version</a>.')
+	->link('stylesheet.css')
+	->link('../content/jquery.collapse/jquery.collapse.js')
+	->link('../content/jquery.collapse/jquery.cookie.js')
+	->link('../content/jquery.multiselect/jquery.multiselect.js')
+	->link('../content/jquery.multiselect/jquery.multiselect.css')
+	->header();
 
-$backend = new Backend(array(
-	'title' => 'ISO 639 database',
-	'blurb' => 'A searchable database of languages and ISO 639 codes augmented by native language names from Wikipedia. This script is but an egg; see the <a href="http://jpwillard.com/tools/iso639db" title="ISO639db (stable version)">current stable version</a>.',
-	'source' => array('index.php', 'parseIso639Codes.js')
-));
-
-$backend->link('stylesheet.css');
-$backend->link('../content/jquery.collapse/jquery.collapse.js');
-$backend->link('../content/jquery.collapse/jquery.cookie.js');
-$backend->link('../content/jquery.multiselect/jquery.multiselect.js');
-$backend->link('../content/jquery.multiselect/jquery.multiselect.css');
-$backend->header();
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 ####################
 ## Script

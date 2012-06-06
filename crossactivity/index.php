@@ -1,22 +1,19 @@
 <?php
 require_once('../backend/modules/Backend.php');
-$backend = new Backend(Array(
-	'title' => 'CrossActivity',
-	'blurb' => 'Measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.',
-	'source' => Array( 'index.php' )
-));
-$backend->link( '../backend/scripts/jquery.js' );
-$backend->link( '../content/dataTables/jquery.dataTables.min.js' );
-$backend->link( '../content/dataTables/jquery.dataTables.plain.css' );
-$backend->addScript('
-	$(function() {
-		$("#activity-table").dataTable({
-			"bPaginate": false,
-			"bAutoWidth": false,
-			"aaSorting": [[2, "desc"]]
+$backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.')
+	->link( '../backend/scripts/jquery.js' )
+	->link( '../content/dataTables/jquery.dataTables.min.js' )
+	->link( '../content/dataTables/jquery.dataTables.plain.css' )
+	->addScript('
+		$(function() {
+			$("#activity-table").dataTable({
+				"bPaginate": false,
+				"bAutoWidth": false,
+				"aaSorting": [[2, "desc"]]
+			});
 		});
-	});
-');
+	')
+	->header();
 
 /***************
  * Get data
@@ -31,18 +28,16 @@ $show_all = $backend->get('show_all', false);
 /***************
  * Input form
  ***************/
-$backend->header();
 echo '<form action="" method="get">
-	<fieldset>
-		<label for="user">User name:</label>
-		<input type="text" name="user" id="user" value="', $backend->FormatFormValue($user), '" />', ($user == 'Shanel' ? '&hearts;' : ''), '<br />
-		<input type="checkbox" id="show_all" name="show_all" ', ($show_all ? 'checked="checked" ' : ''), '/> <label
-		for="show_all">Show wikis with no activity</label><br />
-		<input type="submit" value="Submit" id="submit" class="smallsubmit" />
-	</fieldset>
+	<label for="user">User name:</label>
+	<input type="text" name="user" id="user" value="', $backend->FormatFormValue($user), '" />', ($user == 'Shanel' ? '&hearts;' : ''), '<br />
+	<input type="checkbox" id="show_all" name="show_all" ', ($show_all ? 'checked="checked" ' : ''), '/> <label
+	for="show_all">Show wikis with no activity</label><br />
+	<input type="submit" value="Analyze »" />
 </form>';
 
 if (!empty($user)) {
+	echo '<div class="result-box">';
 	echo 'Related tools:
 		<ul>
 			<li><a href="//toolserver.org/~luxo/contributions/contributions.php?user=', urlencode($user) ,'" title="Crosswiki edits">Crosswiki edits</a></li>
@@ -155,6 +150,7 @@ do {
 		$db->dispose();
 	}
 	echo '</tbody></table>';
+	echo '</div>';
 }
 while (0);
 

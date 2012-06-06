@@ -1,14 +1,10 @@
 <?php
 require_once( '../backend/modules/Backend.php' );
 require_once( '../backend/modules/Form.php' );
-require_once( './sekret_key.php' );
-$backend = new Backend(Array(
-	'title'  => 'gUser search',
-	'blurb'  => 'Provides searching and filtering of global users on Wikimedia wikis.',
-	'source' => Array( 'index.php' )
-));
-$backend->link( Array('stylesheet.r2.css', 'javascript.js', '../globals/sorttable.js') );
-$backend->header();
+$backend = Backend::create('gUser search', 'Provides searching and filtering of global users on Wikimedia wikis.')
+	->link('stylesheet.css')
+	->link('javascript.js')
+	->header();
 
 #############################
 ## Script methods
@@ -266,7 +262,6 @@ $use_regex = isset($_GET['regex']) && $_GET['regex'];
 $show_locked = isset($_GET['show_locked']) ? (bool)$_GET['show_locked'] : false;
 $show_hidden = isset($_GET['show_hidden']) ? (bool)$_GET['show_hidden'] : false;
 $case_insensitive = isset($_GET['icase']) ? (bool)$_GET['icase'] : false;
-$has_sekret = isset($_GET['sekret']) && $_GET['sekret'] == $sekret_key;
 
 /* add user name filter */
 if( $name != '' ) {
@@ -323,7 +318,7 @@ echo "
 		",
 		( ($limit != Script::DEFAULT_LIMIT) ? "<input type='hidden' name='limit' value='{$limit}' />" : ""),
 		"
-		<input type='submit' value='Submit' /> <br />
+		<input type='submit' value='Search »' /> <br />
 		<div style='padding-left:0.5em; border:1px solid gray; color:gray;'>
 			", Form::Checkbox( 'show_locked', $show_locked ), "
 			<label for='show_locked'>Show locked accounts</label><br />
@@ -360,11 +355,7 @@ $count = $script->db->countRows();
 $has_results = (int)!(bool)$count;
 
 echo "
-	<h2>Search results</h2>";
-if($has_sekret) {
-	echo '<div class="success">You\'re using a secret key that lets you view hidden user names. Please do not share the URL (with the secret key) with non-stewards, to avoid abuse.</div>';
-}
-echo "
+	<h2>Search results</h2>
 	<p id='search-summary' class='search-results-{$has_results}'>{$script->getFormattedSearchOptions()}.</p>";
 
 #############################
@@ -386,7 +377,7 @@ if( $count ) {
 
 	/* table */
 	echo "
-		<table class='pretty sortable' id='search-results'>
+		<table class='pretty' id='search-results'>
 			<tr>
 				<th>ID</th>
 				<th>Name</th>
@@ -407,7 +398,7 @@ if( $count ) {
 		$is_okay = (!$is_locked && !$is_hidden && !$is_oversighted ? 1 : 0);
 		$lnk_target = urlencode($row['gu_name']);
 		
-		$name_hidden = ($is_hidden || $is_oversighted) && !$has_sekret;
+		$name_hidden = ($is_hidden || $is_oversighted);
 		if($name_hidden)
 			$any_oversighted = true;
 

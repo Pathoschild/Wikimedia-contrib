@@ -1,18 +1,14 @@
 <?php
 require_once('../backend/modules/Backend.php');
-$backend = new Backend(array(
-	'title' => 'A template\'s magic redirect',
-	'blurb' => 'Redirects to an arbitrary URL with tokens based on user and wiki filled in. This is primarily intended for Wikimedia templates such as {{<a href="//meta.wikimedia.org/wiki/Template:sr-request" title="template:sr-request on Meta">sr-request</a>}} (see <a href="?url=//{wiki.domain}/wiki/Special:UserRights/{user.name}@{wiki.name}&wiki=metawiki&user=Pathoschild" title="reload with example values">example</a>).',
-	'source' => array('index.php', 'stylesheet.css')
-));
-$backend->link('stylesheet.css');
-$backend->link('../content/jquery.collapse/jquery.collapse.js');
-$backend->link('../content/jquery.collapse/jquery.cookie.js');
-$backend->addScript('
-	$(document).ready(function() {
-		$("#token-documentation").collapse({head:"span", group:"ul"});
-	});
-');
+$backend = Backend::create('A template\'s magic redirect', 'Redirects to an arbitrary URL with tokens based on user and wiki filled in. This is primarily intended for Wikimedia templates such as {{<a href="//meta.wikimedia.org/wiki/Template:sr-request" title="template:sr-request on Meta">sr-request</a>}} (see <a href="?url=//{wiki.domain}/wiki/Special:UserRights/{user.name}@{wiki.name}&wiki=metawiki&user=Pathoschild" title="reload with example values">example</a>).')
+	->link('stylesheet.css')
+	->link('../content/jquery.collapse/jquery.collapse.js')
+	->link('../content/jquery.collapse/jquery.cookie.js')
+	->addScript('
+		$(document).ready(function() {
+			$("#token-documentation").collapse({head:"span", group:"ul"});
+		});
+	');
 
 $tokens = array(
 	'wiki' => array(

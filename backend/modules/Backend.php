@@ -25,12 +25,7 @@ class Backend extends Base {
 	 */
 	private $title     = NULL;
 	private $blurb     = NULL; // a short description displayed at the top of the page; defaults to nothing.
-	private $path      = NULL; // path breadcrumbs (defaults to title)
-	private $source    = NULL; // array of files to display source for
-	private $license   = NULL; // script license text (defaults to text in __config__.php)
 	private $hook_head = NULL; // extra content to insert into HTML <head>
-	private $modules_path = '../backend/modules/';
-	private $valid_construct_opts = array( 'title', 'blurb', 'path', 'source', 'license', 'modules_path' );
 	
 	public $logger = NULL;
 	public $cache = NULL;
@@ -39,21 +34,9 @@ class Backend extends Base {
 
 	#################################################
 	## Constructor
-	## Build backend, given any of the following data in a hash (see properties):
-	##	- title
-	##	- blurb
-	##	- path
-	##	- source
-	##	- license
-	##	- modules_path
 	#################################################
-	public function __construct( $options ) {
+	public function __construct( $title, $blurb ) {
 		parent::__construct();
-		
-		/* validate options */
-		$invalid = array_diff( array_keys($options), $this->valid_construct_opts );
-		if( $invalid )
-			die( "Invalid keys given to Backend constructor: '" . join("' and '", array_keys($invalid)) . "'." );
 		
 		/* get configuration */
 		global $gconfig;
@@ -61,12 +44,9 @@ class Backend extends Base {
 		
 		/* handle options */
 		$this->filename = basename( $_SERVER['SCRIPT_NAME'] );
-		$this->title    = isset($options['title']) ? $options['title']   : $this->filename;
-		$this->blurb    = isset($options['blurb']) ? $options['blurb']   : NULL;
-		$this->path     = isset($options['path']) ? $options['path']     : array(&$this->title);
-		$this->license  = isset($options['license']) ? $options['license'] : $gconfig['license'];
-		$this->source   = isset($options['source']) ? $options['source'] : NULL;
-		$this->modules_path = isset($options['modules_path']) ? $options['modules_path'] : $this->modules_path;
+		$this->title    = isset($title) ? $title : $this->filename;
+		$this->blurb    = isset($blurb) ? $blurb : NULL;
+		$this->license  = $gconfig['license'];
 		$this->scripts = NULL;
 		
 		/* start logger */
@@ -76,6 +56,9 @@ class Backend extends Base {
 		
 		/* build cache */
 		$this->cache = new Cacher('/home/pathoschild/public_html/backend/modules/cache/', $this->logger, !!$this->get('purge'));
+	}
+	public static function create($title, $blurb) {
+		return new Backend($title, $blurb);
 	}
 
 
@@ -87,26 +70,11 @@ class Backend extends Base {
 			$this->db = new Toolserver($this->logger, $this->cache, $options);
 		return $this->db;
 	}
-	
-/*	public function GetWikimedia() {
-		if(!$this->wikimedia) {
-			$db = new Database('metawiki-p.rrdb.toolserver.org');
-			$this->wikimedia = new Wikimedia($db, $this->cache);
-		}
-		return $this->wikimedia;
-	}*/
-	
+		
 
 	#################################################
 	## HTTP encapsulation
 	#################################################
-	#############################
-	## Return absolute URL given path relative to public_html
-	#############################
-	public function url( $path ) {
-		return $this->config['root_url'] . $path;
-	}
-
 	#############################
 	## Get a value from the HTTP GET values.
 	#############################
@@ -120,28 +88,25 @@ class Backend extends Base {
 	#############################
 	## Link to external files in the header
 	#############################
-	public function link( $files ) {
-		if( !is_array($files) )
-			$files = array( $files );
-		$this->source = array_merge( $this->source, $files );
-
-		foreach( $files as $file ) {
-			$ext = substr( $file, -3 );
-			switch( $ext ) {
-				case 'css':
-					$this->hook_head .= '<link rel="stylesheet" type="text/css" href="' . $file . '" />';
-					break;
-				case '.js':
-					$this->hook_head .= '<script type="text/javascript" src="' . $file . '"></script>';
-					break;
-				default:
-					die( "Invalid extension '{$ext}' (file '{$file}') passed to Backend::link." );
-			}
+	public function link( $url ) {
+		$ext = substr( $url, -3 );
+		switch( $ext ) {
+			case 'css':
+				$this->hook_head .= '<link rel="stylesheet" type="text/css" href="' . $url . '" />';
+				break;
+			case '.js':
+				$this->hook_head .= '<script type="text/javascript" src="' . $url . '"></script>';
+				break;
+			default:
+				die( "Invalid extension '{$ext}' (URL '{$url}') passed to Backend->link." );
 		}
+		
+		return $this;
 	}
 	
 	public function addScript( $script ) {
 		$this->hook_head .= '<script type="text/javascript">' . "\n$script\n" . '</script>';
+		return $this;
 	}
 
 
@@ -213,10 +178,7 @@ class Backend extends Base {
 				<p id="blurb">', $this->blurb, '</p>';
 		echo '
 <!-- end generated header -->';
-		
-		/* print source */
-		if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'source' )
-			 $this->showSource();
+		return $this;
 	}
 	
 	#############################
@@ -245,7 +207,7 @@ class Backend extends Base {
 <!-- begin generated footer -->
 			</div>
 			<p id="license">
-				You can <a href="?action=source" title="view source">view the code</a> or <a href="//meta.wikimedia.org/wiki/User_talk:Pathoschild?action=edit&section=new" title="discuss this script">discuss this script</a>. ', $this->license, '<br />
+				Hi! You can <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver" title="view source">view the source code</a> or <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver/issues" title="report issue">report a bug or suggestion</a>. ', $this->license, '<br />
 				Page generated in ', $resultSeconds, ' seconds.
 		';
 		
@@ -277,92 +239,6 @@ class Backend extends Base {
 		</noscript>
 	</body>
 </html>';
-	}
-
-	#############################
-	## Print source code
-	#############################
-	public function showSource() {
-		/* print source header */
-		echo '
-				<!-- generated source code -->
-				<h2>Source code (<a href="', $this->filename, '" title="hide source code">hide</a>)</h2>
-				<div id="source" class="section">';
-		
-		/* warn about closed-source scripts */
-		if( !$this->source ) {
-			echo '
-				<div class="error">No files are marked as open-source for this script. This is probably because they are still in development, or due to an oversight.</div>';
-		}
-		
-	
-		/* fetch list of modules */
-		$modules = array();
-		$path = $this->modules_path;
-		$dir = dir( $path ) or print '<div class="error">Can\'t read module directory (' . $path . ').</div>';
-		if( $dir ) {
-			while( $file = $dir->read() ) {
-				if( preg_match('/\.php$/', $file) )
-					$modules[] = "$path$file";
-			}
-		}
-		
-		/* print table of contents */
-		echo '
-					<div id="toc">
-						<b>Table of contents</b>
-						<ul>';
-		if( $this->source )
-			$this->_source_toc( 'Script', $this->source );
-		$this->_source_toc( 'Generic modules', $modules );
-		echo '
-						</ul>
-					</div>';
-		
-		/* print source files */
-		if( $this->source )
-			$this->_source_files( 'Script', $this->source );
-		$this->_source_files( 'Generic modules', $modules );
-		echo '
-		</div>';
-	}
-
-	#################################################
-	## Private methods
-	#################################################
-	#############################
-	## Print source code TOC entries
-	#############################
-	private function _source_toc( $name, $items ) {
-		echo '
-						<li>', $name, '
-							<ol>';
-		
-		foreach( $items as $file ) {
-			$anchor = $this->strip_nonlatin( $file );
-			echo '
-								<li><a href="#', $anchor, '" title="section for ', $file, '">', $file, '</a></li>';
-		}
-		echo '
-							</ol>
-						</li>';
-	}
-
-
-	#############################
-	## Print source code files
-	#############################
-	private function _source_files( $name, $items ) {
-		foreach( $items as $file ) {
-			$anchor = $this->strip_nonlatin($file);
-			echo '
-					<h3 id="', $anchor, '">', $file, '</h3>
-					<a href="#toc" title="toc">back to toc</a>
-					<div class="source">';
-			highlight_file($file);
-			echo '
-					</div>';
-		}
 	}
 }
 ?>

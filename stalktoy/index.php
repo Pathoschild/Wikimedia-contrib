@@ -2,19 +2,15 @@
 require_once( '../backend/modules/Backend.php' );
 require_once( '../backend/modules/IP.php' );
 require_once( '../backend/modules/Form.php' );
-$backend = new Backend(Array(
-	'title'  => 'Stalk toy',
-	'blurb'  => 'Provides comprehensive information about the given user, IP address, or CIDR range on all Wikimedia wikis.',
-	'source' => Array( 'index.php' )
-));
-
-$backend->link( 'stylesheet.css' );
-$backend->link('../backend/content/jquery.tablesorter.js');
-$backend->addScript('
-	$(document).ready(function() { 
-		$(\'#local-ips, #local-accounts\').tablesorter({sortList:[[1,1]]});
-	});
-');
+$backend = Backend::create('Stalk toy', 'Provides comprehensive information about the given user, IP address, or CIDR range on all Wikimedia wikis.')
+	->link( 'stylesheet.css' )
+	->link('../backend/content/jquery.tablesorter.js')
+	->addScript('
+		$(document).ready(function() { 
+			$(\'#local-ips, #local-accounts\').tablesorter({sortList:[[1,1]]});
+		});
+	')
+	->header();
 
 #############################
 ## Script methods
@@ -412,7 +408,6 @@ $backend->TimerStop('initialize');
 #############################
 ## Input form
 #############################
-$backend->header();
 $target_form = '';
 if( $script )
 	$target_form = $backend->FormatFormValue($script->target);
@@ -421,7 +416,7 @@ echo '
 	<form action="" method="get">
 		<div>
 			<input type="text" name="target" value="', $target_form, '" />
-			<input type="submit" value="Submit" /> <br />
+			<input type="submit" value="Analyze »" /> <br />
 		
 			', Form::Checkbox( 'show_all_wikis', $script && $script->show_all_wikis ), '
 			<label for="show_all_wikis">Show wikis where account is not registered.</label><br />

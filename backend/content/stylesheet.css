@@ -24,27 +24,6 @@ a {
 	color:#006;
 }
 
-table {
-	border-collapse:collapse;
-}
-
-table tr {
-	border-bottom:1px dotted #BBB;
-}
-
-table.plain tr {
-	border:0;
-}
-
-table th {
-	text-align:left;
-	color:#666;
-}
-
-table td, table th {
-	padding:0.2em 0.5em;
-}
-
 table.pretty {
 	border:1px solid #000;
 	border-collapse:collapse;
@@ -69,16 +48,53 @@ pre.pretty {
 	border:1px dotted #000;
 }
 
+/* Forms */
+input, textarea, select {
+	border:1px solid #999;
+	border-radius:2px;
+	padding:2px 3px;
+	color:#144681;
+}
+
+input {
+	margin:1px;
+}
+
+textarea {
+	padding:0.5em;
+	width:100%;
+	/*height:12em;*/
+}
+
+input:hover, textarea:hover, select:hover {
+	background:#FAFAFA;
+}
+
+input:focus, textarea:focus {
+	border-color:#000;
+}
+
+fieldset {
+	margin:1em 0;
+	padding-left:1em;
+	border:1px solid #CCC;
+	border-width:1px 0 0 1px;
+}
+
+legend {
+	font-style:italic;
+}
+
 /* sortable tables */
 table.sortable th {
-    padding: 4px 25px 4px 4px;
+	padding: 4px 25px 4px 4px;
 }
 
 table.sortable thead .header {
-    background-image: url('tablesorter/bg.gif');
+	background-image: url('tablesorter/bg.gif');
 	background-repeat: no-repeat;
 	background-position: center right;
-    cursor: pointer;
+	cursor: pointer;
 }
 
 table.sortable thead tr .headerSortUp {
@@ -91,50 +107,6 @@ table.sortable thead tr .headerSortDown {
 
 table.sortable .headerSortDown, table.sortable .headerSortUp {
 	background-color: #999;
-}
-
-/* sidebar */
-#sidebar {
-	margin-top:3em;
-	width:11em;
-	background:url('sidebar-bg.gif') no-repeat top right;
-	color:#999;
-}
-
-#sidebar h4 {
-	margin: 0 0 -1em 0;
-	width: 10em;
-	border-bottom: 1px solid #CCC;
-	font-size: 0.8em;
-	font-weight: normal;
-}
-
-#sidebar h5 {
-	margin:1em 0 0 0;
-	font-size:1.1em;
-	font-family:monospace;
-	font-weight:normal;
-}
-
-#sidebar a {
-	color:#77B;
-	border:0;
-}
-
-#sidebar .is-legacy a {
-	color:#B7B;
-}
-
-#sidebar ul, #sidebar li {
-	margin:0;
-	padding:0;
-    list-style:none none;
-    font-size:0.9em;
-	color:#888;
-}
-
-#sidebar li {
-	margin-left:1em;
 }
 
 /* content */
@@ -201,54 +173,48 @@ table.sortable .headerSortDown, table.sortable .headerSortUp {
 	color:gray;
 }
 
-/* Forms */
-input, textarea, select {
-	background:#000;
-	border:1px solid #000;
-	color:#FFF;
+/* sidebar */
+#sidebar {
+	margin-top:3em;
+	width:12em;
+	background:url('sidebar-bg.gif') no-repeat top right;
+	color:#666;
 }
 
-input {
-	margin:1px;
+#sidebar h4 {
+	margin: 0 0 -1em 0;
+	width: 10em;
+	border-bottom: 1px solid #CCC;
+	font-size: 0.8em;
+	font-weight: normal;
 }
 
-textarea {
-	padding:0.5em;
+#sidebar h5 {
+	margin:1em 0 0 0;
+	font-size:1.1em;
 	font-family:monospace;
-	font-size:0.95em;
+	font-weight:normal;
 }
 
-input:hover, textarea:hover, select:hover {
-	background:#333;
+#sidebar a {
+	color:#77B;
+	border:0;
 }
 
-input:focus, textarea:focus {
-	border:1px solid #0F0;
+#sidebar a.is-legacy {
+	text-decoration:line-through;
 }
 
-input[type=reset] {
-	width:14.44em;
+#sidebar ul, #sidebar li {
+	margin:0;
+	padding:0;
+	list-style:none none;
 	font-size:0.9em;
+	color:#888;
 }
 
-fieldset {
-	margin:1em 0;
-	border-color:gray;
-}
-
-legend {
-	font-style:italic;
-}
-
-fieldset p.instruction {
-	width:30em;
-    margin: 0 0 5px 0.5em;
-    font-style:italic;
-}
-
-textarea {
-	height:12em;
-	width:100%;
+#sidebar li {
+	margin-left:1em;
 }
 
 /* debug */

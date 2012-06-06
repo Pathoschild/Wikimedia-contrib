@@ -1,14 +1,10 @@
 <?php
 require_once('../backend/modules/Backend.php');
-$backend = new Backend(array(
-	'title' => 'AccountEligibility',
-	'blurb' => 'Analyzes a given user account to determine whether it\'s eligible to vote in the specified event.',
-	'source' => Array('index.php')
-));
-$backend->link('stylesheet.css');
-$backend->link('../backend/content/jquery.tablesorter.js');
-$backend->addScript('$(document).ready(function() { $("#local-accounts").tablesorter({sortList:[[1,1]]}); });');
-$backend->header();
+$backend = Backend::create('AccountEligibility', 'Analyzes a given user account to determine whether it\'s eligible to vote in the specified event.')
+	->link('stylesheet.css')
+	->link('../backend/content/jquery.tablesorter.js')
+	->addScript('$(document).ready(function() { $("#local-accounts").tablesorter({sortList:[[1,1]]}); });')
+	->header();
 
 ############################
 ## Script engine
@@ -739,7 +735,8 @@ foreach ($script->events as $id => $event) {
 }
 echo '
 	</select>
-	<input type="submit" value="Submit" id="submit" />
+	<br />
+	<input type="submit" value="Analyze »" />
 </form>';
 
 

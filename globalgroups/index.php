@@ -1,16 +1,8 @@
 <?php
 require_once('../backend/modules/Backend.php');
-
-$backend = new Backend(Array(
-	'title' => 'GlobalGroups',
-	'blurb' => 'A review of extra permissions assigned to <a href="//meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets" title="global groups">global groups</a> on Wikimedia Foundation wikis.',
-	'source' => Array('index.php')
-));
-$backend->link('stylesheet.css');
-$backend->header();
-
-error_reporting(E_ALL);
-ini_set("display_errors", 1);
+$backend = Backend::create('GlobalGroups', 'A review of extra permissions assigned to <a href="//meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets" title="global groups">global groups</a> on Wikimedia Foundation wikis.')
+	->link('stylesheet.css')
+	->header();
 
 /*########
 ## Flag descriptions
