@@ -39,7 +39,7 @@ $gconfig['tools'] = array(
 		array( 'timecount','calculate time elapsed in multiple time ranges.', $other_root )
 	),
 	'strings' => array(
-		array( 'regex','perform regex search and replace', $other_root ),
+		array( 'regextoy', 'perform regex search and replace' ),
 		array( 'etymology reader','convert etymology shorthand into legible text.', $other_root ),
 		array( 'line numbers','add line numbers to text for proofreading.', $other_root ),
 		array( 'poem formatting','convert HTML and wikiML formatting to &lt;poem&gt; formatting.', $other_root )

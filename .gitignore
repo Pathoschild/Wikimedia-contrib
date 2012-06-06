@@ -5,6 +5,6 @@
 *.user
 bin/
 obj/
-toolserver/backend/modules/cache/wikimedia-wikis.dat
-toolserver/backend/modules/external
+backend/modules/cache
+backend/modules/external
 toolserver/gusersearch/sekret_key.php
