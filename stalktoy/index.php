@@ -498,7 +498,7 @@ elseif( $script->ip->isValid() ) {
 			Related toys:
 			<a href="//meta.wikimedia.org/wiki/Special:GlobalBlock?wpAddress=', $script->target_wiki_url, '" title="Special:GlobalBlock">global block</a>,
 			<a href="//toolserver.org/~luxo/contributions/contributions.php?user=', $script->target_url, '&blocks=true" title="list edits">list edits</a>,
-			<a href="http://domaintools.com/', $script->ip->getFriendly(), '" title="whois query">whois</a>.
+			<a href="http://www.sixxs.net/tools/whois/?handle=', urlencode($script->ip->getFriendly()), '" title="whois query">whois</a>.
 		</div>';
 
 
