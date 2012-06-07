@@ -2,7 +2,7 @@
 require_once( '../backend/modules/Backend.php' );
 require_once( '../backend/modules/IP.php' );
 require_once( '../backend/modules/Form.php' );
-$backend = Backend::create('Stalk toy', 'Provides comprehensive information about the given user, IP address, or CIDR range on all Wikimedia wikis.')
+$backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="index.php?target=Pathoschild" title="view result for Pathoschild"><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="index.php?target=127.0.0.1" title="view result for 127.0.0.1"><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="index.php?target=2001:db8:1234::" title="view result for 2001:db8:1234::"><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="index.php?target=212.75.0.1/16" title="view result for 212.75.0.1/16"><tt>212.75.0.1/16</tt></a> or <a href="index.php?target=2001:db8:1234::/48" title="view result for 2001:db8:1234::/48"><tt>2001:db8:1234::/48</tt></a>).')
 	->link( 'stylesheet.css' )
 	->link('../backend/content/jquery.tablesorter.js')
 	->addScript('
@@ -32,8 +32,6 @@ class Stalktoy extends Base {
 	public $ip;
 	public $db;
 
-	private $ip_hex_start;
-	private $ip_hex_end;
 	private $global_id;
 	private $global_timestamp;
 	private $global_locked;
@@ -49,7 +47,7 @@ class Stalktoy extends Base {
 	#############################
 	public function __construct( $backend, $target ) {
 		/* instantiate objects */
-		$this->ip = new IP( $target );
+		$this->ip = new IPAddress( $target );
 		$this->db = $backend->GetDatabase( Toolserver::ERROR_PRINT );
 		$this->db->Connect('metawiki_p');
 
@@ -61,12 +59,6 @@ class Stalktoy extends Base {
 		
 		/* fetch wikis */
 		$this->wikis = $this->db->getDomains();
-		
-		/* precompile data */
-		if( $this->ip->valid() ) {
-			$this->ip_hex_start = $this->ip->hex();
-			$this->ip_hex_end   = $this->ip->hex( IP::END );
-		}
 	}
 
 
@@ -191,9 +183,12 @@ class Stalktoy extends Base {
 			$this->db->Connect( 'metawiki_p' );
 			
 			$this->global_blocks = Array();
+
+			$start = $this->ip->getEncoded(IPAddress::START);
+			$end = $this->ip->getEncoded(IPAddress::END);
 			$query = $this->db->Query(
 				'SELECT gb_address, gb_by, gb_reason, DATE_FORMAT(gb_timestamp, \'%Y-%b-%d\') AS timestamp, gb_anon_only, DATE_FORMAT(gb_expiry, \'%Y-%b-%d\') AS expiry FROM centralauth_p.globalblocks WHERE (gb_range_start <= ? AND gb_range_end >= ?) OR (gb_range_start >= ? AND gb_range_end <= ?) ORDER BY gb_timestamp',
-				array( $this->ip_hex_start, $this->ip_hex_end, $this->ip_hex_start, $this->ip_hex_end )
+				array($start, $end, $start, $end)
 			)->fetchAllAssoc();
 			
 			foreach( $query as $row ) {
@@ -319,9 +314,11 @@ class Stalktoy extends Base {
 	## Get hash of local IP blocks
 	########
 	public function get_ip_blocks() {
+		$start = $this->ip->getEncoded(IPAddress::START);
+		$end = $this->ip->getEncoded(IPAddress::END);
 		$query = $this->db->Query(
 			'SELECT ipb_by_text, ipb_address, ipb_reason, DATE_FORMAT(ipb_timestamp, \'%Y-%b-%d\') AS timestamp, ipb_deleted, DATE_FORMAT(ipb_expiry, \'%Y-%b-%d\') AS expiry FROM ipblocks WHERE (ipb_range_start <= ? AND ipb_range_end >= ?) OR (ipb_range_start >= ? AND ipb_range_end <= ?)',
-			array( $this->ip_hex_start, $this->ip_hex_end, $this->ip_hex_start, $this->ip_hex_end )
+			array( $start, $end, $start, $end )
 		)->fetchAllAssoc();
 
 		$blocks = Array();
@@ -433,7 +430,7 @@ if( !$script ) {}
 #############################
 ## Process data (IP / CIDR)
 #############################
-elseif( $script->ip->valid() ) {
+elseif( $script->ip->isValid() ) {
 	########
 	## Fetch data
 	########
@@ -442,7 +439,7 @@ elseif( $script->ip->valid() ) {
 	$global = Array(
 		'wikis'        => $script->wikis,
 		'blocks'       => $script->get_global_blocks(),
-		'pretty_range' => $script->ip->pretty_range()
+		'pretty_range' => $script->ip->getFriendly(IPAddress::START) . ' &mdash; ' . $script->ip->getFriendly(IPAddress::END)
 	);
 	$backend->TimerStop('fetch global');
 
@@ -501,7 +498,7 @@ elseif( $script->ip->valid() ) {
 			Related toys:
 			<a href="//meta.wikimedia.org/wiki/Special:GlobalBlock?wpAddress=', $script->target_wiki_url, '" title="Special:GlobalBlock">global block</a>,
 			<a href="//toolserver.org/~luxo/contributions/contributions.php?user=', $script->target_url, '&blocks=true" title="list edits">list edits</a>,
-			<a href="http://domaintools.com/', $script->ip->dec(), '" title="whois query">whois</a>.
+			<a href="http://domaintools.com/', $script->ip->getFriendly(), '" title="whois query">whois</a>.
 		</div>';
 
 

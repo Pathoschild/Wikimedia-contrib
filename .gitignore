@@ -6,5 +6,4 @@
 bin/
 obj/
 backend/modules/cache
-backend/modules/external
 toolserver/gusersearch/sekret_key.php
