@@ -17,7 +17,7 @@ var pathoschild = pathoschild || {};
 	 * @namespace
 	 */
 	pathoschild.util = {
-		_version: '0.9.11-alpha',
+		_version: '0.9.12-alpha',
 
 		/**
 		 * Enforce a schema defining valid arguments and default values on a key:value object.
@@ -106,12 +106,13 @@ var pathoschild = pathoschild || {};
 		},
 
 		/**
-		 * Load a CSS stylesheet. Scripts only used with MediaWiki should call mw.loader.load(...) instead.
-		 * @param {string} url The URL of the stylesheet to load.
+		 * Add a block of CSS to the page. Scripts only used with MediaWiki should call mw.loader.load(...) or mw.util.addCSS(...) instead.
+		 * @param {string} css The CSS text to add.
 		 */
-		AddCss: function(url) {
-			$(document.createElement('link'))
-				.attr({rel:'stylesheet', type:'text/css', href:url})
+		AddStyles: function(css) {
+			$(document.createElement('style'))
+				.attr({ rel: 'stylesheet', type: 'text/css' })
+				.text(css)
 				.appendTo('head:first');
 		},
 

@@ -32,7 +32,7 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '0.9.14-alpha',
+		_version: '0.9.15-alpha',
 
 		/*********
 		** Objects

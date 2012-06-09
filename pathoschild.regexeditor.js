@@ -29,7 +29,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Properties
 		*********/
-		_version: '0.9.12-alpha',
+		_version: '0.9.13-alpha',
 		ContainerID: 'tsre',
 		UndoText: null,
 		$target: null,
@@ -74,7 +74,15 @@ var pathoschild = pathoschild || {};
 				var $warning = $('#' + this.ContainerID + ' .tsre-warning');
 
 				// add CSS
-				pathoschild.util.AddCss('https://raw.github.com/Pathoschild/Wikimedia-contrib/master/pathoschild.regexeditor.css');
+				pathoschild.util.AddStyles(
+					  '#tsre { position: relative; margin: 0.5em; padding: 0.5em; border: 1px solid #AAA; border-radius: 15px; line-height: normal; }\n'
+					+ '.tsre-close { position: absolute; top: 10px; right: 10px; }\n'
+					+ '.tsre-warning { color: red; }\n'
+					+ '.tsre-sessions { color: #AAA; }\n'
+					+ '.tsre-session-tag { border: 1px solid #057BAC; border-radius: 2px; background: #1DA1D8; padding: 0 2px; }\n'
+					+ '.tsre-session-tag a { color: #FFF; }\n'
+					+ 'a.tsre-delete-session { color: red; font-family: monospace; font-weight: bold; }'
+				);
 
 				// display reset warning if already open (unless it's already displayed)
 				if ($container.length) {
