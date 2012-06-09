@@ -9,7 +9,7 @@ var pathoschild = pathoschild || {};
 	 * @see https://github.com/Pathoschild/Wikimedia-contrib#readme
 	 */
 	pathoschild.StewardScript = {
-		version: '2.2.0',
+		version: '2.2.1',
 	
 		Initialize: function() {
 			var _this = pathoschild.StewardScript;
@@ -65,7 +65,7 @@ var pathoschild = pathoschild || {};
 					.append(this
 						.Make('a')
 						.text(menu[i].name)
-						.attr({ href: _this.articleUrl.replace('$1', menu[i].page), title: menu[i].desc })
+						.attr({ href: articleUrl.replace('$1', menu[i].page), title: menu[i].desc })
 					)
 				);
 			}
@@ -97,7 +97,7 @@ var pathoschild = pathoschild || {};
 							.append(this
 								.Make('a')
 								.text('CentralAuth')
-								.attr({ href:_this.articleUrl.replace('$1', 'Special:CentralAuth/' + encodeURIComponent(target)), title:'Manage this user\'s global account.' })
+								.attr({ href:articleUrl.replace('$1', 'Special:CentralAuth/' + encodeURIComponent(target)), title:'Manage this user\'s global account.' })
 							);
 					}
 
