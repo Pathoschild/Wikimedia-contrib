@@ -83,6 +83,10 @@ class Backend extends Base {
 			return $_GET[$name];
 		return $default;
 	}
+	
+	public function getRouteValue() {
+		return $this->get('$1');
+	}
 
 
 	#############################

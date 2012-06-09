@@ -18,9 +18,9 @@ $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bur
 /***************
  * Get data
  ***************/
-$user = '';
-if(isset($_GET['user']))
-	$user = $backend->FormatUsername($backend->get('user'));
+$user = $backend->get('user', $backend->getRouteValue());
+if($user != null)
+	$user = $backend->FormatUsername($user);
 $user_form = $backend->FormatFormValue($user);
 $show_all = $backend->get('show_all', false);
 
@@ -41,7 +41,7 @@ if (!empty($user)) {
 	echo 'Related tools:
 		<ul>
 			<li><a href="//toolserver.org/~luxo/contributions/contributions.php?user=', urlencode($user) ,'" title="Crosswiki edits">Crosswiki edits</a></li>
-			<li><a href="//toolserver.org/~pathoschild/stalktoy/?target=', urlencode($user), '" title="Global account details">Global account details</a></li>
+			<li><a href="//toolserver.org/~pathoschild/stalktoy/', urlencode($user), '" title="Global account details">Global account details</a></li>
 			<li><a href="//meta.wikimedia.org/?title=Special:CentralAuth/', urlencode($user), '" title="Special:CentralAuth">Special:CentralAuth (stewards-only)</a></li>
 		</ul>';
 

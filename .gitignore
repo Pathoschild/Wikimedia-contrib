@@ -6,4 +6,5 @@
 bin/
 obj/
 backend/modules/cache
+backend/modules/external/PiwikTracker.php
 toolserver/gusersearch/sekret_key.php

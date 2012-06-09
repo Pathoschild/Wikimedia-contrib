@@ -2,7 +2,7 @@
 require_once( '../backend/modules/Backend.php' );
 require_once( '../backend/modules/IP.php' );
 require_once( '../backend/modules/Form.php' );
-$backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="index.php?target=Pathoschild" title="view result for Pathoschild"><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="index.php?target=127.0.0.1" title="view result for 127.0.0.1"><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="index.php?target=2001:db8:1234::" title="view result for 2001:db8:1234::"><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="index.php?target=212.75.0.1/16" title="view result for 212.75.0.1/16"><tt>212.75.0.1/16</tt></a> or <a href="index.php?target=2001:db8:1234::/48" title="view result for 2001:db8:1234::/48"><tt>2001:db8:1234::/48</tt></a>).')
+$backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="/~pathoschild/stalktoy/Pathoschild" title="view result for Pathoschild"><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="/~pathoschild/stalktoy/127.0.0.1" title="view result for 127.0.0.1"><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="/~pathoschild/stalktoy/2001:db8:1234::" title="view result for 2001:db8:1234::"><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="/~pathoschild/stalktoy/212.75.0.1/16" title="view result for 212.75.0.1/16"><tt>212.75.0.1/16</tt></a> or <a href="/~pathoschild/stalktoy/2001:db8:1234::/48" title="view result for 2001:db8:1234::/48"><tt>2001:db8:1234::/48</tt></a>).')
 	->link( 'stylesheet.css' )
 	->link('../backend/content/jquery.tablesorter.js')
 	->addScript('
@@ -391,14 +391,10 @@ $backend->TimerStart('initialize');
 $script = NULL;
 $target_form = '';
 
-if( isset($_GET['target']) )
-	$script = new Stalktoy( $backend, $_GET['target'] );
-
-if( isset($_GET['show_all_wikis']) && $_GET['show_all_wikis'] )
-	$script->show_all_wikis = true;
-
-if( isset($_GET['closed']) && $_GET['closed'] )
-	$script->show_closed_wikis = true;
+if( $x = $backend->get('target', $backend->getRouteValue()) )
+	$script = new Stalktoy( $backend, $x );
+$script->show_all_wikis = $backend->get('show_all_wikis', false);
+$script->show_closed_wikis = $backend->get('closed', false);
 
 $backend->TimerStop('initialize');
 

@@ -257,14 +257,14 @@ $script = new Script();
 $script->TimerStart('initialize');
 
 /* get arguments */
-$name = (isset($_GET['name'])) ? $_GET['name'] : '';
-$use_regex = isset($_GET['regex']) && $_GET['regex'];
-$show_locked = isset($_GET['show_locked']) ? (bool)$_GET['show_locked'] : false;
-$show_hidden = isset($_GET['show_hidden']) ? (bool)$_GET['show_hidden'] : false;
-$case_insensitive = isset($_GET['icase']) ? (bool)$_GET['icase'] : false;
+$name = $backend->get('name', $backend->getRouteValue());
+$use_regex = (bool)$backend->get('regex');
+$show_locked = (bool)$backend->get('show_locked');
+$show_hidden = (bool)$backend->get('show_hidden');
+$case_insensitive = (bool)$backend->get('icase');
 
 /* add user name filter */
-if( $name != '' ) {
+if( $name != null ) {
 	$script->name = $name;
 	$operator = ( $use_regex ? Script::OP_REGEXP : Script::OP_LIKE );
 
@@ -294,13 +294,13 @@ if( !$show_hidden ) {
 }
 
 /* set limit */
-if( isset($_GET['limit']) )
-	$script->setLimit( $_GET['limit'] );
+if( $x = $backend->get('limit') )
+	$script->setLimit( $x );
 $limit = $script->limit;
 
 /* set offset */
-if( isset($_GET['offset']) )
-	$script->setOffset( $_GET['offset'] );
+if( $x = $backend->get('offset'))
+	$script->setOffset( $x );
 $offset = $script->offset;
 
 $script->use_regex = $use_regex;
