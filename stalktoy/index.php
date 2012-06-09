@@ -46,6 +46,9 @@ class Stalktoy extends Base {
 	## Constructor
 	#############################
 	public function __construct( $backend, $target ) {
+		if(!$target)
+			return;
+	
 		/* instantiate objects */
 		$this->ip = new IPAddress( $target );
 		$this->db = $backend->GetDatabase( Toolserver::ERROR_PRINT );
@@ -59,6 +62,10 @@ class Stalktoy extends Base {
 		
 		/* fetch wikis */
 		$this->wikis = $this->db->getDomains();
+	}
+	
+	public function isValid() {
+		return !!$this->target;
 	}
 
 
@@ -388,11 +395,10 @@ class StalktoyUserModel {
 ## Instantiate script engine
 ############################# 
 $backend->TimerStart('initialize');
-$script = NULL;
+$script = null;
 $target_form = '';
 
-if( $x = $backend->get('target', $backend->getRouteValue()) )
-	$script = new Stalktoy( $backend, $x );
+$script = new Stalktoy( $backend, $backend->get('target', $backend->getRouteValue()) );
 $script->show_all_wikis = $backend->get('show_all_wikis', false);
 $script->show_closed_wikis = $backend->get('closed', false);
 
@@ -402,7 +408,7 @@ $backend->TimerStop('initialize');
 ## Input form
 #############################
 $target_form = '';
-if( $script )
+if( $script->isValid() )
 	$target_form = $backend->FormatFormValue($script->target);
 echo '
 	<p>Who shall we stalk?</p>
@@ -411,9 +417,9 @@ echo '
 			<input type="text" name="target" value="', $target_form, '" />
 			<input type="submit" value="Analyze »" /> <br />
 		
-			', Form::Checkbox( 'show_all_wikis', $script && $script->show_all_wikis ), '
+			', Form::Checkbox( 'show_all_wikis', $script->show_all_wikis ), '
 			<label for="show_all_wikis">Show wikis where account is not registered.</label><br />
-			', Form::Checkbox( 'closed', $script && $script->show_closed_wikis ), '
+			', Form::Checkbox( 'closed', $script->show_closed_wikis ), '
 			<label for="closed">Show closed wikis.</label>
 		</div>
 	</form>';
@@ -421,7 +427,7 @@ echo '
 #############################
 ## No input
 #############################
-if( !$script ) {}
+if( !$script->isValid() ) {}
 
 #############################
 ## Process data (IP / CIDR)
