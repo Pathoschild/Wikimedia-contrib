@@ -2,9 +2,10 @@
 require_once( '../backend/modules/Backend.php' );
 require_once( '../backend/modules/IP.php' );
 require_once( '../backend/modules/Form.php' );
+require_once( 'Stalktoy.php');
 $backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="/~pathoschild/stalktoy/Pathoschild" title="view result for Pathoschild"><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="/~pathoschild/stalktoy/127.0.0.1" title="view result for 127.0.0.1"><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="/~pathoschild/stalktoy/2001:db8:1234::" title="view result for 2001:db8:1234::"><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="/~pathoschild/stalktoy/212.75.0.1/16" title="view result for 212.75.0.1/16"><tt>212.75.0.1/16</tt></a> or <a href="/~pathoschild/stalktoy/2001:db8:1234::/48" title="view result for 2001:db8:1234::/48"><tt>2001:db8:1234::/48</tt></a>).')
-	->link( 'stylesheet.css' )
-	->link('../backend/content/jquery.tablesorter.js')
+	->link( 'stalktoy2/stylesheet.css', true )
+	->link( 'backend/content/jquery.tablesorter.js', true )
 	->addScript('
 		$(document).ready(function() { 
 			$(\'#local-ips, #local-accounts\').tablesorter({sortList:[[1,1]]});
@@ -12,45 +13,48 @@ $backend = Backend::create('Stalk toy', 'View global details about a user across
 	')
 	->header();
 
-#############################
-## Script methods
-#############################
-class Stalktoy extends Base {
+/**
+ * Implements logic for the Stalktoy tool.
+ */
+class StalktoyScript extends Base {
 	#############################
 	## Properties
 	#############################
 	public $target;
 	public $target_wiki_url;
 	public $target_url;
-	public $global_blocks;
 	
+	/**
+	 * A lookup hash of wiki data.
+	 * @var Wiki[]
+	 */
 	public $wikis;
+
+	/**
+	 * A lookup hash of wiki domains.
+	 * @var string[]
+	 */
+	public $domains;
+
 	public $wiki;
 	public $show_all_wikis = false;    // in account mode, display wikis the user isn't on?
 	public $show_closed_wikis = false; // also list wikis that are locked or closed?
-	
-	public $ip;
 	public $db;
-
-	private $global_id;
-	private $global_timestamp;
-	private $global_locked;
-	private $global_hidden;
-	private $global_home_wiki = NULL;
-	private $global_groups    = NULL;
-	private $global_wikis     = NULL;
-	private $local = NULL;
 	
 
 	#############################
-	## Constructor
+	## Public methods
 	#############################
+	/**
+	 * Construct an instance.
+	 * @param {Backend} $backend The toolserver backend framework.
+	 * @param {string} $target The username or IP address to analyze.
+	 */
 	public function __construct( $backend, $target ) {
 		if(!$target)
 			return;
-	
+
 		/* instantiate objects */
-		$this->ip = new IPAddress( $target );
 		$this->db = $backend->GetDatabase( Toolserver::ERROR_PRINT );
 		$this->db->Connect('metawiki_p');
 
@@ -59,285 +63,170 @@ class Stalktoy extends Base {
 		$this->target_url  = urlencode( $this->target );
 		$this->target_wiki_url = str_replace( '+', '_', $this->target_url );
 		
-		
 		/* fetch wikis */
-		$this->wikis = $this->db->getDomains();
+		$this->domains = $this->db->getDomains();
+		$this->wikis = $this->db->getWikis();
 	}
 	
+	/**
+	 * Whether there is a username or IP address to analyze.
+	 */
 	public function isValid() {
 		return !!$this->target;
 	}
 
-
-	#############################
-	## State methods
-	#############################
-	public function set_wiki( $wiki ) {
+	/**
+	 * Set the current wiki to analyze.
+	 * @param {string} $wiki The database name of the wiki to analyze.
+	 */
+	public function setWiki( $wiki ) {
 		$this->wiki = $wiki;
 		$this->db->Connect( $wiki );
 		$this->local = Array();
 	}
 	
-	
-	#############################
-	## Global data methods
-	#############################
-	########
-	## Get global ID
-	########
-	public function gu_id() {
-		if( !$this->global_id )
-			$this->get_gu_details();
-		return $this->global_id;
-	}
-	
-
-	########
-	## Get global account unification timestamp
-	########
-	public function gu_timestamp() {
-		if( !$this->global_timestamp )
-			$this->get_gu_details();
-		return $this->global_timestamp;
-	}
-	
-
-	########
-	## Get globally locked?
-	########
-	public function gu_locked() {
-		if( !$this->global_id )
-			$this->get_gu_details();
-		return $this->global_locked;
-
-	}
-
-
-	########
-	## Get globally hidden?
-	########
-	public function gu_hidden() {
-		if( !$this->global_id )
-			$this->get_gu_details();
-		return $this->global_hidden;
-	}
-
-
-	########
-	## Get globally details
-	########
-	public function get_gu_details() {
+	/**
+	 * Get details about a global account.
+	 * @param string $target The username for which to fetch details.
+	 */
+	public function getGlobal($target) {
+		// fetch details
 		$row = $this->db->Query(
-			'SELECT gu_id, DATE_FORMAT(gu_registration, \'%Y-%m-%d %H:%i\') AS gu_timestamp, gu_locked, gu_hidden FROM centralauth_p.globaluser WHERE gu_name = ? LIMIT 1',
-			array( $this->target )
+			'SELECT gu_id, gu_name, DATE_FORMAT(gu_registration, "%Y-%m-%d %H:%i") AS gu_timestamp, gu_locked, gu_hidden, GROUP_CONCAT(gug_group SEPARATOR ", ") AS gu_groups, lu_wiki FROM centralauth_p.globaluser LEFT JOIN centralauth_p.global_user_groups ON gu_id = gug_user LEFT JOIN centralauth_p.localuser ON lu_name = ? AND lu_attached_method IN ("primary", "new") WHERE gu_name = ? LIMIT 1',
+			array( $target, $target )
+		)->fetchAssoc();
+
+		// create model
+		$account = new Stalktoy\GlobalAccount();
+		$account->exists = isset($row['gu_id']);
+		if($account->exists) {
+			$account->id = $row['gu_id'];
+			$account->name = $row['gu_name'];
+			$account->isHidden = $row['gu_hidden'];
+			$account->isLocked = $row['gu_locked'];
+			$account->registered = $row['gu_timestamp'];
+			$account->groups = $row['gu_groups'];
+			$account->homeWiki = $row['lu_wiki'] ? $row['lu_wiki'] . '_p' : null;
+			$account->wikis = $this->db->getUnifiedWikis($this->target);
+			$account->wikiHash = array_flip($account->wikis);
+		}
+		return $account;
+	}
+
+	/**
+	 * Get global details about an IP address or range.
+	 * @param Database $db The database from which to fetch details.
+	 * @param string $user The IP address or range for which to fetch details.
+	 */
+	public function getGlobalIP($db, $target) {
+		$ip = new Stalktoy\GlobalIP();
+
+		// fetch IP address
+		$ip->ip = new IPAddress($target);
+		if(!$ip->ip->isValid())
+			return $ip;
+
+		// fetch global blocks
+		$ip->globalBlocks = array();
+		$start = $ip->ip->getEncoded(IPAddress::START);
+		$end = $ip->ip->getEncoded(IPAddress::END);
+		$query = $this->db->Query(
+			'SELECT gb_address, gb_by, gb_reason, DATE_FORMAT(gb_timestamp, "%Y-%b-%d") AS timestamp, gb_anon_only, DATE_FORMAT(gb_expiry, "%Y-%b-%d") AS expiry FROM centralauth_p.globalblocks WHERE (gb_range_start <= ? AND gb_range_end >= ?) OR (gb_range_start >= ? AND gb_range_end <= ?) ORDER BY gb_timestamp',
+			array($start, $end, $start, $end)
+		)->fetchAllAssoc();
+			
+		foreach( $query as $row ) {
+			$block = new Stalktoy\Block();
+			$block->by = $row['gb_by'];
+			$block->target = $row['gb_address'];
+			$block->timestamp = $row['timestamp'];
+			$block->expiry = $row['expiry'];
+			$block->reason = $row['gb_reason'];
+			$block->anonOnly = $row['gb_anon_only'];
+			$block->isHidden = false;
+			$ip->globalBlocks[] = $block;
+		}
+
+		return $ip;
+	}
+	
+	/**
+	 * Get details about a local account.
+	 * @param Database $db The database from which to fetch details.
+	 * @param string $user The name of the user for which to fetch local details.
+	 * @param Wiki $wiki The wiki on which the account is being fetched.
+	 */
+	public function getLocal($db, $userName, $isUnified, $wiki) {
+		// fetch details
+		$row = $db->Query(
+			'SELECT user_id, user_registration, DATE_FORMAT(user_registration, "%Y-%m-%d %H:%i") as registration, user_editcount, GROUP_CONCAT(ug_group SEPARATOR ", ") AS user_groups, ipb_by_text, ipb_reason, DATE_FORMAT(ipb_timestamp, "%Y-%m-%d %H:%i") AS ipb_timestamp, ipb_deleted, COALESCE(DATE_FORMAT(ipb_expiry, "%Y-%m-%d %H:%i"), ipb_expiry) AS ipb_expiry FROM user LEFT JOIN user_groups ON user_id = ug_user LEFT JOIN ipblocks ON user_id = ipb_user WHERE user_name = ? LIMIT 1',
+			array( $userName )
 		)->fetchAssoc();
 		
-		$this->global_id        = $row['gu_id'];
-		$this->global_timestamp = $row['gu_timestamp'];
-		$this->global_locked    = $row['gu_locked'];
-		$this->global_hidden    = $row['gu_hidden'];
-	}
+		// build model
+		$account = new Stalktoy\LocalAccount();
+		$account->exists = isset($row['user_id']);
+		$account->wiki = $wiki;
+		if($account->exists) {
+			// account details
+			$account->id = $row['user_id'];
+			$account->registered = $row['registration'];
+			$account->registeredRaw = $row['user_registration'];
+			$account->editCount = $row['user_editcount'];
+			$account->groups = $row['user_groups'];
+			$account->isUnified = $isUnified;
 
-
-	########
-	## Global account's home wiki 
-	########
-	public function gu_home_wiki() {
-		if( !$this->global_home_wiki )
-			$this->global_home_wiki = $this->db->getHomeWiki( $this->target );
-		return $this->global_home_wiki;
-	}
-
-
-	########
-	## Global account's unified wikis
-	########
-	public function gu_wikis() {
-		if( $this->global_wikis == NULL )
-			$this->global_wikis = $this->db->getUnifiedWikis( $this->target );
-		return $this->global_wikis;		
-	}
-
-
-	########
-	## Global account groups
-	########
-	public function gu_groups() {
-		if( $this->global_groups == NULL ) {
-			if( !$this->global_id )
-				$this->get_gu_details();
-			
-			$this->db->Connect( 'metawiki_p' );
-			$this->db->Query(
-				'SELECT GROUP_CONCAT(gug_group SEPARATOR \', \') AS gug_groups FROM centralauth_p.global_user_groups WHERE gug_user = ?',
-				array( $this->global_id )
-			);
-			$this->db->ConnectPrevious();
-			
-			$row = $this->db->fetchAssoc();
-			$this->global_groups = $row['gug_groups'];
-		}
-		
-		return $this->global_groups;
-	}
-	
-
-	########
-	## Get hash of global blocks
-	########
-	public function get_global_blocks() {
-		if( !$this->global_blocks ) {
-			$this->db->Connect( 'metawiki_p' );
-			
-			$this->global_blocks = Array();
-
-			$start = $this->ip->getEncoded(IPAddress::START);
-			$end = $this->ip->getEncoded(IPAddress::END);
-			$query = $this->db->Query(
-				'SELECT gb_address, gb_by, gb_reason, DATE_FORMAT(gb_timestamp, \'%Y-%b-%d\') AS timestamp, gb_anon_only, DATE_FORMAT(gb_expiry, \'%Y-%b-%d\') AS expiry FROM centralauth_p.globalblocks WHERE (gb_range_start <= ? AND gb_range_end >= ?) OR (gb_range_start >= ? AND gb_range_end <= ?) ORDER BY gb_timestamp',
-				array($start, $end, $start, $end)
-			)->fetchAllAssoc();
-			
-			foreach( $query as $row ) {
-				$this->global_blocks[] = Array(
-					'address'   => $row['gb_address'],
-					'by'        => $row['gb_by'],
-					'reason'    => $row['gb_reason'],
-					'timestamp' => $row['timestamp'],
-					'anon_only' => $row['gb_anon_only'],
-					'expiry'    => $row['expiry']
-				);
+			// handle edge cases with older accounts
+			if( !$account->registeredRaw ) {
+				$date = $db->getRegistrationDate( $account->id );
+				$account->registered = $date['formatted'];
+				$account->registeredRaw = $data['raw'];
 			}
-			
-			$this->db->ConnectPrevious();
+
+			// block details
+			$account->isBlocked = isset($row['ipb_timestamp']);
+			if($account->isBlocked) {
+				$account->block = new Stalktoy\Block();
+				$account->block->by = $row['ipb_by_text'];
+				$account->block->target = $userName;
+				$account->block->reason = $row['ipb_reason'];
+				$account->block->timestamp = $row['ipb_timestamp'];
+				$account->block->isHidden = $row['ipb_deleted'];
+				$account->block->expiry = $row['ipb_expiry'];
+			}
 		}
-
-		return $this->global_blocks;
-	}
-	
-	
-	#############################
-	## Local data methods
-	#############################
-	########
-	## Get user details
-	########
-	private function get_lu_details() {
-		if( isset($this->local['fetched']) )
-			return;
 		
-		$row = $this->db->Query(
-			'SELECT user_id, user_registration, DATE_FORMAT(user_registration, \'%Y-%m-%d %H:%i\') as registration, user_editcount FROM user WHERE user_name = ? LIMIT 1',
-			array( $this->target )
-		)->fetchAssoc();
-		
-		$this->local = Array(
-			'id'            => $row['user_id'],
-			'timestamp_raw' => $row['user_registration'],
-			'timestamp'     => $row['registration'],
-			'edit_count'    => $row['user_editcount'],
-			'fetched'       => true
-		);
-		
-		/* if needed, use more complex date algorithm */
-		if( $this->local['id'] && !$this->local['timestamp_raw'] ) {
-			$date = $this->db->getRegistrationDate( $this->wiki, $this->local['id'] );
-			$this->local['timestamp_raw'] = $date['raw'];
-			$this->local['timestamp']     = $date['formatted'];
-		}
+		return $account;
 	}
 	
-	
-	########
-	## Get ID
-	########
-	public function lu_id() {
-		$this->get_lu_details();
-		return $this->local['id'];
-	}
-
-
-	########
-	## Get timestamp
-	########
-	public function lu_timestamp( $raw = false ) {
-		$this->get_lu_details();
-		if( $raw )
-			return $this->local['timestamp_raw'];
-		return $this->local['timestamp'];
-	}
-	
-	
-	########
-	## Get edit count
-	########
-	public function lu_edit_count() {
-		$this->get_lu_details();
-		return $this->local['edit_count'];
-	}
-
-	########
-	## Get hash of local user groups
-	########
-	public function lu_groups() {
-		$this->get_lu_details();
-		if( !isset($this->local['groups']) ) {
-			$this->local['groups'] = $this->db->Query(
-				'SELECT GROUP_CONCAT(ug_group SEPARATOR \', \') FROM user_groups WHERE ug_user = ?',
-				array( $this->local['id'] )
-			)->fetchValue();
-		}
-		return $this->local['groups'];
-	}
-	
-	
-	#######
-	## Get hash of local user block
-	#######
-	public function lu_block() {
-		$this->get_lu_details();
-	
-		$this->db->Query(
-			'SELECT ipb_by_text, ipb_reason, DATE_FORMAT(ipb_timestamp, \'%Y-%m-%d %H:%i\') AS ipb_timestamp, ipb_deleted, COALESCE(DATE_FORMAT(ipb_expiry, \'%Y-%m-%d %H:%i\'), ipb_expiry) AS ipb_expiry FROM ipblocks WHERE ipb_user = ? LIMIT 1',
-			array( $this->local['id'] )
-		);
-		
-		$row = $this->db->fetchAssoc();
-		$block = Array(
-			'by'        => $row['ipb_by_text'],
-			'reason'    => $row['ipb_reason'],
-			'timestamp' => $row['ipb_timestamp'],
-			'deleted'   => $row['ipb_deleted'],
-			'expiry'    => $row['ipb_expiry']
-		);
-		
-		if( $block['by'] )
-			return $block;
-		return NULL;
-	}
-
-
 	########
 	## Get hash of local IP blocks
 	########
-	public function get_ip_blocks() {
-		$start = $this->ip->getEncoded(IPAddress::START);
-		$end = $this->ip->getEncoded(IPAddress::END);
+	/**
+	 * Get a list of local blocks against editing by this IP address.
+	 * @return Stalktoy\Block[];
+	 */
+	public function getLocalIPBlocks($ip) {
+		// get blocks
+		$start = $ip->ip->getEncoded(IPAddress::START);
+		$end = $ip->ip->getEncoded(IPAddress::END);
 		$query = $this->db->Query(
-			'SELECT ipb_by_text, ipb_address, ipb_reason, DATE_FORMAT(ipb_timestamp, \'%Y-%b-%d\') AS timestamp, ipb_deleted, DATE_FORMAT(ipb_expiry, \'%Y-%b-%d\') AS expiry FROM ipblocks WHERE (ipb_range_start <= ? AND ipb_range_end >= ?) OR (ipb_range_start >= ? AND ipb_range_end <= ?)',
+			'SELECT ipb_by_text, ipb_address, ipb_reason, DATE_FORMAT(ipb_timestamp, "%Y-%b-%d") AS timestamp, DATE_FORMAT(ipb_expiry, "%Y-%b-%d") AS expiry, ipb_anon_only FROM ipblocks WHERE (ipb_range_start <= ? AND ipb_range_end >= ?) OR (ipb_range_start >= ? AND ipb_range_end <= ?)',
 			array( $start, $end, $start, $end )
 		)->fetchAllAssoc();
 
+		// build model
 		$blocks = Array();
 		foreach( $query as $row ) {
-			$blocks[] = array(
-				'by'        => $row['ipb_by_text'],
-				'address'   => $row['ipb_address'],
-				'reason'    => $row['ipb_reason'],
-				'timestamp' => $row['timestamp'],
-				'deleted'   => $row['ipb_deleted'],
-				'expiry'    => $row['expiry']
-			);
+			$block = new Stalktoy\Block();
+			$block->by = $row['ipb_by_text'];
+			$block->target = $row['ipb_address'];
+			$block->reason = $row['ipb_reason'];
+			$block->timestamp = $row['timestamp'];
+			$block->expiry = $row['expiry'];
+			$block->anonOnly = $row['ipb_anon_only'];
+			$block->isHidden = false;
+			$blocks[] = $block;
 		}
 		
 		return $blocks;
@@ -398,7 +287,7 @@ $backend->TimerStart('initialize');
 $script = null;
 $target_form = '';
 
-$script = new Stalktoy( $backend, $backend->get('target', $backend->getRouteValue()) );
+$script = new StalktoyScript( $backend, $backend->get('target', $backend->getRouteValue()) );
 $script->show_all_wikis = $backend->get('show_all_wikis', false);
 $script->show_closed_wikis = $backend->get('closed', false);
 
@@ -425,14 +314,10 @@ echo '
 	</form>';
 
 #############################
-## No input
-#############################
-if( !$script->isValid() ) {}
-
-#############################
 ## Process data (IP / CIDR)
 #############################
-elseif( $script->ip->isValid() ) {
+$ip = $script->getGlobalIP($script->db, $script->target);
+if( $script->isValid() && $ip->ip->isValid() ) {
 	########
 	## Fetch data
 	########
@@ -440,26 +325,21 @@ elseif( $script->ip->isValid() ) {
 	$backend->TimerStart('fetch global');
 	$global = Array(
 		'wikis'        => $script->wikis,
-		'blocks'       => $script->get_global_blocks(),
-		'pretty_range' => $script->ip->getFriendly(IPAddress::START) . ' &mdash; ' . $script->ip->getFriendly(IPAddress::END)
+		'ip'           => $ip,
+		'pretty_range' => $ip->ip->getFriendly(IPAddress::START) . ' &mdash; ' . $ip->ip->getFriendly(IPAddress::END)
 	);
 	$backend->TimerStop('fetch global');
 
 	/* local data */
 	$backend->TimerStart('fetch local');
-	foreach( $global['wikis'] as $wiki => $domain ) {
-		$script->set_wiki( $wiki );
-		
-		$closed = $script->db->getLocked($wiki);
-		if( !$script->show_closed_wikis && $closed ) {
+	foreach( $global['wikis'] as $wiki => $wikiData ) {
+		if( $wikiData->isClosed && !$script->show_closed_wikis ) {
 			unset( $global['wikis'][$wiki] );
 			continue;
 		}
-		
-		$local[$wiki] = Array(
-			'blocks'   => $script->get_ip_blocks(),
-			'editable' => (int)!$closed
-		);
+
+		$script->setWiki( $wiki );
+		$localBlocks[$wiki] = $script->getLocalIPBlocks($ip);
 	}
 	$backend->TimerStop('fetch local');
 
@@ -469,20 +349,20 @@ elseif( $script->ip->isValid() ) {
 	########
 	$backend->TimerStart('output');
 	echo '<div class="result-box">
-	<h3>Global details</h3>
-	<b>', $global['pretty_range'], '</b><br />';
-	if( $global['blocks'] ) {
+	<h3>', ($ip->ip->isIPv4() ? 'IPv4' : 'IPv6'), ($ip->ip->isRange() ? ' range' : ' address'), '</h3>',
+	($ip->ip->isRange() ? '<b>' . $global['pretty_range'] . '</b><br />' : '');
+	if( $global['ip']->globalBlocks ) {
 		echo '
 			<fieldset>
 				<legend>Global blocks</legend>
 				<ul>';
-		foreach( $global['blocks'] as $block ) {
-			$by_url = urlencode( $block['by'] );
-			$reason = $script->parse_reason( $block['reason'], 'meta.wikimedia.org' );
+		foreach( $global['ip']->globalBlocks as $block ) {
+			$by_url = urlencode( $block->by );
+			$reason = $script->parse_reason( $block->reason, 'meta.wikimedia.org' );
 			echo '
-					<li>', $block['timestamp'], ' &mdash; ', $block['expiry'], ':',
-				' <b>', $block['address'], '</b> globally blocked by',
-				' <a href="//meta.wikimedia.org/wiki/user:', $by_url, '">', $block['by'], '</a>',
+					<li>', $block->timestamp, ' &mdash; ', $block->expiry, ':',
+				' <b>', $block->target, '</b> globally blocked by',
+				' <a href="//meta.wikimedia.org/wiki/user:', $by_url, '">', $block->by, '</a>',
 				' (<small>', $reason, '</small>)</li>';
 		}
 		echo '
@@ -498,9 +378,9 @@ elseif( $script->ip->isValid() ) {
 	echo '
 		<div>
 			Related toys:
-			<a href="//meta.wikimedia.org/wiki/Special:GlobalBlock?wpAddress=', $script->target_wiki_url, '" title="Special:GlobalBlock">global block</a>,
+			<a href="http://www.sixxs.net/tools/whois/?handle=', urlencode($ip->ip->getFriendly()), '" title="whois query">whois</a>,
 			<a href="//toolserver.org/~luxo/contributions/contributions.php?user=', $script->target_url, '&blocks=true" title="list edits">list edits</a>,
-			<a href="http://www.sixxs.net/tools/whois/?handle=', urlencode($script->ip->getFriendly()), '" title="whois query">whois</a>.
+			<a href="//meta.wikimedia.org/wiki/Special:GlobalBlock?wpAddress=', $script->target_wiki_url, '" title="Special:GlobalBlock">global block</a>.
 		</div>';
 
 
@@ -509,8 +389,8 @@ elseif( $script->ip->isValid() ) {
 	########
 	/* print header */
 	echo '
-		<h3>Local IPs</h3>
-		<table class="pretty" id="local-ips">
+		<h4>Local blocks</h4>
+		<table class="pretty sortable" id="local-ips">
 			<thead>
 				<tr>
 					<th>wiki</th>
@@ -520,18 +400,19 @@ elseif( $script->ip->isValid() ) {
 			<tbody>';
 	
 		/* print each row */
-		foreach( $global['wikis'] as $wiki => $domain ) {
-			$blocked   = (int)(bool)$local[$wiki]['blocks'];
-			$link_wiki = $script->link( $domain, 'user:' . $script->target_wiki_url, preg_replace( '/_p$/', '', $wiki) );
+		foreach( $global['wikis'] as $wiki => $wikiData ) {
+			$domain = $wikiData->domain;
+			$blocked   = (int)(bool)$localBlocks[$wiki];
+			$link_wiki = $script->link( $domain, 'user:' . $script->target_wiki_url, $wikiData->name );
 		
 			echo '
-				<tr class="wiki-open-', $local[$wiki]['editable'], ' ip-blocked-', $blocked, '">
+				<tr class="wiki-open-', (int)(bool)!$wikiData->isClosed, ' ip-blocked-', $blocked, '">
 					<td class="wiki">', $link_wiki, '</td>
 					<td class="blocks">';
-			if( $local[$wiki]['blocks'] ) {
-				foreach( $local[$wiki]['blocks'] as $block ) {
-					$reason = $script->parse_reason( $block['reason'], $domain );
-					echo '<span class="is-block-start">', $block['timestamp'], '</span> &mdash; <span class="is-block-end">', $block['expiry'], '</span>: <b>', $block['address'], '</b> blocked by <span class="is-block-admin">', $block['by'], '</span> (<span class="is-block-reason">', $reason, '</span>)<br />';
+			if( $localBlocks[$wiki] ) {
+				foreach( $localBlocks[$wiki] as $block ) {
+					$reason = $script->parse_reason( $block->reason, $domain );
+					echo '<span class="is-block-start">', $block->timestamp, '</span> &mdash; <span class="is-block-end">', $block->expiry, '</span>: <b>', $block->target, '</b> blocked by <span class="is-block-admin">', $block->by, '</span> (<span class="is-block-reason">', $reason, '</span>)<br />';
 				}
 			}
 			echo "
@@ -549,21 +430,16 @@ elseif( $script->ip->isValid() ) {
 #############################
 ## Process data (user)
 #############################
-else if( $script->target ) {
+else if( $script->isValid() && $script->target ) {
 	#######
 	## Fetch data
 	########
 	/* global details */
 	$backend->TimerStart('fetch global');
-	if( $script->gu_id() ) {
+	$account = $script->getGlobal($script->target);
+
+	if( $account->exists ) {
 		$global = Array(
-			'id'        => $script->gu_id(),
-			'timestamp' => $script->gu_timestamp(),
-			'groups'    => $script->gu_groups(),
-			'locked'    => $script->gu_locked(),
-			'hidden'    => $script->gu_hidden(),
-			'home_wiki' => $script->gu_home_wiki(),
-			'unified'   => array_flip( $script->gu_wikis() ),
 			'stats'     => Array(
 				'wikis'      => 0,
 				'edit_count' => 0,
@@ -587,61 +463,33 @@ else if( $script->target ) {
 	
 	/* local details */
 	$backend->TimerStart('fetch local');
-	$local = Array();
-	foreach( $script->wikis as $wiki => $domain ) {
-		$script->set_wiki( $wiki );
-		
-		$closed = $script->db->getLocked($wiki);		
-		if( !$script->show_closed_wikis && $closed )
+	foreach( $script->wikis as $wiki => $wikiData ) {
+		$domain = $wikiData->domain;
+		if( $wikiData->isClosed && !$script->show_closed_wikis )
 			continue;
-		
-		/* no such local user */
-		if( !$script->lu_id() ) {
-			if( $script->show_all_wikis ) {
-				$local[$wiki] = Array(
-					'exists'        => 0,
-					'id'            => NULL,
-					'timestamp'     => NULL,
-					'timestamp_raw' => NULL,
-					'edit_count'    => NULL,
-					'block'         => NULL,
-					'groups'        => NULL,
-					'domain'        => $script->wikis[$wiki],
-					'editable'      => (int)!$closed
-				);
-			}
-			continue;
-		}
-		
-		/* local details */
-		$local[$wiki] = Array(
-			'exists'        => 1,
-			'id'            => $script->lu_id(),
-			'timestamp'     => $script->lu_timestamp(),
-			'timestamp_raw' => $script->lu_timestamp( true ),
-			'edit_count'    => $script->lu_edit_count(),
-			'block'         => $script->lu_block(),
-			'groups'        => $script->lu_groups(),
-			'unified'       => (int)($global['id'] && isset( $global['unified'][$wiki] )),
-			'domain'        => $script->wikis[$wiki],
-			'editable'      => (int)!$script->db->getLocked($wiki)
-		);
-		
 
-		/* statistics used even when no global account */
-		if( $local[$wiki]['edit_count'] > $global['stats']['most_edits'] ) {
-			$global['stats']['most_edits'] = $local[$wiki]['edit_count'];
-			$global['stats']['most_edits_domain'] = $domain;
-		}
+		$script->setWiki( $wiki );
+		$localAccount = $script->getLocal($script->db, $account->name, isset($account->wikiHash[$wiki]), $wikiData);
 		
-		/* statistics shown only for global account */
-		if( $global['id'] ) {
-			$global['stats']['wikis']++;
-			$global['stats']['edit_count'] += $local[$wiki]['edit_count'];
-			if( $local[$wiki]['timestamp_raw'] < $global['stats']['oldest_raw'] ) {
-				$global['stats']['oldest'] = $local[$wiki]['timestamp'];
-				$global['stats']['oldest_raw'] = $local[$wiki]['timestamp_raw'];
-				$global['stats']['oldest_domain'] = $local[$wiki]['domain'];
+		if($localAccount->exists || $script->show_all_wikis)
+			$local[$wiki] = $localAccount;
+
+		if($localAccount->exists) {
+			/* statistics used even when no global account */
+			if( $localAccount->editCount > $global['stats']['most_edits'] ) {
+				$global['stats']['most_edits'] = $localAccount->editCount;
+				$global['stats']['most_edits_domain'] = $domain;
+			}
+		
+			/* statistics shown only for global account */
+			if( $localAccount->exists ) {
+				$global['stats']['wikis']++;
+				$global['stats']['edit_count'] += $localAccount->editCount;
+				if( $localAccount->registeredRaw < $global['stats']['oldest_raw'] ) {
+					$global['stats']['oldest'] = $localAccount->registered;
+					$global['stats']['oldest_raw'] = $localAccount->registeredRaw;
+					$global['stats']['oldest_domain'] = $domain;
+				}
 			}
 		}
 	}
@@ -649,9 +497,9 @@ else if( $script->target ) {
 
 	$backend->TimerStart('adjust stats');
 	/* best guess for pre-2005 oldest account */
-	if( $global['id'] )
-		if( !$global['stats']['oldest'] && !$local[$global['home_wiki']]['timestamp_raw'] )
-			$global['stats']['oldest_domain'] = $local[$global['home_wiki']]['domain'];
+	if( $account->exists )
+		if( !$global['stats']['oldest'] && !$local[$account->homeWiki]->registeredRaw )
+			$global['stats']['oldest_domain'] = $local[$account->homeWiki]->wiki->domain;
 	
 	
 	/* zero-padding for sorting */
@@ -666,18 +514,18 @@ else if( $script->target ) {
 		<div class='result-box'>
 		<h3>Global account</h3>\n";
 	echo '<div class="is-global-details"',
-		' data-is-global="', ($global['id'] ? '1' : '0'), '"',
+		' data-is-global="', ($account->exists ? '1' : '0'), '"',
 		' data-username="', htmlentities($script->target), '"';
-	if($global['id']) {
-		echo ' data-home-wiki="', htmlentities($global['home_wiki']), '"',
+	if($account->exists) {
+		echo ' data-home-wiki="', htmlentities($account->homeWiki), '"',
 		// quick hack below, please avert your eyes.
-		' data-status="', ($global['locked'] && $global['hidden'] ? 'locked, hidden' : ($global['locked'] ? 'locked' : ($global['hidden'] ? 'hidden' : 'okay'))), '"',
-		' data-id="', $global['id'], '"',
-		' data-registered="', $global['timestamp'], '"',
-		' data-groups="', htmlentities($global['groups']), '"';
+		' data-status="', ($account->isLocked && $account->isHidden ? 'locked, hidden' : ($account->isLocked ? 'locked' : ($account->isHidden ? 'hidden' : 'okay'))), '"',
+		' data-id="', $account->id, '"',
+		' data-registered="', $account->registered, '"',
+		' data-groups="', htmlentities($account->groups), '"';
 	}
 	echo '>';
-	if( $global['id'] ) {
+	if( $account->exists ) {
 		echo "
 			<table class='plain'>
 				<tr>
@@ -686,56 +534,54 @@ else if( $script->target ) {
 				</tr>
 				<tr>
 					<td>Home wiki:</td>";
-		if( $global['home_wiki'] )
-			echo "					
-					<td><b><a href='//{$script->wikis[$global['home_wiki']]}/wiki/user:{$script->target_wiki_url}' title='home wiki'>{$script->wikis[$global['home_wiki']]}</a></b></td>";
+		if( $account->homeWiki )
+			echo "<td><b><a href='//{$script->wikis[$account->homeWiki]->domain}/wiki/user:{$script->target_wiki_url}' title='home wiki'>{$script->wikis[$account->homeWiki]->domain}</a></b></td>";
 		else
-			echo "
-					<td><b>unknown</b> <small>(The main account may be <a href='//meta.wikimedia.org/wiki/Oversight' title='about hiding user names'>hidden</a> or renamed, or the data <a href='//wiki.toolserver.org/view/Replication_lag' title='about replication lag'>might not be replicated yet</a>.)</small></td>";
+			echo "<td><b>unknown</b> <small>(The main account may be <a href='//meta.wikimedia.org/wiki/Oversight' title='about hiding user names'>hidden</a> or renamed, or the data <a href='//wiki.toolserver.org/view/Replication_lag' title='about replication lag'>might not be replicated yet</a>.)</small></td>";
 		echo "
 				</tr>
 				<tr>
 					<td>Status:</td>
 					<td>";
-		if( $global['locked'] || $global['hidden'] ) {
-			if( $global['locked'] )
+		if( $account->isLocked || $account->isHidden ) {
+			if( $account->isLocked )
 				echo "<span class='bad'>Locked</span> ";
-				if( $global['hidden'] )
-			echo "<span class='bad'>Hidden</span>";
+			if( $account->isHidden )
+				echo "<span class='bad'>Hidden</span>";
 		}
 		else if( $script->target == 'Shanel' )
 			echo "<span class='good'>&nbsp;&hearts;&nbsp;</span>";
 		else
 			echo "<span class='good'>okay</span>";
-		echo "
+		echo '
 				</tr>
 				<tr>
 					<td>User ID:</td>
-					<td><b>{$global['id']}</b></td>
+					<td><b>', $account->id, '</b></td>
 				</tr>
 				<td>Registered:</td>
-					<td><b>{$global['timestamp']}</b></td>
+					<td><b>', $account->registered, '</b></td>
 				</tr>
 				<tr>
 						<td>Groups:</td>
-					<td><b>{$global['groups']}</b></td>
+					<td><b>', $account->groups, '</b></td>
 				</tr>
 				<tr>
 					<td>Other toys:</td>
 					<td>
-						<a href='//meta.wikimedia.org/wiki/Special:CentralAuth/{$script->target_wiki_url}' title='Special:CentralAuth'>CentralAuth</a>,
-						<a href='//toolserver.org/~luxo/contributions/contributions.php?user={$script->target_url}&blocks=true' title='list edits'>list edits</a>
+						<a href="//meta.wikimedia.org/wiki/Special:CentralAuth/', $script->target_wiki_url, '" title="Special:CentralAuth">CentralAuth</a>,
+						<a href="//toolserver.org/~luxo/contributions/contributions.php?user=', $script->target_url, '&blocks=true" title="list edits">list edits</a>
 					</td>
 				</tr>
 				<tr>
-					<td style='vertical-align:top;'>Global statistics:</td>
+					<td style="vertical-align:top;">Global statistics:</td>
 					<td>
-						{$global['stats']['edit_count']} edits on {$global['stats']['wikis']} wikis.<br />
-						Most edits on <a href='//{$global['stats']['most_edits_domain']}/wiki/Special:Contributions/{$script->target_wiki_url}'>{$global['stats']['most_edits_domain']}</a> ({$global['stats']['most_edits']}).<br />
-						Oldest account on <a href='//{$global['stats']['oldest_domain']}/wiki/user:{$script->target_wiki_url}'>{$global['stats']['oldest_domain']}</a> (", ( $global['stats']['oldest'] ? $global['stats']['oldest'] : '2005 or earlier, so probably inaccurate; registration date was not stored until late 2005' ), ").
+						', $global['stats']['edit_count'], ' edits on ', $global['stats']['wikis'], ' wikis.<br />
+						Most edits on <a href="//', $global['stats']['most_edits_domain'], '/wiki/Special:Contributions/', $script->target_wiki_url, '">', $global['stats']['most_edits_domain'], '</a> (', $global['stats']['most_edits'], ').<br />
+						Oldest account on <a href="//', $global['stats']['oldest_domain'], '/wiki/user:', $script->target_wiki_url, '">', $global['stats']['oldest_domain'], '</a> (', ( $global['stats']['oldest'] ? $global['stats']['oldest'] : '2005 or earlier, so probably inaccurate; registration date was not stored until late 2005' ), ').
 					</td>
 				</tr>
-			</table>\n";
+			</table>';
 	}
 	else
 		echo '<div class="neutral">There is no global account with this name, or it has been <a href="//meta.wikimedia.org/wiki/Oversight" title="about hiding user names">globally hidden</a>.</div>';
@@ -765,25 +611,30 @@ else if( $script->target ) {
 	 				</tr>
 				</thead>
 				<tbody>\n";
-		 			
-		foreach( $local as $wiki => $data ) {
+			
+			foreach( $local as $dbname => $user ) {
 			########
 			## Prepare strings
 			########
-			$link_wiki  = $script->link( $data['domain'], "User:{$script->target_wiki_url}", preg_replace('/_p$/', '', $wiki) );
+			$wiki = $user->wiki;
+			$link_wiki  = $script->link(
+				$wiki->domain,
+				'User:' . $script->target_wiki_url,
+				$wiki->name
+			);
 
 			/* user exists */
-			if( $data['exists'] ) {
-				$link_edits = $script->link( $data['domain'], "Special:Contributions/{$script->target_wiki_url}", "&nbsp;{$data['edit_count']}&nbsp;" );
-				$has_groups = (int)(bool)$data['groups'];
-				$is_blocked = (int)(bool)$data['block'];
-				$is_hidden  = (int)($is_blocked && $data['block']['deleted']);
-				$is_unified = $data['unified'];
+			if( $user->exists ) {
+				$link_edits = $script->link( $wiki->domain, 'Special:Contributions/' . $script->target_wiki_url, '&nbsp;' . $user->editCount . '&nbsp;' );
+				$has_groups = (int)(bool)$user->groups;
+				$is_blocked = (int)$user->isBlocked;
+				$is_hidden  = (int)($is_blocked && $user->block->isHidden);
+				$is_unified = $user->isUnified;
 				$label_unified = $label_unified_strs[$is_unified];
 			
-				if( $data['block'] ) {
-					$reason = $script->parse_reason( $data['block']['reason'], $data['domain'] );
-					$block_summary = "<span class=\"is-block-start\">{$data['block']['timestamp']}</span> &mdash; <span class=\"is-block-end\">{$data['block']['expiry']}</span>: blocked by <span class=\"is-block-admin\">{$data['block']['by']}</span> (<span class=\"is-block-reason\">{$reason}</span>)";
+				if( $user->isBlocked ) {
+					$reason = $script->parse_reason($user->block->reason, $wiki->domain );
+					$block_summary = "<span class=\"is-block-start\">{$user->block->timestamp}</span> &mdash; <span class=\"is-block-end\">{$user->block->expiry}</span>: blocked by <span class=\"is-block-admin\">{$user->block->by}</span> (<span class=\"is-block-reason\">{$reason}</span>)";
 				}
 				else
 					$block_summary = '';
@@ -804,14 +655,13 @@ else if( $script->target ) {
 			## Output
 			########
 			echo '
-					<tr class="is-wiki wiki-open-', $data['editable'], ' user-exists-', $data['exists'], ' user-in-groups-', $has_groups, ' user-unified-', $is_unified, ' user-blocked-', $is_blocked, '"',
-					'data-wiki="', preg_replace('/_p$/', '', $wiki), '" data-wiki-domain="', $data['domain'], '" data-is-open="', $data['editable'], '" data-user-exists="', $data['exists'], '" data-user-edits="', $data['edit_count'], '" data-user-groups="', htmlentities($data['groups']), '" data-registered="', $data['timestamp'], '" data-is-unified="', $is_unified, '" data-is-blocked="', $is_blocked, '"',
-					($is_blocked ? 'data-block-start="' . $data['block']['timestamp'] . '" data-block-end="' . $data['block']['expiry'] . '" data-block-admin="' . htmlentities($data['block']['by']) . '" data-block-reason="' . htmlentities($reason) . '"' : ''),
+					<tr class="is-wiki wiki-open-', (int)!$wiki->isClosed, ' user-exists-', $user->exists, ' user-in-groups-', $has_groups, ' user-unified-', $is_unified, ' user-blocked-', $is_blocked, '"',
+					'data-wiki="', $wiki->name, '" data-wiki-domain="', $wiki->domain, '" data-is-open="', (int)!$wiki->isClosed, '" data-user-exists="', $user->exists, '" data-user-edits="', $user->editCount, '" data-user-groups="', htmlentities($user->groups), '" data-registered="', $user->registered, '" data-is-unified="', $user->isUnified, '" data-is-blocked="', $user->isBlocked, '"',
 					'>
 						<td class="wiki"><span class="row_wiki">', $link_wiki, '</span></td>
 						<td class="edit-count">', $link_edits, '</td>
-						<td class="timestamp">', $data['timestamp'], '</td>
-						<td class="groups">', $data['groups'], '</td>
+						<td class="timestamp">', $user->registered, '</td>
+						<td class="groups">', $user->groups, '</td>
 						<td class="unification">', $label_unified, '</td>
 						<td class="blocks">', $block_summary, '</td>
 					</tr>', "\n";
