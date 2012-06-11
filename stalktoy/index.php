@@ -3,8 +3,8 @@ require_once( '../backend/modules/Backend.php' );
 require_once( '../backend/modules/IP.php' );
 require_once( '../backend/modules/Form.php' );
 require_once( 'Stalktoy.php');
-$backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="/~pathoschild/stalktoy/Pathoschild" title="view result for Pathoschild"><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="/~pathoschild/stalktoy/127.0.0.1" title="view result for 127.0.0.1"><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="/~pathoschild/stalktoy/2001:db8:1234::" title="view result for 2001:db8:1234::"><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="/~pathoschild/stalktoy/212.75.0.1/16" title="view result for 212.75.0.1/16"><tt>212.75.0.1/16</tt></a> or <a href="/~pathoschild/stalktoy/2001:db8:1234::/48" title="view result for 2001:db8:1234::/48"><tt>2001:db8:1234::/48</tt></a>).')
-	->link( 'stalktoy2/stylesheet.css', true )
+$backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="/~pathoschild/stalktoy/Pathoschild" title="view result for Pathoschild"><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="/~pathoschild/stalktoy/127.0.0.1" title="view result for 127.0.0.1"><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="/~pathoschild/stalktoy/2001:db8:1234::" title="view result for 2001:db8:1234::"><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="/~pathoschild/stalktoy/212.75.0.1/16" title="view result for 212.75.0.1/16"><tt>212.75.0.1/16</tt></a> or <a href="/~pathoschild/stalktoy/2600:3C00::/48" title="view result for 2600:3C00::/48"><tt>2600:3C00::/48</tt></a>).')
+	->link( 'stalktoy/stylesheet.css', true )
 	->link( 'backend/content/jquery.tablesorter.js', true )
 	->addScript('
 		$(document).ready(function() { 
@@ -180,7 +180,7 @@ class StalktoyScript extends Base {
 			if( !$account->registeredRaw ) {
 				$date = $db->getRegistrationDate( $account->id );
 				$account->registered = $date['formatted'];
-				$account->registeredRaw = $data['raw'];
+				$account->registeredRaw = $date['raw'];
 			}
 
 			// block details
