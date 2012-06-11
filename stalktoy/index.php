@@ -463,6 +463,7 @@ else if( $script->isValid() && $script->target ) {
 	
 	/* local details */
 	$backend->TimerStart('fetch local');
+	$local = array();
 	foreach( $script->wikis as $wiki => $wikiData ) {
 		$domain = $wikiData->domain;
 		if( $wikiData->isClosed && !$script->show_closed_wikis )
