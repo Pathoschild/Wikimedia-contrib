@@ -212,6 +212,8 @@ class Database {
 		
 			$this->query = NULL;
 			$this->query = $this->db->prepare( $sql );
+			if($values != null && !is_array($values))
+				$values = Array($values);
 			
 			$this->log('query ' . $this->database . ': [' . $this->query->queryString . '], values=[' . preg_replace('/\s+/', ' ', print_r($values, true)) . ']');
 			$this->query->execute( $values );
@@ -497,7 +499,7 @@ class Toolserver extends Database {
 			
 			/* if needed, use more complex date algorithm */
 			if( $user['id'] && !$user['registration_raw'] ) {
-				$date = $this->getRegistrationDate( $wiki, $user['id'], $date_format, true );
+				$date = $this->getRegistrationDate( $user['id'], $date_format, true );
 				$user['registration_raw'] = $date['raw'];
 				$user['registration']     = $date['formatted'];
 			}
@@ -514,7 +516,7 @@ class Toolserver extends Database {
 	#############################
 	## Get a local account's registration date as a (raw,formatted) array
 	#############################
-	public function getRegistrationDate( $wiki, $user_id, $format = '%Y-%m-%dT%H:%i:%s', $skip_user_table = false ) {
+	public function getRegistrationDate( $user_id, $format = '%Y-%m-%dT%H:%i:%s', $skip_user_table = false ) {
 		if( $this->borked )
 			return NULL;
 		try {

@@ -48,7 +48,6 @@ class IPAddress {
 	 * Whether the IP address is a valid IPv4 or IPv6 address range.
 	 */
 	private $is_range = false;
-
 	
 	#################################################
 	## Public methods
