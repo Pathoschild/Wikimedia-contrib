@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Represents a Wikimedia wiki and database.
  */
@@ -9,56 +8,67 @@ class Wiki {
 	########*/
 	/**
 	 * The simplified database name (dbname), like 'enwiki'.
+	 * @var string
 	 */
 	public $name = NULL;
 
 	/**
 	 * The database name (dbname), like 'enwiki_p'.
+	 * @var string
 	 */
 	public $dbName = NULL;
 	
 	/**
 	 * The ISO 639 language code associated with the wiki. (A few wikis have invalid codes like 'zh-classical' or 'noboard-chapters'.)
+	 * @var string
 	 */
 	public $lang = NULL;
 	
 	/**
 	 * The wiki family (project name), like 'wikibooks'.
+	 * @var string
 	 */
 	public $family = NULL;
 	
 	/**
 	 * The domain portion of the URL, like 'en.wikisource.org'. This may be NULL for closed wikis.
+	 * @var string
 	 */
 	public $domain = NULL;
 	
 	/**
 	 * The number of articles on the wiki (?).
+	 * @var int
 	 */
 	public $size = NULL;
 	
 	/**
 	 * Whether the wiki is a meta-project like the Wikimedia Foundation wiki or Metawiki.
+	 * @var bool
 	 */
 	public $isMeta = NULL;
 	
 	/**
 	 * Whether the wiki is locked and no longer editable by the public.
+	 * @var bool
 	 */
 	public $isClosed = NULL;
 	
 	/**
 	 * Whether the wiki has multilingual content.
+	 * @var bool
 	 */
 	public $isMultilingual = NULL;
 	
 	/**
 	 * The number of the server on which the wiki's replicated database is located.
+	 * @var int
 	 */
 	public $serverNumber = NULL;
 	
 	/**
 	 * The host name of the server on which the wiki's replicated database is located.
+	 * @var bool
 	 */
 	public $host = NULL;
 	
@@ -114,10 +124,10 @@ class Wikimedia {
 			foreach($db->Query('SELECT dbname, lang, family, domain, size, is_meta, is_closed, is_multilang, server FROM toolserver.wiki')->fetchAllAssoc() as $row)
 				$this->wikis[$row['dbname']] = new Wiki($row['dbname'], $row['lang'], $row['family'], $row['domain'], $row['size'], $row['is_meta'], $row['is_closed'], $row['is_multilang'], $row['server']);
 			
-			// workaround for https://jira.toolserver.org/browse/TS-1083
-			unset($this->wikis['noboard_chapterswikimedia_p']);
-			unset($this->wikis['noboardwiki_p']);
-			
+			// workaround: rm deleted wikis
+			unset($this->wikis['ru_sibwiki_p']);
+			unset($this->wikis['dkwiktionary_p']);
+
 			// cache result
 			if( count($this->wikis) ) // if the fetch failed, we *don't* want to cache the result for a full day
 				$cache->Save('wikimedia-wikis', $this->wikis);
