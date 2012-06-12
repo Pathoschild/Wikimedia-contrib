@@ -94,21 +94,22 @@ class Backend extends Base {
 	 * @param string $url The URL of the CSS or JavaScript to fetch.
 	 * @param bool $prefix Whether to explicitly prefix the URL with the root URL (e.g., "//toolserver.org/~pathoschild/$url").
 	 */
-	public function link( $url, $prefix = false ) {
-		$ext = substr( $url, -3 );
+	public function link( $url, $prefix = false, $as = null ) {
+		if(!$as)
+			$as = trim(substr( $url, -3 ), '\.');
 		if($prefix) {
 			global $gconfig;
 			$url = $gconfig['root_url'] . $url;
 		}
-		switch( $ext ) {
+		switch( $as ) {
 			case 'css':
 				$this->hook_head .= '<link rel="stylesheet" type="text/css" href="' . $url . '" />';
 				break;
-			case '.js':
+			case 'js':
 				$this->hook_head .= '<script type="text/javascript" src="' . $url . '"></script>';
 				break;
 			default:
-				die( "Invalid extension '{$ext}' (URL '{$url}') passed to Backend->link." );
+				die( "Invalid extension '{$as}' (URL '{$url}') passed to Backend->link." );
 		}
 		
 		return $this;
