@@ -127,6 +127,7 @@ class Wikimedia {
 			// workaround: rm deleted wikis
 			unset($this->wikis['ru_sibwiki_p']);
 			unset($this->wikis['dkwiktionary_p']);
+			unset($this->wikis['tlhwiki_p']);
 
 			// cache result
 			if( count($this->wikis) ) // if the fetch failed, we *don't* want to cache the result for a full day
