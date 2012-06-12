@@ -516,7 +516,7 @@ class Toolserver extends Database {
 	#############################
 	## Get a local account's registration date as a (raw,formatted) array
 	#############################
-	public function getRegistrationDate( $user_id, $format = '%Y-%m-%dT%H:%i:%s', $skip_user_table = false ) {
+	public function getRegistrationDate( $user_id, $format = '%Y-%m-%d %H:%i', $skip_user_table = false ) {
 		if( $this->borked )
 			return NULL;
 		try {
