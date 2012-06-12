@@ -1,7 +1,7 @@
 # don't rewrite backend
 match URL into $ with ^/~pathoschild/(content|backend)
 if matched then
-#	goto END
+	goto END
 endif
 
 
@@ -17,7 +17,7 @@ endif
 
 
 # handle pretty URLs (map /dir/value to /dir/index.php?$1=value)
-match URL into $ with ^((/~pathoschild/[a-z]+)/([^\?]+))\??(.*)
+match URL into $ with ^((/~pathoschild/[a-z0-9]+)/([^\?]+))\??(.*)
 if matched then
 	set SCRATCH:PATH  = $1
 	set SCRATCH:DIR   = $2
