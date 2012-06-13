@@ -1,95 +1,93 @@
-/*######
-## Generic
-######*/
-table        { font-size:0.8em; }
-th           { font-size:1.2em; }
+/* Generic */
+table {
+	font-size: 0.8em;
+}
+
+th {
+	font-size: 1.2em;
+}
+
 th a {
-	text-decoration:none;
-	color:#000;
+	text-decoration: none;
+	color: #000;
 }
 
-
-/*######
-## Generic colour-coding
-######*/
 span.bad, span.good {
-	padding:0 3px;
-	background:#FCC;
+	padding: 0 3px;
+	background: #FCC;
 }
+
 span.good {
-	background:#CFC;
+	background: #CFC;
 }
 
-
-/*######
-## Data formatting
-######*/
 /* wiki data */
 .wiki-open-0 {
-	color:gray;
-}
-.wiki-open-0 .wiki:after {
-	content:' (closed)';
+	color: gray;
 }
 
+.wiki-open-0 .wiki:after {
+	content: ' (closed)';
+}
 
 /* user data */
 .user-exists-0 {
-	background:#CCC;
-	text-decoration:line-through;
+	background: #CCC;
+	text-decoration: line-through;
 }
+
 .user-exists-0 td.edit-count span {
-	color:#CCC;
+	color: #CCC;
 }
 
 .user-in-groups-0 td.groups {
-	background:#CCC;
+	background: #CCC;
 }
+
 .user-in-groups-1 td.groups {
-	background:#CFC;
+	background: #CFC;
 }
 
 td.edit-count {
-	text-align:right;
+	text-align: right;
 }
-td.edit-count span { 
-	color:#FFF;
-	font-size:1px;
+
+td.edit-count span {
+	color: #FFF;
+	font-size: 1px;
 }
 
 .user-unified-1 td.unification {
-	background:#CFC;
+	background: #CFC;
 }
+
 .user-unified-0 td.unification {
-	background:#FCC;
+	background: #FCC;
 }
 
 .user-blocked-1 td.blocks {
-	background:#FCC;
+	background: #FCC;
 }
+
 .user-blocked-0 td.blocks {
-	background:#CCC;
+	background: #CCC;
 }
 
 /* IP data */
 .ip-blocked-0 td.blocks {
-	background:#CCC;
+	background: #CCC;
 }
+
 .ip-blocked-1 td.blocks {
-	background:#FCC;
+	background: #FCC;
 }
 
-
-.row_good_0 { background:#CCC; }
-.row_bad_0  { background:#CCC; }
-.row_bool_0 { background:#FCC; }
-.row_bad_1  { background:#FCC; }
-.row_bool_1 { background:#CFC; }
-.row_good_1 { background:#CFC; }
-
-.row_hidden_1 {
-	text-decoration:line-through;
+/* visualizations */
+#account-visualizations {
+	margin:1em 1em 1em 2em;
 }
-.row_hidden_1 span:after {
-	content:' <b>[hidden]</b>';
+
+#account-visualizations .viz-chart {
+	float: left;
+	margin-right:2em;
 }

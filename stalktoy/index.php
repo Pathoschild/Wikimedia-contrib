@@ -6,11 +6,8 @@ require_once( 'Stalktoy.php');
 $backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="/~pathoschild/stalktoy/Pathoschild" title="view result for Pathoschild"><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="/~pathoschild/stalktoy/127.0.0.1" title="view result for 127.0.0.1"><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="/~pathoschild/stalktoy/2001:db8:1234::" title="view result for 2001:db8:1234::"><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="/~pathoschild/stalktoy/212.75.0.1/16" title="view result for 212.75.0.1/16"><tt>212.75.0.1/16</tt></a> or <a href="/~pathoschild/stalktoy/2600:3C00::/48" title="view result for 2600:3C00::/48"><tt>2600:3C00::/48</tt></a>).')
 	->link( 'stalktoy/stylesheet.css', true )
 	->link( 'backend/content/jquery.tablesorter.js', true )
-	->addScript('
-		$(document).ready(function() { 
-			$(\'#local-ips, #local-accounts\').tablesorter({sortList:[[1,1]]});
-		});
-	')
+	->link( 'https://www.google.com/jsapi', false, 'js' )
+	->link( 'stalktoy/scripts.js', true )
 	->header();
 
 /**
@@ -565,7 +562,7 @@ else if( $script->isValid() && $script->target ) {
 				</tr>
 				<tr>
 						<td>Groups:</td>
-					<td><b>', $account->groups, '</b></td>
+					<td><b>', $account->groups ? $account->groups : '&mdash;', '</b></td>
 				</tr>
 				<tr>
 					<td>Other toys:</td>
@@ -580,6 +577,7 @@ else if( $script->isValid() && $script->target ) {
 						', $global['stats']['edit_count'], ' edits on ', $global['stats']['wikis'], ' wikis.<br />
 						Most edits on <a href="//', $global['stats']['most_edits_domain'], '/wiki/Special:Contributions/', $script->target_wiki_url, '">', $global['stats']['most_edits_domain'], '</a> (', $global['stats']['most_edits'], ').<br />
 						Oldest account on <a href="//', $global['stats']['oldest_domain'], '/wiki/user:', $script->target_wiki_url, '">', $global['stats']['oldest_domain'], '</a> (', ( $global['stats']['oldest'] ? $global['stats']['oldest'] : '2005 or earlier, so probably inaccurate; registration date was not stored until late 2005' ), ').
+						<div id="account-visualizations"><br clear="all" /></div>
 					</td>
 				</tr>
 			</table>';
@@ -630,7 +628,7 @@ else if( $script->isValid() && $script->target ) {
 				$has_groups = (int)(bool)$user->groups;
 				$is_blocked = (int)$user->isBlocked;
 				$is_hidden  = (int)($is_blocked && $user->block->isHidden);
-				$is_unified = $user->isUnified;
+				$is_unified = (int)$user->isUnified;
 				$label_unified = $label_unified_strs[$is_unified];
 			
 				if( $user->isBlocked ) {
@@ -656,8 +654,8 @@ else if( $script->isValid() && $script->target ) {
 			## Output
 			########
 			echo '
-					<tr class="is-wiki wiki-open-', (int)!$wiki->isClosed, ' user-exists-', $user->exists, ' user-in-groups-', $has_groups, ' user-unified-', $is_unified, ' user-blocked-', $is_blocked, '"',
-					'data-wiki="', $wiki->name, '" data-wiki-domain="', $wiki->domain, '" data-is-open="', (int)!$wiki->isClosed, '" data-user-exists="', $user->exists, '" data-user-edits="', $user->editCount, '" data-user-groups="', htmlentities($user->groups), '" data-registered="', $user->registered, '" data-is-unified="', $user->isUnified, '" data-is-blocked="', $user->isBlocked, '"',
+					<tr class="is-wiki wiki-open-', (int)!$wiki->isClosed, ' user-exists-', (int)(bool)$user->exists, ' user-in-groups-', (int)(bool)$has_groups, ' user-unified-', (int)(bool)$is_unified, ' user-blocked-', (int)(bool)$is_blocked, '"',
+					'data-wiki="', $wiki->name, '" data-wiki-lang="', ($wiki->isMultilingual ? 'multilingual' : $wiki->lang) ,'" data-wiki-family="', $wiki->family, '" data-wiki-domain="', $wiki->domain, '" data-is-open="', (int)!$wiki->isClosed, '" data-user-exists="', (int)(bool)$user->exists, '" data-user-edits="', $user->editCount, '" data-user-groups="', htmlentities($user->groups), '" data-registered="', $user->registered, '" data-is-unified="', (int)(bool)$user->isUnified, '" data-is-blocked="', $user->isBlocked, '"',
 					'>
 						<td class="wiki"><span class="row_wiki">', $link_wiki, '</span></td>
 						<td class="edit-count">', $link_edits, '</td>
