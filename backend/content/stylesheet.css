@@ -282,6 +282,6 @@ table.sortable .headerSortDown, table.sortable .headerSortUp {
 }
 
 #global-notice.is-notice {
-	border-left-color:#CCC;
-	color:#CCC;
+	border-left-color:#666;
+	color:#666;
 }
