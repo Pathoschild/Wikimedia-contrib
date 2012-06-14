@@ -159,7 +159,7 @@ class StalktoyScript extends Base {
 			'SELECT user_id, user_registration, DATE_FORMAT(user_registration, "%Y-%m-%d %H:%i") as registration, user_editcount, GROUP_CONCAT(ug_group SEPARATOR ", ") AS user_groups, ipb_by_text, ipb_reason, DATE_FORMAT(ipb_timestamp, "%Y-%m-%d %H:%i") AS ipb_timestamp, ipb_deleted, COALESCE(DATE_FORMAT(ipb_expiry, "%Y-%m-%d %H:%i"), ipb_expiry) AS ipb_expiry FROM user LEFT JOIN user_groups ON user_id = ug_user LEFT JOIN ipblocks ON user_id = ipb_user WHERE user_name = ? LIMIT 1',
 			array( $userName )
 		)->fetchAssoc();
-		
+
 		// build model
 		$account = new Stalktoy\LocalAccount();
 		$account->exists = isset($row['user_id']);
@@ -192,7 +192,7 @@ class StalktoyScript extends Base {
 				$account->block->expiry = $row['ipb_expiry'];
 			}
 		}
-		
+
 		return $account;
 	}
 	
@@ -437,7 +437,7 @@ else if( $script->isValid() && $script->target ) {
 
 	if( $account->exists ) {
 		$global = Array(
-			'stats'     => Array(
+			'stats' => Array(
 				'wikis'      => 0,
 				'edit_count' => 0,
 				'most_edits' => -1,
@@ -467,7 +467,7 @@ else if( $script->isValid() && $script->target ) {
 			continue;
 
 		$script->setWiki( $wiki );
-		$localAccount = $script->getLocal($script->db, $account->name, isset($account->wikiHash[$wiki]), $wikiData);
+		$localAccount = $script->getLocal($script->db, $script->target, isset($account->wikiHash[$wiki]), $wikiData);
 		
 		if($localAccount->exists || $script->show_all_wikis)
 			$local[$wiki] = $localAccount;
@@ -480,7 +480,7 @@ else if( $script->isValid() && $script->target ) {
 			}
 		
 			/* statistics shown only for global account */
-			if( $localAccount->exists ) {
+			if( $account->exists && $localAccount->exists ) {
 				$global['stats']['wikis']++;
 				$global['stats']['edit_count'] += $localAccount->editCount;
 				if( $localAccount->registeredRaw < $global['stats']['oldest_raw'] ) {
