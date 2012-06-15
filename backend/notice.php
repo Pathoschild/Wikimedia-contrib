@@ -1,5 +1,5 @@
 <?
-if($enabled = true) {
+if($enabled = false) {
 	/* configure */
 	$type = 'notice';
 	$message = 'The Wikimedia Toolserver (which hosts this tool) is having hardware load issues. You might experience temporary errors or timeouts.';
