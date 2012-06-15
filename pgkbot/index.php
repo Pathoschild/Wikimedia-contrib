@@ -5,7 +5,7 @@ $backend = Backend::create('pgkbot', 'A python bot by <a href="//en.wikipedia.or
 	->header();
 ?>
 
-<p class="neutral">The <a href="http://meta.wikimedia.org/wiki/Pgkbothttp://meta.wikimedia.org/wiki/Pgkbot" title="pgkbot package">pgkbot package</a> is obsolete and no longer actively maintained. This mirror is maintained for historical interest.</p>
+<p class="neutral">The <a href="//meta.wikimedia.org/wiki/Pgkbot" title="pgkbot package">pgkbot package</a> is obsolete and no longer actively maintained. This mirror is maintained for historical interest.</p>
 <h3>Download</h3>
 <ul>
 	<li><a href="pgkbot_1.7.zip" title="pgkbot archive">pgkbot 1.7</a> (2007-03-11, 381kB)</li>
