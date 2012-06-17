@@ -14,7 +14,6 @@ var pathoschild = pathoschild || {};
 		 * @param obj options The options object to pass to the underlying chart object.
 		 */
 		Chart: function(id, options) {
-			var _this = this;
 			this.$chart = $(document.createElement('div')).attr('id', id).addClass('viz-chart').prependTo('#account-visualizations');
 			this.options = $.extend(true, {}, { width: 200, height: 200, is3D: true, chartArea: { width: 200, height: 170 }, legend: { position: 'bottom' } }, options);
 			this.chart = null;
@@ -92,7 +91,8 @@ var pathoschild = pathoschild || {};
 		}
 	};
 
-	google.load('visualization', '1.0', { 'packages': ['corechart'], 'callback': function() { pathoschild.Stalktoy.Initialize(); } });
+	if($('#account-visualizations').length)
+		google.load('visualization', '1.0', { 'packages': ['corechart'], 'callback': function() { pathoschild.Stalktoy.Initialize(); } });
 	$(function() {
 		$('#local-ips, #local-accounts').tablesorter({sortList:[[1,1]]});
 	});
