@@ -62,7 +62,7 @@ class Script extends Base {
 	## Add a filter description (for human-readability summary)
 	###############
 	public function describeFilter( $text ) {
-		array_push( $this->filter_descriptions, htmlentities($text) );
+		array_push( $this->filter_descriptions, $this->formatText($text) );
 	}
 
 
@@ -310,7 +310,7 @@ $script->show_hidden = $show_hidden;
 #############################
 ## Input form
 #############################
-$f_username = $backend->FormatFormValue( isset($name) ? $name : '' );
+$f_username = $backend->formatValue( isset($name) ? $name : '' );
 
 echo "
 	<form action='' method='get'>

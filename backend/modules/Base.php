@@ -32,19 +32,28 @@ abstract class Base {
 	## Format string for form output
 	#############################
 	/**
-	* Format a string as an attribute value.
-	* @param string $str The string to format.
-	* @return string The formatted string.
-	*/
+	 * Format a string as an attribute value.
+	 * @param string $str The string to format.
+	 * @return string The formatted string.
+	 */
 	public function formatValue( $str ) {
 		return htmlentities($str, ENT_QUOTES, 'UTF-8');
 	}
 
 	/**
-	* Make the first character in the string uppercase. This is a workaround for Unicode handling: PHP's ucfirst is not multi-byte safe.
-	* @param string $str The string to format.
-	* @return string The formatted string, with uppercase first letter.
-	**/
+	 * Format a string as a plaintext HTML output.
+	 * @param string $str The string to format.
+	 * @return string The formatted string.
+	 */
+	public function formatText( $str ) {
+		return htmlentities($str, ENT_NOQUOTES, 'UTF-8');
+	}
+
+	/**
+	 * Make the first character in the string uppercase. This is a workaround for Unicode handling: PHP's ucfirst is not multi-byte safe.
+	 * @param string $str The string to format.
+	 * @return string The formatted string, with uppercase first letter.
+	 **/
 	public function formatInitialCapital( $str ) {
 		return mb_strtoupper(mb_substr($str, 0, 1, 'UTF-8'), 'UTF-8') . mb_substr($str, 1, mb_strlen($str, 'UTF-8') - 1, 'UTF-8');	
 	}
@@ -63,10 +72,10 @@ abstract class Base {
 	}
 	
 	/**
-	* Format a string as an HTML anchor value.
-	* @param string $str The string to format.
-	* @return string The formatted string.
-	*/
+	 * Format a string as an HTML anchor value.
+	 * @param string $str The string to format.
+	 * @return string The formatted string.
+	 */
 	public function formatAnchor( $str ) {
 		return strtolower(str_replace('%', '_', urlencode($str)));
 	}

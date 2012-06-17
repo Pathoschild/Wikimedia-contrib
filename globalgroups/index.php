@@ -238,7 +238,7 @@ echo '<div id="side-toc">',
 	'<b>Table of contents</b>',
 	'<ol>';
 foreach($groups as $group)
-	echo '<li><a href="#', $group['anchor'], '" title="', $backend->FormatFormValue($group['name']), '">', htmlentities($group['name']), '</a></li>';
+	echo '<li><a href="#', $group['anchor'], '" title="', $backend->formatValue($group['name']), '">', $backend->formatText($group['name']), '</a></li>';
 echo '</ol></div>';
 
 /* sort */
@@ -254,7 +254,7 @@ echo implode(', ', $sortLabels) . '.</p>';
 
 /* results */
 foreach($groups as $group) {
-	echo '<h3 id="', $group['anchor'], '">', htmlentities($group['name']), '</h3>',
+	echo '<h3 id="', $group['anchor'], '">', $backend->formatText($group['name']), '</h3>',
 		'<div class="group">',
 		'<a href="//meta.wikimedia.org/wiki/Special:GlobalUsers?group=', urlencode($group['key']), '" title="list of users in this group">', $group['members'], ' account', ($group['members'] != 1 ? 's' : ''), '</a> on ';
 	if($group['wikiset']) {
@@ -271,7 +271,7 @@ foreach($groups as $group) {
 	echo '<table class="group-rights">';
 	foreach($group['rights'] as $rkey => $right) {
 		$blurb = isset($flagBlurbs['right-' . $right]) ? $flagBlurbs['right-' . $right] : '';
-		echo '<tr><td class="group-rights-name">', htmlentities($right), '</td><td class="group-rights-blurb">', $blurb, '</td></tr>';
+		echo '<tr><td class="group-rights-name">', $backend->formatText($right), '</td><td class="group-rights-blurb">', $blurb, '</td></tr>';
 	}
 	echo '</table></div>';
 }

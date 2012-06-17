@@ -9,7 +9,7 @@ $backend = Backend::create('AccountEligibility', 'Analyzes a given user account 
 ############################
 ## Script engine
 ############################
-class Script {
+class Script extends Base {
 	############################
 	## Configuration
 	############################
@@ -385,7 +385,7 @@ class Script {
 			if (!$unifiedDbnames) {
 				$this->selectManually = true;
 				$encoded = urlencode($this->user['name']);
-				echo '<div id="result" class="neutral" data-is-error="1">',  htmlentities($this->user['name']), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="//toolserver.org/~pathoschild/stalktoy/?target=', $encoded, '" title="global details about this user">global details about this user</a>).</div>';
+				echo '<div id="result" class="neutral" data-is-error="1">', $this->formatText($this->user['name']), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="//toolserver.org/~pathoschild/stalktoy/?target=', $encoded, '" title="global details about this user">global details about this user</a>).</div>';
 				return false;
 			}
 
@@ -516,7 +516,7 @@ class Script {
 			$this->db->ConnectPrevious();
 		}
 		$local = array_merge($local, $_metaRoleAgeCache[$role]);
-		echo '<!--raw: ', htmlentities(print_r($local, true)), '-->';
+		echo '<!--raw: ', $this->formatText(print_r($local, true)), '-->';
 		
 		// parse log entries
 		$logs = array();
@@ -572,7 +572,7 @@ class Script {
 		if(count($ranges) == 0)
 			return false;
 		
-		echo '<!--get_role_longest_duration: logs=', htmlentities(print_r($logs, true)), ', ranges=', print_r($ranges, true), '-->';
+		echo '<!--get_role_longest_duration: logs=', $this->formatText(print_r($logs, true)), ', ranges=', print_r($ranges, true), '-->';
 		
 		// determine widest range
 		$maxDuration = 0;
@@ -717,7 +717,7 @@ echo '
 foreach ($script->wikis as $dbname => $details) {
 	if (!$script->db->getLocked($dbname)) {
 		$selected = ($dbname == $wiki);
-		echo '<option value="', $dbname, '"', ($selected ? ' selected="yes" ' : '') , '>', htmlentities($details['domain']), '</option>';
+		echo '<option value="', $dbname, '"', ($selected ? ' selected="yes" ' : '') , '>', $script->formatText($details['domain']), '</option>';
 	}
 }
 echo '
@@ -731,7 +731,7 @@ foreach ($script->events as $id => $event) {
 		<option value="', $id, '" ',
 		($id == $script->event['id'] ? ' selected="yes" ' : ''),
 		($event['obsolete'] ? ' class="is-obsolete"' : ''),
-		'>', htmlentities($event['name']), '</option>';
+		'>', $script->formatText($event['name']), '</option>';
 }
 echo '
 	</select>
@@ -781,7 +781,7 @@ while ($script->user['name'] && !$cached) {
 
 	/* validate user exists */
 	if (!isset($script->user['id'])) {
-		echo '<div class="error">', htmlentities($script->user['name']), ' does not exist on ', htmlentities($script->wiki['domain']), '.</div>';
+		echo '<div class="error">', $script->formatText($script->user['name']), ' does not exist on ', $script->formatText($script->wiki['domain']), '.</div>';
 		break;
 	}
 
@@ -2401,7 +2401,7 @@ while ($script->user['name'] && !$cached) {
 		echo
 			'<h3>Result</h3>',
 			'<div class="', $class, '" id="result" data-is-eligible="', ($script->eligible ? 1 : 0), '">',
-			htmlentities($name), ' is ', ($script->eligible ? '' : 'not '), 'eligible to ', $action, ' in the <a href="', $event['url'], '" title="', $backend->formatValue($event['name']), '">', $event['name'], '</a>. ';
+			$script->formatText($name), ' is ', ($script->eligible ? '' : 'not '), 'eligible to ', $action, ' in the <a href="', $event['url'], '" title="', $backend->formatValue($event['name']), '">', $event['name'], '</a>. ';
 		if ($script->eligible && isset($script->event['append_eligible']))
 			echo $script->event['append_eligible'];
 		elseif (!$script->eligible && isset($script->event['append_ineligible']))

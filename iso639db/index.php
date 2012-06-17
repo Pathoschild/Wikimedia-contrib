@@ -151,7 +151,7 @@ function filterOption($key, $text = NULL) {
 	if(!$text)
 		$text = $key;
 	$checked = in_array($key, $script->filters);
-	echo '<option value="', $backend->FormatFormValue($key), '"', ($checked ? ' selected="selected"' : ''), '">', htmlentities($text), '</option>';
+	echo '<option value="', $backend->formatValue($key), '"', ($checked ? ' selected="selected"' : ''), '">', $backend->formatText($text), '</option>';
 }
 ?>
 
@@ -160,10 +160,10 @@ function filterOption($key, $text = NULL) {
 	
 	<form action="" method="get">
 		<label for="code">By ISO 639 code:</label>
-		<input type="text" id="code" name="code" value="<?php echo $backend->FormatFormValue($script->code); ?>" style="width:3em;" />
+		<input type="text" id="code" name="code" value="<?php echo $backend->formatValue($script->code); ?>" style="width:3em;" />
 
 		<label for="name">or language name:</label>
-		<input type="text" id="name" name="name" value="<?php echo $backend->FormatFormValue($script->name); ?>" />
+		<input type="text" id="name" name="name" value="<?php echo $backend->formatValue($script->name); ?>" />
 		
 		<select id="filters" name="filters[]" multiple="multiple"><!--Only show languages...-->
 			<optgroup label="in:"><?php
@@ -219,7 +219,7 @@ function filterOption($key, $text = NULL) {
 ## Search result
 ####################
 $rows = $script->execute();
-echo '<!--query=', htmlentities($script->query), ' | values=', htmlentities(print_r($script->values, true)), '-->';
+echo '<!--query=', $backend->formatText($script->query), ' | values=', $backend->formatText(print_r($script->values, true)), '-->';
 if( !count($rows) )
 	echo '<div class="neutral">There are no results matching your search.</div>';
 else {
@@ -249,8 +249,8 @@ else {
 	if( count($rows) == Script::MAX_LIMIT )
 		echo '<div class="neutral">Only the first ', Script::MAX_LIMIT, ' matching languages are shown.</div>';
 		
-	echo '<!--', htmlentities($script->query), '-->';
-	echo '<!--', htmlentities(print_r($script->values, true)), '-->';
+	echo '<!--', $backend->formatText($script->query), '-->';
+	echo '<!--', $backend->formatText(print_r($script->values, true)), '-->';
 }
 
 $backend->footer(); ?>

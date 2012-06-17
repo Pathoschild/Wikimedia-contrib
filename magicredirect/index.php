@@ -61,7 +61,7 @@ if($target) {
 			}
 		}
 		if(!$found)
-			$error = '<div class="fail">Could not find a wiki with a domain or database name like "' . htmlentities($dbname) . '".</div>';
+			$error = '<div class="fail">Could not find a wiki with a domain or database name like "' . $backend->formatText ($dbname) . '".</div>';
 	}
 	
 	/* apply user */
@@ -73,7 +73,7 @@ if($target) {
 				$target = str_replace('{user.' . $token . '}', $row[$token], $target);
 		}
 		else
-			$error .= '<div class="fail">Could not find a user with the name "' . htmlentities($user) . '".</div>';
+			$error .= '<div class="fail">Could not find a user with the name "' . $backend->formatText($user) . '".</div>';
 	}
 }
 
@@ -91,13 +91,13 @@ $backend->header();
 /* input form */
 ?>
 <form action="" method="get">
-	<input id="url" name="url" type="text" value="<?php echo $backend->FormatFormValue($url); ?>" />
+	<input id="url" name="url" type="text" value="<?php echo $backend->formatValue($url); ?>" />
 	<label for="url">URL</label><br />
 	
-	<input id="wiki" name="wiki" type="text" value="<?php echo $backend->FormatFormValue($wiki); ?>" />
+	<input id="wiki" name="wiki" type="text" value="<?php echo $backend->formatValue($wiki); ?>" />
 	<label for="wiki">wiki name</label><br />
 	
-	<input id="user" name="user" type="text" value="<?php echo $backend->FormatFormValue($user); ?>" />
+	<input id="user" name="user" type="text" value="<?php echo $backend->formatValue($user); ?>" />
 	<label for="user">user name</label><br />
 
 	<input type="checkbox" name="redirect" id="redirect" <?php echo $redirect ? 'checked="checked"' : '' ?> />
@@ -133,8 +133,8 @@ if($error || $target) {
 		$magicUrl .= '&url=' . urlencode($url);
 		
 		/* output details */
-		echo '<div class="success">This would redirect to <a href="', htmlentities($target), '">', htmlentities($target), '</a>.<br />',
-			'<small>(<a href="', htmlentities($magicUrl), '" title="automatic redirect">automatic redirect</a>)</small>',
+		echo '<div class="success">This would redirect to <a href="', $backend->formatValue($target), '">', $backend->formatText($target), '</a>.<br />',
+			'<small>(<a href="', $backend->formatValue($magicUrl), '" title="automatic redirect">automatic redirect</a>)</small>',
 			'</div>';
 	}
 	echo '</div>';

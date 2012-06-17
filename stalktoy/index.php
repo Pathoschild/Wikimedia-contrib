@@ -295,7 +295,7 @@ $backend->profiler->stop('initialize');
 #############################
 $target_form = '';
 if( $script->isValid() )
-	$target_form = $backend->FormatFormValue($script->target);
+	$target_form = $backend->formatValue($script->target);
 echo '
 	<p>Who shall we stalk?</p>
 	<form action="" method="get">
@@ -514,11 +514,11 @@ else if( $script->isValid() && $script->target ) {
 	echo '<div class="is-global-details"',
 		' data-is-global="', ($account->exists ? '1' : '0'), '"';
 	if($account->exists) {
-		echo ' data-home-wiki="', htmlentities($account->homeWiki), '"',
+		echo ' data-home-wiki="', $backend->formatValue($account->homeWiki), '"',
 		' data-status="', ($account->isLocked && $account->isHidden ? 'locked, hidden' : ($account->isLocked ? 'locked' : ($account->isHidden ? 'hidden' : 'okay'))), '"',
 		' data-id="', $account->id, '"',
 		' data-registered="', $account->registered, '"',
-		' data-groups="', htmlentities($account->groups), '"';
+		' data-groups="', $backend->formatValue($account->groups), '"';
 	}
 	echo '>';
 	if( $account->exists ) {
