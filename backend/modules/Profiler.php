@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Provides basic performance profiling.
  */

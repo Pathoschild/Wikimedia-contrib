@@ -21,12 +21,12 @@ $gconfig['sql_config_file'] = '/home/' . get_current_user() . '/.my.cnf';
 
 $gconfig['tools'] = array(
 	'Wikimedia' => array(
-		array( 'accountEligibility', 'analyze an account to determine whether it is eligible to vote in a given event.', 'Account eligibility' ),
+		array( 'accounteligibility', 'analyze an account to determine whether it is eligible to vote in a given event.', 'Account eligibility' ),
 		array( 'catanalysis', 'analyze edits to pages in a category tree or with a prefix over time.', 'Category analysis' ),
-		array( 'crossBlock', 'lists block status on all Wikimedia wikis, with links to prefilled (un)block forms.', 'Crosswiki blocks' ),
-		array( 'crossActivity', 'measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.', 'Crosswiki activity' ),
+		array( 'crossblock', 'lists block status on all Wikimedia wikis, with links to prefilled (un)block forms.', 'Crosswiki blocks' ),
+		array( 'crossactivity', 'measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.', 'Crosswiki activity' ),
 		array( 'globalGroups', 'lists rights with descriptions for each global group.', 'Global groups' ),
-		array( 'gUserSearch', 'searches and filters global account creations', 'Global user search' ),
+		array( 'gusersearch', 'searches and filters global account creations', 'Global user search' ),
 		array( 'magicredirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.', 'Magic redirect' ),
 		array( 'stalktoy', 'provides comprehensive global information about the given user, IP address, or CIDR range.', 'Stalk toy' ),
 		array( 'stewardry', 'analyze user activity by group on a Wikimedia wiki.', 'Stewardry' )

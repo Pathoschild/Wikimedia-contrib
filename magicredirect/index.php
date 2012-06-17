@@ -79,6 +79,7 @@ if($target) {
 
 /* redirect */
 if($target && $redirect && !$error) {
+	$backend->trackWithoutHtml($target);
 	header( 'Location: ' . $target );
 	exit();
 }

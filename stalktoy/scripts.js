@@ -59,6 +59,9 @@ var pathoschild = pathoschild || {};
 		 * Extract the data from the page and generate the visualisations.
 		 */
 		Initialize: function() {
+			if(!$('#account-visualizations').length)
+				return;
+		
 			// build data table
 			var data = new google.visualization.DataTable();
 			data.addColumn('string', 'Wiki');
@@ -91,8 +94,7 @@ var pathoschild = pathoschild || {};
 		}
 	};
 
-	if($('#account-visualizations').length)
-		google.load('visualization', '1.0', { 'packages': ['corechart'], 'callback': function() { pathoschild.Stalktoy.Initialize(); } });
+	google.load('visualization', '1.0', { 'packages': ['corechart'], 'callback': function() { pathoschild.Stalktoy.Initialize(); } });
 	$(function() {
 		$('#local-ips, #local-accounts').tablesorter({sortList:[[1,1]]});
 	});

@@ -126,18 +126,18 @@ class Backend extends Base {
 	#############################
 	public function trackWithoutHtml($outlink = null) {
 		require_once( __DIR__.'/external/PiwikTracker.php' );
-	
-		PiwikTracker::$URL = 'http://toolserver.org/~pathoschild/backend/piwik';
+		
+		// configure tracker
+		PiwikTracker::$URL = 'http://toolserver.org/~pathoschild/backend/piwik/';
 		$tracker = new PiwikTracker($idSite = 1);
 		$tracker->setCustomVariable(1, 'tracked-without-html', 1);
 		$tracker->setTokenAuth($PIWIK_AUTH_TOKEN);
 		$tracker->setIp($_SERVER['HTTP_X_FORWARDED_FOR']);
-		#$tracker->doTrackPageView($this->title);
-		$tracker->doTrackAction('wut', 'download');
+		
+		// track
+		$tracker->doTrackPageView($this->title);
 		if($outlink)
 			$tracker->doTrackAction($outlink, 'link');
-		
-		echo '<pre>', print_r($tracker, true), '</pre>';
 	}
 	
 	public function header() {
