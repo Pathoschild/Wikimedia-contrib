@@ -68,13 +68,13 @@ var pathoschild = pathoschild || {};
 			data.addColumn('number', 'Edits');
 			$('tr[data-wiki]').each(function(i, row) {
 				var $row = $(row);
-				if($row.attr('data-user-exists') === '0')
+				if($row.attr('data-exists') === '0')
 					return;
 				data.addRow([
 					$row.attr('data-wiki'),
-					$row.attr('data-wiki-family'),
-					$row.attr('data-wiki-lang'),
-					parseInt($row.attr('data-user-edits'), 10)
+					$row.attr('data-family'),
+					$row.attr('data-lang'),
+					parseInt($row.attr('data-edits'), 10)
 				]);
 			});
 

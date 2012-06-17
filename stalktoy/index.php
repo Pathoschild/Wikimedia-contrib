@@ -403,7 +403,7 @@ if( $script->isValid() && $ip->ip->isValid() ) {
 			$link_wiki = $script->link( $domain, 'user:' . $script->target_wiki_url, $wikiData->name );
 		
 			echo '
-				<tr class="wiki-open-', (int)(bool)!$wikiData->isClosed, ' ip-blocked-', $blocked, '">
+				<tr data-open="', (int)!$wikiData->isClosed, '" data-blocked="', (int)$blocked, '">
 					<td class="wiki">', $link_wiki, '</td>
 					<td class="blocks">';
 			if( $localBlocks[$wiki] ) {
@@ -512,11 +512,9 @@ else if( $script->isValid() && $script->target ) {
 		<div class='result-box'>
 		<h3>Global account</h3>\n";
 	echo '<div class="is-global-details"',
-		' data-is-global="', ($account->exists ? '1' : '0'), '"',
-		' data-username="', htmlentities($script->target), '"';
+		' data-is-global="', ($account->exists ? '1' : '0'), '"';
 	if($account->exists) {
 		echo ' data-home-wiki="', htmlentities($account->homeWiki), '"',
-		// quick hack below, please avert your eyes.
 		' data-status="', ($account->isLocked && $account->isHidden ? 'locked, hidden' : ($account->isLocked ? 'locked' : ($account->isHidden ? 'hidden' : 'okay'))), '"',
 		' data-id="', $account->id, '"',
 		' data-registered="', $account->registered, '"',
@@ -553,26 +551,15 @@ else if( $script->isValid() && $script->target ) {
 			echo "<span class='good'>okay</span>";
 		echo '
 				</tr>
-				<tr>
-					<td>User ID:</td>
-					<td><b>', $account->id, '</b></td>
-				</tr>
 				<td>Registered:</td>
-					<td><b>', $account->registered, '</b></td>
+					<td><b>', $account->registered, ' <span class="account-id">(account #', $account->id, ')</span></b></td>
 				</tr>
 				<tr>
 						<td>Groups:</td>
-					<td><b>', $account->groups ? $account->groups : '&mdash;', '</b></td>
+					<td><b>', $account->groups ? str_replace('_', ' ', $account->groups) : '&mdash;', '</b></td>
 				</tr>
 				<tr>
-					<td>Other toys:</td>
-					<td>
-						<a href="//meta.wikimedia.org/wiki/Special:CentralAuth/', $script->target_wiki_url, '" title="Special:CentralAuth">CentralAuth</a>,
-						<a href="//toolserver.org/~luxo/contributions/contributions.php?user=', $script->target_url, '&blocks=true" title="list edits">list edits</a>
-					</td>
-				</tr>
-				<tr>
-					<td style="vertical-align:top;">Global statistics:</td>
+					<td style="vertical-align:top;">Statistics:</td>
 					<td>
 						', $global['stats']['edit_count'], ' edits on ', $global['stats']['wikis'], ' wikis.<br />
 						Most edits on <a href="//', $global['stats']['most_edits_domain'], '/wiki/Special:Contributions/', $script->target_wiki_url, '">', $global['stats']['most_edits_domain'], '</a> (', $global['stats']['most_edits'], ').<br />
@@ -580,7 +567,12 @@ else if( $script->isValid() && $script->target ) {
 						<div id="account-visualizations"><br clear="all" /></div>
 					</td>
 				</tr>
-			</table>';
+			</table>
+			See also
+			<a href="//toolserver.org/~pathoschild/crossactivity/', $script->target_url, '" title="recent activity">recent activity</a>,
+			<a href="//toolserver.org/~luxo/contributions/contributions.php?user=', $script->target_url, '&blocks=true" title="recent edits">recent edits</a>,
+			<a href="//meta.wikimedia.org/wiki/Special:CentralAuth/', $script->target_wiki_url, '" title="Special:CentralAuth">global user manager</a>.
+			';
 	}
 	else
 		echo '<div class="neutral">There is no global account with this name, or it has been <a href="//meta.wikimedia.org/wiki/Oversight" title="about hiding user names">globally hidden</a>.</div>';
@@ -603,7 +595,7 @@ else if( $script->isValid() && $script->target ) {
 					<tr>
 	 					<th>wiki</th>
 	 					<th>edits</th>
-	 					<th>registration date</th>
+	 					<th>registered</th>
 	 					<th>groups</th>
 						<th><a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about unified login'>unified login</a></th>
 						<th>block</th>
@@ -636,16 +628,16 @@ else if( $script->isValid() && $script->target ) {
 					$block_summary = "<span class=\"is-block-start\">{$user->block->timestamp}</span> &mdash; <span class=\"is-block-end\">{$user->block->expiry}</span>: blocked by <span class=\"is-block-admin\">{$user->block->by}</span> (<span class=\"is-block-reason\">{$reason}</span>)";
 				}
 				else
-					$block_summary = '';
+					$block_summary = '&nbsp;';
 			}
 			
 			/* user doesn't exist */
 			else {
 				$link_edits = '&nbsp;';
-				$has_groups = '_';
-				$is_blocked = '_';
-				$is_hidden  = '_';
-				$is_unified = '_';
+				$has_groups = 0;
+				$is_blocked = 0;
+				$is_hidden  = 0;
+				$is_unified = 0;
 				$label_unified = 'no such user';
 				$block_summary = '&nbsp;';
 			}
@@ -654,19 +646,16 @@ else if( $script->isValid() && $script->target ) {
 			## Output
 			########
 			echo '
-					<tr class="is-wiki wiki-open-', (int)!$wiki->isClosed, ' user-exists-', (int)(bool)$user->exists, ' user-in-groups-', (int)(bool)$has_groups, ' user-unified-', (int)(bool)$is_unified, ' user-blocked-', (int)(bool)$is_blocked, '"',
-					'data-wiki="', $wiki->name, '" data-wiki-lang="', ($wiki->isMultilingual ? 'multilingual' : $wiki->lang) ,'" data-wiki-family="', $wiki->family, '" data-wiki-domain="', $wiki->domain, '" data-is-open="', (int)!$wiki->isClosed, '" data-user-exists="', (int)(bool)$user->exists, '" data-user-edits="', $user->editCount, '" data-user-groups="', htmlentities($user->groups), '" data-registered="', $user->registered, '" data-is-unified="', (int)(bool)$user->isUnified, '" data-is-blocked="', $user->isBlocked, '"',
-					'>
-						<td class="wiki"><span class="row_wiki">', $link_wiki, '</span></td>
-						<td class="edit-count">', $link_edits, '</td>
-						<td class="timestamp">', $user->registered, '</td>
-						<td class="groups">', $user->groups, '</td>
-						<td class="unification">', $label_unified, '</td>
-						<td class="blocks">', $block_summary, '</td>
-					</tr>', "\n";
+				<tr data-wiki="', $wiki->name, '" data-lang="', ($wiki->isMultilingual ? 'multilingual' : $wiki->lang) ,'" data-family="', $wiki->family, '" data-open="', (int)!$wiki->isClosed, '" data-exists="', (int)(bool)$user->exists, '" data-edits="', $user->editCount, '" data-groups="', (int)$has_groups, '" data-registered="', $user->registered, '" data-unified="', (int)$user->isUnified, '" data-blocked="', (int)$user->isBlocked, '">
+					<td class="wiki">', $link_wiki, '</td>
+					<td class="edit-count">', $link_edits, '</td>
+					<td class="timestamp">', $user->registered, '</td>
+					<td class="groups">', $user->groups, '</td>
+					<td class="unification">', $label_unified, '</td>
+					<td class="blocks">', $block_summary, '</td>
+				</tr>', "\n";
 		}
-		echo "</tbody>
-		</table></div>";
+		echo '</tbody></table></div>';
 	}
 	else
 		echo "<div class='error'>There are no local accounts with this name.</div>\n";

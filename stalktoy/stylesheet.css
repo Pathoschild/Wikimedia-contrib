@@ -22,30 +22,34 @@ span.good {
 }
 
 /* wiki data */
-.wiki-open-0 {
-	color: gray;
+tr[data-open="0"] {
+	color: #666;
 }
 
-.wiki-open-0 .wiki:after {
+tr[data-open="0"] .wiki:after {
 	content: ' (closed)';
 }
 
 /* user data */
-.user-exists-0 {
+.account-id {
+	color: gray;
+}
+
+tr[data-exists="0"],
+tr[data-groups="0"] td.groups,
+tr[data-blocked="0"] td.blocks {
 	background: #CCC;
-	text-decoration: line-through;
+	color:#666;
 }
 
-.user-exists-0 td.edit-count span {
-	color: #CCC;
-}
-
-.user-in-groups-0 td.groups {
-	background: #CCC;
-}
-
-.user-in-groups-1 td.groups {
+tr[data-groups="1"] td.groups,
+tr[data-unified="1"] td.unification {
 	background: #CFC;
+}
+
+tr[data-unified="0"] td.unification,
+tr[data-blocked="1"] td.blocks {
+	background: #FCC;
 }
 
 td.edit-count {
@@ -55,31 +59,6 @@ td.edit-count {
 td.edit-count span {
 	color: #FFF;
 	font-size: 1px;
-}
-
-.user-unified-1 td.unification {
-	background: #CFC;
-}
-
-.user-unified-0 td.unification {
-	background: #FCC;
-}
-
-.user-blocked-1 td.blocks {
-	background: #FCC;
-}
-
-.user-blocked-0 td.blocks {
-	background: #CCC;
-}
-
-/* IP data */
-.ip-blocked-0 td.blocks {
-	background: #CCC;
-}
-
-.ip-blocked-1 td.blocks {
-	background: #FCC;
 }
 
 /* visualizations */
