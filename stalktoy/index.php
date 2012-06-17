@@ -56,7 +56,7 @@ class StalktoyScript extends Base {
 		$this->db->Connect('metawiki_p');
 
 		/* store target (name, address, or range) */
-		$this->target = $this->FormatUsername( $target );
+		$this->target = $this->formatUsername( $target );
 		$this->target_url  = urlencode( $this->target );
 		$this->target_wiki_url = str_replace( '+', '_', $this->target_url );
 		

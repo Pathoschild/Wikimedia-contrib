@@ -266,7 +266,7 @@ class Script {
 		$this->db = $backend->GetDatabase();
 
 		/* set user */
-		$this->_userName = $backend->FormatUsername($user);
+		$this->_userName = $backend->formatUsername($user);
 
 		/* set event */
 		$this->eventID = isset($event) ? $event : self::DEFAULT_EVENT;
@@ -324,7 +324,7 @@ class Script {
 	########
 	public function Connect($dbname) {
 		/* reset variables */
-		$this->user = array('name' => $this->backend->FormatUsername($this->_userName));
+		$this->user = array('name' => $this->backend->formatUsername($this->_userName));
 		
 		/* connect & fetch user details */
 		if ($dbname) {
@@ -385,7 +385,7 @@ class Script {
 			if (!$unifiedDbnames) {
 				$this->selectManually = true;
 				$encoded = urlencode($this->user['name']);
-				echo '<div id="result" class="neutral" data-is-error="1">', htmlentities($this->user['name']), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="//toolserver.org/~pathoschild/stalktoy/?target=', $encoded, '" title="global details about this user">global details about this user</a>).</div>';
+				echo '<div id="result" class="neutral" data-is-error="1">',  htmlentities($this->user['name']), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="//toolserver.org/~pathoschild/stalktoy/?target=', $encoded, '" title="global details about this user">global details about this user</a>).</div>';
 				return false;
 			}
 
@@ -710,7 +710,7 @@ $script = new Script($backend, $user, $event, $wiki);
 echo '
 <form action="" method="get">
 	<label for="user">User:</label>
-	<input type="text" name="user" id="user" value="', $backend->FormatFormValue($script->user['name']), '" /> at 
+	<input type="text" name="user" id="user" value="', $backend->formatValue($script->user['name']), '" /> at 
 	<select name="wiki" id="wiki">
 		<option value="">auto-select wiki</option>', "\n";
 
@@ -2401,7 +2401,7 @@ while ($script->user['name'] && !$cached) {
 		echo
 			'<h3>Result</h3>',
 			'<div class="', $class, '" id="result" data-is-eligible="', ($script->eligible ? 1 : 0), '">',
-			htmlentities($name), ' is ', ($script->eligible ? '' : 'not '), 'eligible to ', $action, ' in the <a href="', $event['url'], '" title="', $backend->FormatFormValue($event['name']), '">', $event['name'], '</a>. ';
+			htmlentities($name), ' is ', ($script->eligible ? '' : 'not '), 'eligible to ', $action, ' in the <a href="', $event['url'], '" title="', $backend->formatValue($event['name']), '">', $event['name'], '</a>. ';
 		if ($script->eligible && isset($script->event['append_eligible']))
 			echo $script->event['append_eligible'];
 		elseif (!$script->eligible && isset($script->event['append_ineligible']))

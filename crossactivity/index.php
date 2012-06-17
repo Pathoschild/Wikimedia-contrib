@@ -20,8 +20,8 @@ $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bur
  ***************/
 $user = $backend->get('user', $backend->getRouteValue());
 if($user != null)
-	$user = $backend->FormatUsername($user);
-$user_form = $backend->FormatFormValue($user);
+	$user = $backend->formatUsername($user);
+$user_form = $backend->formatValue($user);
 $show_all = $backend->get('show_all', false);
 
 
@@ -30,7 +30,7 @@ $show_all = $backend->get('show_all', false);
  ***************/
 echo '<form action="" method="get">
 	<label for="user">User name:</label>
-	<input type="text" name="user" id="user" value="', $backend->FormatFormValue($user), '" />', ($user == 'Shanel' ? '&hearts;' : ''), '<br />
+	<input type="text" name="user" id="user" value="', $backend->formatValue($user), '" />', ($user == 'Shanel' ? '&hearts;' : ''), '<br />
 	<input type="checkbox" id="show_all" name="show_all" ', ($show_all ? 'checked="checked" ' : ''), '/> <label
 	for="show_all">Show wikis with no activity</label><br />
 	<input type="submit" value="Analyze »" />

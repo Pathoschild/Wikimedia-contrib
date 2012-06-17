@@ -66,7 +66,7 @@ if($target) {
 	
 	/* apply user */
 	if($user && strpos($target, '{user.') !== false) {
-		$user = $backend->FormatUsername($user);
+		$user = $backend->formatUsername($user);
 		$row = $db->Query('SELECT gu_id AS id, gu_name AS name, gu_registration AS registration, gu_locked AS locked, gu_hidden AS hidden FROM centralauth_p.globaluser WHERE gu_name = ? LIMIT 1', array($user))->fetchAssoc();
 		if($row) {
 			foreach($tokens['user'] as $token => $description)

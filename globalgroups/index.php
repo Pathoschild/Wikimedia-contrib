@@ -158,8 +158,8 @@ foreach($db->Query('SELECT DISTINCT ggp_group FROM centralauth_p.global_group_pe
 	$groupKey = $groupRow['ggp_group'];
 	$group = array(
 		'key' => $groupKey,
-		'name' => $backend->FormatUppercaseFirst(str_replace('_', ' ', $groupKey)),
-		'anchor' => $backend->FormatAnchor($groupKey),
+		'name' => $backend->formatInitialCapital(str_replace('_', ' ', $groupKey)),
+		'anchor' => $backend->formatAnchor($groupKey),
 		'rights' => array(),
 		'members' => 0,
 		'wikis' => 0,
