@@ -150,7 +150,7 @@ class Backend extends Base {
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>', $this->title, '</title>
 		<link rel="shortcut icon" href="', $this->config['style_url'], 'favicon.ico" />
-		<link rel="stylesheet" type="text/css" href="', $this->config['style_url'], 'stylesheet.css?v=20120222" />
+		<link rel="stylesheet" type="text/css" href="', $this->config['style_url'], 'stylesheet.css" />
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 		<script src="//toolserver.org/~pathoschild/content/jquery.collapse/jquery.cookie.js" type="text/javascript"></script>
 		<script src="//toolserver.org/~pathoschild/content/jquery.collapse/jquery.collapse.js" type="text/javascript"></script>

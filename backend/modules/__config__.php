@@ -16,7 +16,7 @@ error_reporting(E_ALL & ~E_NOTICE);
 ## URLs and navigation
 #############################
 $gconfig['root_url']  = '//toolserver.org/~pathoschild/';
-$gconfig['style_url'] = $gconfig['root_url'] . 'backend/content/';
+$gconfig['style_url'] = $gconfig['root_url'] . 'content/';
 $gconfig['sql_config_file'] = '/home/' . get_current_user() . '/.my.cnf';
 
 $gconfig['tools'] = array(

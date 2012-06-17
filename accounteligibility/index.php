@@ -2,7 +2,7 @@
 require_once('../backend/modules/Backend.php');
 $backend = Backend::create('AccountEligibility', 'Analyzes a given user account to determine whether it\'s eligible to vote in the specified event.')
 	->link('stylesheet.css')
-	->link('../backend/content/jquery.tablesorter.js')
+	->link('../content/jquery.tablesorter.js')
 	->addScript('$(document).ready(function() { $("#local-accounts").tablesorter({sortList:[[1,1]]}); });')
 	->header();
 
