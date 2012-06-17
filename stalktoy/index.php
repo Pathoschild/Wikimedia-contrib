@@ -280,7 +280,7 @@ class StalktoyUserModel {
 #############################
 ## Instantiate script engine
 ############################# 
-$backend->TimerStart('initialize');
+$backend->profiler->start('initialize');
 $script = null;
 $target_form = '';
 
@@ -288,7 +288,7 @@ $script = new StalktoyScript( $backend, $backend->get('target', $backend->getRou
 $script->show_all_wikis = $backend->get('show_all_wikis', false);
 $script->show_closed_wikis = $backend->get('closed', false);
 
-$backend->TimerStop('initialize');
+$backend->profiler->stop('initialize');
 
 #############################
 ## Input form
@@ -319,16 +319,16 @@ if( $script->isValid() && $ip->ip->isValid() ) {
 	## Fetch data
 	########
 	/* global data */
-	$backend->TimerStart('fetch global');
+	$backend->profiler->start('fetch global');
 	$global = Array(
 		'wikis'        => $script->wikis,
 		'ip'           => $ip,
 		'pretty_range' => $ip->ip->getFriendly(IPAddress::START) . ' &mdash; ' . $ip->ip->getFriendly(IPAddress::END)
 	);
-	$backend->TimerStop('fetch global');
+	$backend->profiler->stop('fetch global');
 
 	/* local data */
-	$backend->TimerStart('fetch local');
+	$backend->profiler->start('fetch local');
 	foreach( $global['wikis'] as $wiki => $wikiData ) {
 		if( $wikiData->isClosed && !$script->show_closed_wikis ) {
 			unset( $global['wikis'][$wiki] );
@@ -338,13 +338,13 @@ if( $script->isValid() && $ip->ip->isValid() ) {
 		$script->setWiki( $wiki );
 		$localBlocks[$wiki] = $script->getLocalIPBlocks($ip);
 	}
-	$backend->TimerStop('fetch local');
+	$backend->profiler->stop('fetch local');
 
 
 	########
 	## Output
 	########
-	$backend->TimerStart('output');
+	$backend->profiler->start('output');
 	echo '<div class="result-box">
 	<h3>', ($ip->ip->isIPv4() ? 'IPv4' : 'IPv6'), ($ip->ip->isRange() ? ' range' : ' address'), '</h3>',
 	($ip->ip->isRange() ? '<b>' . $global['pretty_range'] . '</b><br />' : '');
@@ -421,7 +421,7 @@ if( $script->isValid() && $ip->ip->isValid() ) {
 		echo "
 			</tbody>
 		</table></div>\n";
-	$backend->TimerStop('output');
+	$backend->profiler->stop('output');
 }
 
 #############################
@@ -432,7 +432,7 @@ else if( $script->isValid() && $script->target ) {
 	## Fetch data
 	########
 	/* global details */
-	$backend->TimerStart('fetch global');
+	$backend->profiler->start('fetch global');
 	$account = $script->getGlobal($script->target);
 
 	if( $account->exists ) {
@@ -456,10 +456,10 @@ else if( $script->isValid() && $script->target ) {
 				'most_edits_domain' => NULL
 			)
 		);
-	$backend->TimerStop('fetch global');
+	$backend->profiler->stop('fetch global');
 	
 	/* local details */
-	$backend->TimerStart('fetch local');
+	$backend->profiler->start('fetch local');
 	$local = array();
 	foreach( $script->wikis as $wiki => $wikiData ) {
 		$domain = $wikiData->domain;
@@ -491,9 +491,9 @@ else if( $script->isValid() && $script->target ) {
 			}
 		}
 	}
-	$backend->TimerStop('fetch local');
+	$backend->profiler->stop('fetch local');
 
-	$backend->TimerStart('adjust stats');
+	$backend->profiler->start('adjust stats');
 	/* best guess for pre-2005 oldest account */
 	if( $account->exists )
 		if( !$global['stats']['oldest'] && !$local[$account->homeWiki]->registeredRaw )
@@ -501,13 +501,13 @@ else if( $script->isValid() && $script->target ) {
 	
 	
 	/* zero-padding for sorting */
-	$backend->TimerStop('adjust stats');
+	$backend->profiler->stop('adjust stats');
 
 		
 	#######
 	## Output global details
 	########
-	$backend->TimerStart('output');
+	$backend->profiler->start('output');
 	echo "
 		<div class='result-box'>
 		<h3>Global account</h3>\n";
@@ -659,7 +659,7 @@ else if( $script->isValid() && $script->target ) {
 	}
 	else
 		echo "<div class='error'>There are no local accounts with this name.</div>\n";
-	$backend->TimerStop('output');
+	$backend->profiler->stop('output');
 }
 
 $backend->footer();

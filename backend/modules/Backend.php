@@ -152,6 +152,9 @@ class Backend extends Base {
 		<link rel="shortcut icon" href="', $this->config['style_url'], 'favicon.ico" />
 		<link rel="stylesheet" type="text/css" href="', $this->config['style_url'], 'stylesheet.css?v=20120222" />
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+		<script src="//toolserver.org/~pathoschild/content/jquery.collapse/jquery.cookie.js" type="text/javascript"></script>
+		<script src="//toolserver.org/~pathoschild/content/jquery.collapse/jquery.collapse.js" type="text/javascript"></script>
+		<script src="//toolserver.org/~pathoschild/content/main.js" type="text/javascript"></script>
 		', $this->hook_head, '
 		<script src="//toolserver.org/~pathoschild/backend/piwik/piwik.js" type="text/javascript"></script>
 	</head>
@@ -196,12 +199,12 @@ class Backend extends Base {
 		/* generate benchmarks */
 		$precisionPercentage = $this->config['profile_perc_precision'];
 		$precisionTime = $this->config['profile_time_precision'];
-		$totalTime = $this->TimerGetElapsedSinceStart();
+		$totalTime = $this->profiler->getElapsedSinceStart();
 		$timerResults = array();
-		foreach( $this->TimerGetKeys() as $key )
+		foreach( $this->profiler->getKeys() as $key )
 		{
-			$time = $this->TimerGetElapsed($key);
-			$this->_footer_benchmarks[$key] = sprintf(
+			$time = $this->profiler->getElapsed($key);
+			$timerResults[$key] = sprintf(
 				"%s (%s%%)",
 				round($time, $precisionTime),
 				round($time / $totalTime * 100, $precisionPercentage)
@@ -214,34 +217,26 @@ class Backend extends Base {
 		echo '
 <!-- begin generated footer -->
 			</div>
-			<p id="license">
-				Hi! You can <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver" title="view source">view the source code</a> or <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver/issues" title="report issue">report a bug or suggestion</a>. ', $this->license, '<br />
-				Page generated in ', $resultSeconds, ' seconds.
+			<div id="license">
+				Hi! You can <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver" title="view source">view the source code</a> or <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver/issues" title="report issue">report a bug or suggestion</a>. ', $this->license, '
+				<div id="profiling">
+					<h3>Profiling</h3>
+					<div>
+						Page generated in ', $resultSeconds, ' seconds.
 		';
 		
 		if(count($timerResults)) {
-			echo '<br />
-				Benchmarks:<br />
-			';
-			foreach( $timerResults as $name => $time ) {
-				echo '
-					&emsp;&emsp;', $name, ': ', $time, '<br />';
-			}
-			echo '
-				</table>';
+			echo '<ul>';
+			foreach( $timerResults as $name => $time )
+				echo '<li>', $name, ': ', $time, '</li>';
+			echo '</ul>';
 		}
 		
 		echo '
-			</p>
+					</div>
+				</div>
+			</div>
 		</div>
-	
-		<script type="text/javascript">
-			try {
-				var piwikTracker = Piwik.getTracker(\'//toolserver.org/~pathoschild/backend/piwik/piwik.php\', 1);
-				piwikTracker.trackPageView();
-				piwikTracker.enableLinkTracking();
-			} catch( err ) {}
-		</script>
 		<noscript>
 			<img src="//toolserver.org/~pathoschild/backend/piwik/piwik.php?idsite=1&amp;rec=1&amp;urlref=', urlencode(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ''), '" style="border:0" alt="" />
 		</noscript>

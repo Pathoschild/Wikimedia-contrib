@@ -1,4 +1,6 @@
 <?php
+require_once(__DIR__.'/Profiler.php');
+
 /**
  * Base class for script and framework classes that provides generic functionality for
  * tracing, profiling, argument handling, and data sanitizing and validation.
@@ -8,14 +10,10 @@ abstract class Base {
 	## Properties
 	#################################################
 	/**
-	 * The benchmarking time results, each being an array of millisecond times in the form (startTime, endTime).
+	 * Provides basic performance profiling.
 	 */
-	private $_times = Array();
-	
-	/**
-	 * The millisecond time at which the Base class was first constructed.
-	 */
-	private $_timeStart = NULL;
+	public $profiler;
+
 	
 	#################################################
 	## Constructor, profiling & tracing
@@ -24,7 +22,7 @@ abstract class Base {
 	 * Initialize the base class.
 	 */
 	public function __construct() {
-		$this->_timeStart = $this->TimerGetCurrentTime();
+		$this->profiler = new Profiler();
 	}
 
 	
@@ -66,77 +64,6 @@ abstract class Base {
 		return $arguments;
 	}
 
-
-	#################################################
-	## Profiling & debugging
-	#################################################
-	/**
-	* Start a benchmarking timer.
-	* @param string $key The unique name to associate with the timer.
-	*/
-	public function TimerStart( $key ) {
-		$this->_times[$key] = Array( $this->TimerGetCurrentTime(), NULL );
-	}
-
-	/**
-	* Stop a benchmarking timer.
-	* @param string $key The unique name of the timer.
-	*/
-	public function TimerStop( $key ) {
-		if (!isset($this->_times[$key]))
-			throw new InvalidArgumentException('There is no timer named "' . $key . '".');
-		if (isset($this->_times[$key][1]))
-			throw new Exception('Cannot stop timer "' . $key . '", it is already stopped.');
-		$this->_times[$key][1] = $this->TimerGetCurrentTime();
-	}
-
-	/**
-	* Get the total time elapsed since the script started running.
-	* @return integer The total time elapsed in milliseconds.
-	*/
-	public function TimerGetElapsedSinceStart()
-	{
-		if(!$this->_timeStart)
-			throw new Exception("Script start time was not initialized.");
-		return $this->TimerGetCurrentTime() - $this->_timeStart;
-	}
-
-	/**
-	* Get a benchmarking timer's elapsed time in decimal seconds.
-	* @param string $key The unique name of the timer.
-	* @return integer The total time in milliseconds that elapsed between starting and stopping the named timer.
-	*/
-	public function TimerGetElapsed( $key ) {
-		if (!isset($this->_times[$key]))
-			throw new InvalidArgumentException('There is no timer named "' . $key . '".');
-		return $this->_times[$key][1] - $this->_times[$key][0];
-	}
-
-	/**
-	* Delete a benchmarking timer.
-	* @param string $key The unique name of the timer.
-	*/
-	public function TimerDelete( $key ) {
-		unset($this->_times[$key]);
-	}
-	
-	/**
-	* Get all benchmarking timer keys.
-	* @return array An array of available benchmarking keys.
-	*/
-	public function TimerGetKeys() {
-		return array_keys($this->_times);
-	}
-
-	/**
-	* Get the current microtime in milliseconds.
-	* @return integer The current microtime in milliseconds.
-	*/
-	private function TimerGetCurrentTime() {
-		$time = explode( ' ', microtime() );
-		return $time[0] + $time[1];
-	}
-	
 
 	#################################################
 	## String manipulation
