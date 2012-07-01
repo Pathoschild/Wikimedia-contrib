@@ -49,7 +49,7 @@ class GlobalAccount {
 
 	/**
 	 * The global groups to which the user account belongs (as a comma-separated list).
-	 * @var string
+	 * @var string[]
 	 */
 	public $groups;
 

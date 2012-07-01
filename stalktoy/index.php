@@ -34,8 +34,8 @@ class StalktoyScript extends Base {
 	public $domains;
 
 	public $wiki;
-	public $show_all_wikis = false;    // in account mode, display wikis the user isn't on?
-	public $show_closed_wikis = false; // also list wikis that are locked or closed?
+	public $show_all_wikis = false;       // in account mode, display wikis the user isn't on?
+	public $show_groups_per_wiki = false; // in account mode, list relevant global groups for each wiki
 	public $db;
 	
 
@@ -89,7 +89,7 @@ class StalktoyScript extends Base {
 	public function getGlobal($target) {
 		// fetch details
 		$row = $this->db->Query(
-			'SELECT gu_id, gu_name, DATE_FORMAT(gu_registration, "%Y-%m-%d %H:%i") AS gu_timestamp, gu_locked, gu_hidden, GROUP_CONCAT(gug_group SEPARATOR ", ") AS gu_groups, lu_wiki FROM centralauth_p.globaluser LEFT JOIN centralauth_p.global_user_groups ON gu_id = gug_user LEFT JOIN centralauth_p.localuser ON lu_name = ? AND lu_attached_method IN ("primary", "new") WHERE gu_name = ? LIMIT 1',
+			'SELECT gu_id, gu_name, DATE_FORMAT(gu_registration, "%Y-%m-%d %H:%i") AS gu_timestamp, gu_locked, gu_hidden, GROUP_CONCAT(gug_group SEPARATOR ",") AS gu_groups, lu_wiki FROM centralauth_p.globaluser LEFT JOIN centralauth_p.global_user_groups ON gu_id = gug_user LEFT JOIN centralauth_p.localuser ON lu_name = ? AND lu_attached_method IN ("primary", "new") WHERE gu_name = ? LIMIT 1',
 			array( $target, $target )
 		)->fetchAssoc();
 
@@ -102,12 +102,65 @@ class StalktoyScript extends Base {
 			$account->isHidden = $row['gu_hidden'];
 			$account->isLocked = $row['gu_locked'];
 			$account->registered = $row['gu_timestamp'];
-			$account->groups = $row['gu_groups'];
+			$account->groups = ($row['gu_groups'] ? explode(',', $row['gu_groups']) : '');
 			$account->homeWiki = $row['lu_wiki'] ? $row['lu_wiki'] . '_p' : null;
 			$account->wikis = $this->db->getUnifiedWikis($this->target);
 			$account->wikiHash = array_flip($account->wikis);
 		}
 		return $account;
+	}
+	
+	/**
+	 * Get 
+	 */
+	public function getGlobalGroupsByWiki($id, $wikis) {
+		// fetch details
+		$rows = $this->db->Query(
+			'SELECT gug_group, ws_type, ws_wikis FROM centralauth_p.global_user_groups LEFT JOIN centralauth_p.global_group_restrictions ON gug_group = ggr_group LEFT JOIN centralauth_p.wikiset ON ggr_set = ws_id WHERE gug_user = ?',
+			array( $id )
+		)->fetchAllAssoc();
+		
+		// extract groups for each wiki
+		$groups = array();
+		foreach($wikis as $wiki)
+			$groups[$wiki] = array();
+		foreach($rows as $row) {
+			// prettify name
+			$group = str_replace('_', ' ', $row['gug_group']);
+		
+			// parse opt-in or opt-out list
+			$optList = array();
+			if($row['ws_wikis'] != NULL) {
+				$list = explode(',', $row['ws_wikis']);
+				foreach($list as $wiki)
+					$optList[] = $wiki . '_p';
+			}
+			
+			// apply groups
+			switch($row['ws_type']) {
+				// all wikis
+				case NULL:
+					foreach($wikis as $wiki)
+						$groups[$wiki][] = $group;
+					break;
+					
+				// some wikis
+				case 'optin':
+					foreach($optList as $wiki) 
+						$groups[$wiki][] = $group;
+					break;
+					
+				// all except some wikis
+				case 'optout':
+					$optout = array_flip($optList);
+					foreach($wikis as $wiki) {
+						if(!isset($optout[$wiki]))
+							$groups[$wiki][] = $group;
+					}
+					break;
+			}
+		}
+		return $groups;
 	}
 
 	/**
@@ -286,7 +339,8 @@ $target_form = '';
 
 $script = new StalktoyScript( $backend, $backend->get('target', $backend->getRouteValue()) );
 $script->show_all_wikis = $backend->get('show_all_wikis', false);
-$script->show_closed_wikis = $backend->get('closed', false);
+$script->show_groups_per_wiki = $backend->get('global_groups_per_wiki', false);
+$deletedGlobalGroups = array('Cabal');
 
 $backend->profiler->stop('initialize');
 
@@ -305,8 +359,8 @@ echo '
 		
 			', Form::Checkbox( 'show_all_wikis', $script->show_all_wikis ), '
 			<label for="show_all_wikis">Show wikis where account is not registered.</label><br />
-			', Form::Checkbox( 'closed', $script->show_closed_wikis ), '
-			<label for="closed">Show closed wikis.</label>
+			', Form::Checkbox( 'global_groups_per_wiki', $script->show_groups_per_wiki ), '
+			<label for="global_groups_per_wiki">Show relevant global groups for each wiki.</label><br />
 		</div>
 	</form>';
 
@@ -330,11 +384,6 @@ if( $script->isValid() && $ip->ip->isValid() ) {
 	/* local data */
 	$backend->profiler->start('fetch local');
 	foreach( $global['wikis'] as $wiki => $wikiData ) {
-		if( $wikiData->isClosed && !$script->show_closed_wikis ) {
-			unset( $global['wikis'][$wiki] );
-			continue;
-		}
-
 		$script->setWiki( $wiki );
 		$localBlocks[$wiki] = $script->getLocalIPBlocks($ip);
 	}
@@ -432,40 +481,40 @@ else if( $script->isValid() && $script->target ) {
 	## Fetch data
 	########
 	/* global details */
-	$backend->profiler->start('fetch global');
+	$backend->profiler->start('fetch global account');
 	$account = $script->getGlobal($script->target);
-
 	if( $account->exists ) {
-		$global = Array(
-			'stats' => Array(
-				'wikis'      => 0,
-				'edit_count' => 0,
-				'most_edits' => -1,
-				'most_edits_domain' => NULL,
-				'oldest' => NULL,
-				'oldest_raw' => 999999999999999,
-				'oldest_domain' => NULL
-			)
+		$stats = Array(
+			'wikis'      => 0,
+			'edit_count' => 0,
+			'most_edits' => -1,
+			'most_edits_domain' => NULL,
+			'oldest' => NULL,
+			'oldest_raw' => 999999999999999,
+			'oldest_domain' => NULL
 		);
 	}
-	else
-		$global = Array(
-			'id' => NULL,
-			'stats' => Array(
-				'most_edits'        => -1,
-				'most_edits_domain' => NULL
-			)
+	else {
+		$stats = Array(
+			'most_edits'        => -1,
+			'most_edits_domain' => NULL
 		);
-	$backend->profiler->stop('fetch global');
+	}
+	$backend->profiler->stop('fetch global account');
+	
+	/* global groups */
+	$globalGroupsByWiki = array();
+	if($account->exists && $account->groups) {
+		$backend->profiler->start('fetch global groups by wiki');
+		$globalGroupsByWiki = $script->getGlobalGroupsByWiki($account->id, $account->wikis);
+		$backend->profiler->stop('fetch global groups by wiki');
+	}
 	
 	/* local details */
-	$backend->profiler->start('fetch local');
+	$backend->profiler->start('fetch local accounts');
 	$local = array();
 	foreach( $script->wikis as $wiki => $wikiData ) {
 		$domain = $wikiData->domain;
-		if( $wikiData->isClosed && !$script->show_closed_wikis )
-			continue;
-
 		$script->setWiki( $wiki );
 		$localAccount = $script->getLocal($script->db, $script->target, isset($account->wikiHash[$wiki]), $wikiData);
 		
@@ -474,34 +523,29 @@ else if( $script->isValid() && $script->target ) {
 
 		if($localAccount->exists) {
 			/* statistics used even when no global account */
-			if( $localAccount->editCount > $global['stats']['most_edits'] ) {
-				$global['stats']['most_edits'] = $localAccount->editCount;
-				$global['stats']['most_edits_domain'] = $domain;
+			if( $localAccount->editCount > $stats['most_edits'] ) {
+				$stats['most_edits'] = $localAccount->editCount;
+				$stats['most_edits_domain'] = $domain;
 			}
 		
 			/* statistics shown only for global account */
 			if( $account->exists && $localAccount->exists ) {
-				$global['stats']['wikis']++;
-				$global['stats']['edit_count'] += $localAccount->editCount;
-				if( $localAccount->registeredRaw < $global['stats']['oldest_raw'] ) {
-					$global['stats']['oldest'] = $localAccount->registered;
-					$global['stats']['oldest_raw'] = $localAccount->registeredRaw;
-					$global['stats']['oldest_domain'] = $domain;
+				$stats['wikis']++;
+				$stats['edit_count'] += $localAccount->editCount;
+				if( $localAccount->registeredRaw < $stats['oldest_raw'] ) {
+					$stats['oldest'] = $localAccount->registered;
+					$stats['oldest_raw'] = $localAccount->registeredRaw;
+					$stats['oldest_domain'] = $domain;
 				}
 			}
 		}
 	}
-	$backend->profiler->stop('fetch local');
+	$backend->profiler->stop('fetch local accounts');
 
-	$backend->profiler->start('adjust stats');
 	/* best guess for pre-2005 oldest account */
 	if( $account->exists )
-		if( !$global['stats']['oldest'] && !$local[$account->homeWiki]->registeredRaw )
-			$global['stats']['oldest_domain'] = $local[$account->homeWiki]->wiki->domain;
-	
-	
-	/* zero-padding for sorting */
-	$backend->profiler->stop('adjust stats');
+		if( !$stats['oldest'] && !$local[$account->homeWiki]->registeredRaw )
+			$stats['oldest_domain'] = $local[$account->homeWiki]->wiki->domain;
 
 		
 	#######
@@ -518,16 +562,20 @@ else if( $script->isValid() && $script->target ) {
 		' data-status="', ($account->isLocked && $account->isHidden ? 'locked, hidden' : ($account->isLocked ? 'locked' : ($account->isHidden ? 'hidden' : 'okay'))), '"',
 		' data-id="', $account->id, '"',
 		' data-registered="', $account->registered, '"',
-		' data-groups="', $backend->formatValue($account->groups), '"';
+		' data-groups="', $backend->formatValue(implode(', ', $account->groups)), '"';
 	}
 	echo '>';
 	if( $account->exists ) {
+		$globalGroups = array();
+		foreach($account->groups as $group) {
+			$globalGroups[] = in_array($group, $deletedGlobalGroups)
+				? $backend->formatValue($group)
+				:  '<a href="//toolserver.org/~pathoschild/globalgroups/#' . $backend->formatAnchor($group) . '" title="View global group details">' . $backend->formatValue(str_replace('_', ' ', $group)) . '</a>';
+		}
+		$globalGroups = implode(', ', $globalGroups);
+	
 		echo "
 			<table class='plain'>
-				<tr>
-					<td>User name:</td>
-					<td><b>{$script->target}</b></td>
-				</tr>
 				<tr>
 					<td>Home wiki:</td>";
 		if( $account->homeWiki )
@@ -556,14 +604,14 @@ else if( $script->isValid() && $script->target ) {
 				</tr>
 				<tr>
 						<td>Groups:</td>
-					<td><b>', $account->groups ? str_replace('_', ' ', $account->groups) : '&mdash;', '</b></td>
+					<td><b>', $globalGroups, '</b></td>
 				</tr>
 				<tr>
 					<td style="vertical-align:top;">Statistics:</td>
 					<td>
-						', $global['stats']['edit_count'], ' edits on ', $global['stats']['wikis'], ' wikis.<br />
-						Most edits on <a href="//', $global['stats']['most_edits_domain'], '/wiki/Special:Contributions/', $script->target_wiki_url, '">', $global['stats']['most_edits_domain'], '</a> (', $global['stats']['most_edits'], ').<br />
-						Oldest account on <a href="//', $global['stats']['oldest_domain'], '/wiki/user:', $script->target_wiki_url, '">', $global['stats']['oldest_domain'], '</a> (', ( $global['stats']['oldest'] ? $global['stats']['oldest'] : '2005 or earlier, so probably inaccurate; registration date was not stored until late 2005' ), ').
+						', $stats['edit_count'], ' edits on ', $stats['wikis'], ' wikis.<br />
+						Most edits on <a href="//', $stats['most_edits_domain'], '/wiki/Special:Contributions/', $script->target_wiki_url, '">', $stats['most_edits_domain'], '</a> (', $stats['most_edits'], ').<br />
+						Oldest account on <a href="//', $stats['oldest_domain'], '/wiki/user:', $script->target_wiki_url, '">', $stats['oldest_domain'], '</a> (', ( $stats['oldest'] ? $stats['oldest'] : '2005 or earlier, so probably inaccurate; registration date was not stored until late 2005' ), ').
 						<div id="account-visualizations"><br clear="all" /></div>
 					</td>
 				</tr>
@@ -589,21 +637,22 @@ else if( $script->isValid() && $script->target ) {
 		$label_unified_strs = Array( 'local', 'unified' );
 	
 		/* output */
-		echo "
-			<table class='pretty sortable' id='local-accounts'>
+		echo '
+			<table class="pretty sortable" id="local-accounts">
 	 			<thead>
 					<tr>
 	 					<th>wiki</th>
 	 					<th>edits</th>
 	 					<th>registered</th>
-	 					<th>groups</th>
-						<th><a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about unified login'>unified login</a></th>
+	 					<th>groups</th>',
+						($script->show_groups_per_wiki && $globalGroupsByWiki ? '<th>global groups</th>' : ''),
+						'<th><a href="//meta.wikimedia.org/wiki/Help:Unified_login" title="about unified login">unified login</a></th>
 						<th>block</th>
 	 				</tr>
 				</thead>
-				<tbody>\n";
+				<tbody>';
 			
-			foreach( $local as $dbname => $user ) {
+		foreach( $local as $dbname => $user ) {
 			########
 			## Prepare strings
 			########
@@ -622,6 +671,10 @@ else if( $script->isValid() && $script->target ) {
 				$is_hidden  = (int)($is_blocked && $user->block->isHidden);
 				$is_unified = (int)$user->isUnified;
 				$label_unified = $label_unified_strs[$is_unified];
+				$hasGlobalGroups = $globalGroupsByWiki && isset($globalGroupsByWiki[$wiki->dbName]) && $globalGroupsByWiki[$wiki->dbName];;
+				$globalGroups = $hasGlobalGroups
+					? implode(', ', $globalGroupsByWiki[$wiki->dbName])
+					: '&nbsp;';
 			
 				if( $user->isBlocked ) {
 					$reason = $script->parse_reason($user->block->reason, $wiki->domain );
@@ -640,18 +693,20 @@ else if( $script->isValid() && $script->target ) {
 				$is_unified = 0;
 				$label_unified = 'no such user';
 				$block_summary = '&nbsp;';
+				$globalGroups = '&nbsp;';
 			}
 			
 			########
 			## Output
 			########
 			echo '
-				<tr data-wiki="', $wiki->name, '" data-lang="', ($wiki->isMultilingual ? 'multilingual' : $wiki->lang) ,'" data-family="', $wiki->family, '" data-open="', (int)!$wiki->isClosed, '" data-exists="', (int)(bool)$user->exists, '" data-edits="', $user->editCount, '" data-groups="', (int)$has_groups, '" data-registered="', $user->registered, '" data-unified="', (int)$user->isUnified, '" data-blocked="', (int)$user->isBlocked, '">
+				<tr data-wiki="', $wiki->name, '" data-lang="', ($wiki->isMultilingual ? 'multilingual' : $wiki->lang) ,'" data-family="', $wiki->family, '" data-open="', (int)!$wiki->isClosed, '" data-exists="', (int)(bool)$user->exists, '" data-edits="', $user->editCount, '" data-groups="', (int)$has_groups, '" data-global-groups="', (int)($hasGlobalGroups), '" data-registered="', $user->registered, '" data-unified="', (int)$user->isUnified, '" data-blocked="', (int)$user->isBlocked, '">
 					<td class="wiki">', $link_wiki, '</td>
 					<td class="edit-count">', $link_edits, '</td>
 					<td class="timestamp">', $user->registered, '</td>
-					<td class="groups">', $user->groups, '</td>
-					<td class="unification">', $label_unified, '</td>
+					<td class="groups">', $user->groups, '</td>',
+					($script->show_groups_per_wiki && $globalGroupsByWiki ? '<td class="global-groups">' . $globalGroups . '</td>' : ''),
+					'<td class="unification">', $label_unified, '</td>
 					<td class="blocks">', $block_summary, '</td>
 				</tr>', "\n";
 		}
