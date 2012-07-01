@@ -111,7 +111,10 @@ class StalktoyScript extends Base {
 	}
 	
 	/**
-	 * Get 
+	 * Get the user's global groups that apply for each wiki.
+	 * @param int $id The user's global account ID.
+	 * @param string[] $wikis The database names of the wikis on which the user's account is unified.
+	 * @returns array An array of groups in the form array(dbname => string[]).
 	 */
 	public function getGlobalGroupsByWiki($id, $wikis) {
 		// fetch details
