@@ -217,23 +217,22 @@ class Backend extends Base {
 		echo '
 <!-- begin generated footer -->
 			</div>
-			<div id="license">
-				Hi! You can <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver" title="view source">view the source code</a> or <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver/issues" title="report issue">report a bug or suggestion</a>. ', $this->license, '
+			<div id="footer">
+				<div id="license">
+					Hi! You can <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver" title="view source">view the source code</a> or <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver/issues" title="report issue">report a bug or suggestion</a>. ', $this->license, '
+				</div>
 				<div id="profiling">
-					<h3>Profiling</h3>
-					<div>
-						Page generated in ', $resultSeconds, ' seconds.
+					Page generated in ', $resultSeconds, ' seconds.
 		';
 		
 		if(count($timerResults)) {
-			echo '<ul>';
+			echo '<span>[+]</span><ul>';
 			foreach( $timerResults as $name => $time )
 				echo '<li>', $name, ': ', $time, '</li>';
 			echo '</ul>';
 		}
 		
 		echo '
-					</div>
 				</div>
 			</div>
 		</div>

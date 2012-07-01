@@ -4,8 +4,8 @@
 	/* default layout page effects */
 	$("#profiling")
 		.collapse({
-			head: "h3",
-			group: "div",
+			head: "span",
+			group: "ul",
 			show: function () {
 				this.animate({
 					opacity: "toggle",

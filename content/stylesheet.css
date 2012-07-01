@@ -245,13 +245,13 @@ table.sortable .headerSortDown, table.sortable .headerSortUp {
 }
 
 /* about */
-#license {
+#footer {
 	margin:1em;
 	padding:1em;
 	font-size:0.6em;
 	color:gray;
 }
-#license a {
+#footer a {
 	color:#669;
 }
 
