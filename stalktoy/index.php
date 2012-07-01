@@ -569,13 +569,16 @@ else if( $script->isValid() && $script->target ) {
 	}
 	echo '>';
 	if( $account->exists ) {
-		$globalGroups = array();
-		foreach($account->groups as $group) {
-			$globalGroups[] = in_array($group, $deletedGlobalGroups)
-				? $backend->formatValue($group)
-				:  '<a href="//toolserver.org/~pathoschild/globalgroups/#' . $backend->formatAnchor($group) . '" title="View global group details">' . $backend->formatValue(str_replace('_', ' ', $group)) . '</a>';
+		$globalGroups = '&mdash;';
+		if($account->groups) {
+			$globalGroups = array();
+			foreach($account->groups as $group) {
+				$globalGroups[] = in_array($group, $deletedGlobalGroups)
+					? $backend->formatValue($group)
+					:  '<a href="//toolserver.org/~pathoschild/globalgroups/#' . $backend->formatAnchor($group) . '" title="View global group details">' . $backend->formatValue(str_replace('_', ' ', $group)) . '</a>';
+			}
+			$globalGroups = implode(', ', $globalGroups);
 		}
-		$globalGroups = implode(', ', $globalGroups);
 	
 		echo "
 			<table class='plain'>
