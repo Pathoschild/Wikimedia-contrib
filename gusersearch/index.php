@@ -185,18 +185,18 @@ class Script extends Base {
 		/*********
 		** connect to DB
 		*********/
-		$this->profiler->start( 'instantiate Toolserver' );
+		$backend->profiler->start( 'prepare database connections' );
 
 		$this->db = $backend->GetDatabase( Toolserver::ERROR_PRINT );
 		$this->db->Connect( 'metawiki_p' );
 
-		$this->profiler->stop( 'instantiate Toolserver' );
+		$backend->profiler->stop( 'prepare database connections' );
 
 
 		/*********
 		** build query
 		*********/
-		$this->profiler->start('build query');
+		$backend->profiler->start('build search query');
 
 		/* global user */
 		$global_users  = self::T_GLOBALUSER;
@@ -225,12 +225,12 @@ class Script extends Base {
 		/*********
 		** Fetch and dispose
 		*********/
-		$this->profiler->stop('build query');
-		$this->profiler->start('do search');
+		$backend->profiler->stop('build search query');
+		$backend->profiler->start('execute search');
 
 		$this->db->Query( $this->query, $this->values );
 
-		$this->profiler->stop('do search');
+		$backend->profiler->stop('execute search');
 		$this->db->Dispose();
 	}
 
@@ -254,7 +254,7 @@ class Script extends Base {
 ## Instantiate script engine
 #############################
 $script = new Script();
-$script->profiler->start('initialize');
+$backend->profiler->start('initialize');
 
 /* get arguments */
 $name = $backend->get('name', $backend->getRouteValue());
@@ -349,8 +349,9 @@ echo "
 #############################
 ## Perform search
 #############################
-$script->profiler->stop('initialize');
+$backend->profiler->stop('initialize');
 $script->Query();
+$backend->profiler->start('output');
 $count = $script->db->countRows();
 $has_results = (int)!(bool)$count;
 
@@ -453,4 +454,5 @@ query = {$script->query}<br />
 values = ", print_r($script->values, true),
 "-->\n";
 
+$backend->profiler->stop('output');
 $backend->footer();
