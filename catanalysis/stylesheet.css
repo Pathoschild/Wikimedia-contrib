@@ -1,0 +1,51 @@
+/* input form */
+input[type=radio]:active + label {
+	font-weight:bold;
+}
+
+/* lists */
+li ol {
+	list-style-type:lower-alpha;
+}
+
+li li ol {
+	list-style-type:lower-roman;
+}
+
+/* tables */
+table, table td {
+	border:0 !important;
+}
+
+table tr {
+	border:1px solid #CCC;
+}
+
+/* headings */
+h3 {
+	border-bottom:1px dashed gray;
+}
+
+/* classes */
+.struckout a {
+	text-decoration:line-through;
+	color:gray;
+}
+
+.lsaadvanced {
+	width:40em;
+	padding:0.5em;
+	border:1px solid gray;
+	color:gray;
+}
+
+#password {
+	border:2px solid #C00;
+}
+
+.lsaoutput {
+	width:100%;
+	overflow:auto;
+	padding:0.5em;
+	border:1px solid gray;
+}

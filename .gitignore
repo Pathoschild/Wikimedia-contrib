@@ -1,5 +1,6 @@
 *.cs
 *.csproj
+*.phpproj
 *.sln
 *.suo
 *.user
