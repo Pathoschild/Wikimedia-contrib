@@ -13,12 +13,32 @@ class Script extends Base {
 	############################
 	## Configuration
 	############################
-	const DEFAULT_EVENT = 24;
+	const DEFAULT_EVENT = 26;
 	public $events = Array(
+		26 => Array(
+			'name' => '2012 enwiki arbcom elections (voters)',
+			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2012',
+			'only_db' => 'enwiki_p',
+			'obsolete' => false
+		),
+		
+		25 => Array(
+			'name' => '2012 enwiki arbcom elections (candidates)',
+			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2012',
+			'only_db' => 'enwiki_p',
+			'action' => '<strong>be a candidate</strong>',
+			'more_reqs' => Array(
+				'You must be in good standing and not subject to active blocks or site-bans.',
+				'You must meet the Wikimedia Foundation\'s <a href="http://wikimediafoundation.org/w/index.php?title=Access_to_nonpublic_data_policy&oldid=47490" title="Access to nonpublic data policy">criteria for access to non-public data</a> and must identify with the Foundation if elected.',
+				'You must have disclosed any alternate accounts in your election statement (legitimate accounts which have been declared to the Arbitration Committee before the close of nominations need not be publicly disclosed).'
+			),
+			'obsolete' => true
+		),		
+		
 		24 => Array(
 			'name' => '2012 Commons Picture of the Year for 2011',
 			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2011',
-			'obsolete' => false
+			'obsolete' => true
 		),
 		
 		23 => Array(
@@ -52,7 +72,7 @@ class Script extends Base {
 			'only_db' => 'enwiki_p',
 			'action' => '<strong>be a candidate</strong>',
 			'more_reqs' => Array(
-				'You must be in good standing and is not subject to active blocks or site-bans.',
+				'You must be in good standing and not subject to active blocks or site-bans.',
 				'You must meet the Wikimedia Foundation\'s criteria for access to non-public data and must identify with the Foundation if elected.',
 				'You must have disclosed any alternate accounts in your election statement (legitimate accounts which have been declared to the Arbitration Committee prior to the close of nominations need not be publicly disclosed).'
 			),
@@ -789,6 +809,84 @@ while ($script->user['name'] && !$cached) {
 	 * Verify requirements
 	 ***************/
 	switch ($script->event['id']) {
+		############################
+		## 2012 enwiki arbcom elections (voters)
+		############################
+		case 26:
+			$script->printWiki();
+			
+			########
+			## registered < 2012-Oct-28
+			########
+			$script->condition(
+				($script->user['registration_raw'] < 20121028000000),
+				"has an account registered before 28 October 2012 (registered {$script->user['registration']})...",
+				"does not have an account registered before 28 October 2012 (registered {$script->user['registration']})."
+			);
+			
+			########
+			## >=150 main-NS edits before 2012-Nov-01
+			########
+			/* SQL derived from query written by [[en:user:Cobi]], from < //toolserver.org/~sql/sqlbot.txt > */
+			$script->db->Query(
+				'SELECT data.count FROM ('
+				. 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
+				. 'SELECT rev_page, COUNT(*) AS count FROM revision WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
+				. ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
+				. ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
+				Array($script->user['id'], 20121102000000)
+			);
+			$edits = $script->db->fetchColumn();
+			$script->condition(
+				$edits >= 150,
+				"has 150 main-namespace edits on or before 01 November 2012 (has {$edits})...",
+				"does not have 150 main-namespace edits on or before 01 November 2012 (has {$edits})."
+			);
+			
+			########
+			## Not currently blocked
+			########
+			$script->condition(
+				!$script->currently_blocked(),
+				"not currently blocked...",
+				"must not be blocked during at least part of election (verify <a href='//en.wikipedia.org/wiki/Special:Log/block?user=" . urlencode($script->user['name']) . "' title='block log'>block log</a>)."
+			);
+			break;
+			
+		############################
+		## 2012 enwiki arbcom elections (candidates)
+		############################
+		case 25:
+			$script->printWiki();
+			
+			########
+			## >=500 main-NS edits before 2012-Nov-02
+			########
+			/* SQL derived from query written by [[en:user:Cobi]], from < //toolserver.org/~sql/sqlbot.txt > */
+			$script->db->Query(
+				'SELECT data.count FROM ('
+				. 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
+				. 'SELECT rev_page, COUNT(*) AS count FROM revision WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
+				. ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
+				. ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
+				Array($script->user['id'], 20121102000000)
+			);
+			$edits = $script->db->fetchColumn();
+			$script->condition(
+				$edits >= 500,
+				"has 500 main-namespace edits on or before 01 November 2012 (has {$edits})...",
+				"does not have 500 main-namespace edits on or before 01 November 2012 (has {$edits})."
+			);
+			
+			########
+			## Not currently blocked
+			########
+			$script->condition(
+				!$script->currently_blocked(),
+				"not currently blocked...",
+				"must not be currently blocked (verify <a href='//en.wikipedia.org/wiki/Special:Log/block?user=" . urlencode($script->user['name']) . "' title='block log'>block log</a>)."
+			);
+			break;
 
 		############################
 		## 2012 Commons Picture of the Year 2011
