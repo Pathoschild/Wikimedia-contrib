@@ -1,7 +1,7 @@
 <?
 if($enabled = false) {
 	/* configure */
-	$type = 'notice';
+	$type = 'warn';
 	$message = 'The Wikimedia Toolserver (which hosts this tool) is having hardware load issues. You might experience temporary errors or timeouts.';
 	
 	#$type = 'error';
