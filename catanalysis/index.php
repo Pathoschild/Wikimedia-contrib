@@ -140,6 +140,7 @@ do {
 		/* fetch list of subcategories */
 		$cats  = array();
 		$queue = array($title);
+		$backend->profiler->start('fetch subcategories');
 		while(count($queue)) {
 			/* fetch subcategories of currently-known categories */
 			$dbCatQuery = 'SELECT page_title FROM page JOIN categorylinks ON page_id=cl_from WHERE page_namespace=14 AND CONVERT(cl_to USING BINARY) IN (';
@@ -156,11 +157,14 @@ do {
 			$dbCatQuery = rtrim($dbCatQuery, ',') . ')';
 
 			/* queue subcategories */
+			if(count($dbCatValues) == 0)
+				continue;
 			$subcats = $db->Query($dbCatQuery, $dbCatValues)->fetchAllAssoc();
 			foreach($subcats as $subcat) {
 				$queue[] = $subcat['page_title'];
 			}
 		}
+		$backend->profiler->stop('fetch subcategories');
 
 		/* add to query */
 		$revisionQuery['sql'] .= 'JOIN categorylinks on page_id=cl_from WHERE CONVERT(cl_to USING BINARY) IN (';
@@ -172,19 +176,43 @@ do {
 	}
 	
 	/* finalise */
+	$backend->profiler->start('fetch revisions');
 	$revisions = $db->Query($revisionQuery['sql'], $revisionQuery['values'])->fetchAllAssoc();
+	$backend->profiler->stop('fetch revisions');
 
+	
+	/***************
+	* Fetch bot flags
+	***************/
+	$backend->profiler->start('fetch user groups');
+	
+	// get unique users
+	$users = array();
+	foreach($revisions as $revision)
+		$users[$revision['rev_user_text']] = false;
+	
+	// fetch bot flags
+	$bots = array();
+	$query = $db->Query('SELECT user_name FROM user INNER JOIN user_groups ON user_id = ug_user WHERE user_name IN (' . rtrim(str_repeat('?,', count($users)), ',') . ') AND ug_group = "bot"', array_keys($users));
+	while($user = $query->fetchValue())
+		$bots[$user] = true;
+	unset($users);
+	$backend->profiler->stop('fetch user groups');
+	
 	
 	/***************
 	* Fetch domain
 	***************/
+	$backend->profiler->start('fetch domain');
 	$db->Connect('metawiki_p');
 	$domain = $db->Query('SELECT domain FROM toolserver.wiki WHERE dbname=? LIMIT 1', $database)->fetchValue();
 	$db->Dispose();
+	$backend->profiler->stop('fetch domain');
 	
 	/***************
 	* Generate data
 	***************/
+	$backend->profiler->start('analyze data');
 	$data = Array(
 		'totals'     => array('edits' => 0, 'minor' =>0, 'newpages' => 0),
 		'months'     => array(),
@@ -376,10 +404,12 @@ do {
 	$data['counts']['redirects'] = count($data['redirects']);
 	$data['counts']['users']     = count($data['users']);
 	
+	$backend->profiler->stop('analyze data');
 	
 	/***************
 	* Table of contents
 	***************/
+	$backend->profiler->start('generate output');
 	echo '<h2 id="Generated_statistics">Generated statistics</h2>';
 	if($data) {
 		?>
@@ -432,9 +462,13 @@ do {
 		echo '<h4 id="list_editors">editors</h4><ol>';
 		foreach($data['editsbyuser']['total'] as $user=>$edits) {
 			echo '<li';
-			if($edits<$USEREDIT_LIMIT_FOR_INACTIVITY)
+			if($edits < $USEREDIT_LIMIT_FOR_INACTIVITY || array_key_exists($user, $bots))
 				echo ' class="struckout"';
-			echo '>', genLink('user:' . $user, $user), ' (<small>', $edits, ' edits</small>)</li>';
+			echo '>', genLink('user:' . $user, $user), ' (<small>', $edits, ' edits</small>)';
+			
+			if(array_key_exists($user, $bots))
+				echo ' <small>[bot]</small>';
+			echo '</li>';
 		}
 		echo '</ol>';
 		
@@ -517,7 +551,7 @@ do {
 			// discount those with less than editlimit
 			$users = 0;
 			foreach($data['editsbyuser'][$month] as $user=>$edits) {
-				if($edits>=$USEREDIT_LIMIT_FOR_INACTIVITY)
+				if($edits >= $USEREDIT_LIMIT_FOR_INACTIVITY && !array_key_exists($user, $bots))
 					$users++;
 			}
 			echo genBar($month, $users, 1);
@@ -534,16 +568,14 @@ do {
 			     '<table>';
 			
 			foreach($data['editsbyuser'][$month] as $user=>$edits) {
-				if($edits<$USEREDIT_LIMIT_FOR_INACTIVITY)
-					$isActive = true;
-				else
-					$isActive = false;
-			
+				$isActive = $edits > $USEREDIT_LIMIT_FOR_INACTIVITY && !array_key_exists($user, $bots);
+				
 				echo genBar(genLink('user:' . $user, $user), $edits, 10, $isActive);
 			}
 			echo '</table>';
 		}
 	}
+	$backend->profiler->stop('generate output');
 } while (0);
 
 $backend->footer();
