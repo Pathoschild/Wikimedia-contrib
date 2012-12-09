@@ -15,17 +15,29 @@ class Backend extends Base {
 	/*########
 	## Properties
 	########*/
-	/*
-	 * @var string The current page's filename, like "index.php".
+	/**
+	 * The current page's filename, like "index.php".
+	 * @var string
 	 */
 	private $filename  = NULL;
 	
 	/**
-	 * @var string The page title, usually the name of the script.
+	 * The page title, usually the name of the script.
+	 * @var string
 	 */
 	private $title     = NULL;
-	private $blurb     = NULL; // a short description displayed at the top of the page; defaults to nothing.
-	private $hook_head = NULL; // extra content to insert into HTML <head>
+	
+	/**
+	 * A short description displayed at the top of the page; defaults to nothing.
+	 * @var string
+	 */
+	private $blurb     = NULL;
+	
+	/**
+	 * Extra content to insert into HTML <head>.
+	 * @var string
+	 */
+	private $hook_head = NULL;
 	
 	public $logger = NULL;
 	public $cache = NULL;
@@ -35,6 +47,11 @@ class Backend extends Base {
 	#################################################
 	## Constructor
 	#################################################
+	/**
+	 * Construct a backend instance for a page.
+	 * @param $title string The page title to display.
+	 * @param $blurb string A short description displayed at the top of the page.
+	 */
 	public function __construct( $title, $blurb ) {
 		parent::__construct();
 		
@@ -78,12 +95,22 @@ class Backend extends Base {
 	#############################
 	## Get a value from the HTTP GET values.
 	#############################
+	/**
+	 * Get a value from the HTTP request.
+	 * @param string $name The name of the request argument.
+	 * @param mixed $default The value to return if the request does not contain the value.
+	 * @return mixed The expected or default value.
+	 */
 	public function get( $name, $default = NULL ) {
 		if(isset($_GET[$name]) && $_GET[$name] != '')
 			return $_GET[$name];
 		return $default;
 	}
 	
+	/**
+	 * Get the value of the route placeholder (e.g, 'Pathoschild' in '/stalktoy/Pathoschild').
+	 * @return mixed The expected value, or null.
+	 */
 	public function getRouteValue() {
 		return $this->get('$1');
 	}
@@ -93,6 +120,7 @@ class Backend extends Base {
 	 * Link to external CSS or JavaScript in the header.
 	 * @param string $url The URL of the CSS or JavaScript to fetch.
 	 * @param bool $prefix Whether to explicitly prefix the URL with the root URL (e.g., "//toolserver.org/~pathoschild/$url").
+	 * @param string $as The reference type to render ('css' or 'js'), or null to use the file extension.
 	 */
 	public function link( $url, $prefix = false, $as = null ) {
 		if(!$as)
