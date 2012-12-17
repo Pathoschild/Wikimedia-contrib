@@ -133,7 +133,7 @@ do {
 	
 		$revisionQuery['sql'] .= ' (CONVERT(page_title USING binary)=CONVERT(? USING BINARY) OR CONVERT(page_title USING BINARY) LIKE CONVERT(? USING BINARY)) ORDER BY revision.rev_timestamp';
 		$revisionQuery['values'][] = str_replace(' ', '_', $title);
-		$revisionQuery['values'][] = str_replace(' ', '_', $title) + '%';
+		$revisionQuery['values'][] = str_replace(' ', '_', $title . '%');
 	}
 	/* category mode */
 	else {
@@ -570,7 +570,7 @@ do {
 			foreach($data['editsbyuser'][$month] as $user=>$edits) {
 				$isActive = $edits > $USEREDIT_LIMIT_FOR_INACTIVITY && !array_key_exists($user, $bots);
 				
-				echo genBar(genLink('user:' . $user, $user), $edits, 10, $isActive);
+				echo genBar(genLink('user:' . $user, $user), $edits, 10, !$isActive);
 			}
 			echo '</table>';
 		}
