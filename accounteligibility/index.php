@@ -13,13 +13,19 @@ class Script extends Base {
 	############################
 	## Configuration
 	############################
-	const DEFAULT_EVENT = 26;
+	const DEFAULT_EVENT = 27;
 	public $events = Array(
+		27 => Array(
+			'name' => '2013 Commons Picture of the Year for 2012',
+			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2012',
+			'obsolete' => false
+		),
+		
 		26 => Array(
 			'name' => '2012 enwiki arbcom elections (voters)',
 			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2012',
 			'only_db' => 'enwiki_p',
-			'obsolete' => false
+			'obsolete' => true
 		),
 		
 		25 => Array(
@@ -33,7 +39,7 @@ class Script extends Base {
 				'You must have disclosed any alternate accounts in your election statement (legitimate accounts which have been declared to the Arbitration Committee before the close of nominations need not be publicly disclosed).'
 			),
 			'obsolete' => true
-		),		
+		),
 		
 		24 => Array(
 			'name' => '2012 Commons Picture of the Year for 2011',
@@ -809,6 +815,44 @@ while ($script->user['name'] && !$cached) {
 	 * Verify requirements
 	 ***************/
 	switch ($script->event['id']) {
+		############################
+		## 2013 Commons Picture of the Year 2012
+		############################
+		case 27:
+			$script->printWiki();
+			$age_okay = false;
+			$edits_okay = false;
+			do {
+				$script->eligible = true;
+			
+				########
+				## registered < 2013-Jan-01
+				########
+				if(!$age_okay) {
+					$age_okay = $script->condition(
+						$date_okay = ($script->user['registration_raw'] < 20130101000000),
+						"has an account registered before 01 January 2013 (registered {$script->user['registration']})...",
+						"does not have an account registered before 01 January 2013 (registered {$script->user['registration']})."
+					);
+				}
+
+				########
+				## > 75 edits before 2013-Jan-01
+				########
+				if(!$edits_okay) {
+					$edits = $script->edit_count(NULL, 20130101000000);
+					$edits_okay = $script->condition(
+						$edits_okay = ($edits >= 75),
+						"has more than 75 edits before 01 January 2013 (has {$edits})...",
+						"does not have more than 75 edits before 01 January 2013 (has {$edits})."
+					);
+				}
+				
+				$script->eligible = ($age_okay && $edits_okay);
+			}
+			while (!$script->eligible && $script->get_next());
+			break;
+	
 		############################
 		## 2012 enwiki arbcom elections (voters)
 		############################
