@@ -7,11 +7,10 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 
 
 */
-/*jshint bitwise:true, eqeqeq:true, forin:false, immed:true, latedef:true, loopfunc:true, noarg:true, noempty:true, nonew:true, smarttabs:true, strict:true, trailing:true, undef:true*/
-/*global $:true, mw:true*/
 var pathoschild = pathoschild || {};
 (function () {
-	"use strict";
+	'use strict';
+
 	/**
 	 * Self-contained utility methods.
 	 * @namespace
@@ -100,7 +99,7 @@ var pathoschild = pathoschild || {};
 		 */
 		Log: function (message) {
 			if (window.console && window.console.log)
-				console.log(message);
+				window.console.log(message);
 			else if(window.mw)
 				mw.log(message);
 		},
