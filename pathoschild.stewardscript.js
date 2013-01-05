@@ -1,9 +1,7 @@
-﻿/*jshint bitwise:true, eqeqeq:true, forin:false, immed:true, latedef:true, loopfunc:true, noarg:true, noempty:true, nonew:true, smarttabs:true, strict:true, trailing:true, undef:true*/
-/*global mw */
-var pathoschild = pathoschild || {};
+﻿var pathoschild = pathoschild || {};
 
 (function() {
-	"use strict";
+	'use strict';
 	/**
 	 * Extends the user interface for Wikimedia stewards' convenience.
 	 * @see https://github.com/Pathoschild/Wikimedia-contrib#readme
@@ -12,7 +10,6 @@ var pathoschild = pathoschild || {};
 		version: '2.2.1',
 	
 		Initialize: function() {
-			var _this = pathoschild.StewardScript;
 			var articleUrl = mw.config.get('wgServer') + mw.config.get('wgArticlePath');
 
 			mw.util.addCSS(
@@ -113,11 +110,9 @@ var pathoschild = pathoschild || {};
 
 					/* references & data */
 					var user  = pathoschild.StewardScript.user = $('#bodyContent input[name="target"]').val();
-					var token = $('#bodyContent input[name="wpEditToken"]')[0].value;
 
 					var $caReason = $('#bodyContent input[name="wpReason"]');
 					var $form   = $caReason.closest('form');
-					var $submit = $form.find('input[type="submit"]');
 				
 					/*****************
 					** See-also links
@@ -204,7 +199,6 @@ var pathoschild = pathoschild || {};
 						var domain = $link.text();
 						if(!domain)
 							return;
-						var $checkuserStatus = this.Make('span');
 					
 						$row.append(this
 							.Make('td')

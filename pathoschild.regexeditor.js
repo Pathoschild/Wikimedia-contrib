@@ -9,12 +9,11 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 
 
 */
-/*jshint bitwise:true, eqeqeq:true, forin:false, immed:true, latedef:true, loopfunc:true, noarg:true, noempty:true, nonew:true, smarttabs:true, strict:true, trailing:true, undef:true*/
-/*global $:true, pathoschild:true*/
 /// <reference path="pathoschild.util.js" />
 var pathoschild = pathoschild || {};
 (function () {
-	"use strict";
+	'use strict';
+
 	/**
 	 * Singleton that lets the user define custom regular expressions using a dynamic form and execute them against the text.
 	 * @author Pathoschild
@@ -380,7 +379,6 @@ var pathoschild = pathoschild || {};
 			pathoschild.util.storage.Write('tsre-sessions.' + sessionName, patterns);
 
 			// update list
-			var $list = $('.tsre-session-buttons select:first');
 			this.PopulateSessionList();
 		},
 
