@@ -8,7 +8,7 @@
 	 */
 	pathoschild.StewardScript = {
 		version: '2.2.1',
-	
+
 		Initialize: function() {
 			var articleUrl = mw.config.get('wgServer') + mw.config.get('wgArticlePath');
 
@@ -66,7 +66,7 @@
 					)
 				);
 			}
-		
+
 			/*****************
 			** Page actions
 			*****************/
@@ -113,7 +113,7 @@
 
 					var $caReason = $('#bodyContent input[name="wpReason"]');
 					var $form   = $caReason.closest('form');
-				
+
 					/*****************
 					** See-also links
 					*****************/
@@ -133,7 +133,7 @@
 								.attr({ href:'//toolserver.org/~luxo/contributions/contributions.php?blocks=true&user=' + encodeURIComponent(user), title:'Luxo\'s User Contributions (lists edits across all Wikimedia wikis)'})
 							)
 						);
-				
+
 					/*****************
 					** Prefill reason
 					*****************/
@@ -141,7 +141,7 @@
 						.val('crosswiki abuse')
 						.text('crosswiki abuse')
 						.prop('selected', 1);
-			
+
 					/*****************
 					** 'Quick access' section
 					*****************/
@@ -153,7 +153,7 @@
 							.text('StewardScript')
 							.attr({ 'class':'stewardscript-box-title' })
 						);
-				
+
 					/* quick links */
 					var shortcuts = {
 						'lock': '#mw-centralauth-status-locked-yes, #mw-centralauth-status-hidden-no',
@@ -175,7 +175,7 @@
 								.attr({ 'class':'mw-input' })
 							)
 						);
-				
+
 					for(var shortcutName in shortcuts) {
 						$cell
 							.append(this
@@ -199,7 +199,7 @@
 						var domain = $link.text();
 						if(!domain)
 							return;
-					
+
 						$row.append(this
 							.Make('td')
 							.attr({ 'class':'stewardscript-centralauth-merged-link-cell' })
@@ -211,7 +211,7 @@
 						);
 					});
 					break;
-				
+
 					/*****************
 					** Special:UserRights
 					*****************/
@@ -222,7 +222,7 @@
 					/* readonly? */
 					if($urReason.length === 0)
 						break;
-				
+
 					/*****************
 					** Add quick reason menu
 					*****************/
@@ -236,7 +236,7 @@
 						.Make('span')
 						.attr( {id:'stewardscript-userrights-reasons', 'class':'stewardscript-box' })
 					);
-				
+
 					for(var k in reasons) {
 						$span.append(this
 							.Make('a')
@@ -252,7 +252,7 @@
 					break;
 			}
 		},
-		
+
 		/*****************
 		** Return formatted box to make StewardScript options stand out
 		*****************/
@@ -267,7 +267,7 @@
 				);
 			}
 		},
-	
+
 		/*****************
 		** Parse domain into database prefix
 		*****************/

@@ -146,7 +146,7 @@ var pathoschild = pathoschild || {};
 			else
 				$.ajax({ url:url, dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
 		},
-		
+
 		/**
 		 * Initialize the template script.
 		 */
