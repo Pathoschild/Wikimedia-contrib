@@ -1,33 +1,31 @@
-﻿/*jshint bitwise:true, eqeqeq:true, forin:false, immed:true, latedef:true, loopfunc:true, noarg:true, noempty:true, nonew:true, smarttabs:true, strict:true, trailing:true, undef:true*/
-/*global $:true, mw:true*/
-var pathoschild = pathoschild || {};
+﻿var pathoschild = pathoschild || {};
 (function() {
-	"use strict";
+	'use strict';
+
 	/**
 	 * Forces MediaWiki into displaying text in left-to-right format, even if the wiki's primary language is right-to-left.
 	 * @see https://github.com/Pathoschild/Wikimedia-contrib#readme
 	 */
 	pathoschild.ForceLtr = {
-		version:'0.9.0',
+		version: '0.9.1',
 
 		/**
 		 * Initialize the script.
 		 */
 		Initialize: function() {
-			/* swap load.php to an LTR language */
-			if ($('html:first').attr('dir') === 'rtl') {
-				var $links = $('link[rel="stylesheet"]');
-				$links = $links.filter('[href^="' + mw.config.get('wgLoadScript') + '"]');
-				$links.each(function(i, item) {
-					var $item = $(item);
-					$item.attr('href', $item.attr('href').replace(/&lang=[^&]+/, '&lang=en'));
-				});
-			}
+			if ($('body').hasClass('sitedir-rtl')) {
+				// Swap load.php to an LTR language
+				$('link[rel="stylesheet"][href^="' + mw.config.get('wgLoadScript') + '"]')
+					.attr('href', function(i, val) {
+						return val.replace(/&lang=[^&]+/, '&lang=en');
+					});
 
-			/* swap dir values */
-			$('*[dir="rtl"]').attr('dir', 'ltr');
+				// Swap direction
+				$('body').removeClass('rtl').addClass('ltr');
+				$('[dir="rtl"]').attr('dir', 'ltr');
+			}
 		}
 	};
 
-	$(function() { pathoschild.ForceLtr.Initialize(); });
+	$(pathoschild.ForceLtr.Initialize);
 }());

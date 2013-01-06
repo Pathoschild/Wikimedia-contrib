@@ -1,18 +1,15 @@
-﻿/*jshint bitwise:true, eqeqeq:true, forin:false, immed:true, latedef:true, loopfunc:true, noarg:true, noempty:true, nonew:true, smarttabs:true, strict:true, trailing:true, undef:true*/
-/*global mw */
-var pathoschild = pathoschild || {};
+﻿var pathoschild = pathoschild || {};
 
 (function() {
-	"use strict";
+	'use strict';
 	/**
 	 * Extends the user interface for Wikimedia stewards' convenience.
 	 * @see https://github.com/Pathoschild/Wikimedia-contrib#readme
 	 */
 	pathoschild.StewardScript = {
 		version: '2.2.1',
-	
+
 		Initialize: function() {
-			var _this = pathoschild.StewardScript;
 			var articleUrl = mw.config.get('wgServer') + mw.config.get('wgArticlePath');
 
 			mw.util.addCSS(
@@ -69,7 +66,7 @@ var pathoschild = pathoschild || {};
 					)
 				);
 			}
-		
+
 			/*****************
 			** Page actions
 			*****************/
@@ -113,12 +110,10 @@ var pathoschild = pathoschild || {};
 
 					/* references & data */
 					var user  = pathoschild.StewardScript.user = $('#bodyContent input[name="target"]').val();
-					var token = $('#bodyContent input[name="wpEditToken"]')[0].value;
 
 					var $caReason = $('#bodyContent input[name="wpReason"]');
 					var $form   = $caReason.closest('form');
-					var $submit = $form.find('input[type="submit"]');
-				
+
 					/*****************
 					** See-also links
 					*****************/
@@ -138,7 +133,7 @@ var pathoschild = pathoschild || {};
 								.attr({ href:'//toolserver.org/~luxo/contributions/contributions.php?blocks=true&user=' + encodeURIComponent(user), title:'Luxo\'s User Contributions (lists edits across all Wikimedia wikis)'})
 							)
 						);
-				
+
 					/*****************
 					** Prefill reason
 					*****************/
@@ -146,7 +141,7 @@ var pathoschild = pathoschild || {};
 						.val('crosswiki abuse')
 						.text('crosswiki abuse')
 						.prop('selected', 1);
-			
+
 					/*****************
 					** 'Quick access' section
 					*****************/
@@ -158,7 +153,7 @@ var pathoschild = pathoschild || {};
 							.text('StewardScript')
 							.attr({ 'class':'stewardscript-box-title' })
 						);
-				
+
 					/* quick links */
 					var shortcuts = {
 						'lock': '#mw-centralauth-status-locked-yes, #mw-centralauth-status-hidden-no',
@@ -180,7 +175,7 @@ var pathoschild = pathoschild || {};
 								.attr({ 'class':'mw-input' })
 							)
 						);
-				
+
 					for(var shortcutName in shortcuts) {
 						$cell
 							.append(this
@@ -204,8 +199,7 @@ var pathoschild = pathoschild || {};
 						var domain = $link.text();
 						if(!domain)
 							return;
-						var $checkuserStatus = this.Make('span');
-					
+
 						$row.append(this
 							.Make('td')
 							.attr({ 'class':'stewardscript-centralauth-merged-link-cell' })
@@ -217,7 +211,7 @@ var pathoschild = pathoschild || {};
 						);
 					});
 					break;
-				
+
 					/*****************
 					** Special:UserRights
 					*****************/
@@ -228,7 +222,7 @@ var pathoschild = pathoschild || {};
 					/* readonly? */
 					if($urReason.length === 0)
 						break;
-				
+
 					/*****************
 					** Add quick reason menu
 					*****************/
@@ -242,7 +236,7 @@ var pathoschild = pathoschild || {};
 						.Make('span')
 						.attr( {id:'stewardscript-userrights-reasons', 'class':'stewardscript-box' })
 					);
-				
+
 					for(var k in reasons) {
 						$span.append(this
 							.Make('a')
@@ -258,7 +252,7 @@ var pathoschild = pathoschild || {};
 					break;
 			}
 		},
-		
+
 		/*****************
 		** Return formatted box to make StewardScript options stand out
 		*****************/
@@ -273,7 +267,7 @@ var pathoschild = pathoschild || {};
 				);
 			}
 		},
-	
+
 		/*****************
 		** Parse domain into database prefix
 		*****************/
