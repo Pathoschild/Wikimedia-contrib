@@ -535,7 +535,7 @@ else if( $script->isValid() && $script->target ) {
 			if( $account->exists && $localAccount->exists ) {
 				$stats['wikis']++;
 				$stats['edit_count'] += $localAccount->editCount;
-				if( $localAccount->registeredRaw < $stats['oldest_raw'] ) {
+				if( $localAccount->registeredRaw && $localAccount->registeredRaw < $stats['oldest_raw'] ) {
 					$stats['oldest'] = $localAccount->registered;
 					$stats['oldest_raw'] = $localAccount->registeredRaw;
 					$stats['oldest_domain'] = $domain;
