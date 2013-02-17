@@ -546,9 +546,14 @@ else if( $script->isValid() && $script->target ) {
 	$backend->profiler->stop('fetch local accounts');
 
 	/* best guess for pre-2005 oldest account */
-	if( $account->exists )
-		if( !$stats['oldest'] && !$local[$account->homeWiki]->registeredRaw )
-			$stats['oldest_domain'] = $local[$account->homeWiki]->wiki->domain;
+	if( $account->exists ) {
+		if( !$stats['oldest'] || !$local[$account->homeWiki]->registeredRaw ) {
+			$homeWiki = $local[$account->homeWiki];
+			$stats['oldest'] = $homeWiki->registered;
+			$stats['oldest_raw'] = $homeWiki->registeredRaw;
+			$stats['oldest_domain'] = $homeWiki->wiki->domain;
+		}
+	}
 
 		
 	#######
