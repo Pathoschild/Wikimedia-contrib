@@ -13,6 +13,7 @@
 			var articleUrl = mw.config.get('wgServer') + mw.config.get('wgArticlePath');
 			var dbName = mw.config.get('wgDBname');
 			var metaPrefix = (dbName != 'metawiki' ? 'm:' : '');
+			var _this = this;
 
 			mw.util.addCSS(
 				  // generic
@@ -103,9 +104,9 @@
 
 					break;
 
-					/*****************
-					** Special:CentralAuth
-					*****************/
+				/*****************
+				** Special:CentralAuth
+				*****************/
 				case 'CentralAuth':
 					/* read-only? */
 					if($('#delete-reason').length === 0)
@@ -215,9 +216,37 @@
 					});
 					break;
 
+				/*****************
+				** Special:CheckUser
+				*****************/
+				case 'CheckUser':
 					/*****************
-					** Special:UserRights
+					** link results to Stalktoy and CentralAuth
 					*****************/
+					$('#checkuserresults li').each(function() {
+						var $item = $(this);
+						var user = $item.find('a:first').text();
+						$item.find('.plainlinks :last-child')
+							.after(_this
+								.Make('a')
+								.text('CentralAuth')
+								.attr({ href: articleUrl.replace('$1', metaPrefix + 'Special:CentralAuth/' + encodeURIComponent(user)) })
+							)
+							.after(' · ')
+							.after(_this
+								.Make('a')
+								.text('Stalktoy')
+								.attr({ href: '//toolserver.org/~pathoschild/stalktoy?target=' + encodeURIComponent(user) })
+							)
+							.after(' · ');
+					});
+
+					break;
+
+
+				/*****************
+				** Special:UserRights
+				*****************/
 				case 'UserRights': // 1.18
 				case 'Userrights': // 1.19+
 					var $urReason = $('#wpReason');
