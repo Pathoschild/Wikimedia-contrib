@@ -7,10 +7,12 @@
 	 * @see https://github.com/Pathoschild/Wikimedia-contrib#readme
 	 */
 	pathoschild.StewardScript = {
-		version: '2.2.1',
+		version: '2.3',
 
 		Initialize: function() {
 			var articleUrl = mw.config.get('wgServer') + mw.config.get('wgArticlePath');
+			var dbName = mw.config.get('wgDBname');
+			var metaPrefix = (dbName != 'metawiki' ? 'm:' : '');
 
 			mw.util.addCSS(
 				  // generic
@@ -57,12 +59,13 @@
 				{name:'global > wikisets', page:'Special:EditWikiSets', desc:'Manage global groups'}
 			];
 			for (var i = 0, len = menu.length; i < len; i++) {
+				var title = metaPrefix + menu[i].page;
 				$list.append(this
 					.Make('li')
 					.append(this
 						.Make('a')
 						.text(menu[i].name)
-						.attr({ href: articleUrl.replace('$1', menu[i].page), title: menu[i].desc })
+						.attr({ href: articleUrl.replace('$1', title), title: menu[i].desc })
 					)
 				);
 			}
@@ -94,7 +97,7 @@
 							.append(this
 								.Make('a')
 								.text('CentralAuth')
-								.attr({ href:articleUrl.replace('$1', 'Special:CentralAuth/' + encodeURIComponent(target)), title:'Manage this user\'s global account.' })
+								.attr({ href:articleUrl.replace('$1', metaPrefix + 'Special:CentralAuth/' + encodeURIComponent(target)), title:'Manage this user\'s global account.' })
 							);
 					}
 
@@ -109,10 +112,10 @@
 						break;
 
 					/* references & data */
-					var user  = pathoschild.StewardScript.user = $('#bodyContent input[name="target"]').val();
+					var user = pathoschild.StewardScript.user = $('#bodyContent input[name="target"]').val();
 
 					var $caReason = $('#bodyContent input[name="wpReason"]');
-					var $form   = $caReason.closest('form');
+					var $form = $caReason.closest('form');
 
 					/*****************
 					** See-also links
