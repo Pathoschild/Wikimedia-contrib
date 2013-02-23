@@ -12,7 +12,7 @@
 		Initialize: function() {
 			var articleUrl = mw.config.get('wgServer') + mw.config.get('wgArticlePath');
 			var dbName = mw.config.get('wgDBname');
-			var metaPrefix = (dbName != 'metawiki' ? 'm:' : '');
+			var metaPrefix = (dbName !== 'metawiki' ? 'm:' : '');
 			var _this = this;
 
 			mw.util.addCSS(
