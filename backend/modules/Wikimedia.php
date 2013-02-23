@@ -122,8 +122,6 @@ class Wikimedia {
 			$this->wikis = array();
 			$db->Connect('metawiki-p.db.toolserver.org', 'metawiki_p');
 			foreach($db->Query('SELECT dbname, lang, family, domain, size, is_meta, is_closed, is_multilang, server FROM toolserver.wiki')->fetchAllAssoc() as $row) {
-				if($row['dbname'] == 'wikidatawiki_p')
-					continue;
 				$this->wikis[$row['dbname']] = new Wiki($row['dbname'], $row['lang'], $row['family'], $row['domain'], $row['size'], $row['is_meta'], $row['is_closed'], $row['is_multilang'], $row['server']);
 			}
 			
