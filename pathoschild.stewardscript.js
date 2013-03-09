@@ -52,6 +52,7 @@
 			var menu = [
 				{name:'Steward handbook', page:'Steward_handbook', desc:'Help page for stewards'},
 				{name:'user > account', page:'Special:CentralAuth', desc:'View/delete/lock a user\'s global account'},
+				{name:'user > multi-lock', page:'Special:MultiLock', desc:'delete/lock global accounts in bulk'},
 				{name:'user > rights (local)', page:'Special:UserRights', desc:'Manage local user rights'},
 				{name:'user > rights (global)', page:'Special:GlobalGroupMembership', desc:'Manage global user rights'},
 				{name:'IP > global block', page:'Special:GlobalBlock', desc:'Globally block an IP'},
