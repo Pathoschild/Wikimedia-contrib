@@ -711,7 +711,7 @@ else if( $script->isValid() && $script->target ) {
 			## Output
 			########
 			echo '
-				<tr data-wiki="', $wiki->name, '" data-lang="', ($wiki->isMultilingual ? 'multilingual' : $wiki->lang) ,'" data-family="', $wiki->family, '" data-open="', (int)!$wiki->isClosed, '" data-exists="', (int)(bool)$user->exists, '" data-edits="', $user->editCount, '" data-groups="', (int)$has_groups, '" data-global-groups="', (int)($hasGlobalGroups), '" data-registered="', $user->registered, '" data-unified="', (int)$user->isUnified, '" data-blocked="', (int)$user->isBlocked, '">
+				<tr data-wiki="', $wiki->name, '" data-domain="', $wiki->domain, '" data-lang="', ($wiki->isMultilingual ? 'multilingual' : $wiki->lang) ,'" data-family="', $wiki->family, '" data-open="', (int)!$wiki->isClosed, '" data-exists="', (int)(bool)$user->exists, '" data-edits="', $user->editCount, '" data-groups="', (int)$has_groups, '" data-global-groups="', (int)($hasGlobalGroups), '" data-registered="', $user->registered, '" data-unified="', (int)$user->isUnified, '" data-blocked="', (int)$user->isBlocked, '">
 					<td class="wiki">', $link_wiki, '</td>
 					<td class="edit-count">', $link_edits, '</td>
 					<td class="timestamp">', $user->registered, '</td>

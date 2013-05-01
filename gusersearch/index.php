@@ -30,6 +30,7 @@ class Script extends Base {
 	public $use_regex; // only used for pagination
 	public $show_locked; // only used for pagination
 	public $show_hidden; // only used for pagination
+	public $date; // limit search range
 
 	// values
 	protected $filters = Array();
@@ -192,7 +193,20 @@ class Script extends Base {
 
 		$backend->profiler->stop( 'prepare database connections' );
 
+		/*********
+		** Set date limit (will minimize scan for long queries, but slow down fast queries)
+		*********/
+		if( $this->date ) {
+			$backend->profiler->start('calculate range for date filter');
 
+			$minID = $this->db->query('SELECT gu_id FROM centralauth_p.globaluser WHERE gu_registration < ? ORDER BY gu_id DESC LIMIT 1', $this->date)->fetchValue();
+			if($minID) {
+				$this->filter( Script::T_GLOBALUSER, 'gu_registration', '>', $minID );
+			}
+
+			$backend->profiler->stop('calculate range for date filter');
+		}
+		
 		/*********
 		** build query
 		*********/
@@ -254,6 +268,7 @@ class Script extends Base {
 ## Instantiate script engine
 #############################
 $script = new Script();
+$script->date = $backend->get('date');
 $backend->profiler->start('initialize');
 
 /* get arguments */
@@ -291,6 +306,11 @@ if( !$show_hidden ) {
 	$script->filter( Script::T_GLOBALUSER, 'gu_hidden', Script::OP_NOT_EQUAL, 'lists' );
 	$script->filter( Script::T_GLOBALUSER, '`gu_hidden`', Script::OP_NOT_EQUAL, 'suppressed' );
 	$script->describeFilter( "NOT hidden" );
+}
+
+/* add date filter */
+if( $script->date ) {
+	$script->describeFilter( "registered after {$script->date}" );
 }
 
 /* set limit */
@@ -331,6 +351,10 @@ echo "
 
 			", Form::Checkbox( 'icase', $case_insensitive ), "
 			<label for='icase'>Match any capitalization (much slower)</label><br />
+			
+			",//<label for='date'>Show users registered </label>
+			//", Form::Select( 'date', $date, array('' => 'anytime', date('Y') => 'this year', date('Ym') => 'this month', date('Ymd') => 'today') ), "
+			"
 
 			<p>
 				<b>Search syntax:</b>
