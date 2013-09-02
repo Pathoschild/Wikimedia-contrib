@@ -13,84 +13,70 @@ class Wiki {
 	public $name = NULL;
 
 	/**
-	 * The database name (dbname), like 'enwiki_p'.
+	 * The database name (dbname), like 'enwiki'.
 	 * @var string
 	 */
 	public $dbName = NULL;
-	
+
 	/**
 	 * The ISO 639 language code associated with the wiki. (A few wikis have invalid codes like 'zh-classical' or 'noboard-chapters'.)
 	 * @var string
 	 */
 	public $lang = NULL;
-	
+
 	/**
 	 * The wiki family (project name), like 'wikibooks'.
 	 * @var string
 	 */
 	public $family = NULL;
-	
+
 	/**
 	 * The domain portion of the URL, like 'en.wikisource.org'. This may be NULL for closed wikis.
 	 * @var string
 	 */
 	public $domain = NULL;
-	
+
 	/**
 	 * The number of articles on the wiki (?).
 	 * @var int
 	 */
 	public $size = NULL;
-	
-	/**
-	 * Whether the wiki is a meta-project like the Wikimedia Foundation wiki or Metawiki.
-	 * @var bool
-	 */
-	public $isMeta = NULL;
-	
+
 	/**
 	 * Whether the wiki is locked and no longer editable by the public.
 	 * @var bool
 	 */
 	public $isClosed = NULL;
-	
+
 	/**
-	 * Whether the wiki has multilingual content.
-	 * @var bool
-	 */
-	public $isMultilingual = NULL;
-	
-	/**
-	 * The number of the server on which the wiki's replicated database is located.
+	 * The name of the server on which the wiki's replicated database is located.
 	 * @var int
 	 */
-	public $serverNumber = NULL;
-	
+	public $serverName = NULL;
+
 	/**
 	 * The host name of the server on which the wiki's replicated database is located.
 	 * @var bool
 	 */
 	public $host = NULL;
-	
-	
+
+
 	/*########
 	## Methods
 	########*/
 	/**
 	 * Construct a Wiki instance.
 	 */
-	public function __construct($name, $lang, $family, $domain, $size, $isMeta, $isClosed, $isMultilingual, $serverNumber) {
+	public function __construct($name, $lang, $family, $domain, $size, $isClosed, $serverName) {
 		$this->dbName = $name;
-		$this->name = substr($name, 0, -2);
+		$this->name = $name;
 		$this->lang = $lang;
 		$this->family = $family;
 		$this->domain = $domain;
 		$this->size = $size;
-		$this->isMeta = $isMeta;
 		$this->isClosed = $isClosed;
-		$this->isMultilingual = $isMultilingual;
-		$this->serverNumber = $serverNumber;
-		$this->host = 'sql-s' . $serverNumber . '-rr.toolserver.org';
+		$this->serverName = $serverName;
+		$this->host = $serverName;
 	}
 }
 
@@ -120,15 +106,13 @@ class Wikimedia {
 		if(!$this->wikis) {
 			// build wiki list
 			$this->wikis = array();
-			$db->Connect('metawiki-p.db.toolserver.org', 'metawiki_p');
-			foreach($db->Query('SELECT dbname, lang, family, domain, size, is_meta, is_closed, is_multilang, server FROM toolserver.wiki')->fetchAllAssoc() as $row) {
-				$this->wikis[$row['dbname']] = new Wiki($row['dbname'], $row['lang'], $row['family'], $row['domain'], $row['size'], $row['is_meta'], $row['is_closed'], $row['is_multilang'], $row['server']);
+			$db->Connect('metawiki.labsdb', 'metawiki_p');
+			foreach($db->Query('SELECT dbname, lang, family, REPLACE(url, "http://", "") AS domain, size, is_closed, slice FROM meta_p.wiki WHERE url IS NOT NULL')->fetchAllAssoc() as $row) {
+				if($row['dbname'] == 'testwikidatawiki' || $row['dbname'] == 'tyvwiki' || $row['dbname'] == 'viwikivoyage' || $row['dbname'] == 'votewiki')
+					continue; // DB schema is broken
+
+				$this->wikis[$row['dbname']] = new Wiki($row['dbname'], $row['lang'], $row['family'], $row['domain'], $row['size'], $row['is_closed'], $row['slice']);
 			}
-			
-			// workaround: rm deleted wikis
-			unset($this->wikis['ru_sibwiki_p']);
-			unset($this->wikis['dkwiktionary_p']);
-			unset($this->wikis['tlhwiki_p']);
 
 			// cache result
 			if( count($this->wikis) ) // if the fetch failed, we *don't* want to cache the result for a full day

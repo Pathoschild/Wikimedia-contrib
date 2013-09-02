@@ -182,14 +182,14 @@ class Script extends Base {
 	###############
 	public function Query() {
 		global $backend;
-		
+
 		/*********
 		** connect to DB
 		*********/
 		$backend->profiler->start( 'prepare database connections' );
 
 		$this->db = $backend->GetDatabase( Toolserver::ERROR_PRINT );
-		$this->db->Connect( 'metawiki_p' );
+		$this->db->Connect( 'metawiki' );
 
 		$backend->profiler->stop( 'prepare database connections' );
 
@@ -206,7 +206,7 @@ class Script extends Base {
 
 			$backend->profiler->stop('calculate range for date filter');
 		}
-		
+
 		/*********
 		** build query
 		*********/

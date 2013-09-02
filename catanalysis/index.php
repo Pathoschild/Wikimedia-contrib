@@ -14,7 +14,7 @@ $USERCOUNT_LIMIT_FOR_INACTIVITY = 3; // months with <= users are marked inactive
 
 /* input */
 $fullTitle = $backend->formatInitialCapital($backend->get('title'));
-$database  = $backend->get('wiki', $backend->get('db', 'incubatorwiki_p'));
+$database  = $backend->get('wiki', $backend->get('db', 'incubatorwiki'));
 $cat       = !!$backend->get('cat', true);
 $listpages = $backend->get('listpages');
 
@@ -38,7 +38,7 @@ $db = $backend->GetDatabase();
 ?>
 	<form action="" method="get">
 		<fieldset>
-			<p>Enter a category name to analyse members of, or a prefix to analyze subpages of (see <a href="index.php?title=Wp/kab&cat=0&db=incubatorwiki_p" title="example">prefix</a> and <a href="index.php?title=Hindi&cat=1&db=sourceswiki_p" title="example">category</a> examples).</p>
+			<p>Enter a category name to analyse members of, or a prefix to analyze subpages of (see <a href="index.php?title=Wp/kab&cat=0&db=incubatorwiki" title="example">prefix</a> and <a href="index.php?title=Hindi&cat=1&db=sourceswiki" title="example">category</a> examples).</p>
 
 			<input type="text" id="title" name="title" value="<?= $backend->formatValue($fullTitle) ?>" />
 			(this is a <?= Form::Select('cat', $cat, array(1 => 'category', 0 => 'prefix')) ?> on <select name="wiki" id="wiki">
@@ -204,8 +204,8 @@ do {
 	* Fetch domain
 	***************/
 	$backend->profiler->start('fetch domain');
-	$db->Connect('metawiki_p');
-	$domain = $db->Query('SELECT domain FROM toolserver.wiki WHERE dbname=? LIMIT 1', $database)->fetchValue();
+	$db->Connect('metawiki');
+	$domain = $db->Query('SELECT REPLACE(url, "http://", "") AS domain FROM meta_p.wiki WHERE dbname=? LIMIT 1', $database)->fetchValue();
 	$db->Dispose();
 	$backend->profiler->stop('fetch domain');
 	

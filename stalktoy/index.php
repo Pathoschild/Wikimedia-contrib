@@ -53,7 +53,7 @@ class StalktoyScript extends Base {
 
 		/* instantiate objects */
 		$this->db = $backend->GetDatabase( Toolserver::ERROR_PRINT );
-		$this->db->Connect('metawiki_p');
+		$this->db->Connect('metawiki');
 
 		/* store target (name, address, or range) */
 		$this->target = $this->formatUsername( $target );
@@ -103,7 +103,7 @@ class StalktoyScript extends Base {
 			$account->isLocked = $row['gu_locked'];
 			$account->registered = $row['gu_timestamp'];
 			$account->groups = ($row['gu_groups'] ? explode(',', $row['gu_groups']) : '');
-			$account->homeWiki = $row['lu_wiki'] ? $row['lu_wiki'] . '_p' : null;
+			$account->homeWiki = $row['lu_wiki'];
 			$account->wikis = $this->db->getUnifiedWikis($this->target);
 			$account->wikiHash = array_flip($account->wikis);
 		}
@@ -136,7 +136,7 @@ class StalktoyScript extends Base {
 			if($row['ws_wikis'] != NULL) {
 				$list = explode(',', $row['ws_wikis']);
 				foreach($list as $wiki)
-					$optList[] = $wiki . '_p';
+					$optList[] = $wiki;
 			}
 			
 			// apply groups

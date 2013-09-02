@@ -38,14 +38,14 @@ class Script extends Base {
 			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2012',
 			'obsolete' => false
 		),
-		
+
 		26 => Array(
 			'name' => '2012 enwiki arbcom elections (voters)',
 			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2012',
 			'only_db' => 'enwiki_p',
 			'obsolete' => true
 		),
-		
+
 		25 => Array(
 			'name' => '2012 enwiki arbcom elections (candidates)',
 			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2012',
@@ -58,13 +58,13 @@ class Script extends Base {
 			),
 			'obsolete' => true
 		),
-		
+
 		24 => Array(
 			'name' => '2012 Commons Picture of the Year for 2011',
 			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2011',
 			'obsolete' => true
 		),
-		
+
 		23 => Array(
 			'name' => '2012-02 steward elections',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2012',
@@ -89,7 +89,7 @@ class Script extends Base {
 			'only_db' => 'enwiki_p',
 			'obsolete' => true
 		),
-		
+
 		20 => Array(
 			'name' => '2011 enwiki arbcom elections (candidates)',
 			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2011',
@@ -102,7 +102,7 @@ class Script extends Base {
 			),
 			'obsolete' => true
 		),
-		
+
 		19 => Array(
 			'name' => '2011-09 steward elections',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2011-2',
@@ -135,13 +135,13 @@ class Script extends Base {
 			),
 			'obsolete' => true
 		),
-		
+
 		16 => Array(
 			'name' => '2011 Commons Picture of the Year for 2010',
 			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2010',
 			'obsolete' => true
 		),
-		
+
 		15 => Array(
 			'name' => '2011 steward confirmations',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/confirm/2011',
@@ -269,7 +269,7 @@ class Script extends Base {
 			'obsolete' => true
 		)
 	);
- 
+
 	############################
 	## Properties
 	############################
@@ -278,10 +278,11 @@ class Script extends Base {
 	 * @var Toolserver
 	 */
 	public $db = NULL;
+	public $profiler = NULL;
 	protected $backend = NULL;
 	private $_userName = NULL;
 	protected $eventID = NULL;
-	
+
 	/**
 	 * Whether the user must select a wiki manually, because there is no matching global account.
 	 */
@@ -300,7 +301,7 @@ class Script extends Base {
 	public $eligible = true;
 	public $unified = false; // is script iterating over unified wikis?
 	public $cache_key = null;
-	
+
 
 	############################
 	## Constructor
@@ -308,6 +309,7 @@ class Script extends Base {
 	public function __construct($backend, $user, $event, $wiki) {
 		$this->backend = $backend;
 		$this->db = $backend->GetDatabase();
+		$this->profiler = $backend->profiler;
 
 		/* set user */
 		$this->_userName = $backend->formatUsername($user);
@@ -331,7 +333,7 @@ class Script extends Base {
 		if (!$wiki)
 			$wiki = NULL;
 		$this->Connect($wiki);
-		
+
 		/* initialize cache */
 		$this->cache_key = "accounteligibility-user={$user}|event={$event}|wiki={$wiki}";
 	}
@@ -369,7 +371,7 @@ class Script extends Base {
 	public function Connect($dbname) {
 		/* reset variables */
 		$this->user = array('name' => $this->backend->formatUsername($this->_userName));
-		
+
 		/* connect & fetch user details */
 		if ($dbname) {
 			$this->wiki = $this->wikis[$dbname];
@@ -425,6 +427,7 @@ class Script extends Base {
 		########
 		else {
 			/* fetch unified wikis */
+			$this->profiler->start('fetch unified wikis');
 			$unifiedDbnames = $this->db->getUnifiedWikis($this->user['name']);
 			if (!$unifiedDbnames) {
 				$this->selectManually = true;
@@ -432,28 +435,31 @@ class Script extends Base {
 				echo '<div id="result" class="neutral" data-is-error="1">', $this->formatText($this->user['name']), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="//toolserver.org/~pathoschild/stalktoy/?target=', $encoded, '" title="global details about this user">global details about this user</a>).</div>';
 				return false;
 			}
+			$this->profiler->stop('fetch unified wikis');
+
 
 			/* fetch user edit count for each wiki & sort by edit count */
+			$this->profiler->start('fetch edit counts');
 			foreach ($unifiedDbnames as $unifiedDbname) {
-				if (!isset($this->wikis[$unifiedDbname])) {
-					continue;
-				} // skip private wikis (not listed in toolserver.wiki)
+				if (!isset($this->wikis[$unifiedDbname]))
+					continue; // skip private wikis (not listed in meta_p.wiki)
 				$this->db->Connect($unifiedDbname);
 				$this->queue[$unifiedDbname] = $this->db->Query('SELECT user_editcount FROM user WHERE user_name = ? LIMIT 1', array($this->user['name']))->fetchColumn();
 			}
+			$this->profiler->stop('fetch edit counts');
 			asort($this->queue);
-			
+
 			/* ignore accounts with 0 edits */
 			function filter($count) {
 				return $count != 0;
 			}
 			$this->queue = array_filter($this->queue, 'filter');
-			
+
 			/* initialize queue */
 			$this->queue = array_keys($this->queue);
 			$this->queue_top = count($this->queue) - 1;
 			$this->unified = true;
-			
+
 			/* report queue */
 			$this->msg('Auto-selected ' . count($this->queue) . ' unified accounts with at least one edit.', 'is-metadata');
 		}
@@ -1016,12 +1022,12 @@ while ($script->user['name'] && !$cached) {
 						'was flagged as an administrator for a continuous period of at least three months before 08 February 2013 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
 						'was not flagged as an administrator for a continuous period of at least three months before 08 February 2013 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
 					);
-					
+
 					/* edge case: if the user was registered before 2005, they might have been flagged before flag changes were logged */
 					if(!$minDurationMet && (!$script->user['registration_raw'] || $script->user['registration_raw'] < 20050000000000)) {
 						// output warning
 						$script->msg('<small>' . $script->user['name'] . ' registered here before 2005, so he might have been flagged before the rights log was created.</small>', 'is-warn is-subnote');
-						
+
 						// add note
 						$script->event['warn_ineligible'] = '<strong>This result might be inaccurate.</strong> ' . $script->user['name'] . ' registered on some wikis before the rights log was created in 2005. You may need to investigate manually.';
 					}
@@ -1034,7 +1040,7 @@ while ($script->user['name'] && !$cached) {
 			}
 			while (!$script->eligible && $script->get_next());
 			break;
-	
+
 		############################
 		## 2013 Commons Picture of the Year 2012
 		############################
@@ -1044,7 +1050,7 @@ while ($script->user['name'] && !$cached) {
 			$edits_okay = false;
 			do {
 				$script->eligible = true;
-			
+
 				########
 				## registered < 2013-Jan-01
 				########
@@ -1067,12 +1073,12 @@ while ($script->user['name'] && !$cached) {
 						"does not have more than 75 edits before 01 January 2013 (has {$edits})."
 					);
 				}
-				
+
 				$script->eligible = ($age_okay && $edits_okay);
 			}
 			while (!$script->eligible && $script->get_next());
 			break;
-	
+
 		############################
 		## 2012 enwiki arbcom elections (voters)
 		############################

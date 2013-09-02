@@ -149,8 +149,8 @@ $flagBlurbs = Array(
 /*########
 ## Query group details
 ########*/
-$db = $backend->GetDatabase('metawiki_p');
-$db->Connect('metawiki_p');
+$db = $backend->GetDatabase('metawiki');
+$db->Connect('metawiki');
 
 $groups = array();
 foreach($db->Query('SELECT DISTINCT ggp_group FROM centralauth_p.global_group_permissions')->fetchAllAssoc() as $groupRow) {
@@ -220,7 +220,7 @@ switch($sort) {
 			return -1;
 		}
 		break;
-		
+
 	default:
 		function groupSort($a, $b) {
 			return strcasecmp($a['name'], $b['name']);
@@ -266,7 +266,7 @@ foreach($groups as $group) {
 	else
 		echo 'all wikis';
 	echo ' ', ($group['members'] != 1 ? 'have' : 'has'), ' these permissions:';
-	
+
 	/* output rights */
 	echo '<table class="group-rights">';
 	foreach($group['rights'] as $rkey => $right) {

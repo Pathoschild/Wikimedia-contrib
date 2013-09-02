@@ -20,25 +20,25 @@ class Backend extends Base {
 	 * @var string
 	 */
 	private $filename  = NULL;
-	
+
 	/**
 	 * The page title, usually the name of the script.
 	 * @var string
 	 */
 	private $title     = NULL;
-	
+
 	/**
 	 * A short description displayed at the top of the page; defaults to nothing.
 	 * @var string
 	 */
 	private $blurb     = NULL;
-	
+
 	/**
 	 * Extra content to insert into HTML <head>.
 	 * @var string
 	 */
 	private $hook_head = NULL;
-	
+
 	public $logger = NULL;
 	public $cache = NULL;
 	public $db = NULL;
@@ -54,25 +54,25 @@ class Backend extends Base {
 	 */
 	public function __construct( $title, $blurb ) {
 		parent::__construct();
-		
+
 		/* get configuration */
 		global $gconfig;
 		$this->config = &$gconfig;
-		
+
 		/* handle options */
 		$this->filename = basename( $_SERVER['SCRIPT_NAME'] );
 		$this->title    = isset($title) ? $title : $this->filename;
 		$this->blurb    = isset($blurb) ? $blurb : NULL;
 		$this->license  = $gconfig['license'];
 		$this->scripts = NULL;
-		
+
 		/* start logger */
-		$key = hash('crc32b', $_SERVER['REQUEST_TIME'] . $_SERVER['HTTP_X_FORWARDED_FOR'] . $_SERVER['REQUEST_URI']);
-		$this->logger = new Logger('/home/pathoschild/logs', $key);
-		$this->logger->log('request: [' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . '] by [' . $_SERVER['HTTP_X_FORWARDED_FOR'] . ' ' . $_SERVER['HTTP_USER_AGENT'] . ']');
-		
+		$key = hash('crc32b', $_SERVER['REQUEST_TIME'] . $_SERVER['REQUEST_URI']);
+		$this->logger = new Logger('/data/project/pathoschild-contrib/logs', $key);
+		$this->logger->log('request: [' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . '] by [' . $_SERVER['HTTP_USER_AGENT'] . ']');
+
 		/* build cache */
-		$this->cache = new Cacher('/home/pathoschild/public_html/backend/modules/cache/', $this->logger, !!$this->get('purge'));
+		$this->cache = new Cacher('/data/project/pathoschild-contrib/public_html/backend/modules/cache/', $this->logger, !!$this->get('purge'));
 	}
 	public static function create($title, $blurb) {
 		return new Backend($title, $blurb);
@@ -87,7 +87,7 @@ class Backend extends Base {
 			$this->db = new Toolserver($this->logger, $this->cache, $options);
 		return $this->db;
 	}
-		
+
 
 	#################################################
 	## HTTP encapsulation
@@ -106,7 +106,7 @@ class Backend extends Base {
 			return $_GET[$name];
 		return $default;
 	}
-	
+
 	/**
 	 * Get the value of the route placeholder (e.g, 'Pathoschild' in '/stalktoy/Pathoschild').
 	 * @return mixed The expected value, or null.
@@ -139,10 +139,10 @@ class Backend extends Base {
 			default:
 				die( "Invalid extension '{$as}' (URL '{$url}') passed to Backend->link." );
 		}
-		
+
 		return $this;
 	}
-	
+
 	public function addScript( $script ) {
 		$this->hook_head .= '<script type="text/javascript">' . "\n$script\n" . '</script>';
 		return $this;
@@ -154,21 +154,22 @@ class Backend extends Base {
 	#############################
 	public function trackWithoutHtml($outlink = null) {
 		require_once( __DIR__.'/external/PiwikTracker.php' );
-		
+
 		// configure tracker
 		PiwikTracker::$URL = 'http://toolserver.org/~pathoschild/backend/piwik/';
 		$tracker = new PiwikTracker($idSite = 1);
 		$tracker->setCustomVariable(1, 'tracked-without-html', 1);
 		$tracker->setTokenAuth($PIWIK_AUTH_TOKEN);
 		$tracker->setIp($_SERVER['HTTP_X_FORWARDED_FOR']);
-		
+
 		// track
 		$tracker->doTrackPageView($this->title);
 		if($outlink)
 			$tracker->doTrackAction($outlink, 'link');
 	}
-	
+
 	public function header() {
+		global $gconfig;
 		/* print document head */
 		echo '
 <!-- begin generated header -->
@@ -180,9 +181,9 @@ class Backend extends Base {
 		<link rel="shortcut icon" href="', $this->config['style_url'], 'favicon.ico" />
 		<link rel="stylesheet" type="text/css" href="', $this->config['style_url'], 'stylesheet.css" />
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-		<script src="//toolserver.org/~pathoschild/content/jquery.collapse/jquery.cookie.js" type="text/javascript"></script>
-		<script src="//toolserver.org/~pathoschild/content/jquery.collapse/jquery.collapse.js" type="text/javascript"></script>
-		<script src="//toolserver.org/~pathoschild/content/main.js" type="text/javascript"></script>
+		<script src="', $gconfig['root_url'], 'content/jquery.collapse/jquery.cookie.js" type="text/javascript"></script>
+		<script src="', $gconfig['root_url'], 'content/jquery.collapse/jquery.collapse.js" type="text/javascript"></script>
+		<script src="', $gconfig['root_url'], 'content/main.js" type="text/javascript"></script>
 		', $this->hook_head, '
 		<script src="//toolserver.org/~pathoschild/backend/piwik/piwik.js" type="text/javascript"></script>
 	</head>
@@ -212,7 +213,7 @@ class Backend extends Base {
 		</div>
 		<div id="content-column">
 			<div id="content">';
-		include('/home/pathoschild/public_html/backend/notice.php');
+		include('/data/project/pathoschild-contrib/public_html/backend/notice.php');
 		echo '<h1>', $this->title, '<sup>beta</sup></h1>
 				<p id="blurb">', $this->blurb, '</p>';
 		echo '

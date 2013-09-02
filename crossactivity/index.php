@@ -94,9 +94,8 @@ do {
 	 * Get list of wikis
 	 ***************/
 	$db = $backend->GetDatabase();
-	$db->Connect('metawiki_p');
-
-	$wikis = $db->Query('SELECT dbname,domain,family,is_closed FROM toolserver.wiki WHERE is_closed=0 AND dbname!="sep11wiki_p"')->fetchAllAssoc();
+	$db->Connect('metawiki');
+	$wikis = $db->getWikis();
 
 	/***************
 	 * Get data and Output
@@ -115,9 +114,9 @@ do {
 		<tbody>';
 
 	foreach($wikis as $wiki) {
-		$dbname = $wiki['dbname'];
-		$domain = $wiki['domain'];
-		$family = $wiki['family'];
+		$dbname = $wiki->dbName;
+		$domain = $wiki->domain;
+		$family = $wiki->family;
 
 		/* get data */
 		$db->Connect($dbname);
@@ -128,11 +127,11 @@ do {
 			$groups = $db->Query('SELECT GROUP_CONCAT(ug_group SEPARATOR ", ") FROM user_groups WHERE ug_user=?', array($id))->fetchValue();
 
 			// edits
-			$last_edit = $db->Query('SELECT DATE_FORMAT(rev_timestamp, "%Y-%m-%d %H:%i") FROM revision WHERE rev_user=? ORDER BY rev_timestamp DESC LIMIT 1', array($id))->fetchValue();
+			$last_edit = $db->Query('SELECT DATE_FORMAT(rev_timestamp, "%Y-%m-%d %H:%i") FROM revision_userindex WHERE rev_user=? ORDER BY rev_timestamp DESC LIMIT 1', array($id))->fetchValue();
 
 			// log actions
-			$last_log_bur = $db->Query('SELECT DATE_FORMAT(log_timestamp, "%Y-%m-%d %H:%i") FROM logging_ts_alternative WHERE log_user=? AND log_type IN ("makebot", "renameuser", "rights") ORDER BY log_timestamp DESC LIMIT 1', array($id))->fetchValue();
-			$last_log_sys = $db->Query('SELECT DATE_FORMAT(log_timestamp, "%Y-%m-%d %H:%i") FROM logging_ts_alternative WHERE log_user=? AND log_type IN ("block", "delete", "protect") ORDER BY log_timestamp DESC LIMIT 1', array($id))->fetchValue();
+			$last_log_bur = $db->Query('SELECT DATE_FORMAT(log_timestamp, "%Y-%m-%d %H:%i") FROM logging_userindex WHERE log_user=? AND log_type IN ("makebot", "renameuser", "rights") ORDER BY log_timestamp DESC LIMIT 1', array($id))->fetchValue();
+			$last_log_sys = $db->Query('SELECT DATE_FORMAT(log_timestamp, "%Y-%m-%d %H:%i") FROM logging_userindex WHERE log_user=? AND log_type IN ("block", "delete", "protect") ORDER BY log_timestamp DESC LIMIT 1', array($id))->fetchValue();
 
 			// output
 			if ($show_all || !empty($last_edit) || !empty($last_log_bur) || !empty($last_log_sys)) {

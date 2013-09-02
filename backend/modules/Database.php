@@ -3,16 +3,16 @@ require_once( 'Wikimedia.php' );
 
 /*
 	The database class wraps PHP Data Objects (PDO) with optimization and convenience methods.
-	
+
 	It stores open database connections internally, to avoid opening new connections unnecessarily.
 	It exposes Database->db, the PDO object for the currently active database, for direct use. It
 	also wraps many of PDO's methods for error handling (eg, when Database::ERROR_PRINT set). When
 	an error occurs, it ignores all further calls until the next Connect() or resetException() call.
-	
+
 	----
-	
-	The toolserver subclass adds optimizations for the Wikimedia Toolserver. On construction, the
-	class fetches wiki and database data from the toolserver DB. When connecting to a database name,
+
+	The toolserver subclass adds optimizations for the Wikimedia Tools Labs. On construction, the
+	class fetches wiki and database data from the Tools Labs DB. When connecting to a database name,
 	it aliases it to its server host to minimize the number of connections to the number of servers.
 */
 
@@ -34,40 +34,40 @@ class Database {
 	/* default configuration */
 	protected $error_mode = 2; // ERROR_THROW | ERROR_PRINT
 	protected $config_file; // set in constructor
-			
+
 	/* default settings */
 	protected $default_user;
 	protected $default_password;
-	
+
 	/* connection arrays */
 	protected $connections = Array(); // hash of host => PDO
 	protected $exceptions = Array();  // hash of host => Exception
-		
+
 	/* current/previous connection's details */
 	protected $host;
 	protected $username;
 	protected $password;
 	protected $database;
 	protected $borked = false; // boolean whether error occured
-	
+
 	protected $prev_host;
 	protected $prev_username;
 	protected $prev_password;
 	protected $prev_database;
-	
+
 	/* last query performed, for convenience methods */
 	protected $query = NULL;
-	
+
 	/* logger */
 	protected $logger = NULL;
 	protected $logger_key = '';
-	
+
 	/* public interface */
 	public $db = NULL;
-	
+
 	/* internal */
 	private $disposed = false;
-	
+
 
 	#################################################
 	## Public DB methods
@@ -84,11 +84,11 @@ class Database {
 	 */
 	public function __construct( $logger = NULL, $options = NULL, $default_username = NULL, $default_password = NULL ) {
 		/* configuration */
-		$this->config_file = "/home/" . get_current_user() . "/.my.cnf";
+		$this->config_file = '/data/project/pathoschild-contrib/replica.my.cnf';
 		$this->logger = $logger;
 		if( $this->logger != null )
 			$this->logger_key = $this->logger->key;
-	
+
 		/* get default login details */
 		$this->default_username = $default_username;
 		$this->default_password = $default_password;
@@ -98,13 +98,13 @@ class Database {
 			$this->default_username = ( $default_username ? $default_username : $config['user'] );
 			$this->default_password = ( $default_password ? $default_password : $config['password'] );
 		}
-		
+
 		/* get options */
 		if( $options & self::ERROR_MODES )
 			$this->error_mode = self::ERROR_MODES & $options;
 	}
-	
-	
+
+
 	#############################
 	## Destructor
 	#############################
@@ -114,22 +114,22 @@ class Database {
 	public function Dispose() {
 		if( $this->disposed )
 			return;
-		
+
 		$keys = array_keys( $this->connections );
 		foreach( $keys as $key )
 			$this->connections[$key] = NULL;
-		
+
 		$this->disposed = true;
 	}
-	
+
 	/**
 	 * Close all database connections and release resources.
 	 */
 	public function __destruct() {
 		$this->Dispose();
 	}
-	
-	
+
+
 	#############################
 	## Connect
 	#############################
@@ -142,19 +142,23 @@ class Database {
 	 * @return bool Whether the connection was successfully established.
 	 */
 	public function Connect( $host, $database = NULL, $username = NULL, $password = NULL ) {
+		/* normalize database name for Tools Labs */
+		if(isset($database) && substr($database, -2) != '_p')
+			$database .= '_p';
+
 		/* change states */
 		$this->borked = false;
-		
+
 		$this->prev_host     = $this->host;
 		$this->prev_username = $this->username;
 		$this->prev_password = $this->password;
 		$this->prev_database = $this->database;
-		
+
 		$this->host = $host;
 		$this->username = ( $username ? $username : $this->default_username );
 		$this->password = ( $password ? $password : $this->default_password );
 		$this->database = $database;
-		
+
 		/* create new connection, if can't recycle one */
 		if( !isset($this->connections[$host]) || !$this->connections[$this->host] ) {
 			$this->log('connecting: host=[' . $host . '], database=[' . $database . ']');
@@ -173,10 +177,10 @@ class Database {
 				return $this->handleException( $exc, 'Could not connect to database host "' . htmlentities($host) . '".' );
 			}
 		}
-		
+
 		/* alias connection */
 		$this->db = &$this->connections[$this->host];
-		
+
 		/* set database */
 		$this->db->query('use `' . $database . '`');
 		return true;
@@ -203,22 +207,22 @@ class Database {
 	 */
 	public function Query( $sql, $values = Array() ) {
 		$sql .= ' /*' . $this->logger_key . '*/';
-		
+
 		if( $this->borked )
 			return NULL;
 		try {
 			if($this->db == NULL)
 				throw new Exception('Not connected to a database.');
-		
+
 			$this->query = NULL;
 			$this->query = $this->db->prepare( $sql );
 			if($values != null && !is_array($values))
 				$values = Array($values);
-			
+
 			$this->log('query ' . $this->database . ': [' . $this->query->queryString . '], values=[' . preg_replace('/\s+/', ' ', print_r($values, true)) . ']');
 			$this->query->execute( $values );
 			$this->log('query done');
-			
+
 			return $this;
 		}
 		catch( Exception $exc ) {
@@ -298,17 +302,17 @@ class Database {
 	#############################
 	protected function handleException( $exc, $error_message = NULL ) {
 		$this->log('exception: error=[' . $exc->getMessage() . '], message=[' . $error_message . ']');
-	
+
 		$this->exceptions[$this->host] = $exc;
 		$this->borked = true;
-		
+
 		if( $this->error_mode & self::ERROR_PRINT )
 			$this->printException( $error_message );
 		if( $this->error_mode & self::ERROR_THROW )
 			throw $exc;
 		return false;
 	}
-	
+
 
 	#############################
 	## Print exception details
@@ -332,8 +336,8 @@ class Database {
 		$this->query->debugDumpParams();
 		return ob_get_clean();
 	}
-	
-		
+
+
 	#############################
 	## Log a trace message
 	#############################
@@ -355,13 +359,13 @@ class Toolserver extends Database {
 	#############################
 	public function __construct( $logger = NULL, $cache = NULL, $options = NULL, $default_username = NULL, $default_password = NULL ) {
 		parent::__construct( $logger, $options, $default_username, $default_password );
-		
+
 		/* fetch toolserver data */
 		$this->wikis = new Wikimedia($this, $cache);
 		foreach($this->wikis->GetWikis() as $wiki)
 			$this->dbn_hosts[$wiki->dbName] = $wiki->host;
 	}
-	
+
 	#############################
 	## Connect to host or DBN
 	#############################
@@ -371,17 +375,17 @@ class Toolserver extends Database {
 			$database = $host;
 			$host     = $this->dbn_hosts[$host];
 		}
-		
+
 		parent::Connect( $host, $database, $username, $password );
 	}
-	
+
 	#############################
 	## Normalize db_name
 	#############################
 	public function normalizeDbn( $dbn ) {
 		$dbn = str_replace( '-', '_', $dbn );
-		if( substr($dbn, -2) != '_p' )
-			$dbn .= '_p';
+		if( substr($dbn, -2) == '_p' )
+			$dbn = substr($dbn, 0, -2);
 		return $dbn;
 	}
 
@@ -445,40 +449,40 @@ class Toolserver extends Database {
 	#############################
 	public function getHomeWiki( $user ) {
 		try {
-			$this->Connect( 'metawiki_p' );
+			$this->Connect( 'metawiki' );
 
 			$query = $this->db->prepare( 'SELECT lu_wiki FROM centralauth_p.localuser WHERE lu_name=? AND lu_attached_method IN ("primary", "new") LIMIT 1' );
 			$query->execute(Array( $user ));
-			
+
 			$this->ConnectPrevious();
-			
+
 			$wiki = $query->fetchColumn();
 			if( $wiki )
-				return $wiki . '_p';
+				return $wiki;
 			return NULL;
 		}
 		catch( PDOException $exc ) {
 			return $this->handleException( $exc, 'Could not retrieve home wiki for user "' . htmlentities($user) . '".' );
 		}
 	}
-	
-	
+
+
 	#############################
 	## Get a global account's unified wikis
 	#############################
 	public function getUnifiedWikis( $user ) {
 		try {
-			$this->Connect( 'metawiki_p' );
-			
+			$this->Connect( 'metawiki' );
+
 			$query = $this->db->prepare( 'SELECT lu_wiki FROM centralauth_p.localuser WHERE lu_name=?' );
 			$query->execute(Array( $user ));
-			
+
 			$this->ConnectPrevious();
-			
+
 			$wikis = Array();
 			foreach( $query as $row )
-				$wikis[] = $row['lu_wiki'] . '_p';
-			
+				$wikis[] = $row['lu_wiki'];
+
 			return $wikis;
 		}
 		catch( PDOException $exc ) {

@@ -13,7 +13,7 @@ $backend = Backend::create('A template\'s magic redirect', 'Redirects to an arbi
 $tokens = array(
 	'wiki' => array(
 		'name' => 'The simplified database name, like \'enwiki\'.',
-		'dbName' => 'The database name, like \'enwiki_p\'.',
+		'dbName' => 'The database name, like \'enwiki\'.',
 		'lang' => 'The ISO 639 language associated with the wiki. (A few wikis have invalid codes like \'zh-classical\' or \'noboard-chapters\'.)',
 		'family' => 'The project name, like \'wikibooks\'.',
 		'domain' => 'The domain portion of the URL, like \'fr.wikisource.org\'.',
@@ -45,8 +45,8 @@ $error = '';
 $target = $url;
 if($target) {
 	$db = $backend->GetDatabase();
-	$db->Connect('metawiki_p');
-	
+	$db->Connect('metawiki');
+
 	/* apply wiki */
 	if($wiki && strpos($target, '{wiki.') !== false) {
 		$dbname = preg_replace('/_p$/', '', $wiki);
@@ -63,7 +63,7 @@ if($target) {
 		if(!$found)
 			$error = '<div class="fail">Could not find a wiki with a domain or database name like "' . $backend->formatText ($dbname) . '".</div>';
 	}
-	
+
 	/* apply user */
 	if($user && strpos($target, '{user.') !== false) {
 		$user = $backend->formatUsername($user);
