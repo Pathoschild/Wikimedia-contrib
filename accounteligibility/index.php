@@ -29,7 +29,7 @@ class Script extends Base {
 			'more_reqs' => Array(
 				'You must be 18 years old, and at the age of majority in your country.',
 				'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="http://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
-				'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2013.'
+				'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2014.'
 			)
 		),
 
@@ -975,7 +975,7 @@ while ($script->user['name'] && !$cached) {
 
 
 		############################
-		## 2013-02 steward elections (candidates)
+		## 2014-02 steward elections (candidates)
 		############################
 		case 30:
 			########
