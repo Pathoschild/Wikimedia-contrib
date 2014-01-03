@@ -13,19 +13,37 @@ class Script extends Base {
 	############################
 	## Configuration
 	############################
-	const DEFAULT_EVENT = 27;
+	const DEFAULT_EVENT = 31;
 	public $events = Array(
+		31 => Array(
+			'name' => '2014-02 steward elections',
+			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2014',
+			'obsolete' => false
+		),
+
+		30 => Array(
+			'name' => '2014-02 steward elections (candidates)',
+			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2014',
+			'action' => '<strong>be a candidate</strong>',
+			'obsolete' => false,
+			'more_reqs' => Array(
+				'You must be 18 years old, and at the age of majority in your country.',
+				'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="http://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
+				'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2013.'
+			)
+		),
+
 		29 => Array(
 			'name' => '2013-02 steward elections',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2013',
-			'obsolete' => false
+			'obsolete' => true
 		),
 
 		28 => Array(
 			'name' => '2013-02 steward elections (candidates)',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2013',
 			'action' => '<strong>be a candidate</strong>',
-			'obsolete' => false,
+			'obsolete' => true,
 			'more_reqs' => Array(
 				'You must be 18 years old, and at the age of majority in your country.',
 				'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="http://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
@@ -36,7 +54,7 @@ class Script extends Base {
 		27 => Array(
 			'name' => '2013 Commons Picture of the Year for 2012',
 			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2012',
-			'obsolete' => false
+			'obsolete' => true
 		),
 
 		26 => Array(
@@ -840,7 +858,209 @@ while ($script->user['name'] && !$cached) {
 	 ***************/
 	switch ($script->event['id']) {
 		############################
-		## 2013-03 steward elections
+		## 2014-02 steward elections
+		############################
+		case 31:
+			########
+			## Has an account on Meta
+			########
+			$script->msg('Global requirements:', 'is-wiki');
+			$script->condition(
+				$script->has_account('metawiki_p'),
+				"has an account on Meta...",
+				"does not have an account on Meta."
+			);
+			if (!$script->eligible) {
+				break;
+			}
+
+			########
+			## Has a global account
+			########
+			$script->condition(
+				$script->is_global(),
+				"has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
+				"does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a> (optional)...",
+				"",
+				"is-warn"
+			);
+			$script->eligible = true;
+
+			########
+			## Check local requirements
+			########
+			$script->printWiki();
+
+			/* set messages for global accounts */
+			if ($script->unified) {
+				$edits_fail_append = "However, edits will be combined with other unified wikis.";
+				$edits_fail_attrs = "is-warn";
+			}
+			else {
+				$edits_fail_append = '';
+				$edits_fail_attrs = '';
+			}
+
+			/* check requirements */
+			$prior_edits = 0;
+			$recent_edits = 0;
+			$combining = false;
+			$marked_bot = false;
+			do {
+				########
+				## Should not be a bot
+				########
+				$is_bot = $script->has_role('bot');
+				$script->condition(
+					!$is_bot,
+					"no bot flag...",
+					"has a bot flag &mdash; the global account must not be primarily automated (bot), but I can't check this so won't mark ineligible.",
+					"",
+					"is-warn"
+				);
+				$script->eligible = true;
+				if ($is_bot && !$marked_bot) {
+					$script->event['append_eligible'] = "<br /><strong>Note:</strong> this account is marked as a bot on some wikis. If it is primarily an automated account (bot), it is <em>not</em> eligible.";
+					$marked_bot = true;
+				}
+
+				########
+				## >=600 edits before 01 November 2013
+				########
+				$edits = $script->edit_count(NULL, 20131101000000);
+				$prior_edits += $edits;
+				$script->condition(
+					$edits >= 600,
+					"has 600 edits before 01 November 2013 (has {$edits})...",
+					"does not have 600 edits before 01 November 2013 (has {$edits}). {$edits_fail_append}",
+					"",
+					$edits_fail_attrs
+				);
+				if (!$script->eligible) {
+					if (!$script->unified) {
+						continue;
+					}
+					$combining = true;
+				}
+
+				########
+				## >=50 edits between 2013-Aug-01 and 2014-Jan-31
+				########
+				$edits = $script->edit_count(20130801000000, 20140131000000);
+				$recent_edits += $edits;
+				$script->condition(
+					$edits >= 50,
+					"has 50 edits between 01 August 2013 and 31 January 2014 (has {$edits})...",
+					"does not have 50 edits between 01 August 2013 and 31 January 2014 (has {$edits}). {$edits_fail_append}",
+					"",
+					$edits_fail_attrs
+				);
+				if (!$script->eligible) {
+					if (!$script->unified) {
+						continue;
+					}
+					$combining = true;
+				}
+
+
+				########
+				## Exit conditions
+				########
+				$script->eligible = $prior_edits >= 600 && $recent_edits >= 50;
+
+				/* unified met requirements */
+				if ($script->unified && !$script->IsQueueEmpty()) {
+					if ($script->eligible) {
+						break;
+					}
+					$combining = true;
+				}
+			}
+			while (!$script->eligible && $script->get_next());
+			break;
+
+
+		############################
+		## 2013-02 steward elections (candidates)
+		############################
+		case 30:
+			########
+			## Has an account on Meta
+			########
+			$script->msg('Global requirements:', 'is-wiki');
+			$script->condition(
+				$script->has_account('metawiki_p'),
+				"has an account on Meta...",
+				"does not have an account on Meta."
+			);
+			if (!$script->eligible) {
+				break;
+			}
+
+
+			########
+			## Has a global account
+			########
+			$script->condition(
+				$script->is_global(),
+				"has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
+				"does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>."
+			);
+			if (!$script->eligible) {
+				break;
+			}
+
+			########
+			## Check local requirements
+			########
+			/* check local requirements */
+			$minDurationMet = false;
+			$script->printWiki();
+			do {
+				$script->eligible = true;
+
+				########
+				## Registered for six months (i.e. <= 2013-Aug-08)
+				########
+				$script->condition(
+					$script->user['registration_raw'] < 20130808000000,
+					"has an account registered before 08 August 2013 (registered {$script->user['registration']})...",
+					"does not have an account registered before 08 August 2013 (registered {$script->user['registration']})."
+				);
+
+				########
+				## Flagged as a sysop for three months (as of 2014-Feb-08)
+				########
+				if (!$minDurationMet) {
+					/* check flag duration */
+					$months = $script->get_role_longest_duration('sysop', 20140208000000);
+					$minDurationMet = $months >= 3;
+					$script->condition(
+						$minDurationMet,
+						'was flagged as an administrator for a continuous period of at least three months before 08 February 2014 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
+						'was not flagged as an administrator for a continuous period of at least three months before 08 February 2014 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
+					);
+					
+					/* edge case: if the user was registered before 2005, they might have been flagged before flag changes were logged */
+					if(!$minDurationMet && (!$script->user['registration_raw'] || $script->user['registration_raw'] < 20050000000000)) {
+						// output warning
+						$script->msg('<small>' . $script->user['name'] . ' registered here before 2005, so he might have been flagged before the rights log was created.</small>', 'is-warn is-subnote');
+						
+						// add note
+						$script->event['warn_ineligible'] = '<strong>This result might be inaccurate.</strong> ' . $script->user['name'] . ' registered on some wikis before the rights log was created in 2005. You may need to investigate manually.';
+					}
+					else if($minDurationMet)
+						$script->event['warn_ineligible'] = NULL;
+
+					/* link to log for double-checking */
+					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['code'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
+				}
+			}
+			while (!$script->eligible && $script->get_next());
+			break;
+
+		############################
+		## 2013-02 steward elections
 		############################
 		case 29:
 			########
