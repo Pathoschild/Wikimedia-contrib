@@ -263,7 +263,7 @@ table.sortable .headerSortDown, table.sortable .headerSortUp {
 }
 
 /* global notice */
-#global-notice {
+.global-notice {
 	margin:0.5em;
 	padding:0.5em;
 	border:1px solid #DDD;
@@ -273,15 +273,16 @@ table.sortable .headerSortDown, table.sortable .headerSortUp {
 	color:#000;
 }
 
-#global-notice.is-warn {
+.global-notice.is-warn {
 	border-left-color:#CC0;
 }
 
-#global-notice.is-error {
+.global-notice.is-error {
 	border-left-color:#C00;
 }
 
-#global-notice.is-notice {
+.global-notice.is-notice {
 	border-left-color:#666;
 	color:#666;
 }
+
