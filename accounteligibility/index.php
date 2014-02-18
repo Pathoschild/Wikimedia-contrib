@@ -891,7 +891,7 @@ while ($script->user['name'] && !$cached) {
 				if(!$edits_okay) {
 					$edits = $script->edit_count(NULL, 20140101000000);
 					$edits_okay = $script->condition(
-						$edits_okay = ($edits >= 75),
+						$edits_okay = ($edits > 75),
 						"has more than 75 edits before 01 January 2014 (has {$edits})...",
 						"does not have more than 75 edits before 01 January 2014 (has {$edits})."
 					);
