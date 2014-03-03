@@ -76,13 +76,13 @@ class Engine {
 		foreach($names as $group) {
 			$outerSelects[] = "user_has_$group";
 			if($rights[$group])
-				$outerSelects[] = "CASE WHEN user_has_$group<>0 THEN (SELECT log_timestamp FROM logging WHERE log_user=user_id AND log_type IN ('" . implode("','", $rights[$group]) . "') ORDER BY log_id DESC LIMIT 1) END AS last_$group";
+				$outerSelects[] = "CASE WHEN user_has_$group<>0 THEN (SELECT log_timestamp FROM logging_userindex WHERE log_user=user_id AND log_type IN ('" . implode("','", $rights[$group]) . "') ORDER BY log_id DESC LIMIT 1) END AS last_$group";
 			$innerSelects[] = "COUNT(CASE WHEN ug_group='$group' THEN 1 END) AS user_has_$group";
 		}
 
 		// execute SQL
 		$this->db->Connect($this->wiki->name);
-		$sql = "SELECT * FROM (SELECT user_name,(SELECT rev_timestamp FROM revision WHERE rev_user=user_id ORDER BY rev_id DESC LIMIT 1) AS last_edit," . implode(",", $outerSelects) . " FROM (SELECT user_id,user_name," . implode(",", $innerSelects) . " FROM user INNER JOIN user_groups ON user_id = ug_user AND ug_group IN('" . implode("','", $names) . "') GROUP BY user_id) AS t_users) AS t_metrics ORDER BY last_edit DESC";
+		$sql = "SELECT * FROM (SELECT user_name,(SELECT rev_timestamp FROM revision_userindex WHERE rev_user=user_id ORDER BY rev_id DESC LIMIT 1) AS last_edit," . implode(",", $outerSelects) . " FROM (SELECT user_id,user_name," . implode(",", $innerSelects) . " FROM user INNER JOIN user_groups ON user_id = ug_user AND ug_group IN('" . implode("','", $names) . "') GROUP BY user_id) AS t_users) AS t_metrics ORDER BY last_edit DESC";
 		return $this->db->Query($sql)->fetchAllAssoc();
 
 	}
