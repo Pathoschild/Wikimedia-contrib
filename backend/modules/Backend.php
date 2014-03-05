@@ -201,7 +201,7 @@ class Backend extends Base {
 				$title = isset($link[2]) ? $link[2] : $link[0];
 				$desc  = isset( $link[1] ) ? $link[1] : '';
 				$desc  = str_replace( '\'', '&#38;', $desc ); 
-				$url   = $this->config['root_url'] . $link[0];
+				$url   = $this->config['root_url'] . $link[0] . '/';
 				
 				echo '<li><a href="', $url, '" title="', $desc, '">', $title, '</a></li>';
 			}
