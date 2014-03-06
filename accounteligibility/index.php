@@ -515,7 +515,7 @@ class Script extends Base {
 		if ($this->wiki['dbname'] == $wiki || in_array($wiki, $this->queue))
 			return true;
 		else {
-			$this->db->Connect('metawiki_p');
+			$this->db->Connect('metawiki');
 			$on_meta = $this->db->Query('SELECT user_id FROM user WHERE user_name = ? LIMIT 1', array($this->user['name']))->fetchColumn();
 			$this->db->ConnectPrevious();
 			return $on_meta;
@@ -584,7 +584,7 @@ class Script extends Base {
 		
 		// merge with Meta logs
 		if(!array_key_exists($role, $this->_metaRoleAgeCache)) {
-			$this->db->Connect('metawiki_p');
+			$this->db->Connect('metawiki');
 			$this->db->Query($sql . ' LIKE ?', array($logName . '@%'));
 			$_metaRoleAgeCache[$role] = $this->db->fetchAllAssoc();
 			$this->db->ConnectPrevious();
@@ -2830,7 +2830,7 @@ while ($script->user['name'] && !$cached) {
 			########
 			## Must not be blocked on Meta
 			########
-			$script->db->Connect('metawiki_p');
+			$script->db->Connect('metawiki');
 			$script->db->Query(
 				'SELECT COUNT(ipb_expiry) FROM metawiki_p.ipblocks WHERE ipb_user=(SELECT user_id FROM metawiki_p.user WHERE user_name=? LIMIT 1) AND ipb_expiry="infinity" LIMIT 1',
 				array($script->user['name'])
