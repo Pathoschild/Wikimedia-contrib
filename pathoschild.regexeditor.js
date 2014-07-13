@@ -17,7 +17,7 @@ var pathoschild = pathoschild || {};
 	/**
 	 * Singleton that lets the user define custom regular expressions using a dynamic form and execute them against the text.
 	 * @author Pathoschild
-	 * @version 0.1-alpha
+	 * @version 0.9.14
 	 * @class
 	 * @property {string} ContainerID The unique ID of the regex editor container.
 	 * @property {string} UndoText The original text before the last patterns were applied.
@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Properties
 		*********/
-		_version: '0.9.13-alpha',
+		_version: '0.9.14',
 		ContainerID: 'tsre',
 		UndoText: null,
 		$target: null,
@@ -57,7 +57,7 @@ var pathoschild = pathoschild || {};
 			if (pathoschild.util)
 				invokeCallback();
 			else
-				$.ajax({ url:'https://raw.github.com/Pathoschild/Wikimedia-contrib/master/pathoschild.util.js', dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
+				$.ajax({ url:'//tools.wmflabs.org/pathoschild-contrib/scripts/pathoschild.util.js', dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
 		},
 
 		/**
