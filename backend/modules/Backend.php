@@ -68,11 +68,11 @@ class Backend extends Base {
 
 		/* start logger */
 		$key = hash('crc32b', $_SERVER['REQUEST_TIME'] . $_SERVER['REQUEST_URI']);
-		$this->logger = new Logger('/data/project/pathoschild-contrib/logs', $key);
+		$this->logger = new Logger('/data/project/meta/logs', $key);
 		$this->logger->log('request: [' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . '] by [' . $_SERVER['HTTP_USER_AGENT'] . ']');
 
 		/* build cache */
-		$this->cache = new Cacher('/data/project/pathoschild-contrib/public_html/backend/modules/cache/', $this->logger, !!$this->get('purge'));
+		$this->cache = new Cacher('/data/project/meta/public_html/backend/modules/cache/', $this->logger, !!$this->get('purge'));
 	}
 	public static function create($title, $blurb) {
 		return new Backend($title, $blurb);
@@ -119,7 +119,7 @@ class Backend extends Base {
 	/**
 	 * Link to external CSS or JavaScript in the header.
 	 * @param string $url The URL of the CSS or JavaScript to fetch.
-	 * @param bool $prefix Whether to explicitly prefix the URL with the root URL (e.g., "//tools.wmflabs.org/pathoschild-contrib/$url").
+	 * @param bool $prefix Whether to explicitly prefix the URL with the root URL (e.g., "//tools.wmflabs.org/meta/$url").
 	 * @param string $as The reference type to render ('css' or 'js'), or null to use the file extension.
 	 */
 	public function link( $url, $prefix = false, $as = null ) {
@@ -196,7 +196,7 @@ class Backend extends Base {
 		</div>
 		<div id="content-column">
 			<div id="content">';
-		include('/data/project/pathoschild-contrib/public_html/backend/notice.php');
+		include('/data/project/meta/public_html/backend/notice.php');
 		echo '<h1>', $this->title, '<sup>beta</sup></h1>
 				<p id="blurb">', $this->blurb, '</p>';
 		echo '

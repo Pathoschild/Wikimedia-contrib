@@ -355,7 +355,7 @@ if( $script->isValid() )
 	$target_form = $backend->formatValue($script->target);
 echo '
 	<p>Who shall we stalk?</p>
-	<form action="/pathoschild-contrib/stalktoy/" method="get">
+	<form action="/meta/stalktoy/" method="get">
 		<div>
 			<input type="text" name="target" value="', $target_form, '" />
 			<input type="submit" value="Analyze »" /> <br />
@@ -579,7 +579,7 @@ else if( $script->isValid() && $script->target ) {
 			foreach($account->groups as $group) {
 				$globalGroups[] = in_array($group, $deletedGlobalGroups)
 					? $backend->formatValue($group)
-					:  '<a href="/pathoschild-contrib/globalgroups/#' . $backend->formatAnchor($group) . '" title="View global group details">' . $backend->formatValue(str_replace('_', ' ', $group)) . '</a>';
+					:  '<a href="/meta/globalgroups/#' . $backend->formatAnchor($group) . '" title="View global group details">' . $backend->formatValue(str_replace('_', ' ', $group)) . '</a>';
 			}
 			$globalGroups = implode(', ', $globalGroups);
 		}
@@ -627,7 +627,7 @@ else if( $script->isValid() && $script->target ) {
 				</tr>
 			</table>
 			See also
-			<a href="/pathoschild-contrib/crossactivity/', $script->target_url, '" title="recent activity">recent activity</a>,
+			<a href="/meta/crossactivity/', $script->target_url, '" title="recent activity">recent activity</a>,
 			<a href="//meta.wikimedia.org/wiki/Special:CentralAuth/', $script->target_wiki_url, '" title="Special:CentralAuth">global user manager</a>.
 			';
 	}

@@ -39,7 +39,7 @@ if (!empty($user)) {
 	echo '<div class="result-box">';
 	echo 'Related tools:
 		<ul>
-			<li><a href="/pathoschild-contrib/stalktoy/', urlencode($user), '" title="Global account details">Global account details</a></li>
+			<li><a href="/meta/stalktoy/', urlencode($user), '" title="Global account details">Global account details</a></li>
 			<li><a href="//meta.wikimedia.org/?title=Special:CentralAuth/', urlencode($user), '" title="Special:CentralAuth">Special:CentralAuth (stewards-only)</a></li>
 		</ul>';
 

@@ -447,7 +447,7 @@ if( $count ) {
 				<td class='name'>",
 			($name_hidden
 				? str_pad("", mb_strlen($row['gu_name'], 'utf-8'), "*")
-				: "<a href='/pathoschild-contrib/stalktoy?target={$lnk_target}' title='about user'>{$row['gu_name']}</a>"
+				: "<a href='/meta/stalktoy?target={$lnk_target}' title='about user'>{$row['gu_name']}</a>"
 			), "</td>
 				<td class='registration'>{$row['gu_registration']}</td>
 				<td class='status'>{$lbl_status}</td>

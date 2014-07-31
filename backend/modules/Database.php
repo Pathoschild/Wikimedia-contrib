@@ -84,7 +84,7 @@ class Database {
 	 */
 	public function __construct( $logger = NULL, $options = NULL, $default_username = NULL, $default_password = NULL ) {
 		/* configuration */
-		$this->config_file = '/data/project/pathoschild-contrib/replica.my.cnf';
+		$this->config_file = '/data/project/meta/replica.my.cnf';
 		$this->logger = $logger;
 		if( $this->logger != null )
 			$this->logger_key = $this->logger->key;

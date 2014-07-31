@@ -456,7 +456,7 @@ class Script extends Base {
 			if (!$unifiedDbnames) {
 				$this->selectManually = true;
 				$encoded = urlencode($this->user['name']);
-				echo '<div id="result" class="neutral" data-is-error="1">', $this->formatText($this->user['name']), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="/pathoschild-contrib/stalktoy/?target=', $encoded, '" title="global details about this user">global details about this user</a>).</div>';
+				echo '<div id="result" class="neutral" data-is-error="1">', $this->formatText($this->user['name']), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="/meta/stalktoy/?target=', $encoded, '" title="global details about this user">global details about this user</a>).</div>';
 				return false;
 			}
 			$this->profiler->stop('fetch unified wikis');
@@ -3040,9 +3040,9 @@ while ($script->user['name'] && !$cached) {
 		elseif (!$script->eligible && isset($script->event['append_ineligible']))
 			echo $script->event['append_ineligible'];
 		echo '</div>';
-		echo '<small>See also: <a href="/pathoschild-contrib/stalktoy/?target=', urlencode($script->user['name']), '" title="global account details">global account details</a></small>.';
-		
-		
+		echo '<small>See also: <a href="/meta/stalktoy/?target=', urlencode($script->user['name']), '" title="global account details">global account details</a></small>.';
+
+
 		########
 		## Mention additional requirements
 		########

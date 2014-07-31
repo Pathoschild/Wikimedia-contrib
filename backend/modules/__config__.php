@@ -15,7 +15,7 @@ error_reporting(E_ALL & ~E_NOTICE);
 #############################
 ## URLs and navigation
 #############################
-$gconfig['root_url']  = '//tools.wmflabs.org/pathoschild-contrib/';
+$gconfig['root_url']  = '//tools.wmflabs.org/meta/';
 $gconfig['style_url'] = $gconfig['root_url'] . 'content/';
 
 $gconfig['tools'] = array(

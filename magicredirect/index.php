@@ -79,7 +79,6 @@ if($target) {
 
 /* redirect */
 if($target && $redirect && !$error) {
-	$backend->trackWithoutHtml($target);
 	header( 'Location: ' . $target );
 	exit();
 }
@@ -126,7 +125,7 @@ if($error || $target) {
 		echo $error;
 	else if($target) {
 		/* build URL */
-		$magicUrl = '/pathoschild-contrib/magicredirect/?redirect=1';
+		$magicUrl = '/meta/magicredirect/?redirect=1';
 		if($user)
 			$magicUrl .= '&user=' . urlencode($user);
 		if($wiki)
