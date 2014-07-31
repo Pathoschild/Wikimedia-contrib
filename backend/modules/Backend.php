@@ -152,22 +152,6 @@ class Backend extends Base {
 	#############################
 	## Print header
 	#############################
-	public function trackWithoutHtml($outlink = null) {
-		require_once( __DIR__.'/external/PiwikTracker.php' );
-
-		// configure tracker
-		PiwikTracker::$URL = 'http://toolserver.org/~pathoschild/backend/piwik/';
-		$tracker = new PiwikTracker($idSite = 1);
-		$tracker->setCustomVariable(1, 'tracked-without-html', 1);
-		$tracker->setTokenAuth($PIWIK_AUTH_TOKEN);
-		$tracker->setIp($_SERVER['HTTP_X_FORWARDED_FOR']);
-
-		// track
-		$tracker->doTrackPageView($this->title);
-		if($outlink)
-			$tracker->doTrackAction($outlink, 'link');
-	}
-
 	public function header() {
 		global $gconfig;
 		/* print document head */
@@ -185,7 +169,6 @@ class Backend extends Base {
 		<script src="', $gconfig['root_url'], 'content/jquery.collapse/jquery.collapse.js" type="text/javascript"></script>
 		<script src="', $gconfig['root_url'], 'content/main.js" type="text/javascript"></script>
 		', $this->hook_head, '
-		<script src="//toolserver.org/~pathoschild/backend/piwik/piwik.js" type="text/javascript"></script>
 	</head>
 	<body>
 		<div id="sidebar">
@@ -265,9 +248,6 @@ class Backend extends Base {
 				</div>
 			</div>
 		</div>
-		<noscript>
-			<img src="//toolserver.org/~pathoschild/backend/piwik/piwik.php?idsite=1&amp;rec=1&amp;urlref=', urlencode(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ''), '" style="border:0" alt="" />
-		</noscript>
 	</body>
 </html>';
 	}

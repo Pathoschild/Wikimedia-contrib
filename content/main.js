@@ -19,14 +19,4 @@
 				}, 300);
 			}
 		});
-
-	/* analytics */
-	try {
-		var piwikTracker = Piwik.getTracker('//toolserver.org/~pathoschild/backend/piwik/piwik.php', 1);
-		piwikTracker.trackPageView();
-		piwikTracker.enableLinkTracking();
-	} catch (err) {
-		if (window.console && console.log)
-			console.log(err);
-	}
 });
