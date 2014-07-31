@@ -39,8 +39,7 @@ if (!empty($user)) {
 	echo '<div class="result-box">';
 	echo 'Related tools:
 		<ul>
-			<li><a href="//toolserver.org/~luxo/contributions/contributions.php?user=', urlencode($user) ,'" title="Crosswiki edits">Crosswiki edits</a></li>
-			<li><a href="//toolserver.org/~pathoschild/stalktoy/', urlencode($user), '" title="Global account details">Global account details</a></li>
+			<li><a href="/pathoschild-contrib/stalktoy/', urlencode($user), '" title="Global account details">Global account details</a></li>
 			<li><a href="//meta.wikimedia.org/?title=Special:CentralAuth/', urlencode($user), '" title="Special:CentralAuth">Special:CentralAuth (stewards-only)</a></li>
 		</ul>';
 

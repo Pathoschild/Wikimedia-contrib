@@ -428,7 +428,6 @@ if( $script->isValid() && $ip->ip->isValid() ) {
 		<div>
 			Related toys:
 			<a href="http://www.sixxs.net/tools/whois/?handle=', urlencode($ip->ip->getFriendly()), '" title="whois query">whois</a>,
-			<a href="//toolserver.org/~luxo/contributions/contributions.php?user=', $script->target_url, '&blocks=true" title="list edits">list edits</a>,
 			<a href="//meta.wikimedia.org/wiki/Special:GlobalBlock?wpAddress=', $script->target_wiki_url, '" title="Special:GlobalBlock">global block</a>.
 		</div>';
 
@@ -580,7 +579,7 @@ else if( $script->isValid() && $script->target ) {
 			foreach($account->groups as $group) {
 				$globalGroups[] = in_array($group, $deletedGlobalGroups)
 					? $backend->formatValue($group)
-					:  '<a href="//toolserver.org/~pathoschild/globalgroups/#' . $backend->formatAnchor($group) . '" title="View global group details">' . $backend->formatValue(str_replace('_', ' ', $group)) . '</a>';
+					:  '<a href="/pathoschild-contrib/globalgroups/#' . $backend->formatAnchor($group) . '" title="View global group details">' . $backend->formatValue(str_replace('_', ' ', $group)) . '</a>';
 			}
 			$globalGroups = implode(', ', $globalGroups);
 		}
@@ -628,8 +627,7 @@ else if( $script->isValid() && $script->target ) {
 				</tr>
 			</table>
 			See also
-			<a href="//toolserver.org/~pathoschild/crossactivity/', $script->target_url, '" title="recent activity">recent activity</a>,
-			<a href="//toolserver.org/~luxo/contributions/contributions.php?user=', $script->target_url, '&blocks=true" title="recent edits">recent edits</a>,
+			<a href="/pathoschild-contrib/crossactivity/', $script->target_url, '" title="recent activity">recent activity</a>,
 			<a href="//meta.wikimedia.org/wiki/Special:CentralAuth/', $script->target_wiki_url, '" title="Special:CentralAuth">global user manager</a>.
 			';
 	}

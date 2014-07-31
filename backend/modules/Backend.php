@@ -119,7 +119,7 @@ class Backend extends Base {
 	/**
 	 * Link to external CSS or JavaScript in the header.
 	 * @param string $url The URL of the CSS or JavaScript to fetch.
-	 * @param bool $prefix Whether to explicitly prefix the URL with the root URL (e.g., "//toolserver.org/~pathoschild/$url").
+	 * @param bool $prefix Whether to explicitly prefix the URL with the root URL (e.g., "//tools.wmflabs.org/pathoschild-contrib/$url").
 	 * @param string $as The reference type to render ('css' or 'js'), or null to use the file extension.
 	 */
 	public function link( $url, $prefix = false, $as = null ) {

@@ -447,7 +447,7 @@ if( $count ) {
 				<td class='name'>",
 			($name_hidden
 				? str_pad("", mb_strlen($row['gu_name'], 'utf-8'), "*")
-				: "<a href='//toolserver.org/~pathoschild/stalktoy?target={$lnk_target}' title='about user'>{$row['gu_name']}</a>"
+				: "<a href='/pathoschild-contrib/stalktoy?target={$lnk_target}' title='about user'>{$row['gu_name']}</a>"
 			), "</td>
 				<td class='registration'>{$row['gu_registration']}</td>
 				<td class='status'>{$lbl_status}</td>
@@ -456,10 +456,7 @@ if( $count ) {
 				",
 				($name_hidden
 					? "&mdash;"
-					: "
-						<a href='//toolserver.org/~luxo/contributions/contributions.php?user={$lnk_target}&blocks=true' title='List edits'>edits</a>
-						| <a href='//meta.wikimedia.org/wiki/Special:CentralAuth?target={$lnk_target}' title='CentralAuth'>CentralAuth</a>
-					"
+					: "<a href='//meta.wikimedia.org/wiki/Special:CentralAuth?target={$lnk_target}' title='CentralAuth'>CentralAuth</a>"
 				),
 				"</td>
 			</tr>\n";

@@ -126,7 +126,7 @@ if($error || $target) {
 		echo $error;
 	else if($target) {
 		/* build URL */
-		$magicUrl = '//toolserver.org/~pathoschild/magicredirect/?redirect=1';
+		$magicUrl = '/pathoschild-contrib/magicredirect/?redirect=1';
 		if($user)
 			$magicUrl .= '&user=' . urlencode($user);
 		if($wiki)
