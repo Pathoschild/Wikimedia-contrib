@@ -112,7 +112,7 @@ class Backend extends Base {
 	 * @return mixed The expected value, or null.
 	 */
 	public function getRouteValue() {
-		return $this->get('$1');
+		return $this->get('@1');
 	}
 
 

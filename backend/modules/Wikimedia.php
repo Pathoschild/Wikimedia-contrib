@@ -60,6 +60,12 @@ class Wiki {
 	 */
 	public $host = NULL;
 
+	/**
+	 * Whether the wiki contains content in multiple languages.
+	 * @var bool
+	 */
+	public $isMultilingual = NULL;
+
 
 	/*########
 	## Methods
@@ -71,12 +77,21 @@ class Wiki {
 		$this->dbName = $name;
 		$this->name = $name;
 		$this->lang = $lang;
-		$this->family = $family;
+		switch($name) {
+			case 'commonswiki': $this->family = 'commons'; break;
+			case 'incubatorwiki': $this->family = 'incubator'; break;
+			case 'mediawikiwiki': $this->family = 'mediawiki'; break;
+			case 'metawiki': $this->family = 'meta'; break;
+			case 'specieswiki': $this->family = 'wikispecies'; break;
+			case 'wikidatawiki': $this->family = 'wikidata'; break;
+			default: $this->family = $family; break;
+		}
 		$this->domain = $domain;
 		$this->size = $size;
 		$this->isClosed = $isClosed;
 		$this->serverName = $serverName;
 		$this->host = $serverName;
+		$this->isMultilingual = in_array($dbName, array('commonswiki', 'incubatorwiki', 'mediawikiwiki', 'metawiki', 'specieswiki', 'wikidatawiki'));
 	}
 }
 

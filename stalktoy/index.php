@@ -102,7 +102,7 @@ class StalktoyScript extends Base {
 			$account->isHidden = $row['gu_hidden'];
 			$account->isLocked = $row['gu_locked'];
 			$account->registered = $row['gu_timestamp'];
-			$account->groups = ($row['gu_groups'] ? explode(',', $row['gu_groups']) : '');
+			$account->groups = ($row['gu_groups'] ? explode(',', $row['gu_groups']) : array());
 			$account->homeWiki = $row['lu_wiki'];
 			$account->wikis = $this->db->getUnifiedWikis($this->target);
 			$account->wikiHash = array_flip($account->wikis);
@@ -355,11 +355,11 @@ if( $script->isValid() )
 	$target_form = $backend->formatValue($script->target);
 echo '
 	<p>Who shall we stalk?</p>
-	<form action="" method="get">
+	<form action="/pathoschild-contrib/stalktoy/" method="get">
 		<div>
 			<input type="text" name="target" value="', $target_form, '" />
 			<input type="submit" value="Analyze »" /> <br />
-		
+
 			', Form::Checkbox( 'show_all_wikis', $script->show_all_wikis ), '
 			<label for="show_all_wikis">Show wikis where account is not registered.</label><br />
 			', Form::Checkbox( 'global_groups_per_wiki', $script->show_groups_per_wiki ), '
