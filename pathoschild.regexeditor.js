@@ -57,7 +57,7 @@ var pathoschild = pathoschild || {};
 			if (pathoschild.util)
 				invokeCallback();
 			else
-				$.ajax({ url:'//tools.wmflabs.org/pathoschild-contrib/scripts/pathoschild.util.js', dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
+				$.ajax({ url:'//tools.wmflabs.org/meta/scripts/pathoschild.util.js', dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
 		},
 
 		/**

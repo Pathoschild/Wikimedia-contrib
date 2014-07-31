@@ -160,7 +160,7 @@ var pathoschild = pathoschild || {};
 			this.Context.$editSummary = $('#wpSummary:first');
 
 			// load utilities & hook into page
-			this._LoadDependency('//tools.wmflabs.org/pathoschild-contrib/scripts/pathoschild.util.js', pathoschild.util, function() {
+			this._LoadDependency('//tools.wmflabs.org/meta/scripts/pathoschild.util.js', pathoschild.util, function() {
 				this._isReady = true;
 				for (var i = 0; i < this._queue.length; i++)
 					this.Add(this._queue[i]);
@@ -461,7 +461,7 @@ var pathoschild = pathoschild || {};
 	pathoschild.TemplateScript.Add({
 		name: 'Regex editor',
 		script: function(context) {
-			pathoschild.TemplateScript._LoadDependency('//tools.wmflabs.org/pathoschild-contrib/scripts/pathoschild.regexeditor.js', pathoschild.RegexEditor, function() {
+			pathoschild.TemplateScript._LoadDependency('//tools.wmflabs.org/meta/scripts/pathoschild.regexeditor.js', pathoschild.RegexEditor, function() {
 				pathoschild.RegexEditor.Create(context.$target);
 			});
 		},
