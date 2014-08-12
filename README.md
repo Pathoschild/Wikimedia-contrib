@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/Pathoschild/Wikimedia-contrib.png)](https://travis-ci.org/Pathoschild/Wikimedia-contrib)
 # Wikimedia-contrib
 **Wikimedia-contrib** is a collection of scripts intended for users of Wikimedia Foundation wikis.
 
