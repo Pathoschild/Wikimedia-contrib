@@ -1,0 +1,33 @@
+# don't rewrite backend
+match URL into $ with ^/~pathoschild/(content|backend)
+if matched then
+	goto END
+endif
+
+
+# redirect obsolete scripts
+match URL into $ with /~pathoschild/wmelections_eligibility(.*\?(.*))?
+if matched then
+	set RESPONSE = 301
+	set OUT:Location = /~pathoschild/accounteligibility/?event=0&$2
+	set OUT:Content-Type = text/plain
+	set BODY = Moved
+	goto END
+endif
+
+
+# handle pretty URLs (map /dir/value to /dir/index.php?$1=value)
+match URL into $ with ^((/~pathoschild/[a-z0-9]+)/([^\?]+))\??(.*)
+if matched then
+	set SCRATCH:PATH  = $1
+	set SCRATCH:DIR   = $2
+	set SCRATCH:VALUE = $3
+	set SCRATCH:QUERY = $4
+	map path into SCRATCH:PATH from %{SCRATCH:PATH}
+	
+	look for dir at %{SCRATCH:PATH}
+	if not exists then look for file at %{SCRATCH:PATH}
+	if not exists then
+		set URL = %{SCRATCH:DIR}/index.php?\$1=%{SCRATCH:VALUE}&%{SCRATCH:QUERY}
+	endif
+endif

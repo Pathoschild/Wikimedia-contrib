@@ -1,0 +1,74 @@
+/* Generic */
+table {
+	font-size: 0.8em;
+}
+
+th {
+	font-size: 1.2em;
+}
+
+th a {
+	text-decoration: none;
+	color: #000;
+}
+
+span.bad, span.good {
+	padding: 0 3px;
+	background: #FCC;
+}
+
+span.good {
+	background: #CFC;
+}
+
+/* wiki data */
+tr[data-open="0"] {
+	color: #666;
+}
+
+tr[data-open="0"] .wiki:after {
+	content: ' (closed)';
+}
+
+/* user data */
+.account-id {
+	color: gray;
+}
+
+tr[data-exists="0"],
+tr[data-groups="0"] td.groups,
+tr[data-global-groups="0"] td.global-groups,
+tr[data-blocked="0"] td.blocks {
+	background: #CCC;
+	color:#666;
+}
+
+tr[data-groups="1"] td.groups,
+tr[data-global-groups="1"] td.global-groups,
+tr[data-unified="1"] td.unification {
+	background: #CFC;
+}
+
+tr[data-unified="0"] td.unification,
+tr[data-blocked="1"] td.blocks {
+	background: #FCC;
+}
+
+td.edit-count {
+	text-align: right;
+}
+
+td.edit-count span {
+	color: #FFF;
+	font-size: 1px;
+}
+
+/* visualizations */
+#account-visualizations {
+	margin:1em 1em 1em 2em;
+}
+
+#account-visualizations .viz-chart {
+	float: left;
+	margin-right:2em;
+}

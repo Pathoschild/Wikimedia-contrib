@@ -1,0 +1,28 @@
+/* lists */
+li ol {
+	list-style-type:lower-alpha;
+}
+
+li li ol {
+	list-style-type:lower-roman;
+}
+
+/* tables */
+table, table td {
+	border:0 !important;
+}
+
+table tr {
+	border:1px solid #CCC;
+}
+
+/* headings */
+h3 {
+	border-bottom:1px dashed gray;
+}
+
+/* classes */
+.struckout a {
+	text-decoration:line-through;
+	color:gray;
+}

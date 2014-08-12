@@ -1,0 +1,40 @@
+/*######
+## Generic
+######*/
+table        { font-size:0.8em; }
+th           { font-size:1.2em; }
+th a {
+	text-decoration:none;
+	color:#000;
+}
+
+/*######
+## Data formatting
+######*/
+.search-results-0 {
+	font-size:0.8em;
+	color:gray;
+}
+
+.user-in-groups-0 td.groups {
+	background:#CCC;
+}
+.user-in-groups-1 td.groups {
+	background:#CFC;
+}
+
+.user-okay-0 td.status {
+	background:#FCC;
+}
+.user-okay-1 td.status {
+	background:#CCC;
+}
+
+td.linkies {
+	font-size:0.8em;
+}
+
+.user-oversighted-1 td.linkies
+{
+	background:#CCC;
+}
