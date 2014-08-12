@@ -1,14 +1,13 @@
 <?php
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/Database.php');
-$backend = Backend::create('ISO 639 database', 'A searchable database of languages and ISO 639 codes augmented by native language names from Wikipedia. This script is but an egg; see the <a href="http://jpwillard.com/tools/iso639db" title="ISO639db (stable version)">current stable version</a>.')
+$backend = Backend::create('ISO 639 database', 'A searchable database of languages and ISO 639 codes augmented by native language names from Wikipedia.')
 	->link('stylesheet.css')
 	->link('../content/jquery.collapse/jquery.collapse.js')
 	->link('../content/jquery.collapse/jquery.cookie.js')
 	->link('../content/jquery.multiselect/jquery.multiselect.js')
 	->link('../content/jquery.multiselect/jquery.multiselect.css')
 	->header();
-
 
 ####################
 ## Script
@@ -160,12 +159,12 @@ function filterOption($key, $text = NULL) {
 	
 	<form action="" method="get">
 		<label for="code">By ISO 639 code:</label>
-		<input type="text" id="code" name="code" value="<?php echo $backend->formatValue($script->code); ?>" style="width:3em;" />
+		<input type="text" id="code" name="code" value="<?php echo $backend->formatValue($script->code); ?>" style="width:3em;" disabled />
 
 		<label for="name">or language name:</label>
-		<input type="text" id="name" name="name" value="<?php echo $backend->formatValue($script->name); ?>" />
+		<input type="text" id="name" name="name" value="<?php echo $backend->formatValue($script->name); ?>" disabled />
 		
-		<select id="filters" name="filters[]" multiple="multiple"><!--Only show languages...-->
+		<select id="filters" name="filters[]" multiple="multiple" disabled><!--Only show languages...-->
 			<optgroup label="in:"><?php
 				filterOption('1', 'ISO 639-1');
 				filterOption('2', 'ISO 639-2');
@@ -189,7 +188,7 @@ function filterOption($key, $text = NULL) {
 			?></optgroup>
 		</select><br />
 
-		<input type="submit" value="search" />
+		<input type="submit" value="search" disabled />
 	</div>
 </form>
 
@@ -215,6 +214,10 @@ function filterOption($key, $text = NULL) {
 </script>
 
 <?php
+echo '<div class="error">This tool didn\'t survive the transition to Tool Labs. It\'s temporarily offline until it\'s reimplemented. Sorry!</div>';
+$backend->footer();
+die();
+
 ####################
 ## Search result
 ####################
