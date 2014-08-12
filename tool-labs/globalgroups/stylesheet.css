@@ -1,0 +1,26 @@
+.group {
+	margin-left:2em;
+	margin-bottom:1em;
+}
+
+ul {
+	margin-top:0;
+}
+
+.group-rights {
+	margin-left:1em;
+}
+
+.group-rights-name,
+.group-rights-blurb {
+	font-size:0.9em;
+}
+
+.group-rights-name {
+	color:gray;
+	font-size:0.9em;
+}
+
+table tr {
+	border:0 !important;
+}
