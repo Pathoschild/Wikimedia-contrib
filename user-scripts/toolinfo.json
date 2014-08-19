@@ -1,0 +1,29 @@
+[
+	{
+		"name" : "meta-templatescript",
+		"title" : "TemplateScript",
+		"description" : "JavaScript which adds a menu of configurable templates and scripts to the sidebar. It automatically handles templates for various forms (from editing to protection), edit summaries, auto-submission, and filtering which templates are shown based on namespace, form, or arbitrary conditions. Templates can be inserted at the cursor position or at a preconfigured position, and scripts can be invoked when a sidebar link is activated. TemplateScript is also used as a framework for other scripts, and includes a fully-featured regex editor.",
+		"url" : "https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/TemplateScript",
+		"keywords" : "editing, user script",
+		"author" : "Pathoschild",
+		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
+	},
+	{
+		"name" : "meta-forceltr",
+		"title" : "ForceLTR",
+		"description" : "JavaScript which forces MediaWiki into displaying text in left-to-right format, even if the wiki's primary language is right-to-left.",
+		"url" : "https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/Force_ltr",
+		"keywords" : "editing, user script",
+		"author" : "Pathoschild",
+		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
+	},
+	{
+		"name" : "meta-stewardscript",
+		"title" : "StewardScript",
+		"description" : "JavaScript which extends the user interface for Wikimedia stewards' convenience.",
+		"url" : "https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/StewardScript",
+		"keywords" : "editing, user script",
+		"author" : "Pathoschild",
+		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
+	}
+]
