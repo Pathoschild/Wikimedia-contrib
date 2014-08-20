@@ -1,7 +1,7 @@
 <?php
 require_once('../backend/modules/Backend.php');
 $backend = Backend::create('GlobalGroups', 'A review of extra permissions assigned to <a href="//meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets" title="global groups">global groups</a> on Wikimedia Foundation wikis.')
-	->link('stylesheet.css')
+	->link('/globalgroups/stylesheet.css')
 	->header();
 
 /*########

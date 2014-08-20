@@ -1,7 +1,7 @@
 <?php
 require_once( '../backend/modules/Backend.php' );
 $backend = Backend::create('pgkbot', 'A python bot by <a href="//en.wikipedia.org/wiki/user:pgk" title="pgk\'s Wikipedia userpage">pgk</a> that processes and filters IRC change feeds for wiki installations (see the <a href="//meta.wikimedia.org/wiki/CVN/Bots" title="online documentation">onwiki documentation</a>).')
-	->link( 'stylesheet.css' )
+	->link( '/pgkbot/stylesheet.css' )
 	->header();
 ?>
 

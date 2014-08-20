@@ -1,8 +1,8 @@
 <?php
 require_once('../backend/modules/Backend.php');
 $backend = Backend::create('AccountEligibility', 'Analyzes a given user account to determine whether it\'s eligible to vote in the specified event.')
-	->link('stylesheet.css')
-	->link('../content/jquery.tablesorter.js')
+	->link('/accounteligibility/stylesheet.css')
+	->link('/content/jquery.tablesorter.js')
 	->addScript('$(document).ready(function() { $("#local-accounts").tablesorter({sortList:[[1,1]]}); });')
 	->header();
 
@@ -456,7 +456,7 @@ class Script extends Base {
 			if (!$unifiedDbnames) {
 				$this->selectManually = true;
 				$encoded = urlencode($this->user['name']);
-				echo '<div id="result" class="neutral" data-is-error="1">', $this->formatText($this->user['name']), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="/meta/stalktoy/?target=', $encoded, '" title="global details about this user">global details about this user</a>).</div>';
+				echo '<div id="result" class="neutral" data-is-error="1">', $this->formatText($this->user['name']), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="', $backend->url('/stalktoy/' . $encoded), '" title="global details about this user">global details about this user</a>).</div>';
 				return false;
 			}
 			$this->profiler->stop('fetch unified wikis');
@@ -773,8 +773,8 @@ class Script extends Base {
 ############################
 ## Initialize
 ############################
-$user = $backend->get('user', '');
-$event = $backend->get('event', Script::DEFAULT_EVENT);
+$event = $backend->get('event') ?: $backend->getRouteValue() ?: Script::DEFAULT_EVENT;
+$user = $backend->get('user') ?: $backend->getRouteValue(2) ?: '';
 $wiki = $backend->get('wiki', NULL);
 $script = new Script($backend, $user, $event, $wiki);
 
@@ -782,7 +782,7 @@ $script = new Script($backend, $user, $event, $wiki);
 ## Input form
 ############################
 echo '
-<form action="" method="get">
+<form action="', $backend->url('/accounteligibility'), '" method="get">
 	<label for="user">User:</label>
 	<input type="text" name="user" id="user" value="', $backend->formatValue($script->user['name']), '" /> at 
 	<select name="wiki" id="wiki">
@@ -828,7 +828,7 @@ if($script->user['name'])
 	echo '<div class="result-box">';
 
 while ($script->user['name'] && !$cached) {
-	if (!isset($script->events[$backend->get('event')])) {
+	if (!isset($script->event)) {
 		echo '<div class="error">There is no event matching the given ID.</div>';
 		break;
 	}
@@ -3040,7 +3040,7 @@ while ($script->user['name'] && !$cached) {
 		elseif (!$script->eligible && isset($script->event['append_ineligible']))
 			echo $script->event['append_ineligible'];
 		echo '</div>';
-		echo '<small>See also: <a href="/meta/stalktoy/?target=', urlencode($script->user['name']), '" title="global account details">global account details</a></small>.';
+		echo '<small>See also: <a href="', $backend->url('/stalktoy/' . urlencode($script->user['name'])), '" title="global account details">global account details</a></small>.';
 
 
 		########

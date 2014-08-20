@@ -1,8 +1,8 @@
 <?php
 require_once('../backend/modules/Backend.php');
 $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.')
-	->link( '../content/dataTables/jquery.dataTables.min.js' )
-	->link( '../content/dataTables/jquery.dataTables.plain.css' )
+	->link( '/content/dataTables/jquery.dataTables.min.js' )
+	->link( '/content/dataTables/jquery.dataTables.plain.css' )
 	->addScript('
 		$(function() {
 			$("#activity-table").dataTable({
@@ -27,7 +27,7 @@ $show_all = $backend->get('show_all', false);
 /***************
  * Input form
  ***************/
-echo '<form action="" method="get">
+echo '<form action="', $backend->url('/crossactivity'), '" method="get">
 	<label for="user">User name:</label>
 	<input type="text" name="user" id="user" value="', $backend->formatValue($user), '" />', ($user == 'Shanel' ? '&hearts;' : ''), '<br />
 	<input type="checkbox" id="show_all" name="show_all" ', ($show_all ? 'checked="checked" ' : ''), '/> <label
@@ -39,7 +39,7 @@ if (!empty($user)) {
 	echo '<div class="result-box">';
 	echo 'Related tools:
 		<ul>
-			<li><a href="/meta/stalktoy/', urlencode($user), '" title="Global account details">Global account details</a></li>
+			<li><a href="', $backend->url('/stalktoy/' . urlencode($user)), '" title="Global account details">Global account details</a></li>
 			<li><a href="//meta.wikimedia.org/?title=Special:CentralAuth/', urlencode($user), '" title="Special:CentralAuth">Special:CentralAuth (stewards-only)</a></li>
 		</ul>';
 

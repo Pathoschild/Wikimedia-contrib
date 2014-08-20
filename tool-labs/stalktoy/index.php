@@ -4,10 +4,10 @@ require_once( '../backend/modules/IP.php' );
 require_once( '../backend/modules/Form.php' );
 require_once( 'Stalktoy.php');
 $backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="/~pathoschild/stalktoy/Pathoschild" title="view result for Pathoschild"><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="/~pathoschild/stalktoy/127.0.0.1" title="view result for 127.0.0.1"><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="/~pathoschild/stalktoy/2001:db8:1234::" title="view result for 2001:db8:1234::"><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="/~pathoschild/stalktoy/212.75.0.1/16" title="view result for 212.75.0.1/16"><tt>212.75.0.1/16</tt></a> or <a href="/~pathoschild/stalktoy/2600:3C00::/48" title="view result for 2600:3C00::/48"><tt>2600:3C00::/48</tt></a>).')
-	->link( 'stalktoy/stylesheet.css', true )
-	->link( 'content/jquery.tablesorter.js', true )
-	->link( 'https://www.google.com/jsapi', false, 'js' )
-	->link( 'stalktoy/scripts.js', true )
+	->link( '/stalktoy/stylesheet.css' )
+	->link( '/content/jquery.tablesorter.js' )
+	->link( 'https://www.google.com/jsapi', 'js' )
+	->link( '/stalktoy/scripts.js' )
 	->header();
 
 /**
@@ -355,7 +355,7 @@ if( $script->isValid() )
 	$target_form = $backend->formatValue($script->target);
 echo '
 	<p>Who shall we stalk?</p>
-	<form action="/meta/stalktoy/" method="get">
+	<form action="', $backend->url('/stalktoy/'), '" method="get">
 		<div>
 			<input type="text" name="target" value="', $target_form, '" />
 			<input type="submit" value="Analyze »" /> <br />
@@ -579,7 +579,7 @@ else if( $script->isValid() && $script->target ) {
 			foreach($account->groups as $group) {
 				$globalGroups[] = in_array($group, $deletedGlobalGroups)
 					? $backend->formatValue($group)
-					:  '<a href="/meta/globalgroups/#' . $backend->formatAnchor($group) . '" title="View global group details">' . $backend->formatValue(str_replace('_', ' ', $group)) . '</a>';
+					:  '<a href="' . $backend->url('/globalgroups') . '#' . $backend->formatAnchor($group) . '" title="View global group details">' . $backend->formatValue(str_replace('_', ' ', $group)) . '</a>';
 			}
 			$globalGroups = implode(', ', $globalGroups);
 		}
@@ -627,7 +627,7 @@ else if( $script->isValid() && $script->target ) {
 				</tr>
 			</table>
 			See also
-			<a href="/meta/crossactivity/', $script->target_url, '" title="recent activity">recent activity</a>,
+			<a href="', $backend->url('/crossactivity/' . $script->target_url), '" title="recent activity">recent activity</a>,
 			<a href="//meta.wikimedia.org/wiki/Special:CentralAuth/', $script->target_wiki_url, '" title="Special:CentralAuth">global user manager</a>.
 			';
 	}

@@ -2,7 +2,7 @@
 require_once( '../backend/modules/Backend.php' );
 require_once( '../backend/modules/Form.php' );
 $backend = Backend::create('Catanalysis', 'Analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix). This is primarily intended for test project analysis by the Wikimedia Foundation <a href="//meta.wikimedia.org/wiki/Language_committee" title="language committee">language committee</a>.')
-	->link('stylesheet.css')
+	->link('/catanalysis/stylesheet.css')
 	->header();
 
 /***************
@@ -36,7 +36,7 @@ $db = $backend->GetDatabase();
 * Input form
 ***************/
 ?>
-	<form action="" method="get">
+	<form action="<?=$backend->url('/catanalysis')?>" method="get">
 		<fieldset>
 			<p>Enter a category name to analyse members of, or a prefix to analyze subpages of (see <a href="index.php?title=Wp/kab&cat=0&db=incubatorwiki" title="example">prefix</a> and <a href="index.php?title=Hindi&cat=1&db=sourceswiki" title="example">category</a> examples).</p>
 

@@ -1,8 +1,8 @@
 <?php
 require_once( '../backend/modules/Backend.php' );
 $backend = Backend::Create('Stewardry', 'Estimates which users in a group are available based on their last edit or action.')
-	->link( 'content/jquery.tablesorter.js', true )
-	->link( 'stewardry/scripts.js', true )
+	->link( '/content/jquery.tablesorter.js', true )
+	->link( '/stewardry/scripts.js', true )
 	->header();
 
 /***************
@@ -51,7 +51,7 @@ class Engine {
 		$this->db = $backend->GetDatabase();
 
 		// parse query
-		$this->dbname = $backend->get('wiki');
+		$this->dbname = $backend->get('wiki') ?: $backend->getRouteValue();
 		$this->wiki = $backend->db->wikis->GetWiki($this->dbname);
 		foreach($this->presetGroups as $group => $logTypes) {
 			if($backend->get($group))
@@ -99,7 +99,7 @@ $data = array();
 * Input form
 ***************/
 ?>
-<form action="" method="get">
+<form action="<?=$backend->url('/stewardry')?>" method="get">
 	<label for="wiki">Wiki:</label>
 	<select name="wiki">
 		<?php foreach($backend->db->getDomains() as $dbname => $domain) { ?>
@@ -198,7 +198,7 @@ do {
 			$domain = $engine->wiki->domain;
 
 			echo "<tr>",
-				"<td><a href='//$domain/wiki/User:$name' title='$name&#39;s user page'>$name</a> <small>[<a href='/meta/crossactivity/?user=$urlName' title='scan this user&#39;s activity on all wikis'>all wikis</a>]</small></td>",
+				"<td><a href='//$domain/wiki/User:$name' title='$name&#39;s user page'>$name</a> <small>[<a href='", $backend->url('/crossactivity/' . $urlName), "' title='scan this user&#39;s activity on all wikis'>all wikis</a>]</small></td>",
 				 color_cell($last_edit),
 				 ($show_log ? color_cell($last_log) : ''),
 			 "</tr>";

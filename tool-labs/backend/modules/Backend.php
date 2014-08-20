@@ -56,14 +56,14 @@ class Backend extends Base {
 		parent::__construct();
 
 		/* get configuration */
-		global $gconfig;
-		$this->config = &$gconfig;
+		global $settings;
+		$this->config = &$settings;
 
 		/* handle options */
 		$this->filename = basename( $_SERVER['SCRIPT_NAME'] );
 		$this->title    = isset($title) ? $title : $this->filename;
 		$this->blurb    = isset($blurb) ? $blurb : NULL;
-		$this->license  = $gconfig['license'];
+		$this->license  = $settings['license'];
 		$this->scripts = NULL;
 
 		/* start logger */
@@ -111,24 +111,33 @@ class Backend extends Base {
 	 * Get the value of the route placeholder (e.g, 'Pathoschild' in '/stalktoy/Pathoschild').
 	 * @return mixed The expected value, or null.
 	 */
-	public function getRouteValue() {
-		return $this->get('@1');
+	public function getRouteValue($index = 1) {
+		return $this->get('@' . $index);
+	}
+
+	/**
+	 * Build a URL.
+	 * @param string $url The URL fragment. If it starts with '/', it will be treated as relative to the configured tools root.
+	 */
+	public function url($url) {
+		if(substr($url, 0, 1) == '/' && substr($url, 1, 2) != '/') {
+			global $settings;
+			$url = $settings['root_url'] . $url;
+		}
+		return $url;
 	}
 
 
 	/**
 	 * Link to external CSS or JavaScript in the header.
-	 * @param string $url The URL of the CSS or JavaScript to fetch.
-	 * @param bool $prefix Whether to explicitly prefix the URL with the root URL (e.g., "//tools.wmflabs.org/meta/$url").
+	 * @param string $url The URL of the CSS or JavaScript to fetch. If it starts with '/', it will be treated as relative to the configured tools root.
 	 * @param string $as The reference type to render ('css' or 'js'), or null to use the file extension.
 	 */
-	public function link( $url, $prefix = false, $as = null ) {
+	public function link( $url, $as = null ) {
 		if(!$as)
 			$as = trim(substr( $url, -3 ), '\.');
-		if($prefix) {
-			global $gconfig;
-			$url = $gconfig['root_url'] . $url;
-		}
+		$url = $this->url($url);
+
 		switch( $as ) {
 			case 'css':
 				$this->hook_head .= '<link rel="stylesheet" type="text/css" href="' . $url . '" />';
@@ -153,7 +162,6 @@ class Backend extends Base {
 	## Print header
 	#############################
 	public function header() {
-		global $gconfig;
 		/* print document head */
 		echo '
 <!-- begin generated header -->
@@ -162,12 +170,12 @@ class Backend extends Base {
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>', $this->title, '</title>
-		<link rel="shortcut icon" href="', $this->config['style_url'], 'favicon.ico" />
-		<link rel="stylesheet" type="text/css" href="', $this->config['style_url'], 'stylesheet.css" />
+		<link rel="shortcut icon" href="', $this->url('/content/favicon.ico'), '" />
+		<link rel="stylesheet" type="text/css" href="', $this->url('/content/stylesheet.css'), '" />
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-		<script src="', $gconfig['root_url'], 'content/jquery.collapse/jquery.cookie.js" type="text/javascript"></script>
-		<script src="', $gconfig['root_url'], 'content/jquery.collapse/jquery.collapse.js" type="text/javascript"></script>
-		<script src="', $gconfig['root_url'], 'content/main.js" type="text/javascript"></script>
+		<script src="', $this->url('/content/jquery.collapse/jquery.cookie.js'), '" type="text/javascript"></script>
+		<script src="', $this->url('/content/jquery.collapse/jquery.collapse.js'), '" type="text/javascript"></script>
+		<script src="', $this->url('/content/main.js'), '" type="text/javascript"></script>
 		', $this->hook_head, '
 	</head>
 	<body>
@@ -184,7 +192,7 @@ class Backend extends Base {
 				$title = isset($link[2]) ? $link[2] : $link[0];
 				$desc  = isset( $link[1] ) ? $link[1] : '';
 				$desc  = str_replace( '\'', '&#38;', $desc ); 
-				$url   = $this->config['root_url'] . $link[0] . '/';
+				$url   = $this->url($link[0]);
 				
 				echo '<li><a href="', $url, '" title="', $desc, '">', $title, '</a></li>';
 			}

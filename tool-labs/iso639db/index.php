@@ -2,11 +2,11 @@
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/Database.php');
 $backend = Backend::create('ISO 639 database', 'A searchable database of languages and ISO 639 codes augmented by native language names from Wikipedia.')
-	->link('stylesheet.css')
-	->link('../content/jquery.collapse/jquery.collapse.js')
-	->link('../content/jquery.collapse/jquery.cookie.js')
-	->link('../content/jquery.multiselect/jquery.multiselect.js')
-	->link('../content/jquery.multiselect/jquery.multiselect.css')
+	->link('/iso639db/stylesheet.css')
+	->link('/content/jquery.collapse/jquery.collapse.js')
+	->link('/content/jquery.collapse/jquery.cookie.js')
+	->link('/content/jquery.multiselect/jquery.multiselect.js')
+	->link('/content/jquery.multiselect/jquery.multiselect.css')
 	->header();
 
 ####################
@@ -157,7 +157,7 @@ function filterOption($key, $text = NULL) {
 <div class="search">
 	<h2>Which languages would you like to see?</h2>
 	
-	<form action="" method="get">
+	<form action="<?=$backend->url('/iso639db')?>" method="get">
 		<label for="code">By ISO 639 code:</label>
 		<input type="text" id="code" name="code" value="<?php echo $backend->formatValue($script->code); ?>" style="width:3em;" disabled />
 

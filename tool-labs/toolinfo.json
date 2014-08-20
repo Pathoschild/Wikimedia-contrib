@@ -58,7 +58,7 @@
 		"title" : "Stalktoy",
 		"description" : "Shows global details about a user across all Wikimedia wikis. You can provide a username, an IPv4/IPv6 address, or a CIDR block.",
 		"url" : "https://tools.wmflabs.org/meta/stalktoy/",
-		"keywords" : "cross-wiki, user analysis",
+		"keywords" : "cross-wiki, sul, user analysis",
 		"author" : "Pathoschild",
 		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
 	},

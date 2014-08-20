@@ -2,8 +2,8 @@
 require_once( '../backend/modules/Backend.php' );
 require_once( '../backend/modules/Form.php' );
 $backend = Backend::create('gUser search', 'Provides searching and filtering of global users on Wikimedia wikis.')
-	->link('stylesheet.css')
-	->link('javascript.js')
+	->link('/gusersearch/stylesheet.css')
+	->link('/gusersearch/javascript.js')
 	->header();
 
 #############################
@@ -333,7 +333,7 @@ $script->show_hidden = $show_hidden;
 $f_username = $backend->formatValue( isset($name) ? $name : '' );
 
 echo "
-	<form action='' method='get'>
+	<form action='", $backend->url('/gusersearch'), "' method='get'>
 		<input type='text' name='name' value='{$f_username}' />
 		",
 		( ($limit != Script::DEFAULT_LIMIT) ? "<input type='hidden' name='limit' value='{$limit}' />" : ""),
@@ -447,7 +447,7 @@ if( $count ) {
 				<td class='name'>",
 			($name_hidden
 				? str_pad("", mb_strlen($row['gu_name'], 'utf-8'), "*")
-				: "<a href='/meta/stalktoy?target={$lnk_target}' title='about user'>{$row['gu_name']}</a>"
+				: "<a href='" . $backend->url('/stalktoy/' . $lnk_target) . "' title='about user'>{$row['gu_name']}</a>"
 			), "</td>
 				<td class='registration'>{$row['gu_registration']}</td>
 				<td class='status'>{$lbl_status}</td>
