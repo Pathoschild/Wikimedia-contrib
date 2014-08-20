@@ -337,10 +337,19 @@ class StalktoyUserModel {
 ## Instantiate script engine
 ############################# 
 $backend->profiler->start('initialize');
-$script = null;
 $target_form = '';
 
-$script = new StalktoyScript( $backend, $backend->get('target', $backend->getRouteValue()) );
+# parse target
+# stalktoy is an edge case for route values: an IP range like '127.0.0.1/16' should be treated as one value despite the path separator.
+$target = $backend->get('target');
+if($target == NULL) {
+	$target = $backend->getRouteValue();
+	if($target != NULL && $backend->getRouteValue(2) != NULL)
+		$target .= '/' . $backend->getRouteValue(2);
+}
+
+# initialise
+$script = new StalktoyScript( $backend, $target );
 $script->show_all_wikis = $backend->get('show_all_wikis', false);
 $script->show_groups_per_wiki = $backend->get('global_groups_per_wiki', false);
 $deletedGlobalGroups = array('Cabal');
