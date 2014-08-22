@@ -1,0 +1,44 @@
+.ajax-mediawiki-redirect {
+	font-style:italic;
+	color:gray !important;
+}
+
+.ajax-mediawiki-box {
+	position:relative;
+	margin-top:2em;
+	padding:0.5em;
+	border:1px solid #CCC;
+	background:#EEE;
+}
+
+.ajax-mediawiki-box-title {
+	position:absolute;
+	top:-1em;
+	left:0.5em;
+	padding:0 0.5em;
+	border:1px solid #CCC;
+	border-bottom:0;
+	background:#EEE;
+}
+
+.ajax-mediawiki-error-inline {
+	padding:2px;
+	border:1px solid #FAA;
+	background:#FDD;
+	font-size:0.9em;
+}
+
+.ajax-mediawiki-patrol {}
+.ajax-mediawiki-patrol-done a {
+	color:gray;
+}
+
+.ajax-mediawiki-rollback {}
+.ajax-mediawiki-rollback-done a {
+	color:gray;
+}
+
+.ajax-mediawiki-subpages-none {
+	color:gray;
+	font-style:italic;
+}
