@@ -173,7 +173,6 @@ class Backend extends Base {
 		<link rel="shortcut icon" href="', $this->url('/content/favicon.ico'), '" />
 		<link rel="stylesheet" type="text/css" href="', $this->url('/content/stylesheet.css'), '" />
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-		<script src="', $this->url('/content/jquery.collapse/jquery.cookie.js'), '" type="text/javascript"></script>
 		<script src="', $this->url('/content/jquery.collapse/jquery.collapse.js'), '" type="text/javascript"></script>
 		<script src="', $this->url('/content/main.js'), '" type="text/javascript"></script>
 		', $this->hook_head, '
@@ -181,24 +180,24 @@ class Backend extends Base {
 	<body>
 		<div id="sidebar">
 		<h4>Pathoschild\'s tools</h4>';
-		
+
 		/* print navigation menu */
 		foreach( $this->config['tools'] as $section => $links ) {
 			echo '
 			<h5>', $section, '</h5>
 			<ul>';
-			
+
 			foreach($links as $link) {
 				$title = isset($link[2]) ? $link[2] : $link[0];
 				$desc  = isset( $link[1] ) ? $link[1] : '';
 				$desc  = str_replace( '\'', '&#38;', $desc ); 
 				$url   = $this->url($link[0]);
-				
+
 				echo '<li><a href="', $url, '" title="', $desc, '">', $title, '</a></li>';
 			}
 			echo '</ul>';
 		}
-		
+
 		/* print content head */
 		echo '
 		</div>
@@ -211,7 +210,7 @@ class Backend extends Base {
 <!-- end generated header -->';
 		return $this;
 	}
-	
+
 	#############################
 	## Print footer
 	#############################
@@ -232,7 +231,7 @@ class Backend extends Base {
 		}
 		$resultSeconds = round( $totalTime, $precisionTime );
 		$this->logger->log('completed: ' . $resultSeconds . ' seconds.');
-//		
+
 		/* output */
 		echo '
 <!-- begin generated footer -->
@@ -244,14 +243,14 @@ class Backend extends Base {
 				<div id="profiling">
 					Page generated in ', $resultSeconds, ' seconds.
 		';
-		
+
 		if(count($timerResults)) {
 			echo '<span>[+]</span><ul>';
 			foreach( $timerResults as $name => $time )
 				echo '<li>', $name, ': ', $time, '</li>';
 			echo '</ul>';
 		}
-		
+
 		echo '
 				</div>
 			</div>
