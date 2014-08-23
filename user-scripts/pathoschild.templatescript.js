@@ -356,8 +356,16 @@ var pathoschild = pathoschild || {};
 			if ('forNamespaces' in template && template.forNamespaces !== null && !is(context.namespace, template.forNamespaces)) {
 				return false;
 			}
-			if ('forActions' in template && template.forActions !== null && !is(context.action, template.forActions)) {
-				return false;
+			if ('forActions' in template && template.forActions !== null) {
+				// workaround: moving a page doesn't have its own action
+				var action = context.action;
+				if(action == 'view' && $('#movepage').length) {
+					action = 'move';
+				}
+				
+				if(!is(context.action, template.forActions)) {
+					return false;
+				}
 			}
 
 			return true;
