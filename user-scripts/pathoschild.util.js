@@ -170,20 +170,8 @@ var pathoschild = pathoschild || {};
 			AddPortlet: function (id, name) {
 				// copy the portlet structure for the current skin
 				var $sidebar = $('#p-tb').clone().attr('id', id);
-				$sidebar.find('h5').text(name);
+				$sidebar.find('h1, h2, h3, h4, h5').first().text(name);
 				$sidebar.find('ul').empty();
-
-				// if this is Vector, apply the collapsible magic (derived from the woefully-not-reusable https://gerrit.wikimedia.org/r/gitweb?p=mediawiki/extensions/Vector.git;a=blob;f=modules/ext.vector.collapsibleNav.js )
-				var vectorModules = mw.config.get('wgVectorEnabledModules');
-				if (vectorModules && vectorModules.collapsiblenav) {
-					var collapsed = $.cookie('vector-nav-' + id) === 'false';
-					$sidebar
-						.toggleClass('collapsed', collapsed)
-						.toggleClass('expanded', !collapsed);
-					$sidebar.find('div:first').toggle(!collapsed);
-				}
-
-				// add to sidebar
 				$('#p-tb').parent().append($sidebar);
 
 				return $sidebar;
