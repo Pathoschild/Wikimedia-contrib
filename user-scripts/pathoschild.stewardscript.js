@@ -55,6 +55,7 @@
 				{name:'user > multi-lock', page:'Special:MultiLock', desc:'lock/hide global accounts in bulk'},
 				{name:'user > rights (local)', page:'Special:UserRights', desc:'Manage local user rights'},
 				{name:'user > rights (global)', page:'Special:GlobalGroupMembership', desc:'Manage global user rights'},
+				{name:'user > global rename', page:'Special:GlobalRenameUser', desc:'Globally rename users'},
 				{name:'IP > global block', page:'Special:GlobalBlock', desc:'Globally block an IP'},
 				{name:'IP > global unblock', page:'Special:GlobalUnblock', desc:'Globally unblock an IP'},
 				{name:'global > groups', page:'Special:GlobalGroupPermissions', desc:'Manage global groups'},
@@ -89,7 +90,7 @@
 						.append(this
 							.Make('a')
 							.text('Stalktoy')
-							.attr({ href:'//toolserver.org/~pathoschild/stalktoy?target=' + encodeURIComponent(target), title:'View details about the global user or IP address on all Wikimedia wikis.' })
+							.attr({ href:'//tools.wmflabs.org/meta/stalktoy/' + encodeURIComponent(target), title:'View details about the global user or IP address on all Wikimedia wikis.' })
 						);
 
 					// link to central auth (if not an IP)
@@ -129,13 +130,19 @@
 							.append(this
 								.Make('a')
 								.text('stalktoy')
-								.attr({ href:'//toolserver.org/~pathoschild/stalktoy?target=' + encodeURIComponent(user), title:'Pathoschild\'s Stalktoy (comprehensive information about the given user on all Wikimedia wikis)'})
+								.attr({ href:'//tools.wmflabs.org/meta/stalktoy/' + encodeURIComponent(user), title:'Pathoschild\'s Stalktoy (comprehensive information about the given user on all Wikimedia wikis)'})
 							)
 							.append(', ')
 							.append(this
 								.Make('a')
 								.text('crosswiki edits')
-								.attr({ href:'//toolserver.org/~luxo/contributions/contributions.php?blocks=true&user=' + encodeURIComponent(user), title:'Luxo\'s User Contributions (lists edits across all Wikimedia wikis)'})
+								.attr({ href:'//tools.wmflabs.org/guc?blocks=true&user=' + encodeURIComponent(user), title:'Luxo\'s User Contributions (lists edits across all Wikimedia wikis)'})
+							)
+							.append(', ')
+							.append(this
+								.Make('a')
+								.text('crossactivity')
+								.attr({ href:'//tools.wmflabs.org/meta/crossactivity/' + encodeURIComponent(user), title:'Pathoschild\'s CrossActivity (measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis)'})
 							)
 						);
 
@@ -237,7 +244,7 @@
 							.after(_this
 								.Make('a')
 								.text('Stalktoy')
-								.attr({ href: '//toolserver.org/~pathoschild/stalktoy?target=' + encodeURIComponent(user) })
+								.attr({ href: '//tools.wmflabs.org/pathoschild-contrib/stalktoy/' + encodeURIComponent(user) })
 							)
 							.after(' · ');
 					});
