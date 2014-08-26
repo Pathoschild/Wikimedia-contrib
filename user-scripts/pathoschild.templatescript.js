@@ -30,7 +30,7 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '0.9.15-alpha',
+		_version: '1.0',
 
 		/*********
 		** Objects
@@ -42,6 +42,7 @@ var pathoschild = pathoschild || {};
 		 * @property {string} category An arbitrary category name (for grouping templates into multiple sidebars), or null to use the default sidebar.
 		 * @property {string[]} forActions The wgAction values for which the template is enabled, or null to enable for all actions.
 		 * @property {int[]} forNamespaces The namespaces in which the template is enabled, or null to enable in all namespaces.
+		 * @property {string} accessKey A keyboard shortcut key which invokes the template or script directly; see [[w:Wikipedia:Keyboard shortcuts]].
 		 *
 		 * @property {string} template The template text to insert.
 		 * @property {string} position The position at which to insert the template, matching a {pathoschild.TemplateScript.Position} value. The default value is 'cursor' when editing a page, and 'replace' in all other cases.
@@ -64,6 +65,7 @@ var pathoschild = pathoschild || {};
 			category: null,
 			forActions: null,
 			forNamespaces: null,
+			accessKey: null,
 
 			/* template options */
 			template: null,
@@ -195,7 +197,7 @@ var pathoschild = pathoschild || {};
 		 */
 		_CreateSidebarEntry: function(template) {
 			var id = this._GetSidebar(template.category);
-			pathoschild.util.mediawiki.AddPortletLink(id, template.name, function() { pathoschild.TemplateScript.Apply(template.id); });
+			pathoschild.util.mediawiki.AddPortletLink(id, template.name, template.accessKey, function() { pathoschild.TemplateScript.Apply(template.id); });
 		},
 
 		/*

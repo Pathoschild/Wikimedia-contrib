@@ -16,7 +16,7 @@ var pathoschild = pathoschild || {};
 	 * @namespace
 	 */
 	pathoschild.util = {
-		_version: '0.9.12-alpha',
+		_version: '1.0',
 
 		/**
 		 * Enforce a schema defining valid arguments and default values on a key:value object.
@@ -181,15 +181,30 @@ var pathoschild = pathoschild || {};
 			 * Add a link to a navigation sidebar menu.
 			 * @param {string} portletID The unique navigation portlet ID.
 			 * @param {string} text The link text.
+			 * @param {string} accessKey A keyboard shortcut key which invokes the template or script directly; see [[w:Wikipedia:Keyboard shortcuts]].
 			 * @param {string|function} target The link URI or callback.
 			 * @return
 			 */
-			AddPortletLink: function (portletID, text, target) {
+			AddPortletLink: function (portletID, text, accessKey, target) {
+				// create link
 				var isCallback = $.isFunction(target);
 				var uri = isCallback ? '#' : target;
 				var $link = $(mw.util.addPortletLink(portletID, uri, text));
 				if (isCallback)
 					$link.click(function (e) { e.preventDefault(); target(e); });
+
+				// add access key
+				if(accessKey) {
+					// steal access key if needed
+					var previousTarget = $('[accesskey="' + accessKey.replace('"', '\\"') + '"]')
+					if(previousTarget.length) {
+						pathoschild.util.Log('pathoschild.util::AddPortletLink: overwrote access key [' + accessKey + '] previously assigned to "' + previousTarget.text() + '".');
+						previousTarget.removeAttr('accesskey');
+					}
+
+					// set key
+					$link.find('a:first').attr('accesskey', accessKey);
+				}
 
 				return $link;
 			}
