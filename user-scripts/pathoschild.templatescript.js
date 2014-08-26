@@ -197,7 +197,15 @@ var pathoschild = pathoschild || {};
 		 */
 		_CreateSidebarEntry: function(template) {
 			var id = this._GetSidebar(template.category);
-			pathoschild.util.mediawiki.AddPortletLink(id, template.name, template.accessKey, function() { pathoschild.TemplateScript.Apply(template.id); });
+			var $item = pathoschild.util.mediawiki.AddPortletLink(id, template.name, template.accessKey, function() { pathoschild.TemplateScript.Apply(template.id); });
+			if(template.accessKey) {
+				$item.append(
+					$('<small>')
+						.addClass('ts-shortcut')
+						.attr('style', 'margin-left:.5em; color:#CCC;') // shouldn't be inline, but didn't want to create a spreadsheet for this one style
+						.append(template.accessKey)
+				);
+			}
 		},
 
 		/*
