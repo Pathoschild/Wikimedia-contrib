@@ -373,7 +373,7 @@ var pathoschild = pathoschild || {};
 					action = 'move';
 				}
 				
-				if(!is(context.action, template.forActions)) {
+				if(!is(action, template.forActions)) {
 					return false;
 				}
 			}
