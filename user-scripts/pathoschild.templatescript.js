@@ -30,7 +30,7 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '1.0',
+		_version: '1.1',
 
 		/*********
 		** Objects
@@ -53,6 +53,7 @@ var pathoschild = pathoschild || {};
 		 * @property {boolean} isMinorEdit Whether to mark the edit as minor (if applicable).
 		 *
 		 * @property {boolean} autoSubmit Whether to submit the form automatically after insertion.
+		 * @property {string} scriptUrl A script URL (or page name on the current wiki) to fetch before adding the template.
 		 * @property {function} script An arbitrary JavaScript function that is called after the template and edit summary are applied, but before autoSubmit is applied (if true). It is passed a reference to the context object.
 		 *
 		 * @property {int} id The internal template ID. (Modifying this value may cause unexpected behaviour.)
@@ -78,6 +79,7 @@ var pathoschild = pathoschild || {};
 
 			/* script options */
 			autoSubmit: false,
+			scriptUrl: null,
 			script: null,
 
 			/* internal */
@@ -206,6 +208,7 @@ var pathoschild = pathoschild || {};
 						.append(template.accessKey)
 				);
 			}
+			return $item;
 		},
 
 		/*
@@ -259,6 +262,11 @@ var pathoschild = pathoschild || {};
 			catch (err) {
 				return log('normalization error: ' + err);
 			}
+			
+			/* normalize script URL */
+			if(opts.scriptUrl && !opts.scriptUrl.match(/^(?:http:|https:)?\/\//))
+				opts.scriptUrl = wgServer + wgScriptPath + '/index.php?title=' + encodeURIComponent(opts.scriptUrl) + '&action=raw&ctype=text/javascript';
+
 
 			/* validate */
 			if (opts.script && !$.isFunction(opts.script)) {
@@ -282,7 +290,13 @@ var pathoschild = pathoschild || {};
 
 			/* add template */
 			opts.id = this._templates.push(opts) - 1;
-			this._CreateSidebarEntry(opts);
+			var $entry = this._CreateSidebarEntry(opts);
+
+			/* load dependency */
+			if(opts.scriptUrl) {
+				$entry.hide();
+				$.ajax(opts.scriptUrl, { cache: true, dataType: 'script', success: function() { $entry.show(); } });
+			}
 		},
 
 		/**
