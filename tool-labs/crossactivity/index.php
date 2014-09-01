@@ -37,11 +37,7 @@ echo '<form action="', $backend->url('/crossactivity'), '" method="get">
 
 if (!empty($user)) {
 	echo '<div class="result-box">';
-	echo 'Related tools:
-		<ul>
-			<li><a href="', $backend->url('/stalktoy/' . urlencode($user)), '" title="Global account details">Global account details</a></li>
-			<li><a href="//meta.wikimedia.org/?title=Special:CentralAuth/', urlencode($user), '" title="Special:CentralAuth">Special:CentralAuth (stewards-only)</a></li>
-		</ul>';
+	echo 'See also <a href="', $backend->url('/stalktoy/' . urlencode($user)), '" title="Global account details">global account details</a>, <a href="', $backend->url('/userpages/' . urlencode($user)), '" title="User pages">user pages</a>, <a href="//meta.wikimedia.org/?title=Special:CentralAuth/', urlencode($user), '" title="Special:CentralAuth">Special:CentralAuth (stewards-only)</a>.';
 
 	/***************
 	 * Functions

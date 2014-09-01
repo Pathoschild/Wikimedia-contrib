@@ -72,6 +72,15 @@
 		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
 	},
 	{
+		"name" : "meta-userpages",
+		"title" : "User pages",
+		"description" : "Find your user pages on all wikis (or find wikis where you don't have user pages).",
+		"url" : "https://tools.wmflabs.org/meta/userpages/",
+		"keywords" : "cross-wiki, user analysis, prefix",
+		"author" : "Pathoschild",
+		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
+	},
+	{
 		"name" : "meta-synchbot",
 		"title" : "Synchbot",
 		"description" : "Synchronises user pages across Wikimedia projects in every language. This allows users to create user pages on every wiki, or to have global JavaScript and CSS. (Due to potential for misuse, must submit an on-wiki request.)",

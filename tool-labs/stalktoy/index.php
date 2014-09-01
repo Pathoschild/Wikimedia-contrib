@@ -637,6 +637,7 @@ else if( $script->isValid() && $script->target ) {
 			</table>
 			See also
 			<a href="', $backend->url('/crossactivity/' . $script->target_url), '" title="recent activity">recent activity</a>,
+			<a href="', $backend->url('/userpages/' . $script->target_url), '" title="user pages">user pages</a>,
 			<a href="//meta.wikimedia.org/wiki/Special:CentralAuth/', $script->target_wiki_url, '" title="Special:CentralAuth">global user manager</a>.
 			';
 	}

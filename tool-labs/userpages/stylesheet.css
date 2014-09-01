@@ -1,0 +1,4 @@
+li[data-redirect="1"], li[data-redirect="1"] a {
+	font-style:italic;
+	color:gray;
+}

@@ -26,7 +26,8 @@ $settings['tools'] = array(
 		array( '/gusersearch', 'searches and filters global account creations', 'Global user search' ),
 		array( '/magicredirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.', 'Magic redirect' ),
 		array( '/stalktoy', 'provides comprehensive global information about the given user, IP address, or CIDR range.', 'Stalk toy' ),
-		array( '/stewardry', 'analyze user activity by group on a Wikimedia wiki.', 'Stewardry' )
+		array( '/stewardry', 'analyze user activity by group on a Wikimedia wiki.', 'Stewardry' ),
+		array( '/userpages', 'find your user pages on all wikis.', 'User pages' )
 	),
 	'generic' => array(
 		array( '/regextoy', 'perform regex search and replace', 'Regex toy' ),
