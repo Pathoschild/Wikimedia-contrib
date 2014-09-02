@@ -30,7 +30,8 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '1.1',
+		_version: '1.2',
+		_dependencies: [],
 
 		/*********
 		** Objects
@@ -295,7 +296,9 @@ var pathoschild = pathoschild || {};
 			/* load dependency */
 			if(opts.scriptUrl) {
 				$entry.hide();
-				$.ajax(opts.scriptUrl, { cache: true, dataType: 'script', success: function() { $entry.show(); } });
+				if(!this._dependencies[opts.scriptUrl])
+					this._dependencies[opts.scriptUrl] = $.ajax(opts.scriptUrl, { cache: true, dataType: 'script' });
+				this._dependencies[opts.scriptUrl].done(function() { $entry.show(); });
 			}
 		},
 
