@@ -14,6 +14,7 @@ The [Tool Labs](https://tools.wmflabs.org/) is a cloud infrastructure hosted by 
 * **[Stalktoy](https://tools.wmflabs.org/meta/stalktoy/)** shows global details about a user across all Wikimedia wikis. You can provide an account name (like `Pathoschild`), an IPv4 address (like `127.0.0.1`), an IPv6 address (like `2001:db8:1234::`), or a CIDR block (like `212.75.0.1/16` or `2600:3C00::/48`).
 * **[Stewardry](https://tools.wmflabs.org/meta/stewardry/)** estimates which users in a group are available based on their last edit or action.
 * **[Synchbot](https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/Synchbot)** synchronises user pages across Wikimedia projects in every language. This allows users to create user pages on every wiki, or to have global JavaScript and CSS. (Due to the potential for misuse, this bot is not open-source.)
+* **[User Pages](https://tools.wmflabs.org/meta/userpages/)** finds your user pages on all wikis (or finds wikis where you don't have user pages).
 
 ## User scripts
 
