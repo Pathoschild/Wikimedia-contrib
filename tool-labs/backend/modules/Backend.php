@@ -238,7 +238,7 @@ class Backend extends Base {
 			</div>
 			<div id="footer">
 				<div id="license">
-					Hi! You can <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver" title="view source">view the source code</a> or <a href="https://github.com/Pathoschild/Wikimedia-contrib.toolserver/issues" title="report issue">report a bug or suggestion</a>. ', $this->license, '
+					Hi! You can <a href="https://github.com/Pathoschild/Wikimedia-contrib" title="view source">view the source code</a> or <a href="https://github.com/Pathoschild/Wikimedia-contrib/issues" title="report issue">report a bug or suggestion</a>. ', $this->license, '
 				</div>
 				<div id="profiling">
 					Page generated in ', $resultSeconds, ' seconds.
