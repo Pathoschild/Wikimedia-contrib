@@ -7,25 +7,18 @@
 	 * @see https://github.com/Pathoschild/Wikimedia-contrib#readme
 	 */
 	pathoschild.ForceLtr = {
-		version: '0.9.1',
+		version: '1.0',
 
 		/**
-		 * Initialize the script.
+		 * Apply the changes.
 		 */
-		Initialize: function() {
-			if ($('body').hasClass('sitedir-rtl')) {
-				// Swap load.php to an LTR language
-				$('link[rel="stylesheet"][href^="' + mw.config.get('wgLoadScript') + '"]')
-					.attr('href', function(i, val) {
-						return val.replace(/&lang=[^&]+/, '&lang=en');
-					});
-
-				// Swap direction
-				$('body').removeClass('rtl').addClass('ltr');
-				$('[dir="rtl"]').attr('dir', 'ltr');
-			}
+		initialize: function() {
+			$('.mw-content-ltr').removeClass('mw-content-ltr');
+			$('.sitedir-rtl').removeClass('sitedir-rtl').addClass('sitedir-ltr');
+			$('body').removeClass('rtl').addClass('ltr');
+			$('[dir="rtl"]').attr('dir', 'ltr');
 		}
 	};
 
-	$(pathoschild.ForceLtr.Initialize);
+	$(pathoschild.ForceLtr.initialize);
 }());
