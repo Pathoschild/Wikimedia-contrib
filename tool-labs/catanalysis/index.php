@@ -18,6 +18,10 @@ $database  = $backend->get('wiki', $backend->get('db', 'incubatorwiki'));
 $cat       = !!$backend->get('cat', true);
 $listpages = $backend->get('listpages');
 
+/* normalise database */
+if($database && substr($database, -2) == '_p')
+	$database = substr($database, 0, -2);
+
 /* parse title */
 $i = strpos($fullTitle, ':');
 if($i) {
