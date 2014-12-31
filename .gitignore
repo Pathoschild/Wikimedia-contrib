@@ -6,8 +6,4 @@
 *.user
 bin/
 obj/
-toolserver/backend/modules/cache/wikimedia-wikis.dat
-toolserver/backend/modules/external
-toolserver/gusersearch/sekret_key.php
-backend/modules/cache
-backend/modules/external/PiwikTracker.php
+tool-labs/backend/modules/cache/wikimedia-wikis.dat

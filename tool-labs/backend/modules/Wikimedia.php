@@ -91,7 +91,7 @@ class Wiki {
 		$this->isClosed = $isClosed;
 		$this->serverName = $serverName;
 		$this->host = $serverName;
-		$this->isMultilingual = in_array($dbName, array('commonswiki', 'incubatorwiki', 'mediawikiwiki', 'metawiki', 'specieswiki', 'wikidatawiki'));
+		$this->isMultilingual = in_array($name, array('commonswiki', 'incubatorwiki', 'mediawikiwiki', 'metawiki', 'specieswiki', 'wikidatawiki'));
 	}
 }
 
@@ -125,7 +125,6 @@ class Wikimedia {
 			foreach($db->Query('SELECT dbname, lang, family, REPLACE(url, "http://", "") AS domain, size, is_closed, slice FROM meta_p.wiki WHERE url IS NOT NULL')->fetchAllAssoc() as $row) {
 				if($row['dbname'] == 'votewiki')
 					continue; // DB schema is broken
-
 				$this->wikis[$row['dbname']] = new Wiki($row['dbname'], $row['lang'], $row['family'], $row['domain'], $row['size'], $row['is_closed'], $row['slice']);
 			}
 

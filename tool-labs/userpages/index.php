@@ -76,7 +76,7 @@ do {
 			$is_redirect = $page['page_is_redirect'];
 			$touched = new DateTime($page['page_touched']);
 			$touched = $touched->format('Y-m-d');
-			echo "<li data-redirect='$is_redirect'><a href='//$domain/wiki/", $backend->formatValue($title), "'>", $backend->formatValue($title), "</a> <small>(<span class='page-size'>$size bytes</span>, <span class='page-edited'>last <a href='https://www.mediawiki.org/wiki/Manual:Page_table#page_touched'>touched</a> $touched</span>)</small></li>";
+			echo "<li data-redirect='$is_redirect' data-size='$size' data-ns='$ns' data-title='", $backend->formatValue($page['page_title']), "'><a href='//$domain/wiki/", $backend->formatValue($title), "'>", $backend->formatValue($title), "</a> <small>(<span class='page-size'>$size bytes</span>, <span class='page-edited'>last <a href='https://www.mediawiki.org/wiki/Manual:Page_table#page_touched'>touched</a> $touched</span>)</small></li>";
 		}
 		echo '</ul>';
 	}
