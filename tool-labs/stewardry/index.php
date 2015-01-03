@@ -82,7 +82,7 @@ class Engine {
 
 		// execute SQL
 		$this->db->Connect($this->wiki->name);
-		$sql = "SELECT * FROM (SELECT user_name,(SELECT rev_timestamp FROM revision_userindex WHERE rev_user=user_id ORDER BY rev_timestamp DESC LIMIT 1) AS last_edit," . implode(",", $outerSelects) . " FROM (SELECT user_id,user_name," . implode(",", $innerSelects) . " FROM user INNER JOIN user_groups ON user_id = ug_user AND ug_group IN('" . implode("','", $names) . "') GROUP BY user_id) AS t_users) AS t_metrics ORDER BY last_edit DESC";
+		$sql = "SELECT * FROM (SELECT user_name,(SELECT rev_timestamp FROM revision_userindex WHERE rev_user=user_id ORDER BY rev_timestamp DESC LIMIT 1) AS last_edit," . implode(",", $outerSelects) . " FROM (SELECT user_id,user_name," . implode(",", $innerSelects) . " FROM user INNER JOIN user_groups ON user_id = ug_user AND ug_group IN('" . implode("','", $names) . "') GROUP BY ug_user) AS t_users) AS t_metrics ORDER BY last_edit DESC";
 		return $this->db->Query($sql)->fetchAllAssoc();
 
 	}
