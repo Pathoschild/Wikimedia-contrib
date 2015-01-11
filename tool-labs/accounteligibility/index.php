@@ -16,28 +16,28 @@ class Script extends Base {
 	const DEFAULT_EVENT = 33;
 	public $events = Array(
 		33 => Array(
-			'name' => '2014 Commons Picture of the Year for 2014',
-			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2014',
-			'obsolete' => false
+			'year' => 2015,
+			'name' => 'Commons Picture of the Year for 2014',
+			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2014'
 		),
 
 		32 => Array(
-			'name' => '2014 Commons Picture of the Year for 2013',
-			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2013',
-			'obsolete' => true
+			'year' => 2014,
+			'name' => 'Commons Picture of the Year for 2013',
+			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2013'
 		),
 
 		31 => Array(
-			'name' => '2014-02 steward elections',
-			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2014',
-			'obsolete' => true
+			'year' => 2014,
+			'name' => 'steward elections',
+			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2014'
 		),
 
 		30 => Array(
-			'name' => '2014-02 steward elections (candidates)',
+			'year' => 2014,
+			'name' => 'steward elections (candidates)',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2014',
 			'action' => '<strong>be a candidate</strong>',
-			'obsolete' => true,
 			'more_reqs' => Array(
 				'You must be 18 years old, and at the age of majority in your country.',
 				'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="http://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
@@ -46,16 +46,16 @@ class Script extends Base {
 		),
 
 		29 => Array(
-			'name' => '2013-02 steward elections',
-			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2013',
-			'obsolete' => true
+			'year' => 2013,
+			'name' => 'steward elections',
+			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2013'
 		),
 
 		28 => Array(
-			'name' => '2013-02 steward elections (candidates)',
+			'year' => 2013,
+			'name' => 'steward elections (candidates)',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2013',
 			'action' => '<strong>be a candidate</strong>',
-			'obsolete' => true,
 			'more_reqs' => Array(
 				'You must be 18 years old, and at the age of majority in your country.',
 				'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="http://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
@@ -64,20 +64,21 @@ class Script extends Base {
 		),
 
 		27 => Array(
-			'name' => '2013 Commons Picture of the Year for 2012',
-			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2012',
-			'obsolete' => true
+			'year' => 2013,
+			'name' => 'Commons Picture of the Year for 2012',
+			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2012'
 		),
 
 		26 => Array(
-			'name' => '2012 enwiki arbcom elections (voters)',
+			'year' => 2012,
+			'name' => 'enwiki arbcom elections (voters)',
 			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2012',
-			'only_db' => 'enwiki_p',
-			'obsolete' => true
+			'only_db' => 'enwiki_p'
 		),
 
 		25 => Array(
-			'name' => '2012 enwiki arbcom elections (candidates)',
+			'year' => 2012,
+			'name' => 'enwiki arbcom elections (candidates)',
 			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2012',
 			'only_db' => 'enwiki_p',
 			'action' => '<strong>be a candidate</strong>',
@@ -85,27 +86,26 @@ class Script extends Base {
 				'You must be in good standing and not subject to active blocks or site-bans.',
 				'You must meet the Wikimedia Foundation\'s <a href="http://wikimediafoundation.org/w/index.php?title=Access_to_nonpublic_data_policy&oldid=47490" title="Access to nonpublic data policy">criteria for access to non-public data</a> and must identify with the Foundation if elected.',
 				'You must have disclosed any alternate accounts in your election statement (legitimate accounts which have been declared to the Arbitration Committee before the close of nominations need not be publicly disclosed).'
-			),
-			'obsolete' => true
+			)
 		),
 
 		24 => Array(
-			'name' => '2012 Commons Picture of the Year for 2011',
-			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2011',
-			'obsolete' => true
+			'year' => 2012,
+			'name' => 'Commons Picture of the Year for 2011',
+			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2011'
 		),
 
 		23 => Array(
-			'name' => '2012-02 steward elections',
-			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2012',
-			'obsolete' => true
+			'year' => 2012,
+			'name' => 'steward elections',
+			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2012'
 		),
 
 		22 => Array(
-			'name' => '2012-02 steward elections (candidates)',
+			'year' => 2012,
+			'name' => 'steward elections (candidates)',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2012',
 			'action' => '<strong>be a candidate</strong>',
-			'obsolete' =>true,
 			'more_reqs' => Array(
 				'You must be 18 years old, and at the age of majority in your country.',
 				'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
@@ -114,14 +114,15 @@ class Script extends Base {
 		),
 
 		21 => Array(
-			'name' => '2011 enwiki arbcom elections',
+			'year' => 2011,
+			'name' => 'enwiki arbcom elections',
 			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2011',
-			'only_db' => 'enwiki_p',
-			'obsolete' => true
+			'only_db' => 'enwiki_p'
 		),
 
 		20 => Array(
-			'name' => '2011 enwiki arbcom elections (candidates)',
+			'year' => 2011,
+			'name' => 'enwiki arbcom elections (candidates)',
 			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2011',
 			'only_db' => 'enwiki_p',
 			'action' => '<strong>be a candidate</strong>',
@@ -129,21 +130,20 @@ class Script extends Base {
 				'You must be in good standing and not subject to active blocks or site-bans.',
 				'You must meet the Wikimedia Foundation\'s criteria for access to non-public data and must identify with the Foundation if elected.',
 				'You must have disclosed any alternate accounts in your election statement (legitimate accounts which have been declared to the Arbitration Committee prior to the close of nominations need not be publicly disclosed).'
-			),
-			'obsolete' => true
+			)
 		),
 
 		19 => Array(
+			'year' => 2011,
 			'name' => '2011-09 steward elections',
-			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2011-2',
-			'obsolete' => true
+			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2011-2'
 		),
 
 		18 => Array(
+			'year' => 2011,
 			'name' => '2011-09 steward elections (candidates)',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2011-2',
 			'action' => '<strong>be a candidate</strong>',
-			'obsolete' => true,
 			'more_reqs' => Array(
 				'You must be 18 years old, and at the age of majority in your country.',
 				'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
@@ -152,7 +152,8 @@ class Script extends Base {
 		),
 
 		17 => Array(
-			'name' => '2011 Board elections',
+			'year' => 2011,
+			'name' => 'Board elections',
 			'url' => '//meta.wikimedia.org/wiki/Board elections/2011',
 			'more_reqs' => Array(
 				'Your account must not be used by a bot.'
@@ -162,34 +163,33 @@ class Script extends Base {
 				'You have MediaWiki commit access and made at least one commit between 15 May 2010 and 15 May 2011.',
 				'You are a Wikimedia Foundation staff or contractor employed by Wikimedia between 15 February 2011 and 15 May 2011.',
 				'You are a current or former member of the Wikimedia Board of Trustees or Advisory Board.'
-			),
-			'obsolete' => true
+			)
 		),
 
 		16 => Array(
-			'name' => '2011 Commons Picture of the Year for 2010',
-			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2010',
-			'obsolete' => true
+			'year' => 2011,
+			'name' => 'Commons Picture of the Year for 2010',
+			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2010'
 		),
 
 		15 => Array(
-			'name' => '2011 steward confirmations',
+			'year' => 2011,
+			'name' => 'steward confirmations',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/confirm/2011',
-			'action' => 'comment',
-			'obsolete' => true
+			'action' => 'comment'
 		),
 
 		14 => Array(
+			'year' => 2011,
 			'name' => '2011-01 steward elections',
-			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2011',
-			'obsolete' => true
+			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2011'
 		),
 
 		13 => Array(
+			'year' => 2011,
 			'name' => '2011-01 steward elections (candidates)',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2011',
 			'action' => '<strong>be a candidate</strong>',
-			'obsolete' => true,
 			'more_reqs' => Array(
 				'You must be 18 years old, and at the age of majority in your country.',
 				'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
@@ -198,23 +198,23 @@ class Script extends Base {
 		),
 
 		12 => Array(
-			'name' => '2010 enwiki arbcom elections',
+			'year' => 2010,
+			'name' => 'enwiki arbcom elections',
 			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2010',
-			'only_db' => 'enwiki_p',
-			'obsolete' => true
+			'only_db' => 'enwiki_p'
 		),
 
 		11 => Array(
-			'name' => '2010 steward elections, September',
-			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2010-2',
-			'obsolete' => true
+			'year' => 2010,
+			'name' => '2010-09 steward elections',
+			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2010-2'
 		),
 
 		10 => Array(
-			'name' => '2010 steward elections, September (candidates)',
+			'year' => 2010,
+			'name' => '2010-09 steward elections (candidates)',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2010-2',
 			'action' => '<strong>be a candidate</strong>',
-			'obsolete' => true,
 			'more_reqs' => Array(
 				'You must be 18 years old, and at the age of majority in your country.',
 				'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
@@ -223,25 +223,25 @@ class Script extends Base {
 		),
 
 		9 => Array(
-			'name' => '2010 Commons Picture of the Year for 2009',
-			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2009',
-			'obsolete' => true
+			'year' => 2010,
+			'name' => 'Commons Picture of the Year for 2009',
+			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2009'
 		),
 
 		8 => Array(
-			'name' => '2010 steward elections, February',
+			'year' => 2010,
+			'name' => '2010-02 steward elections',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2010',
-			'obsolete' => true,
 			'more_reqs' => Array(
 				'Your account must not be primarily used for automated (bot) tasks.'
 			)
 		),
 
 		7 => Array(
-			'name' => '2010 steward elections, February (candidates)',
+			'year' => 2010,
+			'name' => '2010-02 steward elections (candidates)',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2010',
 			'action' => '<strong>be a candidate</strong>',
-			'obsolete' => true,
 			'more_reqs' => Array(
 				'You must be 18 years old, and at the age of majority in your country.',
 				'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a>.',
@@ -250,29 +250,29 @@ class Script extends Base {
 		),
 
 		6 => Array(
-			'name' => '2010 create global sysops vote',
-			'url' => '//meta.wikimedia.org/wiki/Global_sysops/Vote',
-			'obsolete' => true
+			'year' => 2010,
+			'name' => 'create global sysops vote',
+			'url' => '//meta.wikimedia.org/wiki/Global_sysops/Vote'
 		),
 
 		5 => Array(
-			'name' => '2009 enwiki arbcom elections',
+			'year' => 2009,
+			'name' => 'enwiki arbcom elections',
 			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2009',
-			'only_db' => 'enwiki_p',
-			'obsolete' => true
+			'only_db' => 'enwiki_p'
 		),
 
 		4 => Array(
-			'name' => '2009 Commons Picture of the Year for 2008',
-			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2008',
-			'obsolete' => true,
+			'year' => 2009,
+			'name' => 'Commons Picture of the Year for 2008',
+			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2008'
 		),
 
 		3 => Array(
-			'name' => '2009 steward elections (candidates)',
+			'year' => 2009,
+			'name' => 'steward elections (candidates)',
 			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2009',
 			'action' => '<strong>be a candidate</strong>',
-			'obsolete' => true,
 			'more_reqs' => Array(
 				'You must be 18 years old, and at the age of majority in your country.',
 				'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a>.',
@@ -281,22 +281,22 @@ class Script extends Base {
 		),
 
 		2 => Array(
-			'name' => '2009 steward elections',
-			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2009',
-			'obsolete' => true
+			'year' => 2009,
+			'name' => 'steward elections',
+			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2009'
 		),
 
 		1 => Array(
-			'name' => '2008 enwiki arbcom elections',
+			'year' => 2008,
+			'name' => 'enwiki arbcom elections',
 			'url' => '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2008',
-			'only_db' => 'enwiki_p',
-			'obsolete' => true
+			'only_db' => 'enwiki_p'
 		),
 
 		0 => Array(
-			'name' => '2008 Board elections',
-			'url' => '//meta.wikimedia.org/wiki/Board elections/2008',
-			'obsolete' => true
+			'year' => 2008,
+			'name' => 'Board elections',
+			'url' => '//meta.wikimedia.org/wiki/Board elections/2008'
 		)
 	);
 
@@ -348,6 +348,25 @@ class Script extends Base {
 		$this->eventID = isset($event) ? $event : self::DEFAULT_EVENT;
 		$this->event = $this->events[$this->eventID];
 		$this->event['id'] = $this->eventID;
+
+		/* preparse event list */
+		$years = array();
+		$currentYear = new DateTime('now', new DateTimeZone('utc'));
+		$currentYear = $currentYear->format('Y');
+
+		foreach ($this->events as $id => $event) {
+			// normalise
+			$event['id'] = $id;
+			$event['obsolete'] = $event['year'] < $currentYear;
+			if(!$event['year'])
+				$event['year'] = 0;
+
+			// add by year
+			if (!array_key_exists($event['year'], $years))
+				$years[$event['year']] = array();
+			$years[$event['year']][] = $event;
+		}
+		$this->eventsByYear = $years;
 
 		/* get wikis */
 		$this->wikis = array();
@@ -645,15 +664,15 @@ class Script extends Base {
 			// end range
 			if($wasInRole && !$nowInRole)
 				$ranges[$i][1] = $timestamp;
-			
+
 			// update trackers
 			$wasInRole = $nowInRole;
 		}
 		if(count($ranges) == 0)
 			return false;
-		
+
 		echo '<!--get_role_longest_duration: logs=', $this->formatText(print_r($logs, true)), ', ranges=', print_r($ranges, true), '-->';
-		
+
 		// determine widest range
 		$maxDuration = 0;
 		$longest = 0;
@@ -664,7 +683,7 @@ class Script extends Base {
 				$longest = $i;
 			}
 		}
-		
+
 		// calculate range length
 		$start = DateTime::createFromFormat('YmdHis', $ranges[$i][0]);
 		$end   = DateTime::createFromFormat('YmdHis', $ranges[$i][1]);
@@ -690,9 +709,9 @@ class Script extends Base {
 			$this->db->Query($sql . '>= ?', Array($this->user['id'], $start));
 		elseif ($end)
 			$this->db->Query($sql . '<= ?', Array($this->user['id'], $end));
-		
+
 		echo '<!--', print_r($this->db, true), '-->';
-		
+
 		return $this->db->fetchColumn();
 	}
 
@@ -784,6 +803,7 @@ $user = $backend->get('user') ?: $backend->getRouteValue(2) ?: '';
 $wiki = $backend->get('wiki', NULL);
 $script = new Script($backend, $user, $event, $wiki);
 
+
 ############################
 ## Input form
 ############################
@@ -806,12 +826,15 @@ echo '
 	<label for="event">Event:</label>
 	<select name="event" id="event">', "\n";
 
-foreach ($script->events as $id => $event) {
-	echo '
-		<option value="', $id, '" ',
-		($id == $script->event['id'] ? ' selected="yes" ' : ''),
-		($event['obsolete'] ? ' class="is-obsolete"' : ''),
-		'>', $script->formatText($event['name']), '</option>';
+foreach ($script->eventsByYear as $year => $events) {
+	foreach ($events as $event) {
+		echo '
+			<option value="', $event['id'], '" ',
+			($event['id'] == $script->event['id'] ? ' selected="yes" ' : ''),
+			($event['obsolete'] ? ' class="is-obsolete"' : ''),
+			'>', $event['year'], ' &mdash; ', $script->formatText($event['name']), '</option>';
+	}
+	echo '</optgroup>';
 }
 echo '
 	</select>
@@ -947,7 +970,7 @@ while ($script->user['name'] && !$cached) {
 			break;
 		
 		############################
-		## 2014-02 steward elections
+		## 2014 steward elections
 		############################
 		case 31:
 			########
@@ -1070,7 +1093,7 @@ while ($script->user['name'] && !$cached) {
 
 
 		############################
-		## 2014-02 steward elections (candidates)
+		## 2014 steward elections (candidates)
 		############################
 		case 30:
 			########
@@ -1149,7 +1172,7 @@ while ($script->user['name'] && !$cached) {
 			break;
 
 		############################
-		## 2013-02 steward elections
+		## 2013 steward elections
 		############################
 		case 29:
 			########
@@ -1272,7 +1295,7 @@ while ($script->user['name'] && !$cached) {
 
 
 		############################
-		## 2013-02 steward elections (candidates)
+		## 2013 steward elections (candidates)
 		############################
 		case 28:
 			########
@@ -1506,7 +1529,7 @@ while ($script->user['name'] && !$cached) {
 			break;
 	
 		############################
-		## 2012-02 steward elections
+		## 2012 steward elections
 		############################
 		case 23:
 			########
@@ -1629,7 +1652,7 @@ while ($script->user['name'] && !$cached) {
 
 
 		############################
-		## 2012-02 steward elections (candidates)
+		## 2012 steward elections (candidates)
 		############################
 		case 22:
 			########
@@ -3078,7 +3101,7 @@ while ($script->user['name'] && !$cached) {
 		echo
 			'<h3>Result</h3>',
 			'<div class="', $class, '" id="result" data-is-eligible="', ($script->eligible ? 1 : 0), '">',
-			$script->formatText($name), ' is ', ($script->eligible ? '' : 'not '), 'eligible to ', $action, ' in the <a href="', $event['url'], '" title="', $backend->formatValue($event['name']), '">', $event['name'], '</a>. ';
+			$script->formatText($name), ' is ', ($script->eligible ? '' : 'not '), 'eligible to ', $action, ' in the <a href="', $event['url'], '" title="', $backend->formatValue($event['name']), '">', $event['name'], '</a> in ', $event['year'], '. ';
 		if ($script->eligible && isset($script->event['append_eligible']))
 			echo $script->event['append_eligible'];
 		elseif (!$script->eligible && isset($script->event['append_ineligible']))
