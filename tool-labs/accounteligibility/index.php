@@ -633,7 +633,6 @@ class Script extends Base {
 			$this->db->ConnectPrevious();
 		}
 		$local = array_merge($local, $_metaRoleAgeCache[$role]);
-		echo '<!--raw: ', $this->formatText(print_r($local, true)), '-->';
 
 		// parse log entries
 		$logs = array();
@@ -689,8 +688,6 @@ class Script extends Base {
 		if(count($ranges) == 0)
 			return false;
 
-		echo '<!--get_role_longest_duration: logs=', $this->formatText(print_r($logs, true)), ', ranges=', print_r($ranges, true), '-->';
-
 		// determine widest range
 		$maxDuration = 0;
 		$longest = 0;
@@ -720,15 +717,13 @@ class Script extends Base {
 			return $this->user['edit_count'];
 
 		/* within date range */
-		$sql = 'SELECT COUNT(rev_id) FROM revision WHERE rev_user=? AND rev_timestamp ';
+		$sql = 'SELECT COUNT(rev_id) FROM revision_userindex WHERE rev_user=? AND rev_timestamp ';
 		if ($start && $end)
 			$this->db->Query($sql . 'BETWEEN ? AND ?', Array($this->user['id'], $start, $end));
 		elseif ($start)
 			$this->db->Query($sql . '>= ?', Array($this->user['id'], $start));
 		elseif ($end)
 			$this->db->Query($sql . '<= ?', Array($this->user['id'], $end));
-
-		echo '<!--', print_r($this->db, true), '-->';
 
 		return $this->db->fetchColumn();
 	}
@@ -1646,7 +1641,7 @@ while ($script->user['name'] && !$cached) {
 			$script->db->Query(
 				'SELECT data.count FROM ('
 				. 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-				. 'SELECT rev_page, COUNT(*) AS count FROM revision WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
+				. 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
 				. ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
 				. ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
 				Array($script->user['id'], 20121102000000)
@@ -1681,7 +1676,7 @@ while ($script->user['name'] && !$cached) {
 			$script->db->Query(
 				'SELECT data.count FROM ('
 				. 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-				. 'SELECT rev_page, COUNT(*) AS count FROM revision WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
+				. 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
 				. ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
 				. ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
 				Array($script->user['id'], 20121102000000)
@@ -1957,7 +1952,7 @@ while ($script->user['name'] && !$cached) {
 			$script->db->Query(
 				'SELECT data.count FROM ('
 				. 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-				. 'SELECT rev_page, COUNT(*) AS count FROM revision WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
+				. 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
 				. ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
 				. ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
 				Array($script->user['id'], 20111101000000)
@@ -2529,7 +2524,7 @@ while ($script->user['name'] && !$cached) {
 			$script->db->Query(
 				'SELECT data.count FROM ('
 				. 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-				. 'SELECT rev_page, COUNT(*) AS count FROM revision WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
+				. 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
 				. ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
 				. ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
 				Array($script->user['id'], 20101102000000)
@@ -3020,7 +3015,7 @@ while ($script->user['name'] && !$cached) {
 			$script->db->Query(
 				'SELECT data.count FROM ('
 				. 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-				. 'SELECT rev_page, COUNT(*) AS count FROM revision WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
+				. 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
 				. ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
 				. ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
 				Array($script->user['id'], 20091102000000)
@@ -3202,7 +3197,7 @@ while ($script->user['name'] && !$cached) {
 			$script->db->Query(
 				'SELECT data.count FROM ('
 				. 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-				. 'SELECT rev_page, COUNT(*) AS count FROM revision WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
+				. 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
 				. ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
 				. ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
 				Array($script->user['id'], 20081102000000)
