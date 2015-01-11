@@ -15,6 +15,24 @@ class Script extends Base {
 	############################
 	const DEFAULT_EVENT = 33;
 	public $events = Array(
+		35 => Array(
+			'year' => 2015,
+			'name' => 'steward elections',
+			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2015'
+		),
+
+		34 => Array(
+			'year' => 2015,
+			'name' => 'steward elections (candidates)',
+			'url' => '//meta.wikimedia.org/wiki/Stewards/Elections_2015',
+			'action' => '<strong>be a candidate</strong>',
+			'more_reqs' => Array(
+				'You must be 18 years old, and at the age of majority in your country.',
+				'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="http://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
+				'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2014.'
+			)
+		),
+
 		33 => Array(
 			'year' => 2015,
 			'name' => 'Commons Picture of the Year for 2014',
@@ -560,7 +578,7 @@ class Script extends Base {
 	########
 	public function get_user() {
 		$dbname = $this->wiki['dbname'];
-		
+
 		if (!isset($this->users[$dbname])) {
 			$this->users[$dbname] = $this->db->getUserDetails($dbname, $this->user['name']);
 			$this->users[$dbname]['name'] = $this->_userName;
@@ -579,7 +597,7 @@ class Script extends Base {
 			throw new Exception('Unrecognized role "' . $role . '" not found in whitelist.');
 		return (bool)$this->db->Query('SELECT COUNT(ug_user) FROM user_groups WHERE ug_user=? AND ug_group=? LIMIT 1', array($this->user['id'], $role))->fetchColumn();
 	}
-	
+
 	public function get_role_longest_duration($role, $endDate) {
 		// SQL to determine the current groups after each log entry
 		// (depending on how it was stored on that particular day)
@@ -597,16 +615,16 @@ class Script extends Base {
 						END
 					ELSE log_comment
 				END AS "log_resulting_groups"*/.'
-			FROM logging_ts_alternative
+			FROM logging_logindex
 			WHERE
 				log_type = "rights"
 				AND log_title';
 		$logName = str_replace(' ', '_', $this->user['name']);
-		
+
 		// fetch local logs
 		$this->db->Query($sql . ' = ?', array($logName));
 		$local = $this->db->fetchAllAssoc();
-		
+
 		// merge with Meta logs
 		if(!array_key_exists($role, $this->_metaRoleAgeCache)) {
 			$this->db->Connect('metawiki');
@@ -616,7 +634,7 @@ class Script extends Base {
 		}
 		$local = array_merge($local, $_metaRoleAgeCache[$role]);
 		echo '<!--raw: ', $this->formatText(print_r($local, true)), '-->';
-		
+
 		// parse log entries
 		$logs = array();
 		foreach($local as $row) {
@@ -625,13 +643,13 @@ class Script extends Base {
 			$date = $row['log_timestamp'];
 			$params = $row['log_params'];
 			$comment = $row['log_comment'];
-			
+
 			// filter logs for wrong wiki / deadline
 			if($title != $logName && $title != $logName . '@' . $this->wiki['code'])
 				continue;
 			if($date > $endDate)
 				continue;
-				
+
 			// parse format (changed over the years)
 			if(($i = strpos($params, "\n")) !== false) // params: old\nnew
 				$groups = substr($params, $i + 1);
@@ -639,14 +657,14 @@ class Script extends Base {
 				$groups = $params;
 			else                                       // ...or comment: +new +new OR =
 				$groups = $comment;
-			
+
 			// append to timeline
 			$logs[$date] = $groups;
 		}
 		if(count($logs) == 0)
 			return false;
 		ksort($logs);
-		
+
 		// parse ranges
 		$ranges = array();
 		$i = -1;
@@ -654,13 +672,13 @@ class Script extends Base {
 		foreach ($logs as $timestamp => $roles)
 		{
 			$nowInRole = (strpos($roles, $role) !== false);
-			
+
 			// start range
 			if(!$wasInRole && $nowInRole) {
 				++$i;
 				$ranges[$i] = array($timestamp, $endDate);
 			}
-			
+
 			// end range
 			if($wasInRole && !$nowInRole)
 				$ranges[$i][1] = $timestamp;
@@ -744,7 +762,7 @@ class Script extends Base {
 		$classes = $classes
 			? trim($classes)
 			: 'is-note';
-		
+
 		// output
 		echo '<div class="', $classes, '">', $message, '</div>';
 	}
@@ -757,13 +775,6 @@ class Script extends Base {
 		$name = $this->user['name'];
 		$domain = $this->wiki['domain'];
 		$this->msg('On <a href="//' . $domain . '/wiki/User:' . $name . '" title="' . $name . '\'s user page on ' . $domain . '">' . $domain . '</a>:', 'is-wiki');
-	}
-
-	########
-	## Print error message
-	########
-	function error($message) {
-		$this->msg($message, 'is-fail');
 	}
 
 
@@ -894,6 +905,208 @@ while ($script->user['name'] && !$cached) {
 	switch ($script->event['id']) {
 
 		############################
+		## 2015 steward elections
+		############################
+		case 35:
+			########
+			## Has an account on Meta
+			########
+			$script->msg('Global requirements:', 'is-wiki');
+			$script->condition(
+				$script->has_account('metawiki_p'),
+				"has an account on Meta...",
+				"does not have an account on Meta."
+			);
+			if (!$script->eligible) {
+				break;
+			}
+
+			########
+			## Has a global account
+			########
+			$script->condition(
+				$script->is_global(),
+				"has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
+				"does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a> (optional)...",
+				"",
+				"is-warn"
+			);
+			$script->eligible = true;
+
+			########
+			## Check local requirements
+			########
+			$script->printWiki();
+
+			/* set messages for global accounts */
+			if ($script->unified) {
+				$edits_fail_append = "However, edits will be combined with other unified wikis.";
+				$edits_fail_attrs = "is-warn";
+			}
+			else {
+				$edits_fail_append = '';
+				$edits_fail_attrs = '';
+			}
+
+			/* check requirements */
+			$prior_edits = 0;
+			$recent_edits = 0;
+			$combining = false;
+			$marked_bot = false;
+			do {
+				########
+				## Should not be a bot
+				########
+				$is_bot = $script->has_role('bot');
+				$script->condition(
+					!$is_bot,
+					"no bot flag...",
+					"has a bot flag &mdash; the global account must not be primarily automated (bot), but I can't check this so won't mark ineligible.",
+					"",
+					"is-warn"
+				);
+				$script->eligible = true;
+				if ($is_bot && !$marked_bot) {
+					$script->event['append_eligible'] = "<br /><strong>Note:</strong> this account is marked as a bot on some wikis. If it is primarily an automated account (bot), it is <em>not</em> eligible.";
+					$marked_bot = true;
+				}
+
+				########
+				## >=600 edits before 01 November 2014
+				########
+				$edits = $script->edit_count(NULL, 20141101000000);
+				$prior_edits += $edits;
+				$script->condition(
+					$edits >= 600,
+					"has 600 edits before 01 November 2014 (has {$edits})...",
+					"does not have 600 edits before 01 November 2014 (has {$edits}). {$edits_fail_append}",
+					"",
+					$edits_fail_attrs
+				);
+				if (!$script->eligible) {
+					if (!$script->unified) {
+						continue;
+					}
+					$combining = true;
+				}
+
+				########
+				## >=50 edits between 2014-Aug-01 and 2015-Jan-31
+				########
+				$edits = $script->edit_count(20140801000000, 20150131000000);
+				$recent_edits += $edits;
+				$script->condition(
+					$edits >= 50,
+					"has 50 edits between 01 August 2014 and 31 January 2015 (has {$edits})...",
+					"does not have 50 edits between 01 August 2014 and 31 January 2015 (has {$edits}). {$edits_fail_append}",
+					"",
+					$edits_fail_attrs
+				);
+				if (!$script->eligible) {
+					if (!$script->unified) {
+						continue;
+					}
+					$combining = true;
+				}
+
+
+				########
+				## Exit conditions
+				########
+				$script->eligible = $prior_edits >= 600 && $recent_edits >= 50;
+
+				/* unified met requirements */
+				if ($script->unified && !$script->IsQueueEmpty()) {
+					if ($script->eligible) {
+						break;
+					}
+					$combining = true;
+				}
+			}
+			while (!$script->eligible && $script->get_next());
+			break;
+
+
+		############################
+		## 2015 steward elections (candidates)
+		############################
+		case 34:
+			########
+			## Has an account on Meta
+			########
+			$script->msg('Global requirements:', 'is-wiki');
+			$script->condition(
+				$script->has_account('metawiki_p'),
+				"has an account on Meta...",
+				"does not have an account on Meta."
+			);
+			if (!$script->eligible) {
+				break;
+			}
+
+
+			########
+			## Has a global account
+			########
+			$script->condition(
+				$script->is_global(),
+				"has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
+				"does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>."
+			);
+			if (!$script->eligible) {
+				break;
+			}
+
+			########
+			## Check local requirements
+			########
+			/* check local requirements */
+			$minDurationMet = false;
+			$script->printWiki();
+			do {
+				$script->eligible = true;
+
+				########
+				## Registered for six months (i.e. <= 2014-Aug-08)
+				########
+				$script->condition(
+					$script->user['registration_raw'] < 20140808000000,
+					"has an account registered before 08 August 2014 (registered {$script->user['registration']})...",
+					"does not have an account registered before 08 August 2014 (registered {$script->user['registration']})."
+				);
+
+				########
+				## Flagged as a sysop for three months (as of 2015-Feb-08)
+				########
+				if (!$minDurationMet) {
+					/* check flag duration */
+					$months = $script->get_role_longest_duration('sysop', 20150208000000);
+					$minDurationMet = $months >= 3;
+					$script->condition(
+						$minDurationMet,
+						'was flagged as an administrator for a continuous period of at least three months before 08 February 2015 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
+						'was not flagged as an administrator for a continuous period of at least three months before 08 February 2015 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
+					);
+
+					/* edge case: if the user was registered before 2005, they might have been flagged before flag changes were logged */
+					if(!$minDurationMet && (!$script->user['registration_raw'] || $script->user['registration_raw'] < 20050000000000)) {
+						// output warning
+						$script->msg('<small>' . $script->user['name'] . ' registered here before 2005, so he might have been flagged before the rights log was created.</small>', 'is-warn is-subnote');
+
+						// add note
+						$script->event['warn_ineligible'] = '<strong>This result might be inaccurate.</strong> ' . $script->user['name'] . ' registered on some wikis before the rights log was created in 2005. You may need to investigate manually.';
+					}
+					else if($minDurationMet)
+						$script->event['warn_ineligible'] = NULL;
+
+					/* link to log for double-checking */
+					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['code'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
+				}
+			}
+			while (!$script->eligible && $script->get_next());
+			break;
+
+		############################
 		## 2015 Commons Picture of the Year 2014
 		############################
 		case 33:
@@ -968,7 +1181,7 @@ while ($script->user['name'] && !$cached) {
 			}
 			while (!$script->eligible && $script->get_next());
 			break;
-		
+
 		############################
 		## 2014 steward elections
 		############################
@@ -1152,12 +1365,12 @@ while ($script->user['name'] && !$cached) {
 						'was flagged as an administrator for a continuous period of at least three months before 08 February 2014 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
 						'was not flagged as an administrator for a continuous period of at least three months before 08 February 2014 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
 					);
-					
+
 					/* edge case: if the user was registered before 2005, they might have been flagged before flag changes were logged */
 					if(!$minDurationMet && (!$script->user['registration_raw'] || $script->user['registration_raw'] < 20050000000000)) {
 						// output warning
 						$script->msg('<small>' . $script->user['name'] . ' registered here before 2005, so he might have been flagged before the rights log was created.</small>', 'is-warn is-subnote');
-						
+
 						// add note
 						$script->event['warn_ineligible'] = '<strong>This result might be inaccurate.</strong> ' . $script->user['name'] . ' registered on some wikis before the rights log was created in 2005. You may need to investigate manually.';
 					}
@@ -1416,7 +1629,7 @@ while ($script->user['name'] && !$cached) {
 		############################
 		case 26:
 			$script->printWiki();
-			
+
 			########
 			## registered < 2012-Oct-28
 			########
@@ -1425,7 +1638,7 @@ while ($script->user['name'] && !$cached) {
 				"has an account registered before 28 October 2012 (registered {$script->user['registration']})...",
 				"does not have an account registered before 28 October 2012 (registered {$script->user['registration']})."
 			);
-			
+
 			########
 			## >=150 main-NS edits before 2012-Nov-01
 			########
@@ -1444,7 +1657,7 @@ while ($script->user['name'] && !$cached) {
 				"has 150 main-namespace edits on or before 01 November 2012 (has {$edits})...",
 				"does not have 150 main-namespace edits on or before 01 November 2012 (has {$edits})."
 			);
-			
+
 			########
 			## Not currently blocked
 			########
@@ -1454,13 +1667,13 @@ while ($script->user['name'] && !$cached) {
 				"must not be blocked during at least part of election (verify <a href='//en.wikipedia.org/wiki/Special:Log/block?user=" . urlencode($script->user['name']) . "' title='block log'>block log</a>)."
 			);
 			break;
-			
+
 		############################
 		## 2012 enwiki arbcom elections (candidates)
 		############################
 		case 25:
 			$script->printWiki();
-			
+
 			########
 			## >=500 main-NS edits before 2012-Nov-02
 			########
@@ -1479,7 +1692,7 @@ while ($script->user['name'] && !$cached) {
 				"has 500 main-namespace edits on or before 01 November 2012 (has {$edits})...",
 				"does not have 500 main-namespace edits on or before 01 November 2012 (has {$edits})."
 			);
-			
+
 			########
 			## Not currently blocked
 			########
@@ -1499,7 +1712,7 @@ while ($script->user['name'] && !$cached) {
 			$edits_okay = false;
 			do {
 				$script->eligible = true;
-			
+
 				########
 				## registered < 2012-Apr-01
 				########
@@ -1522,12 +1735,12 @@ while ($script->user['name'] && !$cached) {
 						"does not have more than 75 edits before 01 April 2012 (has {$edits})."
 					);
 				}
-				
+
 				$script->eligible = ($age_okay && $edits_okay);
 			}
 			while (!$script->eligible && $script->get_next());
 			break;
-	
+
 		############################
 		## 2012 steward elections
 		############################
@@ -1711,12 +1924,12 @@ while ($script->user['name'] && !$cached) {
 						'was flagged as an administrator for a continuous period of at least three months before 29 January 2012 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
 						'was not flagged as an administrator for a continuous period of at least three months before 29 January 2012 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
 					);
-					
+
 					/* edge case: if the user was registered before 2005, they might have been flagged before flag changes were logged */
 					if(!$minDurationMet && (!$script->user['registration_raw'] || $script->user['registration_raw'] < 20050000000000)) {
 						// output warning
 						$script->msg('<small>' . $script->user['name'] . ' registered here before 2005, so he might have been flagged before the rights log was created.</small>', 'is-warn is-subnote');
-						
+
 						// add note
 						$script->event['warn_ineligible'] = '<strong>This result might be inaccurate.</strong> ' . $script->user['name'] . ' registered on some wikis before the rights log was created in 2005. You may need to investigate manually.';
 					}
