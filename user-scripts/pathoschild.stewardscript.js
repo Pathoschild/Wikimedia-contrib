@@ -56,6 +56,8 @@
 				{name:'user > rights (local)', page:'Special:UserRights', desc:'Manage local user rights'},
 				{name:'user > rights (global)', page:'Special:GlobalGroupMembership', desc:'Manage global user rights'},
 				{name:'user > global rename', page:'Special:GlobalRenameUser', desc:'Globally rename users'},
+				{name:'global rename request', page:'Special:GlobalRenameRequest', desc:'Global rename request form'},
+				{name:'global rename queue', page:'Special:GlobalRenameQueue/open', desc:'Global rename processing queue'},
 				{name:'IP > global block', page:'Special:GlobalBlock', desc:'Globally block an IP'},
 				{name:'IP > global unblock', page:'Special:GlobalUnblock', desc:'Globally unblock an IP'},
 				{name:'global > groups', page:'Special:GlobalGroupPermissions', desc:'Manage global groups'},
