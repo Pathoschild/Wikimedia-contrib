@@ -28,7 +28,7 @@ echo '<form action="', $backend->url('/userpages'), '" method="get">
 
 if (!empty($user)) {
 	echo '<div class="result-box">';
-	echo 'See also <a href="', $backend->url('/stalktoy/' . urlencode($user)), '" title="Global account details">global account details</a>, <a href="', $backend->url('/crossactivity/' . urlencode($user)), '" title="Crosswiki activity">recent activity</a>, <a href="//meta.wikimedia.org/?title=Special:CentralAuth/', urlencode($user), '" title="Special:CentralAuth">Special:CentralAuth (stewards-only)</a>.';
+	echo 'See also <a href="', $backend->url('/stalktoy/' . urlencode($user)), '" title="Global account details">global account details</a>, <a href="', $backend->url('/crossactivity/' . urlencode($user)), '" title="Crosswiki activity">recent activity</a>, <a href="//meta.wikimedia.org/?title=Special:CentralAuth/', urlencode($user), '" title="Special:CentralAuth">Special:CentralAuth</a>.';
 }
 if ($user) {
 	echo '<hr />Filters: <a href="#" class="selected filter" data-filter="misc">wikitext</a> <a href="#" class="selected filter" data-filter="css">CSS</a> <a href="#" class="selected filter" data-filter="js">JS</a>';
