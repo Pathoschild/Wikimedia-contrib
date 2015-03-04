@@ -20,7 +20,7 @@ class StalktoyScript extends Base {
 	public $target;
 	public $target_wiki_url;
 	public $target_url;
-	
+
 	/**
 	 * A lookup hash of wiki data.
 	 * @var Wiki[]
@@ -37,7 +37,7 @@ class StalktoyScript extends Base {
 	public $show_all_wikis = false;       // in account mode, display wikis the user isn't on?
 	public $show_groups_per_wiki = false; // in account mode, list relevant global groups for each wiki
 	public $db;
-	
+
 
 	#############################
 	## Public methods
@@ -59,12 +59,12 @@ class StalktoyScript extends Base {
 		$this->target = $this->formatUsername( $target );
 		$this->target_url  = urlencode( $this->target );
 		$this->target_wiki_url = str_replace( '+', '_', $this->target_url );
-		
+
 		/* fetch wikis */
 		$this->domains = $this->db->getDomains();
 		$this->wikis = $this->db->getWikis();
 	}
-	
+
 	/**
 	 * Whether there is a username or IP address to analyze.
 	 */
@@ -81,7 +81,7 @@ class StalktoyScript extends Base {
 		$this->db->Connect( $wiki );
 		$this->local = Array();
 	}
-	
+
 	/**
 	 * Get details about a global account.
 	 * @param string $target The username for which to fetch details.
@@ -109,7 +109,7 @@ class StalktoyScript extends Base {
 		}
 		return $account;
 	}
-	
+
 	/**
 	 * Get the user's global groups that apply for each wiki.
 	 * @param int $id The user's global account ID.
@@ -122,7 +122,7 @@ class StalktoyScript extends Base {
 			'SELECT gug_group, ws_type, ws_wikis FROM centralauth_p.global_user_groups LEFT JOIN centralauth_p.global_group_restrictions ON gug_group = ggr_group LEFT JOIN centralauth_p.wikiset ON ggr_set = ws_id WHERE gug_user = ?',
 			array( $id )
 		)->fetchAllAssoc();
-		
+
 		// extract groups for each wiki
 		$groups = array();
 		foreach($wikis as $wiki)
@@ -130,7 +130,7 @@ class StalktoyScript extends Base {
 		foreach($rows as $row) {
 			// prettify name
 			$group = str_replace('_', ' ', $row['gug_group']);
-		
+
 			// parse opt-in or opt-out list
 			$optList = array();
 			if($row['ws_wikis'] != NULL) {
@@ -138,7 +138,7 @@ class StalktoyScript extends Base {
 				foreach($list as $wiki)
 					$optList[] = $wiki;
 			}
-			
+
 			// apply groups
 			switch($row['ws_type']) {
 				// all wikis
@@ -146,13 +146,13 @@ class StalktoyScript extends Base {
 					foreach($wikis as $wiki)
 						$groups[$wiki][] = $group;
 					break;
-					
+
 				// some wikis
 				case 'optin':
 					foreach($optList as $wiki) 
 						$groups[$wiki][] = $group;
 					break;
-					
+
 				// all except some wikis
 				case 'optout':
 					$optout = array_flip($optList);
@@ -187,7 +187,7 @@ class StalktoyScript extends Base {
 			'SELECT gb_address, gb_by, gb_reason, DATE_FORMAT(gb_timestamp, "%Y-%b-%d") AS timestamp, gb_anon_only, DATE_FORMAT(gb_expiry, "%Y-%b-%d") AS expiry FROM centralauth_p.globalblocks WHERE (gb_range_start <= ? AND gb_range_end >= ?) OR (gb_range_start >= ? AND gb_range_end <= ?) ORDER BY gb_timestamp',
 			array($start, $end, $start, $end)
 		)->fetchAllAssoc();
-			
+
 		foreach( $query as $row ) {
 			$block = new Stalktoy\Block();
 			$block->by = $row['gb_by'];
@@ -202,7 +202,7 @@ class StalktoyScript extends Base {
 
 		return $ip;
 	}
-	
+
 	/**
 	 * Get details about a local account.
 	 * @param Database $db The database from which to fetch details.
@@ -251,7 +251,7 @@ class StalktoyScript extends Base {
 
 		return $account;
 	}
-	
+
 	########
 	## Get hash of local IP blocks
 	########
@@ -281,11 +281,11 @@ class StalktoyScript extends Base {
 			$block->isHidden = false;
 			$blocks[] = $block;
 		}
-		
+
 		return $blocks;
 	}
-	
-	
+
+
 	#############################
 	## Output functions
 	#############################
@@ -295,28 +295,28 @@ class StalktoyScript extends Base {
 	function link( $domain, $title, $text = NULL ) {
 		if( $text === NULL )
 			$text = $title;
-		
+
 		if( !$domain )
 			return $text;
 		else
 			return "<a href='//{$domain}/wiki/$title' title='$title'>$text</a>";
 	}
-	
+
 	########
 	## Parse wikilinks in reason
 	########
 	function parse_reason( $text, $domain ) {
 		if( !preg_match_all('/\[\[([^\]]+)\]\]/', $text, $links) )
 			return $text;
-			
+
 		foreach( $links[1] as $i => $link ) {
 			$pieces = explode( '|', $link );
 			$link_target = $pieces[0];
 			$link_text   = isset($pieces[1]) ? $pieces[1] : $link_target;
-			
+
 			$text = str_replace( $links[0][$i], "<a href='//{$domain}/wiki/{$link_target}' title='{$link_text}'>{$link_text}</a>", $text );
 		}
-		
+
 		return $text;
 	}
 }
@@ -429,7 +429,7 @@ if( $script->isValid() && $ip->ip->isValid() ) {
 	} else
 		echo '<em>No global blocks.</em><br />';
 
-	
+
 	########
 	## Steward tools
 	########
@@ -455,13 +455,13 @@ if( $script->isValid() && $ip->ip->isValid() ) {
 				</tr>
 			</thead>
 			<tbody>';
-	
+
 		/* print each row */
 		foreach( $global['wikis'] as $wiki => $wikiData ) {
 			$domain = $wikiData->domain;
 			$blocked   = (int)(bool)$localBlocks[$wiki];
-			$link_wiki = $script->link( $domain, 'user:' . $script->target_wiki_url, $wikiData->name );
-		
+			$link_wiki = $script->link( $domain, 'user:' . $script->target_wiki_url, $domain );
+
 			echo '
 				<tr data-open="', (int)!$wikiData->isClosed, '" data-blocked="', (int)$blocked, '">
 					<td class="wiki">', $link_wiki, '</td>
@@ -476,7 +476,7 @@ if( $script->isValid() && $ip->ip->isValid() ) {
 					</td>
 				</tr>";
 		}
-		
+
 		/* print footer */
 		echo "
 			</tbody>
@@ -512,7 +512,7 @@ else if( $script->isValid() && $script->target ) {
 		);
 	}
 	$backend->profiler->stop('fetch global account');
-	
+
 	/* global groups */
 	$globalGroupsByWiki = array();
 	if($account->exists && $account->groups) {
@@ -520,7 +520,7 @@ else if( $script->isValid() && $script->target ) {
 		$globalGroupsByWiki = $script->getGlobalGroupsByWiki($account->id, $account->wikis);
 		$backend->profiler->stop('fetch global groups by wiki');
 	}
-	
+
 	/* local details */
 	$backend->profiler->start('fetch local accounts');
 	$local = array();
@@ -528,7 +528,7 @@ else if( $script->isValid() && $script->target ) {
 		$domain = $wikiData->domain;
 		$script->setWiki( $wiki );
 		$localAccount = $script->getLocal($script->db, $script->target, isset($account->wikiHash[$wiki]), $wikiData);
-		
+
 		if($localAccount->exists || $script->show_all_wikis)
 			$local[$wiki] = $localAccount;
 
@@ -538,7 +538,7 @@ else if( $script->isValid() && $script->target ) {
 				$stats['most_edits'] = $localAccount->editCount;
 				$stats['most_edits_domain'] = $domain;
 			}
-		
+
 			/* statistics shown only for global account */
 			if( $account->exists && $localAccount->exists ) {
 				$stats['wikis']++;
@@ -563,7 +563,7 @@ else if( $script->isValid() && $script->target ) {
 		}
 	}
 
-		
+
 	#######
 	## Output global details
 	########
@@ -592,7 +592,7 @@ else if( $script->isValid() && $script->target ) {
 			}
 			$globalGroups = implode(', ', $globalGroups);
 		}
-	
+
 		echo "
 			<table class='plain'>
 				<tr>
@@ -645,16 +645,16 @@ else if( $script->isValid() && $script->target ) {
 		echo '<div class="neutral">There is no global account with this name, or it has been <a href="//meta.wikimedia.org/wiki/Oversight" title="about hiding user names">globally hidden</a>.</div>';
 	echo '</div>';
 
-			
+
 	########
 	## Output local wikis
 	########
 	echo "<h3>Local accounts</h3>\n";
-		
+
 	if( count($local) ) {
 		/* precompile */
 		$label_unified_strs = Array( 'local', 'unified' );
-	
+
 		/* output */
 		echo '
 			<table class="pretty sortable" id="local-accounts">
@@ -670,17 +670,13 @@ else if( $script->isValid() && $script->target ) {
 	 				</tr>
 				</thead>
 				<tbody>';
-			
+
 		foreach( $local as $dbname => $user ) {
 			########
 			## Prepare strings
 			########
 			$wiki = $user->wiki;
-			$link_wiki  = $script->link(
-				$wiki->domain,
-				'User:' . $script->target_wiki_url,
-				$wiki->name
-			);
+			$link_wiki  = $script->link($wiki->domain, 'User:' . $script->target_wiki_url, $wiki->domain);
 
 			/* user exists */
 			if( $user->exists ) {
@@ -694,7 +690,7 @@ else if( $script->isValid() && $script->target ) {
 				$globalGroups = $hasGlobalGroups
 					? implode(', ', $globalGroupsByWiki[$wiki->dbName])
 					: '&nbsp;';
-			
+
 				if( $user->isBlocked ) {
 					$reason = $script->parse_reason($user->block->reason, $wiki->domain );
 					$block_summary = "<span class=\"is-block-start\">{$user->block->timestamp}</span> &mdash; <span class=\"is-block-end\">{$user->block->expiry}</span>: blocked by <span class=\"is-block-admin\">{$user->block->by}</span> (<span class=\"is-block-reason\">{$reason}</span>)";
@@ -702,7 +698,7 @@ else if( $script->isValid() && $script->target ) {
 				else
 					$block_summary = '&nbsp;';
 			}
-			
+
 			/* user doesn't exist */
 			else {
 				$link_edits = '&nbsp;';
@@ -714,7 +710,7 @@ else if( $script->isValid() && $script->target ) {
 				$block_summary = '&nbsp;';
 				$globalGroups = '&nbsp;';
 			}
-			
+
 			########
 			## Output
 			########
