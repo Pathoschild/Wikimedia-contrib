@@ -3,7 +3,7 @@
 		"name" : "meta-templatescript",
 		"title" : "TemplateScript",
 		"description" : "JavaScript which adds a menu of configurable templates and scripts to the sidebar. It automatically handles templates for various forms (from editing to protection), edit summaries, auto-submission, and filtering which templates are shown based on namespace, form, or arbitrary conditions. Templates can be inserted at the cursor position or at a preconfigured position, and scripts can be invoked when a sidebar link is activated. TemplateScript is also used as a framework for other scripts, and includes a fully-featured regex editor.",
-		"url" : "https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/TemplateScript",
+		"url" : "https://meta.wikimedia.org/wiki/TemplateScript",
 		"keywords" : "editing, user script",
 		"author" : "Pathoschild",
 		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
@@ -11,8 +11,8 @@
 	{
 		"name" : "meta-forceltr",
 		"title" : "ForceLTR",
-		"description" : "JavaScript which forces MediaWiki into displaying text in left-to-right format, even if the wiki's primary language is right-to-left.",
-		"url" : "https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/Force_ltr",
+		"description" : "JavaScript which enforces left-to-right layout and editing on right-to-left wikis. This resolves editing glitches in many browsers when one's preferred language is left-to-right, and corrects display when the interface language is not right-to-left.",
+		"url" : "https://meta.wikimedia.org/wiki/Force_ltr",
 		"keywords" : "editing, user script",
 		"author" : "Pathoschild",
 		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
@@ -21,7 +21,16 @@
 		"name" : "meta-stewardscript",
 		"title" : "StewardScript",
 		"description" : "JavaScript which extends the user interface for Wikimedia stewards' convenience.",
-		"url" : "https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/StewardScript",
+		"url" : "https://meta.wikimedia.org/wiki/Scripts/StewardScript",
+		"keywords" : "editing, user script",
+		"author" : "Pathoschild",
+		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
+	},
+	{
+		"name" : "meta-usejs",
+		"title" : "UseJS",
+		"description" : "JavaScript which imports JavaScript for the current page when the URL contains a parameter like &usejs=MediaWiki:Common.js. It only accepts scripts in the protected MediaWiki: namespace.",
+		"url" : "https://meta.wikimedia.org/wiki/UseJS",
 		"keywords" : "editing, user script",
 		"author" : "Pathoschild",
 		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
