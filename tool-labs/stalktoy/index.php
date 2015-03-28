@@ -632,7 +632,7 @@ else if( $script->isValid() && $script->target ) {
 				<tr>
 					<td>Home:</td>";
 		if( $account->homeWiki )
-			echo "<td><b><a href='//{$script->wikis[$account->homeWiki]->domain}/wiki/user:{$script->target_wiki_url}' title='home wiki'>{$script->wikis[$account->homeWiki]->domain}</a></b></td>";
+			echo "<td><a href='//{$script->wikis[$account->homeWiki]->domain}/wiki/user:{$script->target_wiki_url}' title='home wiki'>{$script->wikis[$account->homeWiki]->domain}</a></td>";
 		else
 			echo "<td><b>unknown</b> <small>(The main account may be <a href='//meta.wikimedia.org/wiki/Oversight' title='about hiding user names'>hidden</a> or renamed, or the data <a href='//wiki.toolserver.org/view/Replication_lag' title='about replication lag'>might not be replicated yet</a>.)</small></td>";
 		echo "
@@ -654,11 +654,11 @@ else if( $script->isValid() && $script->target ) {
 				</tr>
 				<tr>
 					<td>Registered:</td>
-					<td><b>', $account->registered, ' <span class="account-id">(account #', $account->id, ')</span></b></td>
+					<td>', $account->registered, ' <span class="account-id">(account #', $account->id, ')</span></td>
 				</tr>
 				<tr>
-						<td>Groups:</td>
-					<td><b>', $globalGroups, '</b></td>
+					<td>Groups:</td>
+					<td>', $globalGroups, '</td>
 				</tr>
 				<tr>
 					<td style="vertical-align:top;">Statistics:</td>
