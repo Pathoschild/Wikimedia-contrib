@@ -252,6 +252,21 @@ class StalktoyScript extends Base {
 		return $account;
 	}
 
+	/**
+	 * Get whether a wiki is participating in CentralAuth for global accounts.
+	 */
+	public function getWikiUnifiable($dbname) {
+		// in https://noc.wikimedia.org/conf/highlight.php?file=fishbowl.dblist
+		if(in_array($dbname, array('foundationwiki', 'nostalgiawiki', 'rswikimedia')))
+			return false;
+
+		// wikis that don't actually exist anymore
+		if(in_array($dbname, array('vewikimedia')))
+			return false;
+
+		return true;
+	}
+
 	########
 	## Get hash of local IP blocks
 	########
@@ -502,7 +517,9 @@ else if( $script->isValid() && $script->target ) {
 			'most_edits_domain' => NULL,
 			'oldest' => NULL,
 			'oldest_raw' => 999999999999999,
-			'oldest_domain' => NULL
+			'oldest_domain' => NULL,
+			'unified_wikis' => 0,
+			'detached_wikis' => 0
 		);
 	}
 	else {
@@ -542,6 +559,12 @@ else if( $script->isValid() && $script->target ) {
 			/* statistics shown only for global account */
 			if( $account->exists && $localAccount->exists ) {
 				$stats['wikis']++;
+				if($script->getWikiUnifiable($wiki)) {
+					if($localAccount->isUnified)
+						$stats['unified_wikis']++;
+					else
+						$stats['detached_wikis']++;
+				}
 				$stats['edit_count'] += $localAccount->editCount;
 				if( $localAccount->registeredRaw && $localAccount->registeredRaw < $stats['oldest_raw'] ) {
 					$stats['oldest'] = $localAccount->registered;
@@ -571,6 +594,7 @@ else if( $script->isValid() && $script->target ) {
 	echo "
 		<div class='result-box'>
 		<h3>Global account</h3>\n";
+
 	echo '<div class="is-global-details"',
 		' data-is-global="', ($account->exists ? '1' : '0'), '"';
 	if($account->exists) {
@@ -596,7 +620,17 @@ else if( $script->isValid() && $script->target ) {
 		echo "
 			<table class='plain'>
 				<tr>
-					<td>Home wiki:</td>";
+					<td>SUL:</td>";
+		if($stats['detached_wikis'] > 0) {
+			echo "<td class='error'><strong>Warning:</strong> This global account has " . $stats['detached_wikis'] . " detached accounts that will be renamed as part of the 2015 SUL finalisation. If you own this name, you should <a href='https://meta.wikimedia.org/wiki/Help:Unified_login'>claim ownership of detached accounts</a> before this happens.</div></td>";
+		}
+		else {
+			echo "<td class='success'><strong>Awesome!</strong> This account is fully unified and will not be renamed as part of the <a href='https://meta.wikimedia.org/wiki/Help:Unified_login'>2015 SUL finalisation</a>.</td>";
+		}
+		echo "
+				</tr>
+				<tr>
+					<td>Home:</td>";
 		if( $account->homeWiki )
 			echo "<td><b><a href='//{$script->wikis[$account->homeWiki]->domain}/wiki/user:{$script->target_wiki_url}' title='home wiki'>{$script->wikis[$account->homeWiki]->domain}</a></b></td>";
 		else
@@ -618,7 +652,8 @@ else if( $script->isValid() && $script->target ) {
 			echo "<span class='good'>okay</span>";
 		echo '
 				</tr>
-				<td>Registered:</td>
+				<tr>
+					<td>Registered:</td>
 					<td><b>', $account->registered, ' <span class="account-id">(account #', $account->id, ')</span></b></td>
 				</tr>
 				<tr>
@@ -653,7 +688,7 @@ else if( $script->isValid() && $script->target ) {
 
 	if( count($local) ) {
 		/* precompile */
-		$label_unified_strs = Array( 'local', 'unified' );
+		$label_unified_strs = Array( 'local', 'unified', 'n/a' );
 
 		/* output */
 		echo '
@@ -685,7 +720,11 @@ else if( $script->isValid() && $script->target ) {
 				$is_blocked = (int)$user->isBlocked;
 				$is_hidden  = (int)($is_blocked && $user->block->isHidden);
 				$is_unified = (int)$user->isUnified;
+				$is_unifiable = (int)$script->getWikiUnifiable($dbname);
 				$label_unified = $label_unified_strs[$is_unified];
+				if(!$is_unified && !$is_unifiable)
+					$label_unified = $label_unified_strs[2];
+
 				$hasGlobalGroups = $globalGroupsByWiki && isset($globalGroupsByWiki[$wiki->dbName]) && $globalGroupsByWiki[$wiki->dbName];;
 				$globalGroups = $hasGlobalGroups
 					? implode(', ', $globalGroupsByWiki[$wiki->dbName])
@@ -718,7 +757,7 @@ else if( $script->isValid() && $script->target ) {
 			if($wiki->name == 'sourceswiki')
 				$family = 'wikisource';
 			echo '
-				<tr data-wiki="', $wiki->name, '" data-domain="', $wiki->domain, '" data-lang="', ($wiki->isMultilingual ? 'multilingual' : $wiki->lang) ,'" data-family="', $family, '" data-open="', (int)!$wiki->isClosed, '" data-exists="', (int)(bool)$user->exists, '" data-edits="', $user->editCount, '" data-groups="', (int)$has_groups, '" data-global-groups="', (int)($hasGlobalGroups), '" data-registered="', $user->registered, '" data-unified="', (int)$user->isUnified, '" data-blocked="', (int)$user->isBlocked, '">
+				<tr data-wiki="', $wiki->name, '" data-domain="', $wiki->domain, '" data-lang="', ($wiki->isMultilingual ? 'multilingual' : $wiki->lang) ,'" data-family="', $family, '" data-open="', (int)!$wiki->isClosed, '" data-exists="', (int)(bool)$user->exists, '" data-edits="', $user->editCount, '" data-groups="', (int)$has_groups, '" data-global-groups="', (int)($hasGlobalGroups), '" data-registered="', $user->registered, '" data-unified="', (int)$user->isUnified, '" data-unifiable="', (int)$is_unifiable, '" data-blocked="', (int)$user->isBlocked, '">
 					<td class="wiki">', $link_wiki, '</td>
 					<td class="edit-count">', $link_edits, '</td>
 					<td class="timestamp">', $user->registered, '</td>

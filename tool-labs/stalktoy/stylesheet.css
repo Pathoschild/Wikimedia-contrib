@@ -54,6 +54,10 @@ tr[data-blocked="1"] td.blocks {
 	background: #FCC;
 }
 
+tr[data-unified="0"][data-unifiable="0"] td.unification {
+	background: #CFC;
+}
+
 td.edit-count {
 	text-align: right;
 }
