@@ -622,7 +622,7 @@ else if( $script->isValid() && $script->target ) {
 				<tr>
 					<td>SUL:</td>";
 		if($stats['detached_wikis'] > 0) {
-			echo "<td class='error'><strong>Warning:</strong> This global account has " . $stats['detached_wikis'] . " detached accounts that will be renamed as part of the 2015 SUL finalisation. If you own this name, you should <a href='https://meta.wikimedia.org/wiki/Help:Unified_login'>claim ownership of detached accounts</a> before this happens.</div></td>";
+			echo "<td class='error'><strong>Warning:</strong> This global account has " . $stats['detached_wikis'] . " detached account" . ($stats['detached_wikis'] > 1 ? 's' : '') . " that will be renamed as part of the 2015 SUL finalisation. If you own this name, you should <a href='https://meta.wikimedia.org/wiki/Help:Unified_login'>claim ownership of detached accounts</a> before this happens.</div></td>";
 		}
 		else {
 			echo "<td class='success'><strong>Awesome!</strong> This account is fully unified and will not be renamed as part of the <a href='https://meta.wikimedia.org/wiki/Help:Unified_login'>2015 SUL finalisation</a>.</td>";
