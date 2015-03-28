@@ -4,10 +4,10 @@
 ###	by [[user:Pathoschild]] (Jesse Plamondon-Willard)
 ### 	see http://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/Ajax_sysop#Installation
 ##############################################*/
-importStylesheetURI('//tools.wmflabs.org/meta/scripts/pathoschild.ajaxsysop.css');
+mw.loader.load('//tools-static.wmflabs.org/meta/scripts/pathoschild.ajaxsysop.css', 'text/css');
 
 var pathoschild = {
-	revision: 70,
+	revision: 71,
 
 	/*############################
 	## AJAX Sysop
