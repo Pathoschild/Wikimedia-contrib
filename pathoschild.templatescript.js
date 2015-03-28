@@ -30,7 +30,8 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '0.9.15-alpha',
+		_version: '1.2',
+		_dependencies: [],
 
 		/*********
 		** Objects
@@ -42,6 +43,7 @@ var pathoschild = pathoschild || {};
 		 * @property {string} category An arbitrary category name (for grouping templates into multiple sidebars), or null to use the default sidebar.
 		 * @property {string[]} forActions The wgAction values for which the template is enabled, or null to enable for all actions.
 		 * @property {int[]} forNamespaces The namespaces in which the template is enabled, or null to enable in all namespaces.
+		 * @property {string} accessKey A keyboard shortcut key which invokes the template or script directly; see [[w:Wikipedia:Keyboard shortcuts]].
 		 *
 		 * @property {string} template The template text to insert.
 		 * @property {string} position The position at which to insert the template, matching a {pathoschild.TemplateScript.Position} value. The default value is 'cursor' when editing a page, and 'replace' in all other cases.
@@ -52,6 +54,7 @@ var pathoschild = pathoschild || {};
 		 * @property {boolean} isMinorEdit Whether to mark the edit as minor (if applicable).
 		 *
 		 * @property {boolean} autoSubmit Whether to submit the form automatically after insertion.
+		 * @property {string} scriptUrl A script URL (or page name on the current wiki) to fetch before adding the template.
 		 * @property {function} script An arbitrary JavaScript function that is called after the template and edit summary are applied, but before autoSubmit is applied (if true). It is passed a reference to the context object.
 		 *
 		 * @property {int} id The internal template ID. (Modifying this value may cause unexpected behaviour.)
@@ -64,6 +67,7 @@ var pathoschild = pathoschild || {};
 			category: null,
 			forActions: null,
 			forNamespaces: null,
+			accessKey: null,
 
 			/* template options */
 			template: null,
@@ -76,6 +80,7 @@ var pathoschild = pathoschild || {};
 
 			/* script options */
 			autoSubmit: false,
+			scriptUrl: null,
 			script: null,
 
 			/* internal */
@@ -195,7 +200,16 @@ var pathoschild = pathoschild || {};
 		 */
 		_CreateSidebarEntry: function(template) {
 			var id = this._GetSidebar(template.category);
-			pathoschild.util.mediawiki.AddPortletLink(id, template.name, function() { pathoschild.TemplateScript.Apply(template.id); });
+			var $item = pathoschild.util.mediawiki.AddPortletLink(id, template.name, template.accessKey, function() { pathoschild.TemplateScript.Apply(template.id); });
+			if(template.accessKey) {
+				$item.append(
+					$('<small>')
+						.addClass('ts-shortcut')
+						.attr('style', 'margin-left:.5em; color:#CCC;') // shouldn't be inline, but didn't want to create a spreadsheet for this one style
+						.append(template.accessKey)
+				);
+			}
+			return $item;
 		},
 
 		/*
@@ -249,6 +263,11 @@ var pathoschild = pathoschild || {};
 			catch (err) {
 				return log('normalization error: ' + err);
 			}
+			
+			/* normalize script URL */
+			if(opts.scriptUrl && !opts.scriptUrl.match(/^(?:http:|https:)?\/\//))
+				opts.scriptUrl = wgServer + wgScriptPath + '/index.php?title=' + encodeURIComponent(opts.scriptUrl) + '&action=raw&ctype=text/javascript';
+
 
 			/* validate */
 			if (opts.script && !$.isFunction(opts.script)) {
@@ -272,7 +291,15 @@ var pathoschild = pathoschild || {};
 
 			/* add template */
 			opts.id = this._templates.push(opts) - 1;
-			this._CreateSidebarEntry(opts);
+			var $entry = this._CreateSidebarEntry(opts);
+
+			/* load dependency */
+			if(opts.scriptUrl) {
+				$entry.hide();
+				if(!this._dependencies[opts.scriptUrl])
+					this._dependencies[opts.scriptUrl] = $.ajax(opts.scriptUrl, { cache: true, dataType: 'script' });
+				this._dependencies[opts.scriptUrl].done(function() { $entry.show(); });
+			}
 		},
 
 		/**
@@ -356,8 +383,16 @@ var pathoschild = pathoschild || {};
 			if ('forNamespaces' in template && template.forNamespaces !== null && !is(context.namespace, template.forNamespaces)) {
 				return false;
 			}
-			if ('forActions' in template && template.forActions !== null && !is(context.action, template.forActions)) {
-				return false;
+			if ('forActions' in template && template.forActions !== null) {
+				// workaround: moving a page doesn't have its own action
+				var action = context.action;
+				if(action == 'view' && $('#movepage').length) {
+					action = 'move';
+				}
+				
+				if(!is(action, template.forActions)) {
+					return false;
+				}
 			}
 
 			return true;
