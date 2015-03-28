@@ -1,4 +1,4 @@
-<?
+<?php
 if($enabled = false) {
 	/* configure */
 	$type = 'info';
