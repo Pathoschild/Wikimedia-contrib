@@ -236,8 +236,20 @@ var pathoschild = pathoschild || {};
 		/**
 		 * Add templates to the sidebar menu.
 		 * @param {pathoschild.TemplateScript.Template | pathoschild.TemplateScript.Template[]} opts The template(s) to add.
+		 * @param {pathoschild.TemplateScript.Template} common A set of fields to apply to all templates in the given list.
 		 */
-		Add: function(opts) {
+		Add: function(opts, common) {
+			/* apply common fields */
+			if(common) {
+				if($.isArray(opts)) {
+					for(var t = 0; t < opts.length; t++)
+						$.extend(opts[t], common);
+				}
+				else
+					$.extend(opts, common);
+			}
+
+			/* queue if DOM isn't ready */
 			if (!this._isReady) {
 				this._queue.push(opts);
 				return;
@@ -306,22 +318,12 @@ var pathoschild = pathoschild || {};
 
 		/**
 		 * Add templates to the sidebar menu.
-		 * @property {pathoschild.TemplateScript.Template} fields A Template-like object containing fields to merge into the templates.
+		 * @param {pathoschild.TemplateScript.Template} fields A Template-like object containing fields to merge into the templates.
 		 * @param {pathoschild.TemplateScript.Template | pathoschild.TemplateScript.Template[]} templates The template(s) to add.
 		 * @return {int} Returns the identifier of the added template (or the last added template if given an array), or -1 if the template could not be added.
 		 */
 		AddWith: function(fields, templates) {
-			/* merge templates */
-			if (!$.isArray(templates))
-				templates = [templates];
-
-			for (var i in templates) {
-				for (var attr in fields)
-					templates[i][attr] = fields[attr];
-			}
-
-			/* add templates */
-			this.Add(templates);
+			return this.Add(templates, fields);
 		},
 
 		/**
