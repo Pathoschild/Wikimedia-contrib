@@ -181,15 +181,17 @@ var pathoschild = pathoschild || {};
 			 * Add a link to a navigation sidebar menu.
 			 * @param {string} portletID The unique navigation portlet ID.
 			 * @param {string} text The link text.
+			 * @param {string} id A unique ID for the link.
 			 * @param {string} accessKey A keyboard shortcut key which invokes the template or script directly; see [[w:Wikipedia:Keyboard shortcuts]].
+			 * @param {string} tooltip A short explanation of the template or script, typically shown when the user hovers their cursor over the link.
 			 * @param {string|function} target The link URI or callback.
 			 * @return
 			 */
-			AddPortletLink: function (portletID, text, accessKey, target) {
+			AddPortletLink: function (portletID, text, id, tooltip, accessKey, target) {
 				// create link
 				var isCallback = $.isFunction(target);
 				var uri = isCallback ? '#' : target;
-				var $link = $(mw.util.addPortletLink(portletID, uri, text));
+				var $link = $(mw.util.addPortletLink(portletID, uri, text, id, tooltip || ''));
 				if (isCallback)
 					$link.click(function (e) { e.preventDefault(); target(e); });
 

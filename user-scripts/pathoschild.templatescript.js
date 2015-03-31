@@ -30,7 +30,7 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '1.2',
+		_version: '1.3',
 		_dependencies: [],
 
 		/*********
@@ -44,6 +44,7 @@ var pathoschild = pathoschild || {};
 		 * @property {string[]} forActions The wgAction values for which the template is enabled, or null to enable for all actions.
 		 * @property {int[]} forNamespaces The namespaces in which the template is enabled, or null to enable in all namespaces.
 		 * @property {string} accessKey A keyboard shortcut key which invokes the template or script directly; see [[w:Wikipedia:Keyboard shortcuts]].
+		 * @property {string} tooltip A short explanation of the template or script, typically shown when the user hovers their cursor over the link.
 		 *
 		 * @property {string} template The template text to insert.
 		 * @property {string} position The position at which to insert the template, matching a {pathoschild.TemplateScript.Position} value. The default value is 'cursor' when editing a page, and 'replace' in all other cases.
@@ -68,6 +69,7 @@ var pathoschild = pathoschild || {};
 			forActions: null,
 			forNamespaces: null,
 			accessKey: null,
+			tooltip: null,
 
 			/* template options */
 			template: null,
@@ -200,7 +202,7 @@ var pathoschild = pathoschild || {};
 		 */
 		_CreateSidebarEntry: function(template) {
 			var id = this._GetSidebar(template.category);
-			var $item = pathoschild.util.mediawiki.AddPortletLink(id, template.name, template.accessKey, function() { pathoschild.TemplateScript.Apply(template.id); });
+			var $item = pathoschild.util.mediawiki.AddPortletLink(id, template.name, 'ts-link-' + template.id, template.tooltip, template.accessKey, function() { pathoschild.TemplateScript.Apply(template.id); });
 			if(template.accessKey) {
 				$item.append(
 					$('<small>')
