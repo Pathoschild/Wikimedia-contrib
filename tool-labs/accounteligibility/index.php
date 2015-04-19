@@ -17,15 +17,15 @@ class Script extends Base {
 	public $events = Array(
 		36 => Array(
 			'year' => 2015,
-			'name' => '2015 Wikimedia Foundation elections',
+			'name' => 'Wikimedia Foundation elections',
 			'url' => '//meta.wikimedia.org/wiki/Wikimedia_Foundation_elections_2015',
 			'more_reqs' => Array(
 				'Your account must not be used by a bot.'
 			),
 			'exceptions' => Array(
 				'You are a Wikimedia server administrator with shell access.',
-				'You have commit access and have made at least one merged commits in git to Wikimedia Foundation utilized repos between 15 October 2014 and 15 April 2015',
-				'You are a Current Wikimedia Foundation staff member or contractor employed by the Foundation as of 15 April 2015.',
+				'You have commit access and have made at least one merged commit in git to Wikimedia Foundation utilized repos between 15 October 2014 and 15 April 2015.',
+				'You are a current Wikimedia Foundation staff member or contractor employed by the Foundation as of 15 April 2015.',
 				'You are a current or former member of the Wikimedia Board of Trustees, Advisory Board or Funds Dissemination Committee.'
 			)
 		),
@@ -917,11 +917,11 @@ while ($script->user['name'] && !$cached) {
 		## 2015 WMF elections
 		############################
 		case 36:
-			$BlockMessage = "Locked: account is still eligible if only blocked on one wiki.";
-			$BlockMessageMultiple = "Blocked on more than one wiki.";
-			$BlockClass = "is-warn";
+			$blockMessage = "Blocked (account is still eligible if only blocked on one wiki).";
+			$blockMessageMultiple = "Blocked on more than one wiki.";
+			$blockClass = "is-warn";
 
-			$BlockCount = 0;
+			$blockCount = 0;
 			$editCount = 0;
 			$editCountRecent = 0;
 
@@ -938,14 +938,14 @@ while ($script->user['name'] && !$cached) {
 				$script->condition(
 					!$isBlocked,
 					"not blocked...",
-					$BlockMessage,
+					$blockMessage,
 					"",
-					$BlockClass
+					$blockClass
 				);
 				if ($isBlocked) {
-					$BlockCount++;
-					$BlockClass = "";
-					$BlockMessage = $BlockMessageMultiple;
+					$blockCount++;
+					$blockClass = "";
+					$blockMessage = $blockMessageMultiple;
 				}
 
 				########
@@ -989,7 +989,7 @@ while ($script->user['name'] && !$cached) {
 				########
 				## Exit conditions
 				########
-				$script->eligible = ($BlockCount <= 1 && $editCount >= 300 && $editCountRecent >= 20);
+				$script->eligible = ($blockCount <= 1 && $editCount >= 300 && $editCountRecent >= 20);
 
 				/* no other accounts can be eligible */
 				if ($script->user['editcount'] < 300) {
