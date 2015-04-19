@@ -19,6 +19,7 @@ class Script extends Base {
 			'year' => 2015,
 			'name' => 'Wikimedia Foundation elections',
 			'url' => '//meta.wikimedia.org/wiki/Wikimedia_Foundation_elections_2015',
+			'autoselect_min_editcount' => 300,
 			'more_reqs' => Array(
 				'Your account must not be used by a bot.'
 			),
@@ -187,6 +188,7 @@ class Script extends Base {
 			'year' => 2011,
 			'name' => 'Board elections',
 			'url' => '//meta.wikimedia.org/wiki/Board elections/2011',
+			'autoselect_min_editcount' => 300,
 			'more_reqs' => Array(
 				'Your account must not be used by a bot.'
 			),
@@ -315,7 +317,8 @@ class Script extends Base {
 		2 => Array(
 			'year' => 2009,
 			'name' => 'steward elections',
-			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2009'
+			'url' => '//meta.wikimedia.org/wiki/Stewards/elections_2009',
+			'autoselect_min_editcount' => 600
 		),
 
 		1 => Array(
@@ -328,7 +331,8 @@ class Script extends Base {
 		0 => Array(
 			'year' => 2008,
 			'name' => 'Board elections',
-			'url' => '//meta.wikimedia.org/wiki/Board elections/2008'
+			'url' => '//meta.wikimedia.org/wiki/Board elections/2008',
+			'autoselect_min_editcount' => 600
 		)
 	);
 
@@ -484,7 +488,7 @@ class Script extends Base {
 	########
 	## Set default wiki if wiki not selected
 	########
-	public function default_wiki($defaultDbname = NULL) {
+	public function default_wiki($defaultDbname = NULL, $minEdits = 1) {
 		########
 		## Set selected wiki
 		########
@@ -530,9 +534,9 @@ class Script extends Base {
 			$this->profiler->stop('fetch edit counts');
 			asort($this->queue);
 
-			/* ignore accounts with 0 edits */
+			/* ignore accounts with insufficient edits */
 			function filter($count) {
-				return $count != 0;
+				return $count >= $minEdits;
 			}
 			$this->queue = array_filter($this->queue, 'filter');
 
@@ -542,7 +546,7 @@ class Script extends Base {
 			$this->unified = true;
 
 			/* report queue */
-			$this->msg('Auto-selected ' . count($this->queue) . ' unified accounts with at least one edit.', 'is-metadata');
+			$this->msg('Auto-selected ' . count($this->queue) . ' unified accounts with at least ' . $minEdits . ' edit' . ($minEdits != 1 ? 's' : '') . '.', 'is-metadata');
 		}
 
 		########
@@ -896,7 +900,7 @@ while ($script->user['name'] && !$cached) {
 	/* initialize queue wikis */
 	if(!isset($script->event['only_db']))
 		$script->event['only_db'] = NULL;
-	if (!$script->default_wiki($script->event['only_db'])) {
+	if (!$script->default_wiki($script->event['only_db'], $script->event['autoselect_min_editcount'] ?: 1)) {
 		if(!$script->selectManually)
 			$script->msg('Selection failed, aborted.');
 		break;
@@ -990,12 +994,6 @@ while ($script->user['name'] && !$cached) {
 				## Exit conditions
 				########
 				$script->eligible = ($blockCount <= 1 && $editCount >= 300 && $editCountRecent >= 20);
-
-				/* no other accounts can be eligible */
-				if ($script->user['editcount'] < 300) {
-					$script->eligible = false;
-					break;
-				}
 			}
 			while (!$script->eligible && $script->get_next());
 
@@ -1240,7 +1238,7 @@ while ($script->user['name'] && !$cached) {
 			}
 			while (!$script->eligible && $script->get_next());
 			break;
-		
+
 		############################
 		## 2014 Commons Picture of the Year 2013
 		############################
@@ -2046,7 +2044,7 @@ while ($script->user['name'] && !$cached) {
 		case 20: // candidates
 		case 21: // voters (same checked rules)
 			$script->printWiki();
-			
+
 			########
 			## >=150 main-NS edits before 2011-Nov-01
 			########
@@ -2065,7 +2063,7 @@ while ($script->user['name'] && !$cached) {
 				"has 150 main-namespace edits on or before 01 November 2011 (has {$edits})...",
 				"does not have 150 main-namespace edits on or before 01 November 2011 (has {$edits})."
 			);
-			
+
 			########
 			## Not currently blocked
 			########
@@ -2075,7 +2073,7 @@ while ($script->user['name'] && !$cached) {
 				"must not be blocked during at least part of election (verify <a href='//en.wikipedia.org/wiki/Special:Log/block?user=" . urlencode($script->user['name']) . "' title='block log'>block log</a>)."
 			);
 			break;
-		
+
 		############################
 		## 2011-09 steward elections
 		############################
@@ -2263,7 +2261,7 @@ while ($script->user['name'] && !$cached) {
 			while (!$script->eligible && $script->get_next());
 			break;
 
-	
+
 		############################
 		## 2011 Board elections
 		############################
@@ -2271,16 +2269,16 @@ while ($script->user['name'] && !$cached) {
 			$indefBlockMessage = "indefinitely blocked: account is still eligible if only blocked on one wiki.";
 			$indefBlockMessageMultiple = "indefinitely blocked on more than one wiki.";
 			$indefBlockClass = "is-warn";
-			
+
 			$indefBlockCount = 0;
 			$editCount = 0;
 			$editCountRecent = 0;
-			
+
 			$script->printWiki();
-			
+
 			do {
 				$script->eligible = true;
-				
+
 				########
 				## Not a bot
 				########
@@ -2339,15 +2337,9 @@ while ($script->user['name'] && !$cached) {
 				## Exit conditions
 				########
 				$script->eligible = ($indefBlockCount <= 1 && $editCount >= 300 && $editCountRecent >= 20);
-
-				/* no other accounts can be eligible */
-				if ($script->user['editcount'] < 300) {
-					$script->eligible = false;
-					break;
-				}
 			}
 			while (!$script->eligible && $script->get_next());
-			
+
 			break;
 
 
@@ -2360,7 +2352,7 @@ while ($script->user['name'] && !$cached) {
 			$edits_okay = false;
 			do {
 				$script->eligible = true;
-			
+
 				########
 				## registered < 2011-Jan-01
 				########
@@ -2383,12 +2375,12 @@ while ($script->user['name'] && !$cached) {
 						"does not have 200 edits before 01 January 2011 (has {$edits})."
 					);
 				}
-				
+
 				$script->eligible = ($age_okay && $edits_okay);
 			}
 			while (!$script->eligible && $script->get_next());
 			break;
-	
+
 		############################
 		## 2011 steward confirmations
 		############################
@@ -2638,7 +2630,7 @@ while ($script->user['name'] && !$cached) {
 				"has 150 main-namespace edits on or before 01 November 2010 (has {$edits})...",
 				"does not have 150 main-namespace edits on or before 01 November 2010 (has {$edits})."
 			);
-			
+
 
 			########
 			## Not currently blocked
@@ -3276,11 +3268,6 @@ while ($script->user['name'] && !$cached) {
 					"has 50 edits between 01 August 2008 and 31 January 2009 (has {$edits})...",
 					"does not have 50 edits between 01 August 2008 and 31 January 2009 (has {$edits})."
 				);
-
-				/* exit if no other account can qualify */
-				if ($script->user['editcount'] < 600) {
-					break;
-				}
 			}
 			while (!$script->eligible && $script->get_next());
 			break;
@@ -3375,12 +3362,6 @@ while ($script->user['name'] && !$cached) {
 				########
 				/* eligible */
 				if ($script->eligible) {
-					break;
-				}
-
-				/* no other accounts can be eligible */
-				if ($script->user['editcount'] < 600) {
-					$script->eligible = false;
 					break;
 				}
 			}
