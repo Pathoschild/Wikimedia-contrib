@@ -3412,7 +3412,7 @@ while ($script->user['name'] && !$cached) {
 			if(isset($script->event['exceptions'])) {
 				echo '<div class="neutral"><strong>This account might be eligible if it fits rule exceptions that cannot be checked by this script:<ul style="margin:0;">';
 				foreach ($script->event['exceptions'] as $exc)
-					echo '<li>{$exc}</li>';
+					echo '<li>', $exc, '</li>';
 				echo '</ul></div>';
 			}
 			if(isset($script->event['warn_ineligible']))
