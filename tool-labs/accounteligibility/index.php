@@ -3398,14 +3398,12 @@ while ($script->user['name'] && !$cached) {
 		elseif (!$script->eligible && isset($script->event['append_ineligible']))
 			echo $script->event['append_ineligible'];
 		echo '</div>';
-		echo '<small>See also: <a href="', $backend->url('/stalktoy/' . urlencode($script->user['name'])), '" title="global account details">global account details</a></small>.';
-
 
 		########
 		## Mention additional requirements
 		########
 		if ($script->eligible && isset($script->event['more_reqs'])) {
-			echo '<div class="error" style="border-color:#CC0;"><strong>There are additional requirements</strong> that cannot be checked by this script:<ul style="margin:0;">';
+			echo '<div class="error" style="border-color:#CC0;"><strong>There are additional requirements</strong> that can\'t be checked by this script:<ul style="margin:0;">';
 			foreach ($script->event['more_reqs'] as $req)
 				echo '<li>', $req, '</li>';
 			echo '</ul></div>';
@@ -3420,6 +3418,11 @@ while ($script->user['name'] && !$cached) {
 			if(isset($script->event['warn_ineligible']))
 				echo '<div class="error" style="border-color:#CC0;">', $script->event['warn_ineligible'], '</div>';
 		}
+
+		########
+		## Add links for manual verification
+		########
+		echo '<small>See also: <a href="', $backend->url('/stalktoy/' . urlencode($script->user['name'])), '" title="global account details">global account details</a></small>.';
 	}
 
 	/* exit loop */
