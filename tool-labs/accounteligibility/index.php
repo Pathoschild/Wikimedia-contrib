@@ -13,8 +13,22 @@ class Script extends Base {
 	############################
 	## Configuration
 	############################
-	const DEFAULT_EVENT = 33;
+	const DEFAULT_EVENT = 36;
 	public $events = Array(
+		36 => Array(
+			'year' => 2015,
+			'name' => '2015 Wikimedia Foundation elections',
+			'url' => '//meta.wikimedia.org/wiki/Wikimedia_Foundation_elections_2015',
+			'more_reqs' => Array(
+				'Your account must not be used by a bot.'
+			),
+			'exceptions' => Array(
+				'You are a Wikimedia server administrator with shell access.',
+				'You have commit access and have made at least one merged commits in git to Wikimedia Foundation utilized repos between 15 October 2014 and 15 April 2015',
+				'You are a Current Wikimedia Foundation staff member or contractor employed by the Foundation as of 15 April 2015.',
+				'You are a current or former member of the Wikimedia Board of Trustees, Advisory Board or Funds Dissemination Committee.'
+			)
+		),
 		35 => Array(
 			'year' => 2015,
 			'name' => 'steward elections',
@@ -898,6 +912,94 @@ while ($script->user['name'] && !$cached) {
 	 * Verify requirements
 	 ***************/
 	switch ($script->event['id']) {
+
+		############################
+		## 2015 WMF elections
+		############################
+		case 36:
+			$BlockMessage = "Locked: account is still eligible if only blocked on one wiki.";
+			$BlockMessageMultiple = "Blocked on more than one wiki.";
+			$BlockClass = "is-warn";
+
+			$BlockCount = 0;
+			$editCount = 0;
+			$editCountRecent = 0;
+
+			$script->printWiki();
+
+			do {
+				$script->eligible = true;
+
+
+				########
+				## Not  blocked on more than one wiki
+				########
+				$isBlocked = $script->currently_blocked();
+				$script->condition(
+					!$isBlocked,
+					"not blocked...",
+					$BlockMessage,
+					"",
+					$BlockClass
+				);
+				if ($isBlocked) {
+					$BlockCount++;
+					$BlockClass = "";
+					$BlockMessage = $BlockMessageMultiple;
+				}
+
+				########
+				## Not a bot
+				########
+				$script->condition(
+					!$script->has_role('bot'),
+					"no bot flag...",
+					"has a bot flag: this account is not eligible.",
+					"",
+					"is-fail"
+				);
+
+
+				########
+				## >=300 edits before 2015-04-15
+				########
+				$edits = $script->edit_count(NULL, 20150415000000);
+				$script->condition(
+					$edits >= 300,
+					"has 300 edits before 15 April 2015 (has {$edits})...",
+					"does not have 300 edits before 15 April 2015 (has {$edits}); edits can be combined across wikis.",
+					"",
+					"is-warn"
+				);
+				$editCount += $edits;
+
+				########
+				## >=20 edits between 2014-10-15 and 2015-04-15
+				########
+				$edits = $script->edit_count(20141015000000, 20150415000000);
+				$script->condition(
+					$edits >= 20,
+					"has 20 edits between 15 October 2014 and 15 April 2015 (has {$edits})...",
+					"does not have 20 edits between 15 October 2014 and 15 April 2015 (has {$edits}); edits can be combined across wikis.",
+					"",
+					"is-warn"
+				);
+				$editCountRecent += $edits;
+
+				########
+				## Exit conditions
+				########
+				$script->eligible = ($BlockCount <= 1 && $editCount >= 300 && $editCountRecent >= 20);
+
+				/* no other accounts can be eligible */
+				if ($script->user['editcount'] < 300) {
+					$script->eligible = false;
+					break;
+				}
+			}
+			while (!$script->eligible && $script->get_next());
+
+			break;
 
 		############################
 		## 2015 steward elections
