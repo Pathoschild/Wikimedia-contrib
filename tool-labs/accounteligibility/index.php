@@ -967,7 +967,7 @@ while ($script->user['name'] && !$cached) {
 				########
 				## >=300 edits before 2015-04-15
 				########
-				$edits = $script->edit_count(NULL, 20150415000000);
+				$edits = $script->edit_count(NULL, 20150415235959);
 				$script->condition(
 					$edits >= 300,
 					"has 300 edits before 15 April 2015 (has {$edits})...",
@@ -980,7 +980,7 @@ while ($script->user['name'] && !$cached) {
 				########
 				## >=20 edits between 2014-10-15 and 2015-04-15
 				########
-				$edits = $script->edit_count(20141015000000, 20150415000000);
+				$edits = $script->edit_count(20141015000000, 20150415235959);
 				$script->condition(
 					$edits >= 20,
 					"has 20 edits between 15 October 2014 and 15 April 2015 (has {$edits})...",
