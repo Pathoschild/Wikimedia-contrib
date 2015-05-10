@@ -465,13 +465,13 @@ var pathoschild = pathoschild || {};
 			}
 
 			/* most browsers */
-			if (box.selectionStart || box.selectionStart === '0') {
+			if (box.selectionStart || box.selectionStart === false || box.selectionStart === '0' || box.selectionStart === 0) {
 				var startPos = box.selectionStart;
 				var endPos = box.selectionEnd;
 				var scrollTop = box.scrollTop;
 
 				var newText = text(box.value.substring(startPos, endPos));
-				box.value = box.value.substring(0, startPos) + newText + box.value.substring(endPos + text.length, box.value.length);
+				box.value = box.value.substring(0, startPos) + newText + box.value.substring(endPos - 1 + text.length, box.value.length);
 				box.focus();
 
 				box.selectionStart = startPos + text.length;
