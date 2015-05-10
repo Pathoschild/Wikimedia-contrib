@@ -30,7 +30,7 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '1.4',
+		_version: '1.5',
 		_dependencies: [],
 
 		/*********
@@ -146,7 +146,7 @@ var pathoschild = pathoschild || {};
 		 * @param {bool} test Indicates whether the dependency is already loaded.
 		 * @param {function} callback The method to invoke (with no arguments) when the dependencies have been loaded.
 		 */
-		_LoadDependency: function(url, test, callback) {
+		_loadDependency: function(url, test, callback) {
 			var invokeCallback = function() { callback.call(pathoschild.TemplateScript); };
 			if (test)
 				invokeCallback();
@@ -157,7 +157,7 @@ var pathoschild = pathoschild || {};
 		/**
 		 * Initialize the template script.
 		 */
-		_Initialize: function() {
+		_initialize: function() {
 			if (this.Context.singleton)
 				return;
 
@@ -167,10 +167,10 @@ var pathoschild = pathoschild || {};
 			this.Context.$editSummary = $('#wpSummary:first');
 
 			// load utilities & hook into page
-			this._LoadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', pathoschild.util, function() {
+			this._loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', pathoschild.util, function() {
 				this._isReady = true;
 				for (var i = 0; i < this._queue.length; i++)
-					this.Add(this._queue[i]);
+					this.add(this._queue[i]);
 			});
 		},
 
@@ -180,7 +180,7 @@ var pathoschild = pathoschild || {};
 		 * @returns {string} Returns the unique ID of the sidebar.
 		 * @private
 		 */
-		_GetSidebar: function(name) {
+		_getSidebar: function(name) {
 			// set default text
 			if (name === null || typeof(name) === typeof(undefined))
 				name = this._defaultHeaderText;
@@ -200,9 +200,9 @@ var pathoschild = pathoschild || {};
 		 * Create a link in the sidebar that triggers the template.
 		 * @param {pathoschild.TemplateScript.Template} template The template for which to create an entry.
 		 */
-		_CreateSidebarEntry: function(template) {
-			var id = this._GetSidebar(template.category);
-			var $item = pathoschild.util.mediawiki.AddPortletLink(id, template.name, 'ts-link-' + template.id, template.tooltip, template.accessKey, function() { pathoschild.TemplateScript.Apply(template.id); });
+		_createSidebarEntry: function(template) {
+			var id = this._getSidebar(template.category);
+			var $item = pathoschild.util.mediawiki.AddPortletLink(id, template.name, 'ts-link-' + template.id, template.tooltip, template.accessKey, function() { pathoschild.TemplateScript.apply(template.id); });
 			if(template.accessKey) {
 				$item.append(
 					$('<small>')
@@ -220,7 +220,7 @@ var pathoschild = pathoschild || {};
 		 * @param {Object | Object[]} haystack The object to compare against, or array to search.
 		 * @returns {boolean} Returns whether the value is equal to or in the haystack.
 		 */
-		_IsEqualOrIn: function(value, haystack) {
+		_isEqualOrIn: function(value, haystack) {
 			if ($.isArray(haystack))
 				return $.inArray(value, haystack) !== -1;
 			return value === haystack;
@@ -238,7 +238,7 @@ var pathoschild = pathoschild || {};
 		 * @param {pathoschild.TemplateScript.Template | pathoschild.TemplateScript.Template[]} opts The template(s) to add.
 		 * @param {pathoschild.TemplateScript.Template} common A set of fields to apply to all templates in the given list.
 		 */
-		Add: function(opts, common) {
+		add: function(opts, common) {
 			/* apply common fields */
 			if(common) {
 				if($.isArray(opts)) {
@@ -257,19 +257,19 @@ var pathoschild = pathoschild || {};
 
 			var log = function(message) {
 				opts = opts || {};
-				pathoschild.util.Log('pathoschild.TemplateScript::Add(name:"' + (opts.name || 'unnamed') + '"): ' + message);
+				pathoschild.util.Log('pathoschild.TemplateScript::add(name:"' + (opts.name || 'unnamed') + '"): ' + message);
 			};
 
 			/* handle multiple templates */
 			if ($.isArray(opts)) {
 				for (var t = 0; t < opts.length; t++)
-					this.Add(opts[t]);
+					this.add(opts[t]);
 				return;
 			}
 
 			/* normalize option types */
 			try {
-				opts = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript::Add(name:' + (opts.name || 'unnamed') + ')', opts, this.Template);
+				opts = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript::add(name:' + (opts.name || 'unnamed') + ')', opts, this.Template);
 				opts.position = pathoschild.util.ApplyEnumeration('Position', opts.position, pathoschild.TemplateScript.Position);
 				opts.editSummaryPosition = pathoschild.util.ApplyEnumeration('Position', opts.editSummaryPosition, pathoschild.TemplateScript.Position);
 				opts.headlinePosition = pathoschild.util.ApplyEnumeration('Position', opts.headlinePosition, pathoschild.TemplateScript.Position);
@@ -292,7 +292,7 @@ var pathoschild = pathoschild || {};
 				return log('template must have a name');
 			if (!opts.template && !opts.script)
 				return log('template must have either a template or a script.');
-			if (!pathoschild.TemplateScript.IsEnabled(opts))
+			if (!pathoschild.TemplateScript.isEnabled(opts))
 				return;
 
 			/* set defaults */
@@ -305,7 +305,7 @@ var pathoschild = pathoschild || {};
 
 			/* add template */
 			opts.id = this._templates.push(opts) - 1;
-			var $entry = this._CreateSidebarEntry(opts);
+			var $entry = this._createSidebarEntry(opts);
 
 			/* load dependency */
 			if(opts.scriptUrl) {
@@ -317,42 +317,32 @@ var pathoschild = pathoschild || {};
 		},
 
 		/**
-		 * Add templates to the sidebar menu.
-		 * @param {pathoschild.TemplateScript.Template} fields A Template-like object containing fields to merge into the templates.
-		 * @param {pathoschild.TemplateScript.Template | pathoschild.TemplateScript.Template[]} templates The template(s) to add.
-		 * @return {int} Returns the identifier of the added template (or the last added template if given an array), or -1 if the template could not be added.
-		 */
-		AddWith: function(fields, templates) {
-			return this.Add(templates, fields);
-		},
-
-		/**
 		 * Apply a template to the form.
 		 * @param {int} id The identifier of the template to insert, as returned by Add().
 		 */
-		Apply: function(id) {
+		apply: function(id) {
 			/* get template */
 			if (!(id in this._templates)) {
-				pathoschild.util.Log('pathoschild.TemplateScript::Apply() failed, there is no template with ID "' + id + '".');
+				pathoschild.util.Log('pathoschild.TemplateScript::apply() failed, there is no template with ID "' + id + '".');
 				return;
 			}
 			var opts = this._templates[id];
 
 			/* validate target input box */
 			if (!this.Context.$target.length) {
-				pathoschild.util.Log('pathoschild.TemplateScript::Apply() failed, no recognized form found.');
+				pathoschild.util.Log('pathoschild.TemplateScript::apply() failed, no recognized form found.');
 				return;
 			}
 
 			/* insert template */
 			if (opts.template) {
-				this.InsertLiteral(this.Context.$target, opts.template, opts.position);
+				this.insertLiteral(this.Context.$target, opts.template, opts.position);
 			}
 			if (opts.editSummary && !this.Context.isSectionNew) {
-				this.InsertLiteral(this.Context.$editSummary, opts.editSummary, opts.editSummaryPosition);
+				this.insertLiteral(this.Context.$editSummary, opts.editSummary, opts.editSummaryPosition);
 			}
 			if (opts.headline && this.Context.isSectionNew) {
-				this.InsertLiteral(this.Context.$editSummary, opts.headline, opts.headlinePosition);
+				this.insertLiteral(this.Context.$editSummary, opts.headline, opts.headlinePosition);
 			}
 			if (opts.isMinorEdit) {
 				$('#wpMinoredit').attr('checked', 'checked');
@@ -375,7 +365,7 @@ var pathoschild = pathoschild || {};
 		 * @param {pathoschild.TemplateScript.Template | Object} template
 		 * @returns {boolean} Returns true if all for* conditions were met, or no conditions were found; else false.
 		 */
-		IsEnabled: function(template) {
+		isEnabled: function(template) {
 			/* check enabled flag */
 			if ('enabled' in template && template.enabled !== null && !template.enabled) {
 				return false;
@@ -383,7 +373,7 @@ var pathoschild = pathoschild || {};
 
 			/* match context values */
 			var context = pathoschild.TemplateScript.Context;
-			var is = pathoschild.TemplateScript._IsEqualOrIn;
+			var is = pathoschild.TemplateScript._isEqualOrIn;
 			if ('forNamespaces' in template && template.forNamespaces !== null && !is(context.namespace, template.forNamespaces)) {
 				return false;
 			}
@@ -406,8 +396,8 @@ var pathoschild = pathoschild || {};
 		 * Set the header text for the default sidebar text.
 		 * @param {string} text The text to use as the sidebar text.
 		 */
-		SetDefaultGroupHeader: function(text) {
-			var id = this._GetSidebar();
+		setDefaultGroupHeader: function(text) {
+			var id = this._getSidebar();
 
 			this._defaultHeaderText = text;
 			this._menus[text] = id;
@@ -423,7 +413,7 @@ var pathoschild = pathoschild || {};
 		 * @param {string} text The template text to insert, with template format values preparsed.
 		 * @param {string} position The insertion position, matching a {pathoschild.TemplateScript.Position} value.
 		 */
-		InsertLiteral: function($target, text, position) {
+		insertLiteral: function($target, text, position) {
 			/* validate */
 			if (!$target || !$target.length || !text || !text.length) {
 				return; // nothing to do
@@ -432,7 +422,7 @@ var pathoschild = pathoschild || {};
 				position = pathoschild.util.ApplyEnumeration('Position', position, pathoschild.TemplateScript.Position);
 			}
 			catch (err) {
-				pathoschild.util.Log('TemplateScript: InsertLiteral failed, discarding literal: ' + err);
+				pathoschild.util.Log('TemplateScript: insertLiteral failed, discarding literal: ' + err);
 			}
 
 			/* perform insertion */
@@ -450,7 +440,7 @@ var pathoschild = pathoschild || {};
 					break;
 
 				case this.Position.cursor:
-					pathoschild.TemplateScript.ReplaceSelection($target, text);
+					pathoschild.TemplateScript.replaceSelection($target, text);
 					break;
 
 				default:
@@ -464,7 +454,7 @@ var pathoschild = pathoschild || {};
 		 * @param {jQuery} $target The field whose selected text to replace.
 		 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
 		 */
-		ReplaceSelection: function($target, text) {
+		replaceSelection: function($target, text) {
 			var box = $target.get(0);
 			box.focus();
 
@@ -502,21 +492,31 @@ var pathoschild = pathoschild || {};
 				box.value += text('');
 				return;
 			}
-		}
+		},
+
+		/*****
+		** 1.4 compatibility
+		*****/
+		Add: function(opts, common) { return this.add(opts, common); },
+		AddWith: function(fields, templates) { return this.add(templates, fields); },
+		Apply: function(id) { return this.apply(id); },
+		IsEnabled: function(template) { return this.isEnabled(template); },
+		SetDefaultGroupHeader: function(text) { return this.setDefaultGroupHeader(text); },
+		InsertLiteral: function($target, text, position) { return this.insertLiteral($target, text, position); }
 	};
 
 	// initialize menu (and wait for Vector if needed)
-	var init = function() { pathoschild.TemplateScript._Initialize(); };
+	var init = function() { pathoschild.TemplateScript._initialize(); };
 	var vectorModules = mw.config.get('wgVectorEnabledModules');
 	if (vectorModules && vectorModules.collapsiblenav)
 		mw.loader.using(['ext.vector.collapsibleNav'], function() { $(init); });
 	else
 		$(init);
 
-	pathoschild.TemplateScript.Add({
+	pathoschild.TemplateScript.add({
 		name: 'Regex editor',
 		script: function(context) {
-			pathoschild.TemplateScript._LoadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js', pathoschild.RegexEditor, function() {
+			pathoschild.TemplateScript._loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js', pathoschild.RegexEditor, function() {
 				pathoschild.RegexEditor.Create(context.$target);
 			});
 		},
