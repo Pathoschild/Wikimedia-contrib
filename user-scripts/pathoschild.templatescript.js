@@ -30,7 +30,7 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '1.3',
+		_version: '1.4',
 		_dependencies: [],
 
 		/*********
@@ -450,41 +450,57 @@ var pathoschild = pathoschild || {};
 					break;
 
 				case this.Position.cursor:
-					var box = $target.get(0);
-					box.focus();
-
-					/* most browsers */
-					if (box.selectionStart || box.selectionStart === '0') {
-						var startPos = box.selectionStart;
-						var endPos = box.selectionEnd;
-						var scrollTop = box.scrollTop;
-
-						box.value = box.value.substring(0, startPos) + text + box.value.substring(endPos, box.value.length);
-						box.focus();
-
-						box.selectionStart = startPos + text.length;
-						box.selectionEnd = startPos + text.length;
-						box.scrollTop = scrollTop;
-					}
-
-						/* Internet Explorer */
-					else if (document.selection) {
-						var selection = document.selection.createRange();
-						selection.text = text;
-						box.focus();
-					}
-
-							/* Unknown implementation */
-					else {
-						pathoschild.util.Log('TemplateScript: unknown browser cursor selection implementation, appending instead.');
-						box.value += text;
-						return;
-					}
+					pathoschild.TemplateScript.ReplaceSelection($target, text);
 					break;
 
 				default:
 					pathoschild.util.Log('TemplateScript: insertion failed, unknown position "' + position + '".');
 					return;
+			}
+		},
+
+		/**
+		 * Replace the selected text in a field.
+		 * @param {jQuery} $target The field whose selected text to replace.
+		 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
+		 */
+		ReplaceSelection: function($target, text) {
+			var box = $target.get(0);
+			box.focus();
+
+			// standardise input
+			if(!$.isFunction(text)) {
+				var _t = text;
+				text = function() { return _t; };
+			}
+
+			/* most browsers */
+			if (box.selectionStart || box.selectionStart === '0') {
+				var startPos = box.selectionStart;
+				var endPos = box.selectionEnd;
+				var scrollTop = box.scrollTop;
+
+				var newText = text(box.value.substring(startPos, endPos));
+				box.value = box.value.substring(0, startPos) + newText + box.value.substring(endPos + text.length, box.value.length);
+				box.focus();
+
+				box.selectionStart = startPos + text.length;
+				box.selectionEnd = startPos + text.length;
+				box.scrollTop = scrollTop;
+			}
+
+			/* older browsers */
+			else if (document.selection) {
+				var selection = document.selection.createRange();
+				selection.text = text(selection.text);
+				box.focus();
+			}
+
+			/* Unknown implementation */
+			else {
+				pathoschild.util.Log('TemplateScript: unknown browser cursor selection implementation, appending instead.');
+				box.value += text('');
+				return;
 			}
 		}
 	};
