@@ -16,7 +16,7 @@ var pathoschild = pathoschild || {};
 	 * @namespace
 	 */
 	pathoschild.util = {
-		_version: '1.0',
+		_version: '1.1',
 
 		/**
 		 * Enforce a schema defining valid arguments and default values on a key:value object.
@@ -210,6 +210,31 @@ var pathoschild = pathoschild || {};
 
 				return $link;
 			}
+		},
+
+		/**
+		 * Run JavaScript unit tests using Mocha and Chai, and print the results to the console. This
+		 * enables unit tests with zero framework code, but you can do more if needed by using Mocha and
+		 * Chai directly instead. To use this method, just pass a callback containing your Mocha/Chai unit
+		 * tests as described at http://chaijs.com/guide/styles/.
+		 *
+		 * @param {function} tests A callback to invoke when Mocha and Chai are ready.
+		 */
+		RunTests: function(tests) {
+			// load scripts
+			$.when(
+				$.ajax('//tools-static.wmflabs.org/cdnjs/ajax/libs/mocha/2.2.1/mocha.min.js', { dataType:'script', cache:true }),
+				$.ajax('//tools-static.wmflabs.org/cdnjs/ajax/libs/chai/2.2.0/chai.min.js', { dataType:'script', cache:true }),
+				$.ajax('//tools-static.wmflabs.org/meta/scripts/dependencies/WebConsole.js', { dataType:'script', cache:true })
+			).done(function() {
+				// configure
+				mocha.setup({ ui:'bdd', reporter:WebConsole });
+				chai.config.includeStack = false;
+
+				// run tests
+				tests(chai);
+				mocha.run();
+			});
 		}
 	};
 }());
