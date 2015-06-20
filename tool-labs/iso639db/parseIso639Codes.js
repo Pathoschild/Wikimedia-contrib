@@ -17,7 +17,7 @@ pathoschild.ParseIso639Codes = {
 	ImportJquery: function() {
 		var head = document.getElementsByTagName('head')[0];
 		var script = document.createElement('script');
-		script.setAttribute('src', 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js');
+		script.setAttribute('src', '//tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/1.7.1/jquery.min.js');
 		script.setAttribute('type', 'text/javascript');
 		head.appendChild(script);
 	},

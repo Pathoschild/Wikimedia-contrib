@@ -172,7 +172,7 @@ class Backend extends Base {
 		<title>', $this->title, '</title>
 		<link rel="shortcut icon" href="', $this->url('/content/favicon.ico'), '" />
 		<link rel="stylesheet" type="text/css" href="', $this->url('/content/stylesheet.css'), '" />
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+		<script src="//tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 		<script src="', $this->url('/content/jquery.collapse/jquery.collapse.js'), '" type="text/javascript"></script>
 		<script src="', $this->url('/content/main.js'), '" type="text/javascript"></script>
 		', $this->hook_head, '
