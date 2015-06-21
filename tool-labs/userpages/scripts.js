@@ -53,7 +53,14 @@ pathoschild.PageFilters = function() {
 		/**
 		 * Update the filters based on the URL's hash.
 		 */
-		var selected = location.hash.replace(/^#/, '').split(',');
+		// read hash from URL
+		var selected = location.hash.replace(/^#/, '');
+		if(!selected.length)
+			return;
+		selected = decodeURIComponent(selected.replace(/\./g, '%')); // reverse MediaWiki link munging
+
+		// apply
+		selected = selected.split(',');
 		if(selected.length) {
 			$('[data-filter]').removeClass('selected');
 			for(var i = 0, len = selected.length; i < len; i++)
