@@ -23,11 +23,43 @@ pathoschild.PageFilters = function() {
 		$('.result-box ul:not(:visible)').prev('h2').hide();
 	};
 
+	this.getToggle = function(key) {
+		/**
+		 * Get the toggle element for a filter.
+		 * @param key {string} The unique key for the filter.
+		 */
+		return filters.filter('[data-filter="' + key + '"]');
+	}
+
 	this.isEnabled = function(key) {
 		/**
 		 * Get whether the specified filter is enabled.
+		 * @param key {string} The unique key for the filter.
 		 */
-		return filters.filter('[data-filter="' + key + '"]').hasClass('selected');
+		return this.getToggle(key).hasClass('selected');
+	};
+
+	this.toggle = function(key) {
+		/**
+		 * Toggle a filter in the UI and URL.
+		 * @param key {string} The unique key for the filter.
+		 */
+		this.getToggle(key).toggleClass('selected');
+		location.hash = '#' + $('[data-filter].selected').map(function() { return $(this).attr('data-filter'); }).get().join();
+		this.apply();
+	}
+
+	this.readHash = function() {
+		/**
+		 * Update the filters based on the URL's hash.
+		 */
+		var selected = location.hash.replace(/^#/, '').split(',');
+		if(selected.length) {
+			$('[data-filter]').removeClass('selected');
+			for(var i = 0, len = selected.length; i < len; i++)
+				this.getToggle(selected[i]).addClass('selected');
+			this.apply();
+		}
 	};
 
 	return this;
@@ -36,8 +68,8 @@ pathoschild.PageFilters = function() {
 $(function() {
 	var filters = pathoschild.PageFilters();
 	$('.filter').click(function(event) {
-		$(this).toggleClass('selected');
-		filters.apply();
+		filters.toggle($(this).attr('data-filter'));
 		event.preventDefault();
 	});
+	filters.readHash();
 });
