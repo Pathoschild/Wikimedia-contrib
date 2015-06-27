@@ -60,7 +60,7 @@ do {
 		/* get data */
 		$db->Connect($dbname);
 		$sql_user = str_replace(' ', '_', $user);
-		$pages = $db->Query('SELECT page_namespace, page_title, page_restrictions, page_counter, page_is_redirect, page_touched, page_len FROM page WHERE page_namespace IN (2,3) AND (page_title = ? OR page_title LIKE CONCAT(?, "/%"))', array($sql_user, $sql_user))->fetchAllAssoc();
+		$pages = $db->Query('SELECT page_namespace, page_title, page_is_redirect, page_touched, page_len FROM page WHERE page_namespace IN (2,3) AND (page_title = ? OR page_title LIKE CONCAT(?, "/%"))', array($sql_user, $sql_user))->fetchAllAssoc();
 		if(!$pages && !$show_all)
 			continue;
 
