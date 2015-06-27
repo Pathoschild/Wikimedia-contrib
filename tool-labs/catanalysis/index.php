@@ -111,7 +111,7 @@ do {
 		global $domain;
 		if(!$text)
 			$text = $target;
-		return '<a href="//' . $domain . '/wiki/' . $target . '" title="' . $target . '">' . $text . '</a>';
+		return '<a href="' . $domain . '/wiki/' . $target . '" title="' . $target . '">' . $text . '</a>';
 	}
 
 
