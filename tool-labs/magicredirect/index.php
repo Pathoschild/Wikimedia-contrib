@@ -26,8 +26,8 @@ $tokens = array(
 		'id' => 'The user\'s global identifier number.',
 		'name' => 'The unique name of the user.',
 		'registration' => 'The date on which the global account was registered.',
-		'locked' => 'Whether the global account has been <a href="http://meta.wikimedia.org/wiki/Steward_handbook#Managing_global_accounts" title="about account locking">locked</a>.',
-		'hidden' => 'Whether the global account has been <a href="http://meta.wikimedia.org/wiki/Steward_handbook#Managing_global_accounts" title="about account hiding">hidden</a>.'
+		'locked' => 'Whether the global account has been <a href="//meta.wikimedia.org/wiki/Steward_handbook#Managing_global_accounts" title="about account locking">locked</a>.',
+		'hidden' => 'Whether the global account has been <a href="//meta.wikimedia.org/wiki/Steward_handbook#Managing_global_accounts" title="about account hiding">hidden</a>.'
 	)
 );
 

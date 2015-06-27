@@ -108,10 +108,10 @@ do {
 
 	/* generate link */	
 	function genLink($target, $text = false) {
-		global $domain;
+		global $url;
 		if(!$text)
 			$text = $target;
-		return '<a href="' . $domain . '/wiki/' . $target . '" title="' . $target . '">' . $text . '</a>';
+		return '<a href="' . $url . '/wiki/' . $target . '" title="' . $target . '">' . $text . '</a>';
 	}
 
 
@@ -209,7 +209,7 @@ do {
 	***************/
 	$backend->profiler->start('fetch domain');
 	$db->Connect('metawiki');
-	$domain = $db->Query('SELECT REPLACE(url, "http://", "") AS domain FROM meta_p.wiki WHERE dbname=? LIMIT 1', $database)->fetchValue();
+	$url = $db->Query('SELECT url AS domain FROM meta_p.wiki WHERE dbname=? LIMIT 1', $database)->fetchValue();
 	$db->Dispose();
 	$backend->profiler->stop('fetch domain');
 	

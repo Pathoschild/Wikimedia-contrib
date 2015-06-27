@@ -31,7 +31,13 @@ class Wiki {
 	public $family = NULL;
 
 	/**
-	 * The domain portion of the URL, like 'en.wikisource.org'. This may be NULL for closed wikis.
+	 * The base URL, like 'https://en.wikisource.org'.
+	 * @var string
+	 */
+	public $url = NULL;
+
+	/**
+	 * The domain portion of the URL, like 'en.wikisource.org'.
 	 * @var string
 	 */
 	public $domain = NULL;
@@ -73,7 +79,7 @@ class Wiki {
 	/**
 	 * Construct a Wiki instance.
 	 */
-	public function __construct($name, $lang, $family, $domain, $size, $isClosed, $serverName) {
+	public function __construct($name, $lang, $family, $url, $size, $isClosed, $serverName) {
 		$this->dbName = $name;
 		$this->name = $name;
 		$this->lang = $lang;
@@ -86,7 +92,8 @@ class Wiki {
 			case 'wikidatawiki': $this->family = 'wikidata'; break;
 			default: $this->family = $family; break;
 		}
-		$this->domain = $domain;
+		$this->url = $url;
+		$this->domain = preg_replace('/^https?:\/\//', '', $url);
 		$this->size = $size;
 		$this->isClosed = $isClosed;
 		$this->serverName = $serverName;
@@ -122,10 +129,10 @@ class Wikimedia {
 			// build wiki list
 			$this->wikis = array();
 			$db->Connect('metawiki.labsdb', 'metawiki_p');
-			foreach($db->Query('SELECT dbname, lang, family, REPLACE(url, "http://", "") AS domain, size, is_closed, slice FROM meta_p.wiki WHERE url IS NOT NULL')->fetchAllAssoc() as $row) {
+			foreach($db->Query('SELECT dbname, lang, family, url, size, is_closed, slice FROM meta_p.wiki WHERE url IS NOT NULL')->fetchAllAssoc() as $row) {
 				if($row['dbname'] == 'votewiki')
 					continue; // DB schema is broken
-				$this->wikis[$row['dbname']] = new Wiki($row['dbname'], $row['lang'], $row['family'], $row['domain'], $row['size'], $row['is_closed'], $row['slice']);
+				$this->wikis[$row['dbname']] = new Wiki($row['dbname'], $row['lang'], $row['family'], $row['url'], $row['size'], $row['is_closed'], $row['slice']);
 			}
 
 			// cache result
@@ -134,7 +141,7 @@ class Wikimedia {
 			$db->ConnectPrevious();
 		}
 	}
-	
+
 	/**
 	 * Get the list of wikis.
 	 */
