@@ -577,8 +577,8 @@ else if( $script->isValid() && $script->target ) {
 	$backend->profiler->stop('fetch local accounts');
 
 	/* best guess for pre-2005 oldest account */
-	if( $account->exists ) {
-		if( !$stats['oldest'] || !$local[$account->homeWiki]->registeredRaw ) {
+	if( $account->exists && !$stats['oldest'] ) {
+		if( array_key_exists($account->homeWiki, $local) && !$local[$account->homeWiki]->registeredRaw ) {
 			$homeWiki = $local[$account->homeWiki];
 			$stats['oldest'] = $homeWiki->registered;
 			$stats['oldest_raw'] = $homeWiki->registeredRaw;
@@ -664,8 +664,11 @@ else if( $script->isValid() && $script->target ) {
 					<td style="vertical-align:top;">Statistics:</td>
 					<td>
 						', $stats['edit_count'], ' edits on ', $stats['wikis'], ' wikis.<br />
-						Most edits on <a href="//', $stats['most_edits_domain'], '/wiki/Special:Contributions/', $script->target_wiki_url, '">', $stats['most_edits_domain'], '</a> (', $stats['most_edits'], ').<br />
-						Oldest account on <a href="//', $stats['oldest_domain'], '/wiki/user:', $script->target_wiki_url, '">', $stats['oldest_domain'], '</a> (', ( $stats['oldest'] ? $stats['oldest'] : '2005 or earlier, so probably inaccurate; registration date was not stored until late 2005' ), ').
+						Most edits on <a href="//', $stats['most_edits_domain'], '/wiki/Special:Contributions/', $script->target_wiki_url, '">', $stats['most_edits_domain'], '</a> (', $stats['most_edits'], ').<br />';
+		if( $stats['oldest'] ) {
+			echo '			Oldest account on <a href="//', $stats['oldest_domain'], '/wiki/user:', $script->target_wiki_url, '">', $stats['oldest_domain'], '</a> (', ( $stats['oldest'] ? $stats['oldest'] : '2005 or earlier, so probably inaccurate; registration date was not stored until late 2005' ), ').';
+		}
+		echo '
 						<div id="account-visualizations"><br clear="all" /></div>
 					</td>
 				</tr>
