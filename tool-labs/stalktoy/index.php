@@ -618,23 +618,21 @@ else if( $script->isValid() && $script->target ) {
 		}
 
 		echo "
-			<table class='plain'>
-				<tr>
-					<td>SUL:</td>";
+			<table class='plain'>";
 		if($stats['detached_wikis'] > 0) {
-			echo "<td class='error'><strong>Warning:</strong> This global account has " . $stats['detached_wikis'] . " detached account" . ($stats['detached_wikis'] > 1 ? 's' : '') . " that will be renamed as part of the 2015 SUL finalisation. If you own this name, you should <a href='https://meta.wikimedia.org/wiki/Help:Unified_login'>claim ownership of detached accounts</a> before this happens.</div></td>";
-		}
-		else {
-			echo "<td class='success'><strong>Awesome!</strong> This account is fully unified and will not be renamed as part of the <a href='https://meta.wikimedia.org/wiki/Help:Unified_login'>2015 SUL finalisation</a>.</td>";
+			echo "
+				<tr>
+					<td>SUL:</td>
+					<td class='error'><strong>Warning:</strong> This global account has ", $stats['detached_wikis'], " detached account", ($stats['detached_wikis'] > 1 ? 's' : ''), ". If you own this name, you should <a href='https://meta.wikimedia.org/wiki/Help:Unified_login'>claim ownership of detached accounts</a>.</div></td>
+				</tr>";
 		}
 		echo "
-				</tr>
 				<tr>
 					<td>Home:</td>";
 		if( $account->homeWiki )
 			echo "<td><a href='//{$script->wikis[$account->homeWiki]->domain}/wiki/user:{$script->target_wiki_url}' title='home wiki'>{$script->wikis[$account->homeWiki]->domain}</a></td>";
 		else
-			echo "<td><b>unknown</b> <small>(The main account may be <a href='//meta.wikimedia.org/wiki/Oversight' title='about hiding user names'>hidden</a> or renamed, or the data <a href='//wiki.toolserver.org/view/Replication_lag' title='about replication lag'>might not be replicated yet</a>.)</small></td>";
+			echo "<td><b>unknown</b> <small>(it might be <a href='//meta.wikimedia.org/wiki/Oversight' title='about hiding user names'>hidden</a> or renamed, or the data might not be replicated yet)</small></td>";
 		echo "
 				</tr>
 				<tr>
