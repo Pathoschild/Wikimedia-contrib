@@ -1,4 +1,4 @@
-﻿/*
+/*
 
 
 TemplateScript adds a menu of configurable templates and scripts to the sidebar.
@@ -6,7 +6,7 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 
 
 */
-/// <reference path="pathoschild.util.js" />
+/* global $, mw */
 var pathoschild = pathoschild || {};
 (function() {
 	'use strict';
@@ -30,7 +30,7 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '1.5',
+		_version: '1.6',
 		_dependencies: [],
 
 		/*********
@@ -111,20 +111,85 @@ var pathoschild = pathoschild || {};
 		 * @property {pathoschild.TemplateScript} singleton The TemplateScript instance for the page.
 		 * @property {jQuery} $target The primary input element (e.g., the edit textarea) for the current form.
 		 * @property {jQuery} $editSummary The edit summary input element (if relevant to the current form).
+		 * @property {object} helper Provides shortcut methods for common operations.
 		 */
 		Context: {
 			namespace: mw.config.get('wgNamespaceNumber'),
+			pageName: mw.config.get('wgPageName'),
 			action: (mw.config.get('wgAction') === 'submit'
-			? 'edit'
-			: (mw.config.get('wgCanonicalSpecialPageName') === 'Blockip'
-				? 'block'
-				: mw.config.get('wgAction')
-			)
-		),
+				? 'edit'
+				: (mw.config.get('wgCanonicalSpecialPageName') === 'Blockip' ? 'block' : mw.config.get('wgAction'))
+			),
 			isSectionNew: $('#wpTextbox1, #wpSummary').first().attr('id') === 'wpSummary', // if #wpSummary is first, it's not the edit summary (MediaWiki reused ID)
 			singleton: null,
 			$target: null,
-			$editSummary: null
+			$editSummary: null,
+			helper: {
+				/**
+				 * Provides a shortcut for performing a search & replace in the target element.
+				 * @param {string|regexp} search The search string or regular expression.
+				 * @param {string} replace The replace pattern.
+				 * @returns The helper instance for chaining.
+				 */
+				replace: function(search, replace) {
+					var $text = pathoschild.TemplateScript.Context.$target;
+					$text.val($text.val().replace(search, replace));
+					return this;
+				},
+
+				/**
+				 * Append text to the edit summary (with a ', ' separator) if editing a page.
+				 * @param {string} summary The edit summary.
+				 * @returns The helper instance for chaining.
+				 */
+				appendEditSummary: function(summary) {
+					// get edit summary box
+					var $summary = pathoschild.TemplateScript.Context.$editSummary;
+					if(!$summary || $summary.val().indexOf(summary) != -1)
+						return this;
+
+					// append summary
+					var text = $summary.val().replace(/\s*$/, '');
+					if(text.match(/\*\/$/))
+						$summary.val(text + ' ' + summary); // "/* section */ reason"
+					else if(text.match(/[^\s]/))
+						$summary.val(text + ', ' + summary); // old summary, new summary
+					else
+						$summary.val(text); // new summary
+
+					return this;
+				},
+
+				/**
+				 * Overwrite the edit summary if editing a page.
+				 * @param {string} summary The edit summary.
+				 * @returns The helper instance for chaining.
+				 */
+				setEditSummary: function(summary) {
+					// get edit summary box
+					var $summary = pathoschild.TemplateScript.Context.$editSummary;
+					if(!$summary)
+						return this;
+
+					// overwrite summary
+					$summary.val(summary);
+					return this;
+				},
+
+				/**
+				 * Click the 'show changes' button if editing a page.
+				 */
+				clickDiff: function() {
+					$('#wpDiff').click();
+				},
+
+				/**
+				 * Click the 'show preview' button if editing a page.
+				 */
+				clickPreview: function() {
+					$('#wpPreview').click();
+				}
+			}
 		},
 
 		/*********
@@ -280,7 +345,7 @@ var pathoschild = pathoschild || {};
 			
 			/* normalize script URL */
 			if(opts.scriptUrl && !opts.scriptUrl.match(/^(?:http:|https:)?\/\//))
-				opts.scriptUrl = wgServer + wgScriptPath + '/index.php?title=' + encodeURIComponent(opts.scriptUrl) + '&action=raw&ctype=text/javascript';
+				opts.scriptUrl = mw.config.get('wgServer') + mw.config.get('wgScriptPath') + '/index.php?title=' + encodeURIComponent(opts.scriptUrl) + '&action=raw&ctype=text/javascript';
 
 
 			/* validate */
