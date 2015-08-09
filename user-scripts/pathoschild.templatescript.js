@@ -30,7 +30,7 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '1.6',
+		_version: '1.6.1',
 		_dependencies: [],
 
 		/*********
@@ -126,7 +126,7 @@ var pathoschild = pathoschild || {};
 			$editSummary: null,
 			helper: {
 				/**
-				 * Provides a shortcut for performing a search & replace in the target element.
+				 * Perform a search & replace in the target element.
 				 * @param {string|regexp} search The search string or regular expression.
 				 * @param {string} replace The replace pattern.
 				 * @returns The helper instance for chaining.
@@ -134,6 +134,25 @@ var pathoschild = pathoschild || {};
 				replace: function(search, replace) {
 					var $text = pathoschild.TemplateScript.Context.$target;
 					$text.val($text.val().replace(search, replace));
+					return this;
+				},
+
+				/**
+				 * Insert a literal text into the target field.
+				 * @param {string} text The template text to insert, with template format values preparsed.
+				 * @param {string} position The insertion position, matching a {pathoschild.TemplateScript.Position} value.
+				 */
+				insertLiteral: function(text, position) {
+					pathoschild.TemplateScript.insertLiteral(pathoschild.TemplateScript.Context.$target, text, position);
+					return this;
+				},
+
+				/**
+				 * Replace the selected text in the target field.
+				 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
+				 */
+				replaceSelection: function(text) {
+					pathoschild.TemplateScript.replaceSelection(pathoschild.TemplateScript.Context.$target, text);
 					return this;
 				},
 
