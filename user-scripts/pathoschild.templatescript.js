@@ -30,7 +30,7 @@ var pathoschild = pathoschild || {};
 	 * @property {array} _dependencies An internal lookup used to manage asynchronous dependencies.
 	 */
 	pathoschild.TemplateScript = {
-		_version: '1.6.1',
+		_version: '1.6.2',
 		_dependencies: [],
 
 		/*********
@@ -174,7 +174,7 @@ var pathoschild = pathoschild || {};
 					else if(text.match(/[^\s]/))
 						$summary.val(text + ', ' + summary); // old summary, new summary
 					else
-						$summary.val(text); // new summary
+						$summary.val(summary); // new summary
 
 					return this;
 				},
