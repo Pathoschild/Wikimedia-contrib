@@ -30,7 +30,8 @@ var pathoschild = pathoschild || {};
 		*********/
 		self.version = '1.7';
 		self.strings = {
-			defaultHeaderText: 'TemplateScript' // the sidebar header text label for the default group
+			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
+			regexEditor: 'Regex editor' // the default 'regex editor' script
 		};
 		var state = {
 			dependencies: [], // internal lookup used to manage asynchronous script dependencies
@@ -588,6 +589,12 @@ var pathoschild = pathoschild || {};
 
 		return self;
 	})();
+
+	// apply localisation
+	if(pathoschild.i18n && pathoschild.i18n.templatescript) {
+		var langCode = pathoschild.i18n.locale || mw.config.get('wgUserLanguage');
+		$.extend(pathoschild.TemplateScript.strings, pathoschild.i18n.templatescript);
+	}
 
 	// initialize menu
 	$(pathoschild.TemplateScript._initialize);
