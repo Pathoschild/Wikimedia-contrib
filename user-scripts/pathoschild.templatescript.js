@@ -589,13 +589,8 @@ var pathoschild = pathoschild || {};
 		InsertLiteral: function($target, text, position) { return this.insertLiteral($target, text, position); }
 	};
 
-	// initialize menu (and wait for Vector if needed)
-	var init = function() { pathoschild.TemplateScript._initialize(); };
-	var vectorModules = mw.config.get('wgVectorEnabledModules');
-	if (vectorModules && vectorModules.collapsiblenav)
-		mw.loader.using(['ext.vector.collapsibleNav'], function() { $(init); });
-	else
-		$(init);
+	// initialize menu
+	$(function() { pathoschild.TemplateScript._initialize(); });
 
 	pathoschild.TemplateScript.add({
 		name: 'Regex editor',
@@ -606,4 +601,4 @@ var pathoschild = pathoschild || {};
 		},
 		forActions: 'edit'
 	});
-}());
+}())
