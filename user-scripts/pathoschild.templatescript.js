@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.7';
+		self.version = '1.7.1';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -591,18 +591,17 @@ var pathoschild = pathoschild || {};
 	})();
 
 	// apply localisation
-	if(pathoschild.i18n && pathoschild.i18n.templatescript) {
-		var langCode = pathoschild.i18n.locale || mw.config.get('wgUserLanguage');
+	if(pathoschild.i18n && pathoschild.i18n.templatescript)
 		$.extend(pathoschild.TemplateScript.strings, pathoschild.i18n.templatescript);
-	}
 
 	// initialize menu
 	$(pathoschild.TemplateScript._initialize);
 	pathoschild.TemplateScript.add({
-		name: 'Regex editor',
+		name: pathoschild.TemplateScript.strings.regexEditor,
 		script: function(context) {
 			pathoschild.TemplateScript._loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js', pathoschild.RegexEditor, function() {
-				pathoschild.RegexEditor.Create(context.$target);
+				var regexEditor = new pathoschild.RegexEditor();
+				regexEditor.create(context.$target);
 			});
 		},
 		forActions: 'edit'

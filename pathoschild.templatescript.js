@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.7';
+		self.version = '1.7.1';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -601,7 +601,7 @@ var pathoschild = pathoschild || {};
 		script: function(context) {
 			pathoschild.TemplateScript._loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js', pathoschild.RegexEditor, function() {
 				var regexEditor = new pathoschild.RegexEditor();
-				regexEditor.Create(context.$target);
+				regexEditor.create(context.$target);
 			});
 		},
 		forActions: 'edit'
