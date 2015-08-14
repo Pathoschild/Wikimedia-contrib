@@ -5,9 +5,9 @@ $backend = Backend::create('Regex toy', '')
 	->link( '/scripts/pathoschild.regexeditor.js' )
 	->addScript('
 		$(function() {
-			pathoschild.RegexEditor.config.alwaysVisible = true;
-			pathoschild.RegexEditor.Create($("#editor"));
-			pathoschild.RegexEditor.CreateInstructions($("#blurb"));
+			var regexEditor = new pathoschild.RegexEditor({ editor: "#editor", instructions: "#blurb", alwaysVisible: true });
+			regexEditor.create($("#editor"));
+			regexEditor.createInstructions($("#blurb"));
 		});
 	')
 	->header();
