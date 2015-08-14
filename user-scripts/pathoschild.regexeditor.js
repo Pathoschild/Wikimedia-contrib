@@ -29,7 +29,26 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '0.10';
+		self.version = '0.11';
+		self.strings = {
+			header: 'Regex editor', // the header text shown in the form
+			search: 'Search',       // the search input label
+			replace: 'Replace',     // the replace input label
+			nameSession: 'Enter a name for this session', // the prompt shown when saving the session
+			loadSession: 'Load session "{name}"',         // tooltip shown for a saved session, where {name} is replaced with the session name
+			deleteSession: 'Delete session "{name}"',     // tooltip shown for the delete icon on a saved session, where {name} is replaced with the session name
+			launchConflict: 'You are launching the regex editor tool, but it\'s already open. Do you want to {resetForm|text=reset the form} or {cancelForm|text=cancel the form}?', // the message shown when relaunching the form, where {resetForm} and {cancelForm} will be replaced with appropriate form elements.
+			closeEditor: 'Close the regex editor',        // tooltip shown for the close-editor icon
+			addPatterns: 'add patterns',                  // button text
+			addPatternsTooltip: 'Add search & replace boxes', // button tooltip
+			apply: 'apply',                               // button text
+			applyTooltip: 'Perform the above patterns',   // button tooltip
+			undo: 'undo the last apply',                  // button text
+			undoTooltip: 'Undo the last apply',           // button tooltip
+			save: 'save',                                 // button text
+			saveTooltip: 'Save this session for later use', // button tooltip
+			instructions: 'Enter any number of regular expressions to execute. The search pattern can be like "{code|text=search pattern}" or "{code|text=/pattern/modifiers}", and the replace pattern can contain reference groups like "{code|text=$1}" (see {helplink|text=tutorial|title=JavaScript regex tutorial|url=http://www.regular-expressions.info/javascript.html}).'
+		};
 		var state = {
 			containerID: 'tsre', // unique ID of the regex editor container
 			undoText: null,      // the original text before the last patterns were applied
@@ -45,7 +64,7 @@ var pathoschild = pathoschild || {};
 		 * Construct a DOM element.
 		 * @param {string} tag The name of the DOM element to construct.
 		 */
-		var _make = function (tag) {
+		var _make = function(tag) {
 			return $(document.createElement(tag));
 		};
 
@@ -73,7 +92,7 @@ var pathoschild = pathoschild || {};
 					.append(
 						_make('label')
 						.attr('for', 'tsre-search-' + id)
-						.text('Search:')
+						.text(self.strings.search + ':')
 					)
 					.append(
 						_make('textarea')
@@ -83,7 +102,7 @@ var pathoschild = pathoschild || {};
 					.append(
 						_make('label')
 						.attr('for', 'tsre-replace-' + id)
-						.text('Replace:')
+						.text(self.strings.replace + ':')
 					)
 					.append(
 						_make('textarea')
@@ -127,7 +146,7 @@ var pathoschild = pathoschild || {};
 		 */
 		var _saveSession = function() {
 			// get session name
-			var sessionName = prompt('Enter a name for this session:', '');
+			var sessionName = prompt(self.strings.nameSession + ':', '');
 			if (!sessionName)
 				return;
 
@@ -147,14 +166,14 @@ var pathoschild = pathoschild || {};
 		 * Load a previously saved set of patterns.
 		 * @param {string} sessionName The unique name of the session to load.
 		 */
-		var _loadSession = function (sessionName) {
+		var _loadSession = function(sessionName) {
 			var patterns = pathoschild.util.storage.Read('tsre-sessions.' + sessionName);
 			self.reset();
 			for (var i = 1, len = patterns.length; i < len; i++) {
 				_addInputs();
 			}
 
-			$('.tsre-pattern').each(function (i, item) {
+			$('.tsre-pattern').each(function(i, item) {
 				var $item = $(item);
 				$item.find('textarea:eq(0)').val(patterns[i].input);
 				$item.find('textarea:eq(1)').val(patterns[i].replace);
@@ -165,7 +184,7 @@ var pathoschild = pathoschild || {};
 		 * Delete a previously saved set of patterns.
 		 * @param {string} sessionName The unique name of the session to delete.
 		 */
-		var _deleteSession = function (sessionName) {
+		var _deleteSession = function(sessionName) {
 			var sessions = pathoschild.util.storage.Read('tsre-sessions') || [];
 			var index = $.inArray(sessionName, sessions);
 			if (index === -1)
@@ -194,14 +213,14 @@ var pathoschild = pathoschild || {};
 						.append(
 							_make('a')
 							.text(sessions[i])
-							.attr({ 'title': 'Load session "' + sessions[i] + '"', 'href': '#', 'data-key': sessions[i] })
+							.attr({ 'title': self.strings.loadSession.replace(/\{name\}/g, sessions[i]), 'href': '#', 'data-key': sessions[i] })
 							.click(function() { _loadSession($(this).attr('data-key')); return false; })
 						)
 						.append(' ')
 						.append(
 							_make('a')
 							.text('x')
-							.attr({ 'title': 'Delete session "' + sessions[i] + '"', 'href': '#', 'class': 'tsre-delete-session', 'data-key': sessions[i] })
+							.attr({ 'title': self.strings.deleteSession.replace(/\{name\}/g, sessions[i]), 'href': '#', 'class': 'tsre-delete-session', 'data-key': sessions[i] })
 							.click(function() { _deleteSession($(this).attr('data-key')); return false; })
 						)
 					);
@@ -217,6 +236,10 @@ var pathoschild = pathoschild || {};
 		 * @param {jQuery} $target The text input element to which to apply regular expressions.
 		 */
 		self.create = function($target) {
+			// apply localisation
+			if(pathoschild.i18n && pathoschild.i18n.regexeditor)
+				$.extend(self.strings, pathoschild.i18n.regexeditor);
+
 			_loadDependencies(function() {
 				// initialize state
 				state.$target = $target;
@@ -237,25 +260,41 @@ var pathoschild = pathoschild || {};
 				// display reset warning if already open (unless it's already displayed)
 				if ($container.length) {
 					if (!$warning.length) {
+						// create warning
 						$warning = 
 							_make('div')
 							.attr('class', 'tsre-warning')
-							.text('You are launching the regex editor tool, but it\'s already open. Do you want to ')
-							.append(
+							.text(self.strings.launchConflict);
+
+						// inject form elements
+						$warning.html($warning.html().replace(/(\{(reset|cancel)Form.+?\})/g, '<placeholder class="$2">$1</placeholder>'));
+						$warning.find('placeholder.reset').each(function(i, placeholder) {
+							placeholder = $(placeholder);
+							var format = placeholder.text().match(/\{resetForm\|text=(.+)\}/);
+							var text = format && format[1];
+
+							placeholder.replaceWith(
 								_make('a')
-								.text('reset the form')
-								.attr({ 'title': 'reset the form', 'class': 'tsre-reset', 'href': '#' })
+								.text(text || '')
+								.attr({ 'title': text, 'class': 'tsre-reset', 'href': '#' })
 								.click(function() { self.reset(); return false; })
-							)
-							.append(' or ')
-							.append(
+							);
+						});
+						$warning.find('placeholder.cancel').each(function(i, placeholder) {
+							placeholder = $(placeholder);
+							var format = placeholder.text().match(/\{cancelForm\|text=(.+)\}/);
+							var text = format && format[1];
+
+							placeholder.replaceWith(
 								_make('a')
-								.text('cancel the new launch')
-								.attr({ 'title': 'cancel the new launch', 'class': 'tsre-cancel', 'href': '#' })
+								.text(text || '')
+								.attr({ 'title': text, 'class': 'tsre-reset', 'href': '#' })
 								.click(function() { $warning.remove(); return false; })
-							)
-							.append('?')
-							.prependTo($container);
+							);
+						});
+
+						// add to DOM
+						$warning.prependTo($container);
 					}
 				}
 
@@ -268,7 +307,7 @@ var pathoschild = pathoschild || {};
 						.attr('id', state.containerID)
 						.append(
 							_make('h3')
-							.text('Regex editor')
+							.text(self.strings.header)
 						)
 
 						// instructions
@@ -284,7 +323,7 @@ var pathoschild = pathoschild || {};
 								.attr('class', 'tsre-close')
 								.append(
 									_make('a')
-									.attr({ 'title': 'Close the regex editor', href: '#' })
+									.attr({ 'title': self.strings.closeEditor, href: '#' })
 									.click(function() {
 										if(self.config.alwaysVisible)
 											self.reset();
@@ -308,8 +347,8 @@ var pathoschild = pathoschild || {};
 										_make('img')
 										.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Noun_project_-_plus_round.svg/16px-Noun_project_-_plus_round.svg.png')
 									)
-									.append(' add patterns')
-									.attr({ 'title': 'Add search & replace boxes', 'class': 'tsre-add', 'href': '#' })
+									.append(' ' + self.strings.addPatterns)
+									.attr({ 'title': self.strings.addPatternsTooltip, 'class': 'tsre-add', 'href': '#' })
 									.click(function() { _addInputs(); return false; })
 								)
 								.append(' | ')
@@ -319,8 +358,8 @@ var pathoschild = pathoschild || {};
 										_make('img')
 										.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/5/57/Noun_project_-_crayon.svg/16px-Noun_project_-_crayon.svg.png')
 									)
-									.append(' apply')
-									.attr({ 'title': 'Perform the above patterns', 'class': 'tsre-execute', 'href': '#' })
+									.append(' ' + self.strings.apply)
+									.attr({ 'title': self.strings.applyTooltip, 'class': 'tsre-execute', 'href': '#' })
 									.click(function() { self.execute(); return false; })
 								)
 								.append(
@@ -333,8 +372,8 @@ var pathoschild = pathoschild || {};
 											_make('img')
 											.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/1/13/Noun_project_-_Undo.svg/16px-Noun_project_-_Undo.svg.png')
 										)
-										.append(' undo the last apply')
-										.attr({ 'title': 'Undo the last apply', 'href': '#' })
+										.append(' ' + self.strings.undo)
+										.attr({ 'title': self.strings.undoTooltip, 'href': '#' })
 										.click(function() { self.undo(); return false; })
 									)
 									.hide()
@@ -350,8 +389,8 @@ var pathoschild = pathoschild || {};
 											_make('img')
 											.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Noun_project_-_USB.svg/16px-Noun_project_-_USB.svg.png')
 										)
-										.append(' save')
-										.attr({ 'title': 'Save this session for later use', 'class': 'tsre-save', 'href': '#' })
+										.append(' ' + self.strings.save)
+										.attr({ 'title': self.strings.saveTooltip, 'class': 'tsre-save', 'href': '#' })
 										.click(function() { _saveSession(); return false; })
 									)
 									.append(' ')
@@ -381,22 +420,23 @@ var pathoschild = pathoschild || {};
 		 * @param {jQuery} $container The element to populate.
 		 */
 		self.createInstructions = function($container) {
+			// create instructions
 			$container
 				.attr('class', 'tsre-instructions')
 				.empty()
-				.append('Enter any number of regular expressions to execute. The search pattern can be like "')
-				.append(_make('code').text('search pattern'))
-				.append('" or "')
-				.append(_make('code').text('/pattern/modifiers'))
-				.append('", and the replace pattern can contain reference groups like "')
-				.append(_make('code').text('$1'))
-				.append('" (see a ')
-				.append(
-					_make('a')
-					.text('tutorial')
-					.attr({ 'title': 'JavaScript regex tutorial', 'class': 'external text', 'href': 'http://www.regular-expressions.info/javascript.html', 'target': '_blank' })
-				)
-				.append(').');
+				.text(self.strings.instructions);
+
+			// inject form elements
+			$container.html($container.html()
+				.replace(/\{code\|text=(.+?)\}/g, '<code>$1</code>')
+				.replace(/\{helplink\|text=(.+?)\|title=(.+)?\|url=(.+)?\}/g, function(match, text, title, url) {
+					var link = _make('a')
+						.text(text || '')
+						.attr({ title: title, 'class': 'external text', href: url, target: '_blank' });
+					return _make('div').append(link).html();
+				})
+			);
+			
 			return $container;
 		};
 
