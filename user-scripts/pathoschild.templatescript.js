@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.7.1';
+		self.version = '1.8';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -145,6 +145,68 @@ var pathoschild = pathoschild || {};
 					var $text = self.Context.$target;
 					$text.val($text.val().replace(search, replace));
 					return this;
+				},
+
+				/**
+				 * Set the value of the target element.
+				 * @param {string} text The text to set.
+				 */
+				set: function(text) {
+					self.Context.$target.val(text);
+					return this;
+				},
+
+				/**
+				 * Append text to the target element. This is equivalent to insertLiteral(text, 'after').
+				 * @param {string} text The text to append.
+				 */
+				append: function(text) {
+					return self.Context.insertLiteral(text, 'after');
+				},
+
+				/**
+				 * Escape the matching substrings in the target element to avoid conflicts. This returns a state used to unescape.
+				 * @param {string|regexp} search The search string or regular expression.
+				 */
+				escape: function(search) {
+					var $text = self.Context.$target;
+					var text = $text.val();
+
+
+					// generate token format
+					var uniqueStamp = (new Date()).getTime();
+					var format = '~' + uniqueStamp + '.$1~';
+					var formatPattern = new RegExp('~' + uniqueStamp + '\\.(\\d+)~', 'g');
+
+					// escape
+					var state = {
+						search: search,
+						token: formatPattern,
+						values: []
+					};
+					var i = 0;
+					text = text.replace(search, function(match) {
+						state.values.push(match);
+						return format.replace('$1', i++);
+					});
+
+					$text.val(text);
+					return state;
+				},
+
+				/**
+				 * Restore substrings in the target element escaped by the escape(search) method.
+				 * @param {object} state The escape state returned by the escape(search) method.
+				 */
+				unescape: function(state) {
+					var $text = self.Context.$target;
+					var text = $text.val();
+
+					text = text.replace(state.token, function(match, id) {
+						return state.values[id];
+					});
+
+					$text.val(text);
 				},
 
 				/**
