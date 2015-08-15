@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.8';
+		self.version = '1.9';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -37,9 +37,10 @@ var pathoschild = pathoschild || {};
 			dependencies: [], // internal lookup used to manage asynchronous script dependencies
 			isReady: false,   // whether TemplateScript has been initialized and hooked into the DOM
 			templates: [],    // the registered template objects
-			menus: {},        // hash of menu references indexed by name
-			menuCount: 0,     // number of registered sidebars (excluding the default sidebar)
-			queue: []         // the template objects to add to the DOM when it's ready
+			queue: [],        // the template objects to add to the DOM when it's ready
+			sidebarCount: 0,  // number of rendered sidebars (excluding the default sidebar)
+			sidebars: {},     // hash of rendered sidebars by name
+			renderers: {}     // the modules which render template/script links
 		};
 
 
@@ -55,6 +56,7 @@ var pathoschild = pathoschild || {};
 		 * @property {int[]} forNamespaces The namespaces in which the template is enabled, or null to enable in all namespaces.
 		 * @property {string} accessKey A keyboard shortcut key which invokes the template or script directly; see [[w:Wikipedia:Keyboard shortcuts]].
 		 * @property {string} tooltip A short explanation of the template or script, typically shown when the user hovers their cursor over the link.
+		 * @property {string} renderer The unique key of the render plugin used to add the tool link that activates the template. The default value is 'sidebar'.
 		 *
 		 * @property {string} template The template text to insert.
 		 * @property {string} position The position at which to insert the template, matching a {Position} value. The default value is 'cursor' when editing a page, and 'replace' in all other cases.
@@ -80,6 +82,7 @@ var pathoschild = pathoschild || {};
 			forNamespaces: null,
 			accessKey: null,
 			tooltip: null,
+			renderer: 'sidebar',
 
 			/* template options */
 			template: null,
@@ -285,37 +288,29 @@ var pathoschild = pathoschild || {};
 
 
 		/*********
-		** Private methods
+		** Default modules
 		*********/
+		/***
+		** Renderers create the UI which the user clicks to activate a template.
+		** These are simply functions that accept a template object, add the UI to the page, and return a jQuery reference to the created entry.
+		***/
 		/**
-		 * Get the unique ID for a TemplateScript sidebar portlet, creating it if necessary.
-		 * @param {string} [name=null] The display name of the header to retrieve, or null to get the default sidebar.
-		 * @returns {string} Returns the unique ID of the sidebar.
-		 * @private
-		 */
-		var _getSidebar = function(name) {
-			// set default text
-			if (name === null || typeof(name) === typeof(undefined))
-				name = self.strings.defaultHeaderText;
-
-			// create menu if missing
-			if (!(name in state.menus)) {
-				var id = state.menus[name] = 'p-templatescript-' + state.menuCount;
-				pathoschild.util.mediawiki.AddPortlet(id, name);
-				++state.menuCount;
-			}
-
-			/* return menu ID */
-			return state.menus[name];
-		};
-
-		/**
-		 * Create a link in the sidebar that triggers the template.
+		 * Add a sidebar entry for a template.
 		 * @param {Template} template The template for which to create an entry.
+		 * @returns the generated item.
 		 */
-		var _createSidebarEntry = function(template) {
-			var id = _getSidebar(template.category);
-			var $item = pathoschild.util.mediawiki.AddPortletLink(id, template.name, 'ts-link-' + template.id, template.tooltip, template.accessKey, function() { self.apply(template.id); });
+		var _renderSidebar = function(template) {
+			// build the sidebar
+			var category = template.category;
+			if (!(category in state.sidebars)) {
+				var id = state.sidebars[category] = 'p-templatescript-' + state.sidebarCount;
+				pathoschild.util.mediawiki.AddPortlet(id, category);
+				++state.sidebarCount;
+			}
+			var sidebarID = state.sidebars[category];
+
+			// add link
+			var $item = pathoschild.util.mediawiki.AddPortletLink(sidebarID, template.name, 'ts-link-' + template.id, template.tooltip, template.accessKey, function() { self.apply(template.id); });
 			if(template.accessKey) {
 				$item.append(
 					$('<small>')
@@ -325,6 +320,27 @@ var pathoschild = pathoschild || {};
 				);
 			}
 			return $item;
+		};
+
+
+		/*********
+		** Private methods
+		*********/
+		/**
+		 * Create a tool link that triggers the template.
+		 * @param {Template} template The template for which to create an entry.
+		 */
+		var _renderEntry = function(template) {
+			// get renderer
+			var rendererKey = template.renderer;
+			if(!(rendererKey in state.renderers)) {
+				pathoschild.util.Log('pathoschild.TemplateScript::couldn\'t add tool (name:"' + (opts.name || 'unnamed') + '"): there\'s no "' + rendererKey + '" renderer');
+				return $();
+			}
+			var renderer = state.renderers[rendererKey];
+
+			// render entry
+			return renderer(template);
 		};
 
 		/*
@@ -353,10 +369,13 @@ var pathoschild = pathoschild || {};
 			if (self.Context.singleton)
 				return;
 
-			// initialize
+			// initialize context
 			self.Context.singleton = self;
 			self.Context.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
 			self.Context.$editSummary = $('#wpSummary:first');
+
+			// initialise plugins
+			self.addRenderer('sidebar', _renderSidebar);
 
 			// load utilities & hook into page
 			self._loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', pathoschild.util, function() {
@@ -446,16 +465,15 @@ var pathoschild = pathoschild || {};
 				return;
 
 			/* set defaults */
-			if (!opts.position)
-				opts.position = (self.Context.action === 'edit' ? 'cursor' : 'replace');
-			if (!opts.editSummaryPosition)
-				opts.editSummaryPosition = 'replace';
-			if (!opts.headlinePosition)
-				opts.headlinePosition = 'replace';
+			opts.category = opts.category || self.strings.defaultHeaderText;
+			opts.position = opts.position || (self.Context.action === 'edit' ? 'cursor' : 'replace');
+			opts.editSummaryPosition = opts.editSummaryPosition || 'replace';
+			opts.headlinePosition = opts.headlinePosition || 'replace';
+			opts.renderer = opts.renderer || 'sidebar';
 
 			/* add template */
 			opts.id = state.templates.push(opts) - 1;
-			var $entry = _createSidebarEntry(opts);
+			var $entry = _renderEntry(opts);
 
 			/* load dependency */
 			if(opts.scriptUrl) {
@@ -464,6 +482,20 @@ var pathoschild = pathoschild || {};
 					state.dependencies[opts.scriptUrl] = $.ajax(opts.scriptUrl, { cache: true, dataType: 'script' });
 				state.dependencies[opts.scriptUrl].done(function() { $entry.show(); });
 			}
+		};
+
+		/**
+		 * Add a plugin responsible for creating the link UI that activates a template. You can add multiple renderers, and choose how each template is rendered by adding "renderer: rendererKey" to its options.
+		 * @param {string} key The unique key for the renderer.
+		 * @param {function} renderer The function will accepts a template object, and returns a jQuery reference to the created entry.
+		 * @returns the generated item.
+		 */
+		self.addRenderer = function(key, renderer) {
+			if(key in state.renderers) {
+				pathoschild.util.Log('pathoschild.TemplateScript::addRenderer() failed, there\'s already a renderer named "' + key + '". You can\'t overwrite renderers.');
+				return;
+			}
+			state.renderers[key] = renderer;
 		};
 
 		/**
@@ -534,18 +566,6 @@ var pathoschild = pathoschild || {};
 			}
 
 			return true;
-		};
-
-		/**
-		 * Set the header text for the default sidebar text.
-		 * @param {string} text The text to use as the sidebar text.
-		 */
-		self.setDefaultGroupHeader = function(text) {
-			var id = _getSidebar();
-
-			self.strings.defaultHeaderText = text;
-			state.menus[text] = id;
-			$('#' + id + ' h5').text(text);
 		};
 
 
@@ -646,7 +666,6 @@ var pathoschild = pathoschild || {};
 		self.AddWith = function(fields, templates) { return self.add(templates, fields); };
 		self.Apply = function(id) { return self.apply(id); };
 		self.IsEnabled = function(template) { return self.isEnabled(template); };
-		self.SetDefaultGroupHeader = function(text) { return self.setDefaultGroupHeader(text); };
 		self.InsertLiteral = function($target, text, position) { return self.insertLiteral($target, text, position); };
 
 		return self;
