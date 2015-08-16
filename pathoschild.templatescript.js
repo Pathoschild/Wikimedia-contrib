@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.9';
+		self.version = '1.9.1';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -164,7 +164,7 @@ var pathoschild = pathoschild || {};
 				 * @param {string} text The text to append.
 				 */
 				append: function(text) {
-					return self.Context.insertLiteral(text, 'after');
+					return self.Context.helper.insertLiteral(text, 'after');
 				},
 
 				/**
