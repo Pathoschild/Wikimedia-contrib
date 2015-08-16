@@ -13,7 +13,7 @@ var pathoschild = pathoschild || {};
 	'use strict';
 
 	if (pathoschild.TemplateScript)
-		return; // already initialized, don't overwrite
+		return; // already initialised, don't overwrite
 
 
 	/**
@@ -28,14 +28,14 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.9.1';
+		self.version = '1.10';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
 		};
 		var state = {
 			dependencies: [], // internal lookup used to manage asynchronous script dependencies
-			isReady: false,   // whether TemplateScript has been initialized and hooked into the DOM
+			isReady: false,   // whether TemplateScript has been initialised and hooked into the DOM
 			templates: [],    // the registered template objects
 			queue: [],        // the template objects to add to the DOM when it's ready
 			sidebarCount: 0,  // number of rendered sidebars (excluding the default sidebar)
@@ -288,7 +288,7 @@ var pathoschild = pathoschild || {};
 
 
 		/*********
-		** Default modules
+		** Default plugins
 		*********/
 		/***
 		** Renderers create the UI which the user clicks to activate a template.
@@ -315,7 +315,6 @@ var pathoschild = pathoschild || {};
 				$item.append(
 					$('<small>')
 						.addClass('ts-shortcut')
-						.attr('style', 'margin-left:.5em; color:#CCC;') // shouldn't be inline, but didn't want to create a spreadsheet for this one style
 						.append(template.accessKey)
 				);
 			}
@@ -327,6 +326,48 @@ var pathoschild = pathoschild || {};
 		** Private methods
 		*********/
 		/**
+		 * Bootstrap TemplateScript and hook into the UI. This method should only be called once the DOM is ready.
+		 */
+		var _initialise = function() {
+			if (self.Context.singleton)
+				return;
+
+			// init context
+			self.Context.singleton = self;
+			self.Context.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
+			self.Context.$editSummary = $('#wpSummary:first');
+
+			// init localisation
+			if(pathoschild.i18n && pathoschild.i18n.templatescript)
+				$.extend(self.strings, pathoschild.i18n.templatescript);
+
+			// init plugins
+			self.addRenderer('sidebar', _renderSidebar);
+
+			// init UI
+			mw.util.addCSS('.ts-shortcut { margin-left:.5em; color:#CCC; }');
+			_loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', pathoschild.util, function() {
+				state.isReady = true;
+				for (var i = 0; i < state.queue.length; i++)
+					self.add(state.queue[i]);
+			});
+		};
+
+		/**
+		 * Asynchronously load a script and invoke the callback when loaded. This method is used to bootstrap TemplateScript and shouldn't be called directly.
+		 * @param {string} url The URL of the script to load.
+		 * @param {bool} test Indicates whether the dependency is already loaded.
+		 * @param {function} callback The method to invoke (with no arguments) when the dependencies have been loaded.
+		 */
+		var _loadDependency = function(url, test, callback) {
+			var invokeCallback = function() { callback.call(self); };
+			if (test)
+				invokeCallback();
+			else
+				$.ajax({ url:url, dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
+		};
+
+		/**
 		 * Create a tool link that triggers the template.
 		 * @param {Template} template The template for which to create an entry.
 		 */
@@ -334,7 +375,7 @@ var pathoschild = pathoschild || {};
 			// get renderer
 			var rendererKey = template.renderer;
 			if(!(rendererKey in state.renderers)) {
-				pathoschild.util.Log('pathoschild.TemplateScript::couldn\'t add tool (name:"' + (opts.name || 'unnamed') + '"): there\'s no "' + rendererKey + '" renderer');
+				pathoschild.util.Log('pathoschild.TemplateScript::couldn\'t add tool (name:"' + (template.name || 'unnamed') + '"): there\'s no "' + rendererKey + '" renderer');
 				return $();
 			}
 			var renderer = state.renderers[rendererKey];
@@ -359,46 +400,6 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Public methods
 		*********/
-		/*****
-		** Bootstrapping
-		*****/
-		/**
-		 * Initialize the template script. This method is used to bootstrap TemplateScript and shouldn't be called directly.
-		 */
-		self._initialize = function() {
-			if (self.Context.singleton)
-				return;
-
-			// initialize context
-			self.Context.singleton = self;
-			self.Context.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
-			self.Context.$editSummary = $('#wpSummary:first');
-
-			// initialise plugins
-			self.addRenderer('sidebar', _renderSidebar);
-
-			// load utilities & hook into page
-			self._loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', pathoschild.util, function() {
-				state.isReady = true;
-				for (var i = 0; i < state.queue.length; i++)
-					self.add(state.queue[i]);
-			});
-		};
-
-		/**
-		 * Asynchronously load a script and invoke the callback when loaded. This method is used to bootstrap TemplateScript and shouldn't be called directly.
-		 * @param {string} url The URL of the script to load.
-		 * @param {bool} test Indicates whether the dependency is already loaded.
-		 * @param {function} callback The method to invoke (with no arguments) when the dependencies have been loaded.
-		 */
-		self._loadDependency = function(url, test, callback) {
-			var invokeCallback = function() { callback.call(self); };
-			if (test)
-				invokeCallback();
-			else
-				$.ajax({ url:url, dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
-		};
-
 		/*****
 		** Interface
 		*****/
@@ -436,7 +437,7 @@ var pathoschild = pathoschild || {};
 				return;
 			}
 
-			/* normalize option types */
+			/* normalise option types */
 			try {
 				opts = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript::add(name:' + (opts.name || 'unnamed') + ')', opts, self.Template);
 				opts.position = pathoschild.util.ApplyEnumeration('Position', opts.position, self.Position);
@@ -447,7 +448,7 @@ var pathoschild = pathoschild || {};
 				return log('normalization error: ' + err);
 			}
 			
-			/* normalize script URL */
+			/* normalise script URL */
 			if(opts.scriptUrl && !opts.scriptUrl.match(/^(?:http:|https:)?\/\//))
 				opts.scriptUrl = mw.config.get('wgServer') + mw.config.get('wgScriptPath') + '/index.php?title=' + encodeURIComponent(opts.scriptUrl) + '&action=raw&ctype=text/javascript';
 
@@ -512,7 +513,7 @@ var pathoschild = pathoschild || {};
 
 			/* validate target input box */
 			if (!self.Context.$target.length) {
-				pathoschild.util.Log('pathoschild.TemplateScript::apply() failed, no recognized form found.');
+				pathoschild.util.Log('pathoschild.TemplateScript::apply() failed, no recognised form found.');
 				return;
 			}
 
@@ -668,23 +669,21 @@ var pathoschild = pathoschild || {};
 		self.IsEnabled = function(template) { return self.isEnabled(template); };
 		self.InsertLiteral = function($target, text, position) { return self.insertLiteral($target, text, position); };
 
-		return self;
-	})();
 
-	// apply localisation
-	if(pathoschild.i18n && pathoschild.i18n.templatescript)
-		$.extend(pathoschild.TemplateScript.strings, pathoschild.i18n.templatescript);
-
-	// initialize menu
-	$(pathoschild.TemplateScript._initialize);
-	pathoschild.TemplateScript.add({
-		name: pathoschild.TemplateScript.strings.regexEditor,
-		script: function(context) {
-			pathoschild.TemplateScript._loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js', pathoschild.RegexEditor, function() {
+		/*****
+		** Bootstrap TemplateScript
+		*****/
+		// init regex editor
+		self.add({
+			name: self.strings.regexEditor,
+			scriptUrl: '//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js',
+			script: function(context) {
 				var regexEditor = new pathoschild.RegexEditor();
 				regexEditor.create(context.$target);
-			});
-		},
-		forActions: 'edit'
-	});
+			},
+			forActions: 'edit'
+		});
+		$(_initialise);
+		return self;
+	})();
 }());
