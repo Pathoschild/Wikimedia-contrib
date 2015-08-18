@@ -51,7 +51,7 @@ var pathoschild = pathoschild || {};
 		 * Represents an insertable template schema.
 		 * @property {string} name The name displayed as the sidebar link text.
 		 * @property {boolean} enabled Whether this template is available.
-		 * @property {string} category An arbitrary category name (for grouping templates into multiple sidebars), or null to use the default sidebar.
+		 * @property {string} category An arbitrary category name (for grouping templates into multiple sidebars). The default is `self.strings.defaultHeaderText`.
 		 * @property {string[]} forActions The wgAction values for which the template is enabled, or null to enable for all actions.
 		 * @property {int[]} forNamespaces The namespaces in which the template is enabled, or null to enable in all namespaces.
 		 * @property {string} accessKey A keyboard shortcut key which invokes the template or script directly; see [[w:Wikipedia:Keyboard shortcuts]].
@@ -120,6 +120,7 @@ var pathoschild = pathoschild || {};
 		/**
 		 * Provides convenient access to singleton properties about the current page. (Changing the values may cause unexpected behaviour.)
 		 * @property {int} namespace The number of the current MediaWiki namespace.
+		 * @property {string} name The canonical name of the current MediaWiki namespace.
 		 * @property {string} action The string representing the current MediaWiki action.
 		 * @property {pathoschild.TemplateScript} singleton The TemplateScript instance for the page.
 		 * @property {jQuery} $target The primary input element (e.g., the edit textarea) for the current form.
@@ -128,6 +129,7 @@ var pathoschild = pathoschild || {};
 		 */
 		self.Context = {
 			namespace: mw.config.get('wgNamespaceNumber'),
+			namespaceName: mw.config.get('wgCanonicalNamespace'),
 			pageName: mw.config.get('wgPageName'),
 			action: (mw.config.get('wgAction') === 'submit'
 				? 'edit'
@@ -444,6 +446,23 @@ var pathoschild = pathoschild || {};
 				if(!$.isArray(opts.forNamespaces))
 					opts.forNamespaces = [opts.forNamespaces];
 
+				// normalise values
+				opts.forNamespaces = $.map(opts.forNamespaces, function(value) {
+					// parse numeric value
+					var numeric = parseInt(value);
+					if(!isNaN(numeric))
+						return numeric;
+
+					// convert canonical namespace
+					var key = value.toLowerCase().replace(/ /g, '_');
+					numeric = mw.config.get('wgNamespaceIds')[key];
+					if(numeric || numeric === 0)
+						return numeric;
+
+					// invalid value
+					_warn('ignored unknown namespace "' + value + '"');
+					return null;
+				});
 			}
 
 			// normalise defaults
