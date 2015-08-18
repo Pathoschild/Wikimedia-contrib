@@ -368,6 +368,15 @@ var pathoschild = pathoschild || {};
 		};
 
 		/**
+		 * Write a warning to the debug console, if it's available.
+		 * @param {string} message The warning message to write.
+		 */
+		var _warn = function(message) {
+			if(console && console.log)
+				console.log('[TemplateScript] ' + message);
+		};
+
+		/**
 		 * Create a tool link that triggers the template.
 		 * @param {Template} template The template for which to create an entry.
 		 */
@@ -375,7 +384,7 @@ var pathoschild = pathoschild || {};
 			// get renderer
 			var rendererKey = template.renderer;
 			if(!(rendererKey in state.renderers)) {
-				pathoschild.util.Log('pathoschild.TemplateScript::couldn\'t add tool (name:"' + (template.name || 'unnamed') + '"): there\'s no "' + rendererKey + '" renderer');
+				_warn('couldn\'t add tool "' + template.name + '": there\'s no "' + rendererKey + '" renderer');
 				return $();
 			}
 			var renderer = state.renderers[rendererKey];
@@ -480,7 +489,7 @@ var pathoschild = pathoschild || {};
 				_normalise(opts);
 			}
 			catch(error) {
-				pathoschild.util.Log('pathoschild.TemplateScript::_normalise(name:"' + (opts && opts.name || 'unnamed') + '"): ' + error);
+				_warn('template "' + (opts && opts.name || 'unnamed') + '" couldn\'t be normalised: ' + error);
 				return; // invalid template
 			}
 
@@ -508,7 +517,7 @@ var pathoschild = pathoschild || {};
 		 */
 		self.addRenderer = function(key, renderer) {
 			if(key in state.renderers) {
-				pathoschild.util.Log('pathoschild.TemplateScript::addRenderer() failed, there\'s already a renderer named "' + key + '". You can\'t overwrite renderers.');
+				_warn('can\'t add renderer "' + key + '", there\'s already a renderer with that name');
 				return;
 			}
 			state.renderers[key] = renderer;
@@ -521,30 +530,26 @@ var pathoschild = pathoschild || {};
 		self.apply = function(id) {
 			/* get template */
 			if (!(id in state.templates)) {
-				pathoschild.util.Log('pathoschild.TemplateScript::apply() failed, there is no template with ID "' + id + '".');
+				_warn('can\'t apply template #' + id + ' because there\'s no template with that ID; there\'s something wrong with TemplateScript\'s internal state');
 				return;
 			}
 			var opts = state.templates[id];
 
 			/* validate target input box */
 			if (!self.Context.$target.length) {
-				pathoschild.util.Log('pathoschild.TemplateScript::apply() failed, no recognised form found.');
+				_warn('can\'t apply template because the current page has no recognisable form.');
 				return;
 			}
 
 			/* insert template */
-			if (opts.template) {
+			if (opts.template)
 				self.insertLiteral(self.Context.$target, opts.template, opts.position);
-			}
-			if (opts.editSummary && !self.Context.isSectionNew) {
+			if (opts.editSummary && !self.Context.isSectionNew)
 				self.insertLiteral(self.Context.$editSummary, opts.editSummary, opts.editSummaryPosition);
-			}
-			if (opts.headline && self.Context.isSectionNew) {
+			if (opts.headline && self.Context.isSectionNew)
 				self.insertLiteral(self.Context.$editSummary, opts.headline, opts.headlinePosition);
-			}
-			if (opts.isMinorEdit) {
+			if (opts.isMinorEdit)
 				$('#wpMinoredit').attr('checked', 'checked');
-			}
 
 			/* invoke script */
 			if (opts.script)
@@ -603,7 +608,7 @@ var pathoschild = pathoschild || {};
 				position = pathoschild.util.ApplyEnumeration('Position', position, self.Position);
 			}
 			catch (err) {
-				pathoschild.util.Log('TemplateScript: insertLiteral failed, discarding literal: ' + err);
+				_warn('can\'t insert literal text: ' + err);
 			}
 
 			/* perform insertion */
@@ -625,7 +630,7 @@ var pathoschild = pathoschild || {};
 					break;
 
 				default:
-					pathoschild.util.Log('TemplateScript: insertion failed, unknown position "' + position + '".');
+					_warn('can\'t insert literal text: unknown position "' + position + '"');
 					return;
 			}
 		};
@@ -669,7 +674,7 @@ var pathoschild = pathoschild || {};
 
 			/* Unknown implementation */
 			else {
-				pathoschild.util.Log('TemplateScript: unknown browser cursor selection implementation, appending instead.');
+				_warn('can\'t figure out the browser\'s cursor selection implementation, appending instead.');
 				box.value += text('');
 				return;
 			}
