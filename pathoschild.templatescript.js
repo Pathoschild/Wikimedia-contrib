@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.10';
+		self.version = '1.11';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -396,6 +396,55 @@ var pathoschild = pathoschild || {};
 			return value === haystack;
 		};
 
+		/**
+		 * Normalise a template to provide a consistent representation, and throw an error message if the template is invalid.
+		 * @param {Template} opts The template to normalise.
+		 */
+		var _normalise = function(opts) {
+			// validate required fields
+			if (!opts.name)
+				throw 'must have a name';
+			if (opts.script && !$.isFunction(opts.script))
+				throw 'script must be a function';
+			if (!opts.template && !opts.script)
+				throw 'must have either a template or a script';
+
+			// normalise schema
+			opts = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript::add(name:' + (opts.name || 'unnamed') + ')', opts, self.Template);
+			opts.position = pathoschild.util.ApplyEnumeration('Position', opts.position, self.Position);
+			opts.editSummaryPosition = pathoschild.util.ApplyEnumeration('Position', opts.editSummaryPosition, self.Position);
+			opts.headlinePosition = pathoschild.util.ApplyEnumeration('Position', opts.headlinePosition, self.Position);
+
+			// normalise script URL
+			if(opts.scriptUrl && !opts.scriptUrl.match(/^(?:http:|https:)?\/\//))
+				opts.scriptUrl = mw.config.get('wgServer') + mw.config.get('wgScriptPath') + '/index.php?title=' + encodeURIComponent(opts.scriptUrl) + '&action=raw&ctype=text/javascript';
+
+			// normalise actions
+			if(opts.forActions) {
+				// cast to array
+				if(!$.isArray(opts.forActions))
+					opts.forActions = [opts.forActions];
+
+				// normalise values
+				opts.forActions = $.map(opts.forActions, function(value) { return value.toLowerCase(); });
+			}
+
+			// normalise namespaces
+			if(opts.forNamespaces) {
+				// cast to array
+				if(!$.isArray(opts.forNamespaces))
+					opts.forNamespaces = [opts.forNamespaces];
+
+			}
+
+			// normalise defaults
+			opts.category = opts.category || self.strings.defaultHeaderText;
+			opts.position = opts.position || (self.Context.action === 'edit' ? 'cursor' : 'replace');
+			opts.editSummaryPosition = opts.editSummaryPosition || 'replace';
+			opts.headlinePosition = opts.headlinePosition || 'replace';
+			opts.renderer = opts.renderer || 'sidebar';
+		};
+
 
 		/*********
 		** Public methods
@@ -409,79 +458,45 @@ var pathoschild = pathoschild || {};
 		 * @param {Template} common A set of fields to apply to all templates in the given list.
 		 */
 		self.add = function(opts, common) {
-			/* apply common fields */
-			if(common) {
-				if($.isArray(opts)) {
-					for(var t = 0; t < opts.length; t++)
-						$.extend(opts[t], common);
-				}
-				else
-					$.extend(opts, common);
+			// handle multiple templates
+			if ($.isArray(opts)) {
+				for (var t = 0; t < opts.length; t++)
+					self.add(opts[t], common);
+				return;
 			}
 
-			/* queue if DOM isn't ready */
+			// apply common fields
+			if(common)
+				$.extend(opts, common);
+
+			// queue if DOM isn't ready
 			if (!state.isReady) {
 				state.queue.push(opts);
 				return;
 			}
 
-			var log = function(message) {
-				opts = opts || {};
-				pathoschild.util.Log('pathoschild.TemplateScript::add(name:"' + (opts.name || 'unnamed') + '"): ' + message);
-			};
-
-			/* handle multiple templates */
-			if ($.isArray(opts)) {
-				for (var t = 0; t < opts.length; t++)
-					self.add(opts[t]);
-				return;
-			}
-
-			/* normalise option types */
+			// normalise options
 			try {
-				opts = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript::add(name:' + (opts.name || 'unnamed') + ')', opts, self.Template);
-				opts.position = pathoschild.util.ApplyEnumeration('Position', opts.position, self.Position);
-				opts.editSummaryPosition = pathoschild.util.ApplyEnumeration('Position', opts.editSummaryPosition, self.Position);
-				opts.headlinePosition = pathoschild.util.ApplyEnumeration('Position', opts.headlinePosition, self.Position);
+				_normalise(opts);
 			}
-			catch (err) {
-				return log('normalization error: ' + err);
+			catch(error) {
+				pathoschild.util.Log('pathoschild.TemplateScript::_normalise(name:"' + (opts && opts.name || 'unnamed') + '"): ' + error);
+				return; // invalid template
 			}
-			
-			/* normalise script URL */
-			if(opts.scriptUrl && !opts.scriptUrl.match(/^(?:http:|https:)?\/\//))
-				opts.scriptUrl = mw.config.get('wgServer') + mw.config.get('wgScriptPath') + '/index.php?title=' + encodeURIComponent(opts.scriptUrl) + '&action=raw&ctype=text/javascript';
 
+			// add template
+			if (self.isEnabled(opts)) {
+				// add to UI
+				opts.id = state.templates.push(opts) - 1;
+				var $entry = _renderEntry(opts);
 
-			/* validate */
-			if (opts.script && !$.isFunction(opts.script)) {
-				log('ignoring non-function value passed to "script" option: ' + opts.script);
-				delete opts.script;
-			}
-			if (!opts.name)
-				return log('template must have a name');
-			if (!opts.template && !opts.script)
-				return log('template must have either a template or a script.');
-			if (!self.isEnabled(opts))
-				return;
-
-			/* set defaults */
-			opts.category = opts.category || self.strings.defaultHeaderText;
-			opts.position = opts.position || (self.Context.action === 'edit' ? 'cursor' : 'replace');
-			opts.editSummaryPosition = opts.editSummaryPosition || 'replace';
-			opts.headlinePosition = opts.headlinePosition || 'replace';
-			opts.renderer = opts.renderer || 'sidebar';
-
-			/* add template */
-			opts.id = state.templates.push(opts) - 1;
-			var $entry = _renderEntry(opts);
-
-			/* load dependency */
-			if(opts.scriptUrl) {
-				$entry.hide();
-				if(!state.dependencies[opts.scriptUrl])
-					state.dependencies[opts.scriptUrl] = $.ajax(opts.scriptUrl, { cache: true, dataType: 'script' });
-				state.dependencies[opts.scriptUrl].done(function() { $entry.show(); });
+				/* load dependency */
+				if(opts.scriptUrl) {
+					$entry.hide();
+					if(!state.dependencies[opts.scriptUrl])
+						state.dependencies[opts.scriptUrl] = $.ajax(opts.scriptUrl, { cache: true, dataType: 'script' });
+					state.dependencies[opts.scriptUrl].done(function() { $entry.show(); });
+				}
 			}
 		};
 
