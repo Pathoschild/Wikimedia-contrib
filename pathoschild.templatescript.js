@@ -131,10 +131,25 @@ var pathoschild = pathoschild || {};
 			namespace: mw.config.get('wgNamespaceNumber'),
 			namespaceName: mw.config.get('wgCanonicalNamespace'),
 			pageName: mw.config.get('wgPageName'),
-			action: (mw.config.get('wgAction') === 'submit'
-				? 'edit'
-				: (mw.config.get('wgCanonicalSpecialPageName') === 'Blockip' ? 'block' : mw.config.get('wgAction'))
-			),
+			action: (function() {
+				var action = mw.config.get('wgAction');
+				var specialPage = mw.config.get('wgCanonicalSpecialPageName');
+				switch(action) {
+					case 'submit':
+						return 'edit';
+
+					case 'view':
+						if($('#movepage').length)
+							return 'move';
+						if(specialPage == 'Block')
+							return 'block';
+						if(specialPage == 'Emailuser')
+							return 'emailuser';
+
+					default:
+						return action;
+				}
+			})(),
 			isSectionNew: $('#wpTextbox1, #wpSummary').first().attr('id') === 'wpSummary', // if #wpSummary is first, it's not the edit summary (MediaWiki reused ID)
 			singleton: null,
 			$target: null,
@@ -594,16 +609,8 @@ var pathoschild = pathoschild || {};
 			var context = self.Context;
 			if ('forNamespaces' in template && template.forNamespaces !== null && !_isEqualOrIn(context.namespace, template.forNamespaces))
 				return false;
-
-			if ('forActions' in template && template.forActions !== null) {
-				// workaround: moving a page doesn't have its own action
-				var action = context.action;
-				if(action === 'view' && $('#movepage').length)
-					action = 'move';
-				
-				if(!_isEqualOrIn(action, template.forActions))
-					return false;
-			}
+			if ('forActions' in template && template.forActions !== null && !_isEqualOrIn(context.action, template.forActions))
+				return false;
 
 			return true;
 		};
