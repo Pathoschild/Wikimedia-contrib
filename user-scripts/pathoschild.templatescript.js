@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.11';
+		self.version = '1.11.1';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -40,7 +40,7 @@ var pathoschild = pathoschild || {};
 			queue: [],        // the template objects to add to the DOM when it's ready
 			sidebarCount: 0,  // number of rendered sidebars (excluding the default sidebar)
 			sidebars: {},     // hash of rendered sidebars by name
-			renderers: {}     // the modules which render template/script links
+			renderers: {}     // the plugins which render template/script links
 		};
 
 
@@ -141,9 +141,9 @@ var pathoschild = pathoschild || {};
 					case 'view':
 						if($('#movepage').length)
 							return 'move';
-						if(specialPage == 'Block')
+						if(specialPage === 'Block')
 							return 'block';
-						if(specialPage == 'Emailuser')
+						if(specialPage === 'Emailuser')
 							return 'emailuser';
 
 					default:
@@ -314,9 +314,10 @@ var pathoschild = pathoschild || {};
 		/**
 		 * Add a sidebar entry for a template.
 		 * @param {Template} template The template for which to create an entry.
+		 * @param {TemplateScript} instance The script instance.
 		 * @returns the generated item.
 		 */
-		var _renderSidebar = function(template) {
+		var _renderSidebar = function(template, instance) {
 			// build the sidebar
 			var category = template.category;
 			if (!(category in state.sidebars)) {
@@ -327,7 +328,7 @@ var pathoschild = pathoschild || {};
 			var sidebarID = state.sidebars[category];
 
 			// add link
-			var $item = pathoschild.util.mediawiki.AddPortletLink(sidebarID, template.name, 'ts-link-' + template.id, template.tooltip, template.accessKey, function() { self.apply(template.id); });
+			var $item = pathoschild.util.mediawiki.AddPortletLink(sidebarID, template.name, 'ts-link-' + template.id, template.tooltip, template.accessKey, function() { instance.apply(template.id); });
 			if(template.accessKey) {
 				$item.append(
 					$('<small>')
@@ -407,7 +408,7 @@ var pathoschild = pathoschild || {};
 			var renderer = state.renderers[rendererKey];
 
 			// render entry
-			return renderer(template);
+			return renderer(template, self);
 		};
 
 		/*
@@ -547,7 +548,6 @@ var pathoschild = pathoschild || {};
 		 * Add a plugin responsible for creating the link UI that activates a template. You can add multiple renderers, and choose how each template is rendered by adding "renderer: rendererKey" to its options.
 		 * @param {string} key The unique key for the renderer.
 		 * @param {function} renderer The function will accepts a template object, and returns a jQuery reference to the created entry.
-		 * @returns the generated item.
 		 */
 		self.addRenderer = function(key, renderer) {
 			if(key in state.renderers) {
