@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.12.2';
+		self.version = '1.12.3';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -282,23 +282,19 @@ var pathoschild = pathoschild || {};
 			};
 
 			// 1.12 compatibility
-			context.helper = {
-				get: context.get,
-				set: context.set,
-				replace: context.replace,
-				append: context.append,
-				escape: context.escape,
-				unescape: context.unescape,
-				replaceSelection: context.replaceSelection,
-				appendEditSummary: context.appendEditSummary,
-				setEditSummary: context.setEditSummary,
-				clickDiff: context.clickDiff,
-				clickPreview: context.clickPreview,
-				insertLiteral: function(text, position) {
-					self.insertLiteral(context.$target, text, position);
-					return context;
-				}
-			};
+			context.helper = { };
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'get', context.get, 'use context.get(...) instead of context.helper.get(...)');
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'set', context.set, 'use context.set(...) instead of context.helper.set(...)');
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'replace', context.replace, 'use context.replace(...) instead of context.helper.replace(...)');
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'append', context.append, 'use context.append(...) instead of context.helper.append(...)');
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'escape', context.escape, 'use context.escape(...) instead of context.helper.escape(...)');
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'unescape', context.unescape, 'use context.unescape(...) instead of context.helper.unescape(...)');
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'replaceSelection', context.replaceSelection, 'use context.replaceSelection(...) instead of context.helper.replaceSelection(...)');
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'appendEditSummary', context.appendEditSummary, 'use context.appendEditSummary(...) instead of context.helper.appendEditSummary(...)');
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'setEditSummary', context.setEditSummary, 'use context.setEditSummary(...) instead of context.helper.setEditSummary(...)');
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'clickDiff', context.clickDiff, 'use context.clickDiff(...) instead of context.helper.clickDiff(...)');
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'clickPreview', context.clickPreview, 'use context.clickPreview(...) instead of context.helper.clickPreview(...)');
+			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'insertLiteral', function(text, position) { self.insertLiteral(context.$target, text, position); return context; }, 'use context.append(...) or context.replaceSelection(...) instead of context.helper.insertLiteral(...)');
 
 			return context;
 		})();
@@ -709,11 +705,11 @@ var pathoschild = pathoschild || {};
 		/*****
 		** 1.4 compatibility
 		*****/
-		self.Add = function(opts, common) { return self.add(opts, common); };
-		self.AddWith = function(fields, templates) { return self.add(templates, fields); };
-		self.Apply = function(id) { return self.apply(id); };
-		self.IsEnabled = function(template) { return self.isEnabled(template); };
-		self.InsertLiteral = function($target, text, position) { return self.insertLiteral($target, text, position); };
+		mw.log.deprecate(pathoschild.TemplateScript, 'Add', self.add, 'use pathoschild.TemplateScript.add(...) instead');
+		mw.log.deprecate(pathoschild.TemplateScript, 'AddWith', function(fields, templates) { return self.add(templates, fields); }, 'use pathoschild.TemplateScript.add(templates, common fields) instead of pathoschild.TemplateScript.AddWith(common fields, templates)');
+		mw.log.deprecate(pathoschild.TemplateScript, 'Apply', self.apply, 'use pathoschild.TemplateScript.apply(...) instead');
+		mw.log.deprecate(pathoschild.TemplateScript, 'IsEnabled', self.isEnabled, 'use pathoschild.TemplateScript.isEnabled(...) instead');
+		mw.log.deprecate(pathoschild.TemplateScript, 'InsertLiteral', self.insertLiteral, 'use pathoschild.TemplateScript.insertLiteral(...) instead');
 
 
 		/*****
