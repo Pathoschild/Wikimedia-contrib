@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.11.1';
+		self.version = '1.12.0';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -127,34 +127,44 @@ var pathoschild = pathoschild || {};
 		 * @property {jQuery} $editSummary The edit summary input element (if relevant to the current form).
 		 * @property {object} helper Provides shortcut methods for common operations.
 		 */
-		self.Context = {
-			namespace: mw.config.get('wgNamespaceNumber'),
-			namespaceName: mw.config.get('wgCanonicalNamespace'),
-			pageName: mw.config.get('wgPageName'),
-			action: (function() {
-				var action = mw.config.get('wgAction');
-				var specialPage = mw.config.get('wgCanonicalSpecialPageName');
-				switch(action) {
-					case 'submit':
-						return 'edit';
+		self.Context = (function() {
+			/*********
+			** Fields
+			*********/
+			var context = {
+				namespace: mw.config.get('wgNamespaceNumber'),
+				namespaceName: mw.config.get('wgCanonicalNamespace'),
+				pageName: mw.config.get('wgPageName'),
+				action: (function() {
+					var action = mw.config.get('wgAction');
+					var specialPage = mw.config.get('wgCanonicalSpecialPageName');
+					switch(action) {
+						case 'submit':
+							return 'edit';
 
-					case 'view':
-						if($('#movepage').length)
-							return 'move';
-						if(specialPage === 'Block')
-							return 'block';
-						if(specialPage === 'Emailuser')
-							return 'emailuser';
+						case 'view':
+							if($('#movepage').length)
+								return 'move';
+							if(specialPage === 'Block')
+								return 'block';
+							if(specialPage === 'Emailuser')
+								return 'emailuser';
 
-					default:
-						return action;
-				}
-			})(),
-			isSectionNew: $('#wpTextbox1, #wpSummary').first().attr('id') === 'wpSummary', // if #wpSummary is first, it's not the edit summary (MediaWiki reused ID)
-			singleton: null,
-			$target: null,
-			$editSummary: null,
-			helper: {
+						default:
+							return action;
+					}
+				})(),
+				isSectionNew: $('#wpTextbox1, #wpSummary').first().attr('id') === 'wpSummary', // if #wpSummary is first, it's not the edit summary (MediaWiki reused ID)
+				singleton: null,
+				$target: null,
+				$editSummary: null
+			};
+			
+			
+			/*********
+			** Public methods
+			*********/
+			context.helper = {
 				/**
 				 * Perform a search & replace in the target element.
 				 * @param {string|regexp} search The search string or regular expression.
@@ -162,9 +172,8 @@ var pathoschild = pathoschild || {};
 				 * @returns The helper instance for chaining.
 				 */
 				replace: function(search, replace) {
-					var $text = self.Context.$target;
-					$text.val($text.val().replace(search, replace));
-					return this;
+					context.$target.val(function(i, val) { return val.replace(search, replace); });
+					return context;
 				},
 
 				/**
@@ -172,8 +181,8 @@ var pathoschild = pathoschild || {};
 				 * @param {string} text The text to set.
 				 */
 				set: function(text) {
-					self.Context.$target.val(text);
-					return this;
+					context.$target.val(text);
+					return context;
 				},
 
 				/**
@@ -181,7 +190,8 @@ var pathoschild = pathoschild || {};
 				 * @param {string} text The text to append.
 				 */
 				append: function(text) {
-					return self.Context.helper.insertLiteral(text, 'after');
+					self.insertLiteral(context.$target, text, 'after');
+					return context;
 				},
 
 				/**
@@ -189,7 +199,7 @@ var pathoschild = pathoschild || {};
 				 * @param {string|regexp} search The search string or regular expression.
 				 */
 				escape: function(search) {
-					var $text = self.Context.$target;
+					var $text = context.$target;
 					var text = $text.val();
 
 
@@ -219,7 +229,7 @@ var pathoschild = pathoschild || {};
 				 * @param {object} state The escape state returned by the escape(search) method.
 				 */
 				unescape: function(state) {
-					var $text = self.Context.$target;
+					var $text = context.$target;
 					var text = $text.val();
 
 					text = text.replace(state.token, function(match, id) {
@@ -235,8 +245,8 @@ var pathoschild = pathoschild || {};
 				 * @param {string} position The insertion position, matching a {Position} value.
 				 */
 				insertLiteral: function(text, position) {
-					self.insertLiteral(self.Context.$target, text, position);
-					return this;
+					self.insertLiteral(context.$target, text, position);
+					return context;
 				},
 
 				/**
@@ -244,8 +254,8 @@ var pathoschild = pathoschild || {};
 				 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
 				 */
 				replaceSelection: function(text) {
-					self.replaceSelection(self.Context.$target, text);
-					return this;
+					self.replaceSelection(context.$target, text);
+					return context;
 				},
 
 				/**
@@ -255,9 +265,9 @@ var pathoschild = pathoschild || {};
 				 */
 				appendEditSummary: function(summary) {
 					// get edit summary box
-					var $summary = self.Context.$editSummary;
+					var $summary = context.$editSummary;
 					if(!$summary || $summary.val().indexOf(summary) !== -1)
-						return this;
+						return context;
 
 					// append summary
 					var text = $summary.val().replace(/\s*$/, '');
@@ -268,7 +278,7 @@ var pathoschild = pathoschild || {};
 					else
 						$summary.val(summary); // new summary
 
-					return this;
+					return context;
 				},
 
 				/**
@@ -278,13 +288,13 @@ var pathoschild = pathoschild || {};
 				 */
 				setEditSummary: function(summary) {
 					// get edit summary box
-					var $summary = self.Context.$editSummary;
+					var $summary = context.$editSummary;
 					if(!$summary)
-						return this;
+						return context;
 
 					// overwrite summary
 					$summary.val(summary);
-					return this;
+					return context;
 				},
 
 				/**
@@ -300,8 +310,10 @@ var pathoschild = pathoschild || {};
 				clickPreview: function() {
 					$('#wpPreview').click();
 				}
-			}
-		};
+			};
+
+			return context;
+		})();
 
 
 		/*********
