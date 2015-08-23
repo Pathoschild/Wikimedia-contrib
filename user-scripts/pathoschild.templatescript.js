@@ -282,20 +282,79 @@ var pathoschild = pathoschild || {};
 				return context;
 			};
 
-			// 1.12 compatibility
+			/*****
+			** Editing pages
+			*****/
+			/**
+			 * Append text to the edit summary (with a ', ' separator) if editing a page.
+			 * @param {string} summary The edit summary.
+			 * @returns The helper instance for chaining.
+			 */
+			context.appendEditSummary = function(summary) {
+				// get edit summary box
+				var $summary = context.$editSummary;
+				if(!$summary || $summary.val().indexOf(summary) !== -1)
+					return context;
+
+				// append summary
+				var text = $summary.val().replace(/\s*$/, '');
+				if(text.match(/\*\/$/))
+					$summary.val(text + ' ' + summary); // "/* section */ reason"
+				else if(text.match(/[^\s]/))
+					$summary.val(text + ', ' + summary); // old summary, new summary
+				else
+					$summary.val(summary); // new summary
+
+				return context;
+			};
+
+			/**
+			 * Overwrite the edit summary if editing a page.
+			 * @param {string} summary The edit summary.
+			 * @returns The helper instance for chaining.
+			 */
+			context.setEditSummary = function(summary) {
+				// get edit summary box
+				var $summary = context.$editSummary;
+				if(!$summary)
+					return context;
+
+				// overwrite summary
+				$summary.val(summary);
+				return context;
+			};
+
+			/**
+			 * Click the 'show changes' button if editing a page.
+			 */
+			context.clickDiff = function() {
+				$('#wpDiff').click();
+			};
+
+			/**
+			 * Click the 'show preview' button if editing a page.
+			 */
+			context.clickPreview = function() {
+				$('#wpPreview').click();
+			};
+
+
+			/*****
+			** 1.12 compatibility
+			*****/
 			context.helper = { };
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'get', context.get, 'use context.get(...) instead of context.helper.get(...)');
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'set', context.set, 'use context.set(...) instead of context.helper.set(...)');
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'replace', context.replace, 'use context.replace(...) instead of context.helper.replace(...)');
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'append', context.append, 'use context.append(...) instead of context.helper.append(...)');
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'escape', context.escape, 'use context.escape(...) instead of context.helper.escape(...)');
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'unescape', context.unescape, 'use context.unescape(...) instead of context.helper.unescape(...)');
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'replaceSelection', context.replaceSelection, 'use context.replaceSelection(...) instead of context.helper.replaceSelection(...)');
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'appendEditSummary', context.appendEditSummary, 'use context.appendEditSummary(...) instead of context.helper.appendEditSummary(...)');
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'setEditSummary', context.setEditSummary, 'use context.setEditSummary(...) instead of context.helper.setEditSummary(...)');
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'clickDiff', context.clickDiff, 'use context.clickDiff(...) instead of context.helper.clickDiff(...)');
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'clickPreview', context.clickPreview, 'use context.clickPreview(...) instead of context.helper.clickPreview(...)');
-			mw.log.deprecate(pathoschild.TemplateScript.Context.helper, 'insertLiteral', function(text, position) { self.insertLiteral(context.$target, text, position); return context; }, 'use context.append(...) or context.replaceSelection(...) instead of context.helper.insertLiteral(...)');
+			mw.log.deprecate(context.helper, 'get', context.get, 'use context.get(...) instead of context.helper.get(...)');
+			mw.log.deprecate(context.helper, 'set', context.set, 'use context.set(...) instead of context.helper.set(...)');
+			mw.log.deprecate(context.helper, 'replace', context.replace, 'use context.replace(...) instead of context.helper.replace(...)');
+			mw.log.deprecate(context.helper, 'append', context.append, 'use context.append(...) instead of context.helper.append(...)');
+			mw.log.deprecate(context.helper, 'escape', context.escape, 'use context.escape(...) instead of context.helper.escape(...)');
+			mw.log.deprecate(context.helper, 'unescape', context.unescape, 'use context.unescape(...) instead of context.helper.unescape(...)');
+			mw.log.deprecate(context.helper, 'replaceSelection', context.replaceSelection, 'use context.replaceSelection(...) instead of context.helper.replaceSelection(...)');
+			mw.log.deprecate(context.helper, 'appendEditSummary', context.appendEditSummary, 'use context.appendEditSummary(...) instead of context.helper.appendEditSummary(...)');
+			mw.log.deprecate(context.helper, 'setEditSummary', context.setEditSummary, 'use context.setEditSummary(...) instead of context.helper.setEditSummary(...)');
+			mw.log.deprecate(context.helper, 'clickDiff', context.clickDiff, 'use context.clickDiff(...) instead of context.helper.clickDiff(...)');
+			mw.log.deprecate(context.helper, 'clickPreview', context.clickPreview, 'use context.clickPreview(...) instead of context.helper.clickPreview(...)');
+			mw.log.deprecate(context.helper, 'insertLiteral', function(text, position) { self.insertLiteral(context.$target, text, position); return context; }, 'use context.append(...) or context.replaceSelection(...) instead of context.helper.insertLiteral(...)');
 
 			return context;
 		})();
@@ -464,7 +523,7 @@ var pathoschild = pathoschild || {};
 				// normalise values
 				opts.forNamespaces = $.map(opts.forNamespaces, function(value) {
 					// *
-					if(value == '*')
+					if(value === '*')
 						return '*';
 
 					// parse numeric value
@@ -472,7 +531,7 @@ var pathoschild = pathoschild || {};
 					if(!isNaN(numeric))
 						return numeric;
 
-					// convert canonical namespace
+					// convert namespace names
 					var key = value.toLowerCase().replace(/ /g, '_');
 					numeric = mw.config.get('wgNamespaceIds')[key];
 					if(numeric || numeric === 0)
@@ -714,11 +773,11 @@ var pathoschild = pathoschild || {};
 		/*****
 		** 1.4 compatibility
 		*****/
-		mw.log.deprecate(pathoschild.TemplateScript, 'Add', self.add, 'use pathoschild.TemplateScript.add(...) instead');
-		mw.log.deprecate(pathoschild.TemplateScript, 'AddWith', function(fields, templates) { return self.add(templates, fields); }, 'use pathoschild.TemplateScript.add(templates, common fields) instead of pathoschild.TemplateScript.AddWith(common fields, templates)');
-		mw.log.deprecate(pathoschild.TemplateScript, 'Apply', self.apply, 'use pathoschild.TemplateScript.apply(...) instead');
-		mw.log.deprecate(pathoschild.TemplateScript, 'IsEnabled', self.isEnabled, 'use pathoschild.TemplateScript.isEnabled(...) instead');
-		mw.log.deprecate(pathoschild.TemplateScript, 'InsertLiteral', self.insertLiteral, 'use pathoschild.TemplateScript.insertLiteral(...) instead');
+		mw.log.deprecate(self, 'Add', self.add, 'use pathoschild.TemplateScript.add(...) instead');
+		mw.log.deprecate(self, 'AddWith', function(fields, templates) { return self.add(templates, fields); }, 'use pathoschild.TemplateScript.add(templates, common fields) instead of pathoschild.TemplateScript.AddWith(common fields, templates)');
+		mw.log.deprecate(self, 'Apply', self.apply, 'use pathoschild.TemplateScript.apply(...) instead');
+		mw.log.deprecate(self, 'IsEnabled', self.isEnabled, 'use pathoschild.TemplateScript.isEnabled(...) instead');
+		mw.log.deprecate(self, 'InsertLiteral', self.insertLiteral, 'use pathoschild.TemplateScript.insertLiteral(...) instead');
 
 
 		/*****
@@ -731,7 +790,7 @@ var pathoschild = pathoschild || {};
 				scriptUrl: '//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js',
 				script: function(editor) {
 					var regexEditor = new pathoschild.RegexEditor();
-					regexEditor.create(context.$target);
+					regexEditor.create(self.Context.$target);
 				}
 			});
 		}
