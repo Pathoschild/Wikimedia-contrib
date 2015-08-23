@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.12.0';
+		self.version = '1.12.1';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -165,15 +165,14 @@ var pathoschild = pathoschild || {};
 			** Public methods
 			*********/
 			context.helper = {
+				/*****
+				** Any form
+				*****/
 				/**
-				 * Perform a search & replace in the target element.
-				 * @param {string|regexp} search The search string or regular expression.
-				 * @param {string} replace The replace pattern.
-				 * @returns The helper instance for chaining.
+				 * Get the value of the target element.
 				 */
-				replace: function(search, replace) {
-					context.$target.val(function(i, val) { return val.replace(search, replace); });
-					return context;
+				get: function() {
+					return context.$target.val();
 				},
 
 				/**
@@ -182,6 +181,17 @@ var pathoschild = pathoschild || {};
 				 */
 				set: function(text) {
 					context.$target.val(text);
+					return context;
+				},
+
+				/**
+				 * Perform a search & replace in the target element.
+				 * @param {string|regexp} search The search string or regular expression.
+				 * @param {string} replace The replace pattern.
+				 * @returns The helper instance for chaining.
+				 */
+				replace: function(search, replace) {
+					context.$target.val(function(i, val) { return val.replace(search, replace); });
 					return context;
 				},
 
@@ -258,6 +268,31 @@ var pathoschild = pathoschild || {};
 					return context;
 				},
 
+				/**
+				 * Set checkbox values by their ID. For example, mark the edit as minor and watch the page with context.helper.options({ minor: true, watch: true }).
+				 * @param {object} values An object representing the checkboxes to set, where the key is their ID and the value is the boolean value. The key may also be one of [minor, watch], which will be mapped to the correct ID.
+				 */
+				options: function(values) {
+					// validate
+					if(!$.isPlainObject(values))
+						return _warn('options(...) ignored because no valid argument was given');
+
+					// set values
+					$.each(values, function(id, value) {
+						// map aliases
+						id = { minor:'wpMinoredit', watch:'wpWatchthis' }[id] || id;
+
+						// set element
+						var element = $('#' + id);
+						if(!element.is('input[type="checkbox"]'))
+							return _warn('options({' + id + ': ' + value + '}) ignored because there\'s no valid checkbox with that ID');
+						element.prop('checked', value);
+					});
+				},
+
+				/*****
+				** Editing pages
+				*****/
 				/**
 				 * Append text to the edit summary (with a ', ' separator) if editing a page.
 				 * @param {string} summary The edit summary.
