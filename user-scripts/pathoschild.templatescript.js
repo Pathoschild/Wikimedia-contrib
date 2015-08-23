@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.12.1';
+		self.version = '1.12.2';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -164,186 +164,139 @@ var pathoschild = pathoschild || {};
 			/*********
 			** Public methods
 			*********/
+			/*****
+			** Any form
+			*****/
+			/**
+			 * Get the value of the target element.
+			 */
+			context.get = function() {
+				return context.$target.val();
+			};
+
+			/**
+			 * Set the value of the target element.
+			 * @param {string} text The text to set.
+			 */
+			context.set = function(text) {
+				context.$target.val(text);
+				return context;
+			};
+
+			/**
+			 * Perform a search & replace in the target element.
+			 * @param {string|regexp} search The search string or regular expression.
+			 * @param {string} replace The replace pattern.
+			 * @returns The helper instance for chaining.
+			 */
+			context.replace = function(search, replace) {
+				context.$target.val(function(i, val) { return val.replace(search, replace); });
+				return context;
+			};
+
+			/**
+			 * Append text to the target element. This is equivalent to insertLiteral(text, 'after').
+			 * @param {string} text The text to append.
+			 */
+			context.append = function(text) {
+				self.insertLiteral(context.$target, text, 'after');
+				return context.helper;
+			};
+
+			/**
+			 * Escape the matching substrings in the target element to avoid conflicts. This returns a state used to unescape.
+			 * @param {string|regexp} search The search string or regular expression.
+			 */
+			context.escape = function(search) {
+				var $text = context.$target;
+				var text = $text.val();
+
+
+				// generate token format
+				var uniqueStamp = (new Date()).getTime();
+				var format = '~' + uniqueStamp + '.$1~';
+				var formatPattern = new RegExp('~' + uniqueStamp + '\\.(\\d+)~', 'g');
+
+				// escape
+				var state = {
+					search: search,
+					token: formatPattern,
+					values: []
+				};
+				var i = 0;
+				text = text.replace(search, function(match) {
+					state.values.push(match);
+					return format.replace('$1', i++);
+				});
+
+				$text.val(text);
+				return state;
+			};
+
+			/**
+			 * Restore substrings in the target element escaped by the escape(search) method.
+			 * @param {object} state The escape state returned by the escape(search) method.
+			 */
+			context.unescape = function(state) {
+				var $text = context.$target;
+				var text = $text.val();
+
+				text = text.replace(state.token, function(match, id) {
+					return state.values[id];
+				});
+
+				$text.val(text);
+			};
+
+			/**
+			 * Replace the selected text in the target field.
+			 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
+			 */
+			context.replaceSelection = function(text) {
+				self.replaceSelection(context.$target, text);
+				return context;
+			};
+
+			/**
+			 * Set checkbox values by their ID. For example, mark the edit as minor and watch the page with context.helper.options({ minor: true, watch: true }).
+			 * @param {object} values An object representing the checkboxes to set, where the key is their ID and the value is the boolean value. The key may also be one of [minor, watch], which will be mapped to the correct ID.
+			 */
+			context.options = function(values) {
+				// validate
+				if(!$.isPlainObject(values))
+					return _warn('options(...) ignored because no valid argument was given');
+
+				// set values
+				$.each(values, function(id, value) {
+					// map aliases
+					id = { minor:'wpMinoredit', watch:'wpWatchthis' }[id] || id;
+
+					// set element
+					var element = $('#' + id);
+					if(!element.is('input[type="checkbox"]'))
+						return _warn('options({' + id + ': ' + value + '}) ignored because there\'s no valid checkbox with that ID');
+					element.prop('checked', value);
+				});
+
+				return context;
+			};
+
+			// 1.12 compatibility
 			context.helper = {
-				/*****
-				** Any form
-				*****/
-				/**
-				 * Get the value of the target element.
-				 */
-				get: function() {
-					return context.$target.val();
-				},
-
-				/**
-				 * Set the value of the target element.
-				 * @param {string} text The text to set.
-				 */
-				set: function(text) {
-					context.$target.val(text);
-					return context;
-				},
-
-				/**
-				 * Perform a search & replace in the target element.
-				 * @param {string|regexp} search The search string or regular expression.
-				 * @param {string} replace The replace pattern.
-				 * @returns The helper instance for chaining.
-				 */
-				replace: function(search, replace) {
-					context.$target.val(function(i, val) { return val.replace(search, replace); });
-					return context;
-				},
-
-				/**
-				 * Append text to the target element. This is equivalent to insertLiteral(text, 'after').
-				 * @param {string} text The text to append.
-				 */
-				append: function(text) {
-					self.insertLiteral(context.$target, text, 'after');
-					return context;
-				},
-
-				/**
-				 * Escape the matching substrings in the target element to avoid conflicts. This returns a state used to unescape.
-				 * @param {string|regexp} search The search string or regular expression.
-				 */
-				escape: function(search) {
-					var $text = context.$target;
-					var text = $text.val();
-
-
-					// generate token format
-					var uniqueStamp = (new Date()).getTime();
-					var format = '~' + uniqueStamp + '.$1~';
-					var formatPattern = new RegExp('~' + uniqueStamp + '\\.(\\d+)~', 'g');
-
-					// escape
-					var state = {
-						search: search,
-						token: formatPattern,
-						values: []
-					};
-					var i = 0;
-					text = text.replace(search, function(match) {
-						state.values.push(match);
-						return format.replace('$1', i++);
-					});
-
-					$text.val(text);
-					return state;
-				},
-
-				/**
-				 * Restore substrings in the target element escaped by the escape(search) method.
-				 * @param {object} state The escape state returned by the escape(search) method.
-				 */
-				unescape: function(state) {
-					var $text = context.$target;
-					var text = $text.val();
-
-					text = text.replace(state.token, function(match, id) {
-						return state.values[id];
-					});
-
-					$text.val(text);
-				},
-
-				/**
-				 * Insert a literal text into the target field.
-				 * @param {string} text The template text to insert, with template format values preparsed.
-				 * @param {string} position The insertion position, matching a {Position} value.
-				 */
+				get: context.get,
+				set: context.set,
+				replace: context.replace,
+				append: context.append,
+				escape: context.escape,
+				unescape: context.unescape,
+				replaceSelection: context.replaceSelection,
+				appendEditSummary: context.appendEditSummary,
+				setEditSummary: context.setEditSummary,
+				clickDiff: context.clickDiff,
+				clickPreview: context.clickPreview,
 				insertLiteral: function(text, position) {
 					self.insertLiteral(context.$target, text, position);
 					return context;
-				},
-
-				/**
-				 * Replace the selected text in the target field.
-				 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
-				 */
-				replaceSelection: function(text) {
-					self.replaceSelection(context.$target, text);
-					return context;
-				},
-
-				/**
-				 * Set checkbox values by their ID. For example, mark the edit as minor and watch the page with context.helper.options({ minor: true, watch: true }).
-				 * @param {object} values An object representing the checkboxes to set, where the key is their ID and the value is the boolean value. The key may also be one of [minor, watch], which will be mapped to the correct ID.
-				 */
-				options: function(values) {
-					// validate
-					if(!$.isPlainObject(values))
-						return _warn('options(...) ignored because no valid argument was given');
-
-					// set values
-					$.each(values, function(id, value) {
-						// map aliases
-						id = { minor:'wpMinoredit', watch:'wpWatchthis' }[id] || id;
-
-						// set element
-						var element = $('#' + id);
-						if(!element.is('input[type="checkbox"]'))
-							return _warn('options({' + id + ': ' + value + '}) ignored because there\'s no valid checkbox with that ID');
-						element.prop('checked', value);
-					});
-				},
-
-				/*****
-				** Editing pages
-				*****/
-				/**
-				 * Append text to the edit summary (with a ', ' separator) if editing a page.
-				 * @param {string} summary The edit summary.
-				 * @returns The helper instance for chaining.
-				 */
-				appendEditSummary: function(summary) {
-					// get edit summary box
-					var $summary = context.$editSummary;
-					if(!$summary || $summary.val().indexOf(summary) !== -1)
-						return context;
-
-					// append summary
-					var text = $summary.val().replace(/\s*$/, '');
-					if(text.match(/\*\/$/))
-						$summary.val(text + ' ' + summary); // "/* section */ reason"
-					else if(text.match(/[^\s]/))
-						$summary.val(text + ', ' + summary); // old summary, new summary
-					else
-						$summary.val(summary); // new summary
-
-					return context;
-				},
-
-				/**
-				 * Overwrite the edit summary if editing a page.
-				 * @param {string} summary The edit summary.
-				 * @returns The helper instance for chaining.
-				 */
-				setEditSummary: function(summary) {
-					// get edit summary box
-					var $summary = context.$editSummary;
-					if(!$summary)
-						return context;
-
-					// overwrite summary
-					$summary.val(summary);
-					return context;
-				},
-
-				/**
-				 * Click the 'show changes' button if editing a page.
-				 */
-				clickDiff: function() {
-					$('#wpDiff').click();
-				},
-
-				/**
-				 * Click the 'show preview' button if editing a page.
-				 */
-				clickPreview: function() {
-					$('#wpPreview').click();
 				}
 			};
 
