@@ -52,8 +52,8 @@ var pathoschild = pathoschild || {};
 		 * @property {string} name The name displayed as the sidebar link text.
 		 * @property {boolean} enabled Whether this template is available.
 		 * @property {string} category An arbitrary category name (for grouping templates into multiple sidebars). The default is `self.strings.defaultHeaderText`.
-		 * @property {string[]} forActions The wgAction values for which the template is enabled, or null to enable for all actions.
-		 * @property {int[]} forNamespaces The namespaces in which the template is enabled, or null to enable in all namespaces.
+		 * @property {string[]} forActions The context.action values for which the template is enabled, or '*' for all actions *including* view. The default is 'edit'.
+		 * @property {int[]} forNamespaces The namespaces in which the template is enabled, or '*' to enable in all namespaces. The default is '*'.
 		 * @property {string} accessKey A keyboard shortcut key which invokes the template or script directly; see [[w:Wikipedia:Keyboard shortcuts]].
 		 * @property {string} tooltip A short explanation of the template or script, typically shown when the user hovers their cursor over the link.
 		 * @property {string} renderer The unique key of the render plugin used to add the tool link that activates the template. The default value is 'sidebar'.
@@ -78,8 +78,8 @@ var pathoschild = pathoschild || {};
 			name: null,
 			enabled: true,
 			category: null,
-			forActions: null,
-			forNamespaces: null,
+			forActions: 'edit',
+			forNamespaces: '*',
 			accessKey: null,
 			tooltip: null,
 			renderer: 'sidebar',
@@ -451,6 +451,8 @@ var pathoschild = pathoschild || {};
 				// normalise values
 				opts.forActions = $.map(opts.forActions, function(value) { return value.toLowerCase(); });
 			}
+			else
+				opts.forActions = ['*'];
 
 			// normalise namespaces
 			if(opts.forNamespaces) {
@@ -460,6 +462,10 @@ var pathoschild = pathoschild || {};
 
 				// normalise values
 				opts.forNamespaces = $.map(opts.forNamespaces, function(value) {
+					// *
+					if(value == '*')
+						return '*';
+
 					// parse numeric value
 					var numeric = parseInt(value);
 					if(!isNaN(numeric))
@@ -476,6 +482,8 @@ var pathoschild = pathoschild || {};
 					return null;
 				});
 			}
+			else
+				opts.forNamespaces = ['*'];
 
 			// normalise defaults
 			opts.category = opts.category || self.strings.defaultHeaderText;
@@ -603,9 +611,9 @@ var pathoschild = pathoschild || {};
 
 			/* match context values */
 			var context = self.Context;
-			if ('forNamespaces' in template && template.forNamespaces !== null && !_isEqualOrIn(context.namespace, template.forNamespaces))
+			if ($.inArray('*', template.forNamespaces) === -1 && !_isEqualOrIn(context.namespace, template.forNamespaces))
 				return false;
-			if ('forActions' in template && template.forActions !== null && !_isEqualOrIn(context.action, template.forActions))
+			if ($.inArray('*', template.forActions) === -1 && !_isEqualOrIn(context.action, template.forActions))
 				return false;
 
 			return true;
@@ -719,11 +727,10 @@ var pathoschild = pathoschild || {};
 		self.add({
 			name: self.strings.regexEditor,
 			scriptUrl: '//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js',
-			script: function(context) {
+			script: function(editor) {
 				var regexEditor = new pathoschild.RegexEditor();
 				regexEditor.create(context.$target);
-			},
-			forActions: 'edit'
+			}
 		});
 		$(_initialise);
 		return self;
