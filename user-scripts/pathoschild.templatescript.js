@@ -28,12 +28,13 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.12.3';
+		self.version = '1.12.5';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
 		};
 		var state = {
+			config: mw.user.options.get('pathoschild.templatescript') || {}, // user configuration
 			dependencies: [], // internal lookup used to manage asynchronous script dependencies
 			isReady: false,   // whether TemplateScript has been initialised and hooked into the DOM
 			templates: [],    // the registered template objects
@@ -723,15 +724,17 @@ var pathoschild = pathoschild || {};
 		/*****
 		** Bootstrap TemplateScript
 		*****/
-		// init regex editor
-		self.add({
-			name: self.strings.regexEditor,
-			scriptUrl: '//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js',
-			script: function(editor) {
-				var regexEditor = new pathoschild.RegexEditor();
-				regexEditor.create(context.$target);
-			}
-		});
+		if(state.config.regexEditor !== false) {
+			// init regex editor
+			self.add({
+				name: self.strings.regexEditor,
+				scriptUrl: '//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js',
+				script: function(editor) {
+					var regexEditor = new pathoschild.RegexEditor();
+					regexEditor.create(context.$target);
+				}
+			});
+		}
 		$(_initialise);
 		return self;
 	})();
