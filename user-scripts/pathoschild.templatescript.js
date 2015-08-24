@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.12.5';
+		self.version = '1.12.6';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -41,7 +41,8 @@ var pathoschild = pathoschild || {};
 			queue: [],        // the template objects to add to the DOM when it's ready
 			sidebarCount: 0,  // number of rendered sidebars (excluding the default sidebar)
 			sidebars: {},     // hash of rendered sidebars by name
-			renderers: {}     // the plugins which render template/script links
+			renderers: {},    // the plugins which render template/script links
+			escaped: {}       // contains metadata for the editor.escape and editor.unescape methods
 		};
 
 
@@ -198,55 +199,45 @@ var pathoschild = pathoschild || {};
 			/**
 			 * Append text to the target element. This is equivalent to insertLiteral(text, 'after').
 			 * @param {string} text The text to append.
+			 * @returns The helper instance for chaining.
 			 */
 			context.append = function(text) {
 				self.insertLiteral(context.$target, text, 'after');
-				return context.helper;
+				return context;
 			};
 
 			/**
 			 * Escape the matching substrings in the target element to avoid conflicts. This returns a state used to unescape.
 			 * @param {string|regexp} search The search string or regular expression.
+			 * @returns The helper instance for chaining.
 			 */
 			context.escape = function(search) {
-				var $text = context.$target;
-				var text = $text.val();
+				var text = context.get();
 
-
-				// generate token format
-				var uniqueStamp = (new Date()).getTime();
-				var format = '~' + uniqueStamp + '.$1~';
-				var formatPattern = new RegExp('~' + uniqueStamp + '\\.(\\d+)~', 'g');
-
-				// escape
-				var state = {
-					search: search,
-					token: formatPattern,
-					values: []
-				};
+				var tokenFormat = '~' + (new Date()).getTime() + '.$1~';
 				var i = 0;
 				text = text.replace(search, function(match) {
-					state.values.push(match);
-					return format.replace('$1', i++);
+					var token = tokenFormat.replace('$1', i++);
+					state.escaped[token] = match;
+					return token;
 				});
 
-				$text.val(text);
+				context.set(text);
 				return state;
 			};
 
 			/**
 			 * Restore substrings in the target element escaped by the escape(search) method.
-			 * @param {object} state The escape state returned by the escape(search) method.
+			 * @returns The helper instance for chaining.
 			 */
-			context.unescape = function(state) {
-				var $text = context.$target;
-				var text = $text.val();
+			context.unescape = function() {
+				var text = context.get();
 
-				text = text.replace(state.token, function(match, id) {
-					return state.values[id];
-				});
+				for(var token in state.escaped)
+					text = text.replace(token, state.escaped[token]);
 
-				$text.val(text);
+				context.set(text);
+				return context;
 			};
 
 			/**
@@ -259,7 +250,7 @@ var pathoschild = pathoschild || {};
 			};
 
 			/**
-			 * Set checkbox values by their ID. For example, mark the edit as minor and watch the page with context.helper.options({ minor: true, watch: true }).
+			 * Set checkbox values by their ID. For example, mark the edit as minor and watch the page with context.options({ minor: true, watch: true }).
 			 * @param {object} values An object representing the checkboxes to set, where the key is their ID and the value is the boolean value. The key may also be one of [minor, watch], which will be mapped to the correct ID.
 			 */
 			context.options = function(values) {
