@@ -28,13 +28,13 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.12.6';
+		self.version = '1.12.7';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
 		};
 		var state = {
-			config: mw.user.options.get('pathoschild.templatescript') || {}, // user configuration
+			config: mw.user.options.get('userjs-templatescript') || {}, // user configuration
 			dependencies: [], // internal lookup used to manage asynchronous script dependencies
 			isReady: false,   // whether TemplateScript has been initialised and hooked into the DOM
 			templates: [],    // the registered template objects
