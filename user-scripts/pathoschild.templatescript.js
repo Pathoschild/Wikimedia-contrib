@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.12.7';
+		self.version = '1.12.8';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -68,9 +68,8 @@ var pathoschild = pathoschild || {};
 		 * @property {string} headlinePosition The position at which to insert the headline, matching a {Position} value. The default value is 'replace'.
 		 * @property {boolean} isMinorEdit Whether to mark the edit as minor (if applicable).
 		 *
-		 * @property {boolean} autoSubmit Whether to submit the form automatically after insertion.
 		 * @property {string} scriptUrl A script URL (or page name on the current wiki) to fetch before adding the template.
-		 * @property {function} script An arbitrary JavaScript function that is called after the template and edit summary are applied, but before autoSubmit is applied (if true). It is passed a reference to the context object.
+		 * @property {function} script An arbitrary JavaScript function that is called after the template and edit summary are applied. It is passed a reference to the context object.
 		 *
 		 * @property {int} id The internal template ID. (Modifying this value may cause unexpected behaviour.)
 		 * @class
@@ -96,7 +95,6 @@ var pathoschild = pathoschild || {};
 			isMinorEdit: false,
 
 			/* script options */
-			autoSubmit: false,
 			scriptUrl: null,
 			script: null,
 
@@ -643,10 +641,6 @@ var pathoschild = pathoschild || {};
 			/* invoke script */
 			if (opts.script)
 				opts.script(self.Context);
-
-			/* perform auto-submission */
-			if (opts.autoSubmit)
-				self.Context.$target.parents('form').first().submit();
 		};
 
 		/**
