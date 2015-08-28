@@ -28,7 +28,7 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.12.8';
+		self.version = '1.13';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -159,8 +159,23 @@ var pathoschild = pathoschild || {};
 				$target: null,
 				$editSummary: null
 			};
-			
-			
+
+
+			/*********
+			** Private methods
+			*********/
+			/**
+			 * Get the CodeEditor instance for the page (if any).
+			 */
+			var _getCodeEditor = function() {
+				if(context.action === 'edit') {
+					var ace = $('.ace_editor:first').get(0);
+					if(ace)
+						return ace.env.editor;
+				}
+			};
+
+
 			/*********
 			** Public methods
 			*********/
@@ -171,7 +186,13 @@ var pathoschild = pathoschild || {};
 			 * Get the value of the target element.
 			 */
 			context.get = function() {
-				return context.$target.val();
+				// code editor
+				var codeEditor = _getCodeEditor();
+				if(codeEditor)
+					return codeEditor.getValue();
+
+				// no editor
+				return $('#wpTextbox1').val();
 			};
 
 			/**
@@ -179,6 +200,19 @@ var pathoschild = pathoschild || {};
 			 * @param {string} text The text to set.
 			 */
 			context.set = function(text) {
+				// code editor
+				var codeEditor = _getCodeEditor();
+				if(codeEditor) {
+					// When we overwrite CodeEditor's text, it will reset the cursor position to the
+					// end of the text. We'll keep the cursor position at the same row/column index,
+					// which is the typical behaviour for the non-CodeEditor textarea.
+					var pos = codeEditor.getCursorPosition();
+					codeEditor.setValue(text);
+					codeEditor.gotoLine(pos.row + 1, pos.column);
+					return context;
+				}
+
+				// no editor
 				context.$target.val(text);
 				return context;
 			};
@@ -190,6 +224,12 @@ var pathoschild = pathoschild || {};
 			 * @returns The helper instance for chaining.
 			 */
 			context.replace = function(search, replace) {
+				// code editor
+				var codeEditor = _getCodeEditor();
+				if(codeEditor)
+					return context.set(context.get().replace(search, replace));
+
+				// no editor
 				context.$target.val(function(i, val) { return val.replace(search, replace); });
 				return context;
 			};
@@ -200,6 +240,12 @@ var pathoschild = pathoschild || {};
 			 * @returns The helper instance for chaining.
 			 */
 			context.append = function(text) {
+				// code editor
+				var codeEditor = _getCodeEditor();
+				if(codeEditor)
+					return context.set(context.get() + text);
+
+				// no editor
 				self.insertLiteral(context.$target, text, 'after');
 				return context;
 			};
@@ -243,6 +289,16 @@ var pathoschild = pathoschild || {};
 			 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
 			 */
 			context.replaceSelection = function(text) {
+				// code editor
+				var codeEditor = _getCodeEditor();
+				if(codeEditor) {
+					var selected = $.isFunction(text)
+						? text(codeEditor.getSelectedText())
+						: text;
+					codeEditor.insert(selected); // overwrites selected text
+				}
+
+				// no editor
 				self.replaceSelection(context.$target, text);
 				return context;
 			};
@@ -774,7 +830,7 @@ var pathoschild = pathoschild || {};
 				name: self.strings.regexEditor,
 				scriptUrl: '//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js',
 				script: function(editor) {
-					var regexEditor = new pathoschild.RegexEditor();
+					var regexEditor = new pathoschild.RegexEditor(editor);
 					regexEditor.create(self.Context.$target);
 				}
 			});
