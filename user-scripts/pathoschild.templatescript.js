@@ -8,7 +8,7 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 */
 /* global $, mw */
 /* jshint eqeqeq: true, latedef: true, nocomma: true, undef: true */
-var pathoschild = pathoschild || {};
+window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader compatibility
 (function() {
 	'use strict';
 
@@ -28,21 +28,29 @@ var pathoschild = pathoschild || {};
 		/*********
 		** Fields
 		*********/
-		self.version = '1.12.7';
+		self.version = '2.0-alpha';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
 		};
 		var state = {
-			config: mw.user.options.get('userjs-templatescript') || {}, // user configuration
+			// user configuration
+			config: mw.config.get('userjs-templatescript') || {},
+
+			// bootstrapping
 			dependencies: [], // internal lookup used to manage asynchronous script dependencies
+			isInited: false,  // whether TemplateScript has started (or finished) initialising
 			isReady: false,   // whether TemplateScript has been initialised and hooked into the DOM
 			templates: [],    // the registered template objects
 			queue: [],        // the template objects to add to the DOM when it's ready
 			sidebarCount: 0,  // number of rendered sidebars (excluding the default sidebar)
 			sidebars: {},     // hash of rendered sidebars by name
+
+			// state management
 			renderers: {},    // the plugins which render template/script links
-			escaped: {}       // contains metadata for the editor.escape and editor.unescape methods
+			escaped: {},      // contains metadata for the editor.escape and editor.unescape methods
+			$target: null,     // the primary input element (e.g., the edit textarea) for the current form
+			$editSummary: null // the edit summary input element (if relevant to the current form)
 		};
 
 
@@ -68,9 +76,8 @@ var pathoschild = pathoschild || {};
 		 * @property {string} headlinePosition The position at which to insert the headline, matching a {Position} value. The default value is 'replace'.
 		 * @property {boolean} isMinorEdit Whether to mark the edit as minor (if applicable).
 		 *
-		 * @property {boolean} autoSubmit Whether to submit the form automatically after insertion.
 		 * @property {string} scriptUrl A script URL (or page name on the current wiki) to fetch before adding the template.
-		 * @property {function} script An arbitrary JavaScript function that is called after the template and edit summary are applied, but before autoSubmit is applied (if true). It is passed a reference to the context object.
+		 * @property {function} script An arbitrary JavaScript function that is called after the template and edit summary are applied. It is passed a reference to the context object.
 		 *
 		 * @property {int} id The internal template ID. (Modifying this value may cause unexpected behaviour.)
 		 * @class
@@ -96,7 +103,6 @@ var pathoschild = pathoschild || {};
 			isMinorEdit: false,
 
 			/* script options */
-			autoSubmit: false,
 			scriptUrl: null,
 			script: null,
 
@@ -120,23 +126,14 @@ var pathoschild = pathoschild || {};
 		};
 
 		/**
-		 * Provides convenient access to singleton properties about the current page. (Changing the values may cause unexpected behaviour.)
-		 * @property {int} namespace The number of the current MediaWiki namespace.
-		 * @property {string} name The canonical name of the current MediaWiki namespace.
+		 * Provides a unified API for making changes to the current page's form.
 		 * @property {string} action The string representing the current MediaWiki action.
-		 * @property {pathoschild.TemplateScript} singleton The TemplateScript instance for the page.
-		 * @property {jQuery} $target The primary input element (e.g., the edit textarea) for the current form.
-		 * @property {jQuery} $editSummary The edit summary input element (if relevant to the current form).
-		 * @property {object} helper Provides shortcut methods for common operations.
 		 */
 		self.Context = (function() {
 			/*********
 			** Fields
 			*********/
 			var context = {
-				namespace: mw.config.get('wgNamespaceNumber'),
-				namespaceName: mw.config.get('wgCanonicalNamespace'),
-				pageName: mw.config.get('wgPageName'),
 				action: (function() {
 					var action = mw.config.get('wgAction');
 					var specialPage = mw.config.get('wgCanonicalSpecialPageName');
@@ -155,14 +152,33 @@ var pathoschild = pathoschild || {};
 						default:
 							return action;
 					}
-				})(),
-				isSectionNew: $('#wpTextbox1, #wpSummary').first().attr('id') === 'wpSummary', // if #wpSummary is first, it's not the edit summary (MediaWiki reused ID)
-				singleton: null,
-				$target: null,
-				$editSummary: null
+				})()
 			};
-			
-			
+
+
+			/*********
+			** Private methods
+			*********/
+			/**
+			 * Get the CodeEditor instance for the page (if any).
+			 */
+			var _getCodeEditor = function() {
+				if(context.action === 'edit') {
+					var ace = $('.ace_editor:first').get(0);
+					if(ace)
+						return ace.env.editor;
+				}
+			};
+
+			/**
+			 * Get the editor for the main input. This assumes there's no custom editor like
+			 * CodeEditor or VisualEditor.
+			 */
+			var _getFieldEditor = function() {
+				return context.for(state.$target);
+			};
+
+
 			/*********
 			** Public methods
 			*********/
@@ -170,10 +186,134 @@ var pathoschild = pathoschild || {};
 			** Any form
 			*****/
 			/**
+			 * Wraps an input field with shorthand methods for manipulating its contents. This
+			 * wrapper isn't compatible with custom editors like CodeEditor or VisualEditor, so it
+			 * shouldn't be used on the main edit input.
+			 * @param {jQuery|string} field The jQuery collection or selector for the field to edit.
+			 */
+			context.for = function(field) {
+				var wrapper = {};
+				
+				/*********
+				** Properties
+				*********/
+				/**
+				 * The jQuery collection containing the field being edited.
+				 */
+				wrapper.field = field = $(field);
+
+
+				/*********
+				** Public methods
+				*********/
+				/**
+				 * Get the value of the target element.
+				 */
+				wrapper.get = function() {
+					return field.val();
+				};
+
+				/**
+				 * Set the value of the target element.
+				 * @param {string} text The text to set.
+				 * @returns The wrapper for chaining.
+				 */
+				wrapper.set = function(text) {
+					field.val(text);
+					return wrapper;
+				};
+
+				/**
+				 * Perform a search & replace in the target element.
+				 * @param {string|regexp} search The search string or regular expression.
+				 * @param {string} replace The replace pattern.
+				 * @returns The wrapper for chaining.
+				 */
+				wrapper.replace = function(search, replace) {
+					field.val(function(i, val) { return val.replace(search, replace); });
+					return wrapper;
+				};
+
+				/**
+				 * Prepend text to the target element.
+				 * @param {string} text The text to append.
+				 * @returns The wrapper for chaining.
+				 */
+				wrapper.prepend = function(text) {
+					field.val(function(i, val) { return text + val; });
+					return wrapper;
+				};
+
+				/**
+				 * Append text to the target element.
+				 * @param {string} text The text to append.
+				 * @returns The wrapper for chaining.
+				 */
+				wrapper.append = function(text) {
+					field.val(function(i, val) { return val + text; });
+					return wrapper;
+				};
+
+				/**
+				 * Replace the selected text in the target field.
+				 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
+				 * @returns The wrapper for chaining.
+				 */
+				wrapper.replaceSelection = function(text) {
+					var box = field.get(0);
+					box.focus();
+
+					// standardise input
+					if(!$.isFunction(text)) {
+						var _t = text;
+						text = function() { return _t; };
+					}
+
+					// most browsers
+					if (box.selectionStart || box.selectionStart === false || box.selectionStart === '0' || box.selectionStart === 0) {
+						var startPos = box.selectionStart;
+						var endPos = box.selectionEnd;
+						var scrollTop = box.scrollTop;
+
+						var newText = text(box.value.substring(startPos, endPos));
+						box.value = box.value.substring(0, startPos) + newText + box.value.substring(endPos - 1 + text.length, box.value.length);
+						box.focus();
+
+						box.selectionStart = startPos + text.length;
+						box.selectionEnd = startPos + text.length;
+						box.scrollTop = scrollTop;
+					}
+
+					// older browsers
+					else if (document.selection) {
+						var selection = document.selection.createRange();
+						selection.text = text(selection.text);
+						box.focus();
+					}
+
+					// unknown implementation
+					else {
+						_warn('can\'t figure out the browser\'s cursor selection implementation, appending instead.');
+						box.value += text('');
+						return;
+					}
+					return wrapper;
+				};
+
+				return wrapper;
+			};
+
+			/**
 			 * Get the value of the target element.
 			 */
 			context.get = function() {
-				return context.$target.val();
+				// code editor
+				var codeEditor = _getCodeEditor();
+				if(codeEditor)
+					return codeEditor.getValue();
+
+				// no editor
+				return _getFieldEditor().get();
 			};
 
 			/**
@@ -181,7 +321,20 @@ var pathoschild = pathoschild || {};
 			 * @param {string} text The text to set.
 			 */
 			context.set = function(text) {
-				context.$target.val(text);
+				// code editor
+				var codeEditor = _getCodeEditor();
+				if(codeEditor) {
+					// When we overwrite CodeEditor's text, it moves the cursor position to the end
+					// of the text. We'll track the current position and restore it after setting
+					// the new value, which is the typical behaviour for non-CodeEditor inputs.
+					var pos = codeEditor.session.selection.toJSON();
+					codeEditor.setValue(text);
+					codeEditor.session.selection.fromJSON(pos);
+					return context;
+				}
+
+				// no editor
+				_getFieldEditor().set(text);
 				return context;
 			};
 
@@ -192,18 +345,32 @@ var pathoschild = pathoschild || {};
 			 * @returns The helper instance for chaining.
 			 */
 			context.replace = function(search, replace) {
-				context.$target.val(function(i, val) { return val.replace(search, replace); });
+				// code editor
+				var codeEditor = _getCodeEditor();
+				if(codeEditor)
+					return context.set(context.get().replace(search, replace));
+
+				// no editor
+				_getFieldEditor().replace(search, replace);
 				return context;
 			};
 
 			/**
-			 * Append text to the target element. This is equivalent to insertLiteral(text, 'after').
+			 * Prepend text to the target element.
+			 * @param {string} text The text to prepend.
+			 * @returns The helper instance for chaining.
+			 */
+			context.prepend = function(text) {
+				return context.set(text + context.get());
+			};
+
+			/**
+			 * Append text to the target element.
 			 * @param {string} text The text to append.
 			 * @returns The helper instance for chaining.
 			 */
 			context.append = function(text) {
-				self.insertLiteral(context.$target, text, 'after');
-				return context;
+				return context.set(context.get() + text);
 			};
 
 			/**
@@ -223,7 +390,7 @@ var pathoschild = pathoschild || {};
 				});
 
 				context.set(text);
-				return state;
+				return context;
 			};
 
 			/**
@@ -245,7 +412,18 @@ var pathoschild = pathoschild || {};
 			 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
 			 */
 			context.replaceSelection = function(text) {
-				self.replaceSelection(context.$target, text);
+				// code editor
+				var codeEditor = _getCodeEditor();
+				if(codeEditor) {
+					var selected = $.isFunction(text)
+						? text(codeEditor.getSelectedText())
+						: text;
+					codeEditor.insert(selected); // overwrites selected text
+					return context;
+				}
+
+				// no editor
+				_getFieldEditor().replaceSelection(text);
 				return context;
 			};
 
@@ -282,19 +460,15 @@ var pathoschild = pathoschild || {};
 			 * @returns The helper instance for chaining.
 			 */
 			context.appendEditSummary = function(summary) {
-				// get edit summary box
-				var $summary = context.$editSummary;
-				if(!$summary || $summary.val().indexOf(summary) !== -1)
-					return context;
+				var editor = context.for(state.$editSummary);
+				var text = editor.get();
 
-				// append summary
-				var text = $summary.val().replace(/\s*$/, '');
 				if(text.match(/\*\/$/))
-					$summary.val(text + ' ' + summary); // "/* section */ reason"
+					editor.append(' ' + summary); // "/* section */ reason"
 				else if(text.match(/[^\s]/))
-					$summary.val(text + ', ' + summary); // old summary, new summary
+					editor.append(', ' + summary); // old summary, new summary
 				else
-					$summary.val(summary); // new summary
+					editor.set(summary); // new summary
 
 				return context;
 			};
@@ -305,13 +479,7 @@ var pathoschild = pathoschild || {};
 			 * @returns The helper instance for chaining.
 			 */
 			context.setEditSummary = function(summary) {
-				// get edit summary box
-				var $summary = context.$editSummary;
-				if(!$summary)
-					return context;
-
-				// overwrite summary
-				$summary.val(summary);
+				context.for(state.$editSummary).set(summary);
 				return context;
 			};
 
@@ -328,24 +496,6 @@ var pathoschild = pathoschild || {};
 			context.clickPreview = function() {
 				$('#wpPreview').click();
 			};
-
-
-			/*****
-			** 1.12 compatibility
-			*****/
-			context.helper = { };
-			mw.log.deprecate(context.helper, 'get', context.get, 'use context.get(...) instead of context.helper.get(...)');
-			mw.log.deprecate(context.helper, 'set', context.set, 'use context.set(...) instead of context.helper.set(...)');
-			mw.log.deprecate(context.helper, 'replace', context.replace, 'use context.replace(...) instead of context.helper.replace(...)');
-			mw.log.deprecate(context.helper, 'append', context.append, 'use context.append(...) instead of context.helper.append(...)');
-			mw.log.deprecate(context.helper, 'escape', context.escape, 'use context.escape(...) instead of context.helper.escape(...)');
-			mw.log.deprecate(context.helper, 'unescape', context.unescape, 'use context.unescape(...) instead of context.helper.unescape(...)');
-			mw.log.deprecate(context.helper, 'replaceSelection', context.replaceSelection, 'use context.replaceSelection(...) instead of context.helper.replaceSelection(...)');
-			mw.log.deprecate(context.helper, 'appendEditSummary', context.appendEditSummary, 'use context.appendEditSummary(...) instead of context.helper.appendEditSummary(...)');
-			mw.log.deprecate(context.helper, 'setEditSummary', context.setEditSummary, 'use context.setEditSummary(...) instead of context.helper.setEditSummary(...)');
-			mw.log.deprecate(context.helper, 'clickDiff', context.clickDiff, 'use context.clickDiff(...) instead of context.helper.clickDiff(...)');
-			mw.log.deprecate(context.helper, 'clickPreview', context.clickPreview, 'use context.clickPreview(...) instead of context.helper.clickPreview(...)');
-			mw.log.deprecate(context.helper, 'insertLiteral', function(text, position) { self.insertLiteral(context.$target, text, position); return context; }, 'use context.append(...) or context.replaceSelection(...) instead of context.helper.insertLiteral(...)');
 
 			return context;
 		})();
@@ -394,13 +544,13 @@ var pathoschild = pathoschild || {};
 		 * Bootstrap TemplateScript and hook into the UI. This method should only be called once the DOM is ready.
 		 */
 		var _initialise = function() {
-			if (self.Context.singleton)
+			if (state.isInited)
 				return;
 
 			// init context
-			self.Context.singleton = self;
-			self.Context.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
-			self.Context.$editSummary = $('#wpSummary:first');
+			state.isInited = true;
+			state.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
+			state.$editSummary = $('#wpSummary:first');
 
 			// init localisation
 			if(pathoschild.i18n && pathoschild.i18n.templatescript)
@@ -544,6 +694,37 @@ var pathoschild = pathoschild || {};
 			opts.renderer = opts.renderer || 'sidebar';
 		};
 
+		/**
+		 * Insert text at the specified position using a field editor. This should only be used to
+		 * map template options to the underlying editor.
+		 * @param {Context|object} editor The field editor, either Context or the object returned by Context.for(...).
+		 * @param {string} text The text to insert.
+		 * @param {Position} position The position at which to insert the text.
+		 */
+		function _insert(editor, text, position) {
+			switch (position) {
+				case self.Position.before:
+					editor.prepend(text);
+					break;
+
+				case self.Position.after:
+					editor.append(text);
+					break;
+
+				case self.Position.replace:
+					editor.set(text);
+					break;
+
+				case self.Position.cursor:
+					editor.replaceSelection(text);
+					break;
+
+				default:
+					_warn('can\'t insert text: unknown position "' + position + '"');
+					return;
+			}
+		}
+
 
 		/*********
 		** Public methods
@@ -617,36 +798,30 @@ var pathoschild = pathoschild || {};
 		 * @param {int} id The identifier of the template to insert, as returned by Add().
 		 */
 		self.apply = function(id) {
-			/* get template */
-			if (!(id in state.templates)) {
-				_warn('can\'t apply template #' + id + ' because there\'s no template with that ID; there\'s something wrong with TemplateScript\'s internal state');
-				return;
-			}
+			// validate
+			if (!(id in state.templates))
+				return _warn('can\'t apply template #' + id + ' because there\'s no template with that ID; there\'s something wrong with TemplateScript\'s internal state');
+			if (!state.$target.length)
+				return _warn('can\'t apply template because the current page has no recognisable form.');
+
+			// get template data
+			var editor = self.Context;
 			var opts = state.templates[id];
 
-			/* validate target input box */
-			if (!self.Context.$target.length) {
-				_warn('can\'t apply template because the current page has no recognisable form.');
-				return;
-			}
-
-			/* insert template */
+			// apply template
+			var isSectionNew = editor.action === 'edit' && $('#wpTextbox1, #wpSummary').first().attr('id') === 'wpSummary'; // if #wpSummary is first, it's not the edit summary (MediaWiki reuses the ID)
 			if (opts.template)
-				self.insertLiteral(self.Context.$target, opts.template, opts.position);
-			if (opts.editSummary && !self.Context.isSectionNew)
-				self.insertLiteral(self.Context.$editSummary, opts.editSummary, opts.editSummaryPosition);
-			if (opts.headline && self.Context.isSectionNew)
-				self.insertLiteral(self.Context.$editSummary, opts.headline, opts.headlinePosition);
+				_insert(editor, opts.template, opts.position);
+			if (opts.editSummary && !isSectionNew)
+				_insert(editor.for(state.$editSummary), opts.editSummary, opts.editSummaryPosition);
+			if (opts.headline && isSectionNew)
+				_insert(editor.for(state.$editSummary), opts.headline, opts.headlinePosition);
 			if (opts.isMinorEdit)
-				$('#wpMinoredit').attr('checked', 'checked');
+				editor.options({ minor: true });
 
 			/* invoke script */
 			if (opts.script)
-				opts.script(self.Context);
-
-			/* perform auto-submission */
-			if (opts.autoSubmit)
-				self.Context.$target.parents('form').first().submit();
+				opts.script(editor);
 		};
 
 		/**
@@ -662,113 +837,13 @@ var pathoschild = pathoschild || {};
 
 			/* match context values */
 			var context = self.Context;
-			if ($.inArray('*', template.forNamespaces) === -1 && !_isEqualOrIn(context.namespace, template.forNamespaces))
+			if ($.inArray('*', template.forNamespaces) === -1 && !_isEqualOrIn(mw.config.get('wgNamespaceNumber'), template.forNamespaces))
 				return false;
 			if ($.inArray('*', template.forActions) === -1 && !_isEqualOrIn(context.action, template.forActions))
 				return false;
 
 			return true;
 		};
-
-
-		/*****
-		** Framework
-		*****/
-		/**
-		 * Insert a literal text into a field.
-		 * @param {jQuery} $target The field into which to insert the template.
-		 * @param {string} text The template text to insert, with template format values preparsed.
-		 * @param {string} position The insertion position, matching a {Position} value.
-		 */
-		self.insertLiteral = function($target, text, position) {
-			/* validate */
-			if (!$target || !$target.length || !text || !text.length) {
-				return; // nothing to do
-			}
-			try {
-				position = pathoschild.util.ApplyEnumeration('Position', position, self.Position);
-			}
-			catch (err) {
-				_warn('can\'t insert literal text: ' + err);
-			}
-
-			/* perform insertion */
-			switch (position) {
-				case self.Position.before:
-					$target.val(text + $target.val());
-					break;
-
-				case self.Position.after:
-					$target.val($target.val() + text);
-					break;
-
-				case self.Position.replace:
-					$target.val(text);
-					break;
-
-				case self.Position.cursor:
-					self.replaceSelection($target, text);
-					break;
-
-				default:
-					_warn('can\'t insert literal text: unknown position "' + position + '"');
-					return;
-			}
-		};
-
-		/**
-		 * Replace the selected text in a field.
-		 * @param {jQuery} $target The field whose selected text to replace.
-		 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
-		 */
-		self.replaceSelection = function($target, text) {
-			var box = $target.get(0);
-			box.focus();
-
-			// standardise input
-			if(!$.isFunction(text)) {
-				var _t = text;
-				text = function() { return _t; };
-			}
-
-			/* most browsers */
-			if (box.selectionStart || box.selectionStart === false || box.selectionStart === '0' || box.selectionStart === 0) {
-				var startPos = box.selectionStart;
-				var endPos = box.selectionEnd;
-				var scrollTop = box.scrollTop;
-
-				var newText = text(box.value.substring(startPos, endPos));
-				box.value = box.value.substring(0, startPos) + newText + box.value.substring(endPos - 1 + text.length, box.value.length);
-				box.focus();
-
-				box.selectionStart = startPos + text.length;
-				box.selectionEnd = startPos + text.length;
-				box.scrollTop = scrollTop;
-			}
-
-			/* older browsers */
-			else if (document.selection) {
-				var selection = document.selection.createRange();
-				selection.text = text(selection.text);
-				box.focus();
-			}
-
-			/* Unknown implementation */
-			else {
-				_warn('can\'t figure out the browser\'s cursor selection implementation, appending instead.');
-				box.value += text('');
-				return;
-			}
-		};
-
-		/*****
-		** 1.4 compatibility
-		*****/
-		mw.log.deprecate(self, 'Add', self.add, 'use pathoschild.TemplateScript.add(...) instead');
-		mw.log.deprecate(self, 'AddWith', function(fields, templates) { return self.add(templates, fields); }, 'use pathoschild.TemplateScript.add(templates, common fields) instead of pathoschild.TemplateScript.AddWith(common fields, templates)');
-		mw.log.deprecate(self, 'Apply', self.apply, 'use pathoschild.TemplateScript.apply(...) instead');
-		mw.log.deprecate(self, 'IsEnabled', self.isEnabled, 'use pathoschild.TemplateScript.isEnabled(...) instead');
-		mw.log.deprecate(self, 'InsertLiteral', self.insertLiteral, 'use pathoschild.TemplateScript.insertLiteral(...) instead');
 
 
 		/*****
@@ -781,7 +856,7 @@ var pathoschild = pathoschild || {};
 				scriptUrl: '//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js',
 				script: function(editor) {
 					var regexEditor = new pathoschild.RegexEditor();
-					regexEditor.create(self.Context.$target);
+					regexEditor.create(state.$target, editor);
 				}
 			});
 		}

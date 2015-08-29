@@ -11,7 +11,7 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 */
 /* global $ */
 /* jshint eqeqeq: true, latedef: true, nocomma: true, undef: true */
-var pathoschild = pathoschild || {};
+window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader compatibility
 (function() {
 	'use strict';
 
@@ -24,6 +24,38 @@ var pathoschild = pathoschild || {};
 	*/
 	pathoschild.RegexEditor = function(config) {
 		var self = {};
+
+
+		/*********
+		** Objects
+		*********/
+		/**
+		 * The regex editor is primarily meant as a TemplateScript script, but it can be run
+		 * directly on Tool Labs as a standalone script. This object replicates the TemplateScript
+		 * interface for the Tool Labs page, so the regex tool has a consistent interface to code
+		 * against.
+		 */
+		var TemplateScriptShim = function($target) {
+			var context = {};
+
+			/**
+			 * Get the value of the target element.
+			 */
+			context.get = function() {
+				return $target.val();
+			};
+
+			/**
+			 * Set the value of the target element.
+			 * @param {string} text The text to set.
+			 */
+			context.set = function(text) {
+				$target.val(text);
+			};
+
+			return context;
+		};
+
 
 
 		/*********
@@ -52,7 +84,8 @@ var pathoschild = pathoschild || {};
 		var state = {
 			containerID: 'tsre', // unique ID of the regex editor container
 			undoText: null,      // the original text before the last patterns were applied
-			$target: null        // the text input element to which to apply regular expressions
+			$target: null,       // the DOM elements before which to insert the regex editor UI
+			editor: null         // the TemplateScript editor
 		};
 		self.config = $.extend({ alwaysVisible: false }, config);
 
@@ -162,7 +195,7 @@ var pathoschild = pathoschild || {};
 			_populateSessionList();
 		};
 
-				/**
+		/**
 		 * Load a previously saved set of patterns.
 		 * @param {string} sessionName The unique name of the session to load.
 		 */
@@ -233,9 +266,10 @@ var pathoschild = pathoschild || {};
 		*********/
 		/**
 		 * Construct the regex editor and add it to the page.
-		 * @param {jQuery} $target The text input element to which to apply regular expressions.
+		 * @param {jQuery} $target The DOM elements before which to insert the regex editor UI.
+		 * @param {object} editor The TemplateScript editor (if available).
 		 */
-		self.create = function($target) {
+		self.create = function($target, editor) {
 			// apply localisation
 			if(pathoschild.i18n && pathoschild.i18n.regexeditor)
 				$.extend(self.strings, pathoschild.i18n.regexeditor);
@@ -243,6 +277,7 @@ var pathoschild = pathoschild || {};
 			_loadDependencies(function() {
 				// initialize state
 				state.$target = $target;
+				state.editor = editor || TemplateScriptShim($target);
 				var $container = $('#' + state.containerID);
 				var $warning = $('#' + state.containerID + ' .tsre-warning');
 
@@ -453,15 +488,17 @@ var pathoschild = pathoschild || {};
 		 */
 		self.execute = function() {
 			// enable undo
-			var oldText = state.$target.val();
+			var oldText = state.editor.get();
 
-			// execute
+			// apply patterns
+			var newText = oldText;
 			var patterns = _getPatterns();
-			for (var i = 0, len = patterns.length; i < len; i++) {
-				state.$target.val(state.$target.val().replace(patterns[i].search, patterns[i].replace));
-			}
+			for (var i = 0, len = patterns.length; i < len; i++)
+				newText = newText.replace(patterns[i].search, patterns[i].replace);
 
-			if (state.$target.val() !== oldText) {
+			// update UI
+			if (newText !== oldText) {
+				state.editor.set(newText);
 				state.undoText = oldText;
 				$('.tsre-undo').show();
 			}
@@ -471,11 +508,10 @@ var pathoschild = pathoschild || {};
 		 * Revert the text to its state before the regular expressions were last applied.
 		 */
 		self.undo = function() {
-			if (state.$target.val() === state.undoText || state.undoText === null) {
+			if (state.undoText === null || state.editor.get() === state.undoText)
 				return;
-			}
 
-			state.$target.val(state.undoText);
+			state.editor.set(state.undoText);
 			state.undoText = null;
 			$('.tsre-undo').hide();
 		};
