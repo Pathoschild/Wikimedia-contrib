@@ -324,12 +324,12 @@ var pathoschild = pathoschild || {};
 				// code editor
 				var codeEditor = _getCodeEditor();
 				if(codeEditor) {
-					// When we overwrite CodeEditor's text, it will reset the cursor position to the
-					// end of the text. We'll keep the cursor position at the same row/column index,
-					// which is the typical behaviour for the non-CodeEditor textarea.
-					var pos = codeEditor.getCursorPosition();
+					// When we overwrite CodeEditor's text, it moves the cursor position to the end
+					// of the text. We'll track the current position and restore it after setting
+					// the new value, which is the typical behaviour for non-CodeEditor inputs.
+					var pos = codeEditor.session.selection.toJSON();
 					codeEditor.setValue(text);
-					codeEditor.gotoLine(pos.row + 1, pos.column);
+					codeEditor.session.selection.fromJSON(pos);
 					return context;
 				}
 
