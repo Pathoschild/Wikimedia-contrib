@@ -8,7 +8,7 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 */
 /* global $, mw */
 /* jshint eqeqeq: true, latedef: true, nocomma: true, undef: true */
-var pathoschild = pathoschild || {};
+window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader compatibility
 (function() {
 	'use strict';
 
