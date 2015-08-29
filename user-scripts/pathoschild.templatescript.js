@@ -356,7 +356,16 @@ var pathoschild = pathoschild || {};
 			};
 
 			/**
-			 * Append text to the target element. This is equivalent to insertLiteral(text, 'after').
+			 * Prepend text to the target element.
+			 * @param {string} text The text to prepend.
+			 * @returns The helper instance for chaining.
+			 */
+			context.prepend = function(text) {
+				return context.set(text + context.get());
+			};
+
+			/**
+			 * Append text to the target element.
 			 * @param {string} text The text to append.
 			 * @returns The helper instance for chaining.
 			 */
