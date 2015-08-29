@@ -712,6 +712,37 @@ var pathoschild = pathoschild || {};
 			opts.renderer = opts.renderer || 'sidebar';
 		};
 
+		/**
+		 * Insert text at the specified position using a field editor. This should only be used to
+		 * map template options to the underlying editor.
+		 * @param {Context|object} editor The field editor, either Context or the object returned by Context.for(...).
+		 * @param {string} text The text to insert.
+		 * @param {Position} position The position at which to insert the text.
+		 */
+		function _insert(editor, text, position) {
+			switch (position) {
+				case self.Position.before:
+					editor.prepend(text);
+					break;
+
+				case self.Position.after:
+					editor.append(text);
+					break;
+
+				case self.Position.replace:
+					editor.set(text);
+					break;
+
+				case self.Position.cursor:
+					editor.replaceSelection(text);
+					break;
+
+				default:
+					_warn('can\'t insert text: unknown position "' + position + '"');
+					return;
+			}
+		}
+
 
 		/*********
 		** Public methods
@@ -791,18 +822,18 @@ var pathoschild = pathoschild || {};
 			if (!state.$target.length)
 				return _warn('can\'t apply template because the current page has no recognisable form.');
 
-			// apply template
+			// get template data
 			var editor = self.Context;
 			var opts = state.templates[id];
-			var isSectionNew = editor.action === 'edit' && $('#wpTextbox1, #wpSummary').first().attr('id') === 'wpSummary'; // if #wpSummary is first, it's not the edit summary (MediaWiki reuses the ID)
 
-			/* insert template */
+			// apply template
+			var isSectionNew = editor.action === 'edit' && $('#wpTextbox1, #wpSummary').first().attr('id') === 'wpSummary'; // if #wpSummary is first, it's not the edit summary (MediaWiki reuses the ID)
 			if (opts.template)
-				self.insertLiteral(state.$target, opts.template, opts.position);
+				_insert(editor, opts.template, opts.position);
 			if (opts.editSummary && !isSectionNew)
-				self.insertLiteral(state.$editSummary, opts.editSummary, opts.editSummaryPosition);
+				_insert(editor.for(state.$editSummary), opts.editSummary, opts.editSummaryPosition);
 			if (opts.headline && isSectionNew)
-				self.insertLiteral(state.$editSummary, opts.headline, opts.headlinePosition);
+				_insert(editor.for(state.$editSummary), opts.headline, opts.headlinePosition);
 			if (opts.isMinorEdit)
 				editor.options({ minor: true });
 
