@@ -497,24 +497,6 @@ var pathoschild = pathoschild || {};
 				$('#wpPreview').click();
 			};
 
-
-			/*****
-			** 1.12 compatibility
-			*****/
-			context.helper = { };
-			mw.log.deprecate(context.helper, 'get', context.get, 'use context.get(...) instead of context.helper.get(...)');
-			mw.log.deprecate(context.helper, 'set', context.set, 'use context.set(...) instead of context.helper.set(...)');
-			mw.log.deprecate(context.helper, 'replace', context.replace, 'use context.replace(...) instead of context.helper.replace(...)');
-			mw.log.deprecate(context.helper, 'append', context.append, 'use context.append(...) instead of context.helper.append(...)');
-			mw.log.deprecate(context.helper, 'escape', context.escape, 'use context.escape(...) instead of context.helper.escape(...)');
-			mw.log.deprecate(context.helper, 'unescape', context.unescape, 'use context.unescape(...) instead of context.helper.unescape(...)');
-			mw.log.deprecate(context.helper, 'replaceSelection', context.replaceSelection, 'use context.replaceSelection(...) instead of context.helper.replaceSelection(...)');
-			mw.log.deprecate(context.helper, 'appendEditSummary', context.appendEditSummary, 'use context.appendEditSummary(...) instead of context.helper.appendEditSummary(...)');
-			mw.log.deprecate(context.helper, 'setEditSummary', context.setEditSummary, 'use context.setEditSummary(...) instead of context.helper.setEditSummary(...)');
-			mw.log.deprecate(context.helper, 'clickDiff', context.clickDiff, 'use context.clickDiff(...) instead of context.helper.clickDiff(...)');
-			mw.log.deprecate(context.helper, 'clickPreview', context.clickPreview, 'use context.clickPreview(...) instead of context.helper.clickPreview(...)');
-			mw.log.deprecate(context.helper, 'insertLiteral', function(text, position) { self.insertLiteral(context.$target, text, position); return context; }, 'use context.append(...) or context.replaceSelection(...) instead of context.helper.insertLiteral(...)');
-
 			return context;
 		})();
 
@@ -862,106 +844,6 @@ var pathoschild = pathoschild || {};
 
 			return true;
 		};
-
-
-		/*****
-		** Framework
-		*****/
-		/**
-		 * Insert a literal text into a field.
-		 * @param {jQuery} $target The field into which to insert the template.
-		 * @param {string} text The template text to insert, with template format values preparsed.
-		 * @param {string} position The insertion position, matching a {Position} value.
-		 */
-		self.insertLiteral = function($target, text, position) {
-			/* validate */
-			if (!$target || !$target.length || !text || !text.length) {
-				return; // nothing to do
-			}
-			try {
-				position = pathoschild.util.ApplyEnumeration('Position', position, self.Position);
-			}
-			catch (err) {
-				_warn('can\'t insert literal text: ' + err);
-			}
-
-			/* perform insertion */
-			switch (position) {
-				case self.Position.before:
-					$target.val(text + $target.val());
-					break;
-
-				case self.Position.after:
-					$target.val($target.val() + text);
-					break;
-
-				case self.Position.replace:
-					$target.val(text);
-					break;
-
-				case self.Position.cursor:
-					self.replaceSelection($target, text);
-					break;
-
-				default:
-					_warn('can\'t insert literal text: unknown position "' + position + '"');
-					return;
-			}
-		};
-
-		/**
-		 * Replace the selected text in a field.
-		 * @param {jQuery} $target The field whose selected text to replace.
-		 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
-		 */
-		self.replaceSelection = function($target, text) {
-			var box = $target.get(0);
-			box.focus();
-
-			// standardise input
-			if(!$.isFunction(text)) {
-				var _t = text;
-				text = function() { return _t; };
-			}
-
-			/* most browsers */
-			if (box.selectionStart || box.selectionStart === false || box.selectionStart === '0' || box.selectionStart === 0) {
-				var startPos = box.selectionStart;
-				var endPos = box.selectionEnd;
-				var scrollTop = box.scrollTop;
-
-				var newText = text(box.value.substring(startPos, endPos));
-				box.value = box.value.substring(0, startPos) + newText + box.value.substring(endPos - 1 + text.length, box.value.length);
-				box.focus();
-
-				box.selectionStart = startPos + text.length;
-				box.selectionEnd = startPos + text.length;
-				box.scrollTop = scrollTop;
-			}
-
-			/* older browsers */
-			else if (document.selection) {
-				var selection = document.selection.createRange();
-				selection.text = text(selection.text);
-				box.focus();
-			}
-
-			/* Unknown implementation */
-			else {
-				_warn('can\'t figure out the browser\'s cursor selection implementation, appending instead.');
-				box.value += text('');
-				return;
-			}
-		};
-
-		/*****
-		** 1.4 compatibility
-		*****/
-		mw.log.deprecate(self, 'Add', self.add, 'use pathoschild.TemplateScript.add(...) instead');
-		mw.log.deprecate(self, 'AddWith', function(fields, templates) { return self.add(templates, fields); }, 'use pathoschild.TemplateScript.add(templates, common fields) instead of pathoschild.TemplateScript.AddWith(common fields, templates)');
-		mw.log.deprecate(self, 'Apply', self.apply, 'use pathoschild.TemplateScript.apply(...) instead');
-		mw.log.deprecate(self, 'IsEnabled', self.isEnabled, 'use pathoschild.TemplateScript.isEnabled(...) instead');
-		mw.log.deprecate(self, 'InsertLiteral', self.insertLiteral, 'use pathoschild.TemplateScript.insertLiteral(...) instead');
 
 
 		/*****
