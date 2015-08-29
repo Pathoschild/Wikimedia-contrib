@@ -855,8 +855,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				name: self.strings.regexEditor,
 				scriptUrl: '//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js',
 				script: function(editor) {
-					var regexEditor = new pathoschild.RegexEditor(editor);
-					regexEditor.create(state.$target);
+					var regexEditor = new pathoschild.RegexEditor();
+					regexEditor.create(state.$target, editor);
 				}
 			});
 		}
