@@ -34,15 +34,23 @@ var pathoschild = pathoschild || {};
 			regexEditor: 'Regex editor' // the default 'regex editor' script
 		};
 		var state = {
-			config: mw.user.options.get('userjs-templatescript') || {}, // user configuration
+			// user configuration
+			config: mw.user.options.get('userjs-templatescript') || {},
+
+			// bootstrapping
 			dependencies: [], // internal lookup used to manage asynchronous script dependencies
+			isInited: false,  // whether TemplateScript has started (or finished) initialising
 			isReady: false,   // whether TemplateScript has been initialised and hooked into the DOM
 			templates: [],    // the registered template objects
 			queue: [],        // the template objects to add to the DOM when it's ready
 			sidebarCount: 0,  // number of rendered sidebars (excluding the default sidebar)
 			sidebars: {},     // hash of rendered sidebars by name
+
+			// state management
 			renderers: {},    // the plugins which render template/script links
-			escaped: {}       // contains metadata for the editor.escape and editor.unescape methods
+			escaped: {},      // contains metadata for the editor.escape and editor.unescape methods
+			$target: null,     // the primary input element (e.g., the edit textarea) for the current form
+			$editSummary: null // the edit summary input element (if relevant to the current form)
 		};
 
 
@@ -118,23 +126,14 @@ var pathoschild = pathoschild || {};
 		};
 
 		/**
-		 * Provides convenient access to singleton properties about the current page. (Changing the values may cause unexpected behaviour.)
-		 * @property {int} namespace The number of the current MediaWiki namespace.
-		 * @property {string} name The canonical name of the current MediaWiki namespace.
+		 * Provides a unified API for making changes to the current page's form.
 		 * @property {string} action The string representing the current MediaWiki action.
-		 * @property {pathoschild.TemplateScript} singleton The TemplateScript instance for the page.
-		 * @property {jQuery} $target The primary input element (e.g., the edit textarea) for the current form.
-		 * @property {jQuery} $editSummary The edit summary input element (if relevant to the current form).
-		 * @property {object} helper Provides shortcut methods for common operations.
 		 */
 		self.Context = (function() {
 			/*********
 			** Fields
 			*********/
 			var context = {
-				namespace: mw.config.get('wgNamespaceNumber'),
-				namespaceName: mw.config.get('wgCanonicalNamespace'),
-				pageName: mw.config.get('wgPageName'),
 				action: (function() {
 					var action = mw.config.get('wgAction');
 					var specialPage = mw.config.get('wgCanonicalSpecialPageName');
@@ -153,11 +152,7 @@ var pathoschild = pathoschild || {};
 						default:
 							return action;
 					}
-				})(),
-				isSectionNew: $('#wpTextbox1, #wpSummary').first().attr('id') === 'wpSummary', // if #wpSummary is first, it's not the edit summary (MediaWiki reused ID)
-				singleton: null,
-				$target: null,
-				$editSummary: null
+				})()
 			};
 
 
@@ -192,7 +187,7 @@ var pathoschild = pathoschild || {};
 					return codeEditor.getValue();
 
 				// no editor
-				return $('#wpTextbox1').val();
+				return state.$target.val();
 			};
 
 			/**
@@ -213,7 +208,7 @@ var pathoschild = pathoschild || {};
 				}
 
 				// no editor
-				context.$target.val(text);
+				state.$target.val(text);
 				return context;
 			};
 
@@ -230,7 +225,7 @@ var pathoschild = pathoschild || {};
 					return context.set(context.get().replace(search, replace));
 
 				// no editor
-				context.$target.val(function(i, val) { return val.replace(search, replace); });
+				state.$target.val(function(i, val) { return val.replace(search, replace); });
 				return context;
 			};
 
@@ -240,14 +235,7 @@ var pathoschild = pathoschild || {};
 			 * @returns The helper instance for chaining.
 			 */
 			context.append = function(text) {
-				// code editor
-				var codeEditor = _getCodeEditor();
-				if(codeEditor)
-					return context.set(context.get() + text);
-
-				// no editor
-				self.insertLiteral(context.$target, text, 'after');
-				return context;
+				return context.set(context.get() + text);
 			};
 
 			/**
@@ -267,7 +255,7 @@ var pathoschild = pathoschild || {};
 				});
 
 				context.set(text);
-				return state;
+				return context;
 			};
 
 			/**
@@ -299,7 +287,7 @@ var pathoschild = pathoschild || {};
 				}
 
 				// no editor
-				self.replaceSelection(context.$target, text);
+				self.replaceSelection(state.$target, text);
 				return context;
 			};
 
@@ -337,7 +325,7 @@ var pathoschild = pathoschild || {};
 			 */
 			context.appendEditSummary = function(summary) {
 				// get edit summary box
-				var $summary = context.$editSummary;
+				var $summary = state.$editSummary;
 				if(!$summary || $summary.val().indexOf(summary) !== -1)
 					return context;
 
@@ -360,7 +348,7 @@ var pathoschild = pathoschild || {};
 			 */
 			context.setEditSummary = function(summary) {
 				// get edit summary box
-				var $summary = context.$editSummary;
+				var $summary = state.$editSummary;
 				if(!$summary)
 					return context;
 
@@ -448,13 +436,13 @@ var pathoschild = pathoschild || {};
 		 * Bootstrap TemplateScript and hook into the UI. This method should only be called once the DOM is ready.
 		 */
 		var _initialise = function() {
-			if (self.Context.singleton)
+			if (state.isInited)
 				return;
 
 			// init context
-			self.Context.singleton = self;
-			self.Context.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
-			self.Context.$editSummary = $('#wpSummary:first');
+			state.isInited = true;
+			state.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
+			state.$editSummary = $('#wpSummary:first');
 
 			// init localisation
 			if(pathoschild.i18n && pathoschild.i18n.templatescript)
@@ -671,32 +659,30 @@ var pathoschild = pathoschild || {};
 		 * @param {int} id The identifier of the template to insert, as returned by Add().
 		 */
 		self.apply = function(id) {
-			/* get template */
-			if (!(id in state.templates)) {
-				_warn('can\'t apply template #' + id + ' because there\'s no template with that ID; there\'s something wrong with TemplateScript\'s internal state');
-				return;
-			}
-			var opts = state.templates[id];
+			// validate
+			if (!(id in state.templates))
+				return _warn('can\'t apply template #' + id + ' because there\'s no template with that ID; there\'s something wrong with TemplateScript\'s internal state');
+			if (!state.$target.length)
+				return _warn('can\'t apply template because the current page has no recognisable form.');
 
-			/* validate target input box */
-			if (!self.Context.$target.length) {
-				_warn('can\'t apply template because the current page has no recognisable form.');
-				return;
-			}
+			// apply template
+			var editor = self.Context;
+			var opts = state.templates[id];
+			var isSectionNew = editor.action === 'edit' && $('#wpTextbox1, #wpSummary').first().attr('id') === 'wpSummary'; // if #wpSummary is first, it's not the edit summary (MediaWiki reuses the ID)
 
 			/* insert template */
 			if (opts.template)
-				self.insertLiteral(self.Context.$target, opts.template, opts.position);
-			if (opts.editSummary && !self.Context.isSectionNew)
-				self.insertLiteral(self.Context.$editSummary, opts.editSummary, opts.editSummaryPosition);
-			if (opts.headline && self.Context.isSectionNew)
-				self.insertLiteral(self.Context.$editSummary, opts.headline, opts.headlinePosition);
+				self.insertLiteral(state.$target, opts.template, opts.position);
+			if (opts.editSummary && !isSectionNew)
+				self.insertLiteral(state.$editSummary, opts.editSummary, opts.editSummaryPosition);
+			if (opts.headline && isSectionNew)
+				self.insertLiteral(state.$editSummary, opts.headline, opts.headlinePosition);
 			if (opts.isMinorEdit)
-				$('#wpMinoredit').attr('checked', 'checked');
+				editor.options({ minor: true });
 
 			/* invoke script */
 			if (opts.script)
-				opts.script(self.Context);
+				opts.script(editor);
 		};
 
 		/**
@@ -712,7 +698,7 @@ var pathoschild = pathoschild || {};
 
 			/* match context values */
 			var context = self.Context;
-			if ($.inArray('*', template.forNamespaces) === -1 && !_isEqualOrIn(context.namespace, template.forNamespaces))
+			if ($.inArray('*', template.forNamespaces) === -1 && !_isEqualOrIn(mw.config.get('wgNamespaceNumber'), template.forNamespaces))
 				return false;
 			if ($.inArray('*', template.forActions) === -1 && !_isEqualOrIn(context.action, template.forActions))
 				return false;
@@ -831,7 +817,7 @@ var pathoschild = pathoschild || {};
 				scriptUrl: '//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js',
 				script: function(editor) {
 					var regexEditor = new pathoschild.RegexEditor(editor);
-					regexEditor.create(self.Context.$target);
+					regexEditor.create(state.$target);
 				}
 			});
 		}
