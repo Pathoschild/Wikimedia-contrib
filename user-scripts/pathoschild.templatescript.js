@@ -170,6 +170,14 @@ var pathoschild = pathoschild || {};
 				}
 			};
 
+			/**
+			 * Get the editor for the main input. This assumes there's no custom editor like
+			 * CodeEditor or VisualEditor.
+			 */
+			var _getFieldEditor = function() {
+				return context.for(state.$target);
+			};
+
 
 			/*********
 			** Public methods
@@ -177,6 +185,124 @@ var pathoschild = pathoschild || {};
 			/*****
 			** Any form
 			*****/
+			/**
+			 * Wraps an input field with shorthand methods for manipulating its contents. This
+			 * wrapper isn't compatible with custom editors like CodeEditor or VisualEditor, so it
+			 * shouldn't be used on the main edit input.
+			 * @param {jQuery|string} field The jQuery collection or selector for the field to edit.
+			 */
+			context.for = function(field) {
+				var wrapper = {};
+				
+				/*********
+				** Properties
+				*********/
+				/**
+				 * The jQuery collection containing the field being edited.
+				 */
+				wrapper.field = field = $(field);
+
+
+				/*********
+				** Public methods
+				*********/
+				/**
+				 * Get the value of the target element.
+				 */
+				wrapper.get = function() {
+					return field.val();
+				};
+
+				/**
+				 * Set the value of the target element.
+				 * @param {string} text The text to set.
+				 * @returns The wrapper for chaining.
+				 */
+				wrapper.set = function(text) {
+					field.val(text);
+					return wrapper;
+				};
+
+				/**
+				 * Perform a search & replace in the target element.
+				 * @param {string|regexp} search The search string or regular expression.
+				 * @param {string} replace The replace pattern.
+				 * @returns The wrapper for chaining.
+				 */
+				wrapper.replace = function(search, replace) {
+					field.val(function(i, val) { return val.replace(search, replace); });
+					return wrapper;
+				};
+
+				/**
+				 * Prepend text to the target element.
+				 * @param {string} text The text to append.
+				 * @returns The wrapper for chaining.
+				 */
+				wrapper.prepend = function(text) {
+					field.val(function(i, val) { return text + val; });
+					return wrapper;
+				};
+
+				/**
+				 * Append text to the target element.
+				 * @param {string} text The text to append.
+				 * @returns The wrapper for chaining.
+				 */
+				wrapper.append = function(text) {
+					field.val(function(i, val) { return val + text; });
+					return wrapper;
+				};
+
+				/**
+				 * Replace the selected text in the target field.
+				 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
+				 * @returns The wrapper for chaining.
+				 */
+				wrapper.replaceSelection = function(text) {
+					var box = field.get(0);
+					box.focus();
+
+					// standardise input
+					if(!$.isFunction(text)) {
+						var _t = text;
+						text = function() { return _t; };
+					}
+
+					// most browsers
+					if (box.selectionStart || box.selectionStart === false || box.selectionStart === '0' || box.selectionStart === 0) {
+						var startPos = box.selectionStart;
+						var endPos = box.selectionEnd;
+						var scrollTop = box.scrollTop;
+
+						var newText = text(box.value.substring(startPos, endPos));
+						box.value = box.value.substring(0, startPos) + newText + box.value.substring(endPos - 1 + text.length, box.value.length);
+						box.focus();
+
+						box.selectionStart = startPos + text.length;
+						box.selectionEnd = startPos + text.length;
+						box.scrollTop = scrollTop;
+					}
+
+					// older browsers
+					else if (document.selection) {
+						var selection = document.selection.createRange();
+						selection.text = text(selection.text);
+						box.focus();
+					}
+
+					// unknown implementation
+					else {
+						_warn('can\'t figure out the browser\'s cursor selection implementation, appending instead.');
+						box.value += text('');
+						return;
+					}
+					return wrapper;
+				};
+
+				return wrapper;
+			};
+
 			/**
 			 * Get the value of the target element.
 			 */
@@ -187,7 +313,7 @@ var pathoschild = pathoschild || {};
 					return codeEditor.getValue();
 
 				// no editor
-				return state.$target.val();
+				return _getFieldEditor().get();
 			};
 
 			/**
@@ -208,7 +334,7 @@ var pathoschild = pathoschild || {};
 				}
 
 				// no editor
-				state.$target.val(text);
+				_getFieldEditor().set(text);
 				return context;
 			};
 
@@ -225,7 +351,7 @@ var pathoschild = pathoschild || {};
 					return context.set(context.get().replace(search, replace));
 
 				// no editor
-				state.$target.val(function(i, val) { return val.replace(search, replace); });
+				_getFieldEditor().replace(search, replace);
 				return context;
 			};
 
@@ -284,10 +410,11 @@ var pathoschild = pathoschild || {};
 						? text(codeEditor.getSelectedText())
 						: text;
 					codeEditor.insert(selected); // overwrites selected text
+					return context;
 				}
 
 				// no editor
-				self.replaceSelection(state.$target, text);
+				_getFieldEditor().replaceSelection(text);
 				return context;
 			};
 
@@ -324,19 +451,15 @@ var pathoschild = pathoschild || {};
 			 * @returns The helper instance for chaining.
 			 */
 			context.appendEditSummary = function(summary) {
-				// get edit summary box
-				var $summary = state.$editSummary;
-				if(!$summary || $summary.val().indexOf(summary) !== -1)
-					return context;
+				var editor = context.for(state.$editSummary);
+				var text = editor.get();
 
-				// append summary
-				var text = $summary.val().replace(/\s*$/, '');
 				if(text.match(/\*\/$/))
-					$summary.val(text + ' ' + summary); // "/* section */ reason"
+					editor.append(' ' + summary); // "/* section */ reason"
 				else if(text.match(/[^\s]/))
-					$summary.val(text + ', ' + summary); // old summary, new summary
+					editor.append(', ' + summary); // old summary, new summary
 				else
-					$summary.val(summary); // new summary
+					editor.set(summary); // new summary
 
 				return context;
 			};
@@ -347,13 +470,7 @@ var pathoschild = pathoschild || {};
 			 * @returns The helper instance for chaining.
 			 */
 			context.setEditSummary = function(summary) {
-				// get edit summary box
-				var $summary = state.$editSummary;
-				if(!$summary)
-					return context;
-
-				// overwrite summary
-				$summary.val(summary);
+				context.for(state.$editSummary).set(summary);
 				return context;
 			};
 
