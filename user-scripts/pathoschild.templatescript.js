@@ -35,7 +35,7 @@ var pathoschild = pathoschild || {};
 		};
 		var state = {
 			// user configuration
-			config: mw.user.options.get('userjs-templatescript') || {},
+			config: mw.config.get('userjs-templatescript') || {},
 
 			// bootstrapping
 			dependencies: [], // internal lookup used to manage asynchronous script dependencies
