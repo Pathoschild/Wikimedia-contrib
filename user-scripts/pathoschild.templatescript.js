@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.0';
+		self.version = '2.0.1';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -175,7 +175,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			 * CodeEditor or VisualEditor.
 			 */
 			var _getFieldEditor = function() {
-				return context.for(state.$target);
+				return context.forField(state.$target);
 			};
 
 
@@ -191,7 +191,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			 * shouldn't be used on the main edit input.
 			 * @param {jQuery|string} field The jQuery collection or selector for the field to edit.
 			 */
-			context.for = function(field) {
+			context.forField = function(field) {
 				var wrapper = {};
 				
 				/*********
@@ -200,7 +200,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				/**
 				 * The jQuery collection containing the field being edited.
 				 */
-				wrapper.field = field = $(field);
+				wrapper.field = field = $(field).first();
 
 
 				/*********
@@ -460,7 +460,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			 * @returns The helper instance for chaining.
 			 */
 			context.appendEditSummary = function(summary) {
-				var editor = context.for(state.$editSummary);
+				var editor = context.forField(state.$editSummary);
 				var text = editor.get();
 
 				if(text.match(/\*\/$/))
@@ -479,7 +479,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			 * @returns The helper instance for chaining.
 			 */
 			context.setEditSummary = function(summary) {
-				context.for(state.$editSummary).set(summary);
+				context.forField(state.$editSummary).set(summary);
 				return context;
 			};
 
@@ -697,7 +697,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/**
 		 * Insert text at the specified position using a field editor. This should only be used to
 		 * map template options to the underlying editor.
-		 * @param {Context|object} editor The field editor, either Context or the object returned by Context.for(...).
+		 * @param {Context|object} editor The field editor, either Context or the object returned by Context.forField(...).
 		 * @param {string} text The text to insert.
 		 * @param {Position} position The position at which to insert the text.
 		 */
@@ -813,9 +813,9 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			if (opts.template)
 				_insert(editor, opts.template, opts.position);
 			if (opts.editSummary && !isSectionNew)
-				_insert(editor.for(state.$editSummary), opts.editSummary, opts.editSummaryPosition);
+				_insert(editor.forField(state.$editSummary), opts.editSummary, opts.editSummaryPosition);
 			if (opts.headline && isSectionNew)
-				_insert(editor.for(state.$editSummary), opts.headline, opts.headlinePosition);
+				_insert(editor.forField(state.$editSummary), opts.headline, opts.headlinePosition);
 			if (opts.isMinorEdit)
 				editor.options({ minor: true });
 
