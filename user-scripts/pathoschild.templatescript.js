@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.0.1';
+		self.version = '2.0.2';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -552,10 +552,6 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			state.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
 			state.$editSummary = $('#wpSummary:first');
 
-			// init localisation
-			if(pathoschild.i18n && pathoschild.i18n.templatescript)
-				$.extend(self.strings, pathoschild.i18n.templatescript);
-
 			// init plugins
 			self.addRenderer('sidebar', _renderSidebar);
 
@@ -849,8 +845,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*****
 		** Bootstrap TemplateScript
 		*****/
+		// init localisation
+		if(pathoschild.i18n && pathoschild.i18n.templatescript)
+			$.extend(self.strings, pathoschild.i18n.templatescript);
+
+		// init regex editor
 		if(state.config.regexEditor !== false) {
-			// init regex editor
 			self.add({
 				name: self.strings.regexEditor,
 				scriptUrl: '//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js',
@@ -860,6 +860,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				}
 			});
 		}
+
+		// init TemplateScript
 		$(_initialise);
 		return self;
 	})();
