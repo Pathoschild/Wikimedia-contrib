@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.0.2';
+		self.version = '2.0.3';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -509,31 +509,92 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		** These are simply functions that accept a template object, add the UI to the page, and return a jQuery reference to the created entry.
 		***/
 		/**
-		 * Add a sidebar entry for a template.
-		 * @param {Template} template The template for which to create an entry.
-		 * @param {TemplateScript} instance The script instance.
-		 * @returns the generated item.
+		 * Get a rendering plugin that generates the default sidebar UI. This function returns a generated function matching the expected plugin interface.
 		 */
-		var _renderSidebar = function(template, instance) {
-			// build the sidebar
-			var category = template.category;
-			if (!(category in state.sidebars)) {
-				var id = state.sidebars[category] = 'p-templatescript-' + state.sidebarCount;
-				pathoschild.util.mediawiki.AddPortlet(id, category);
-				++state.sidebarCount;
-			}
-			var sidebarID = state.sidebars[category];
+		var _getSidebarRenderer = function() {
+			/*********
+			** Private methods
+			*********/
+			/**
+			 * Add a navigation menu portlet to the sidebar.
+			 * @param {string} id The unique portlet ID.
+			 * @param {string} name The display name displayed in the portlet header.
+			 */
+			var _addPortlet = function(id, name) {
+				// copy the portlet structure for the current skin
+				var sidebar = $('#p-tb').clone().attr('id', id);
+				sidebar.find('h1, h2, h3, h4, h5').first().text(name);
+				sidebar.find('ul').empty();
+				$('#p-tb').parent().append(sidebar);
 
-			// add link
-			var $item = pathoschild.util.mediawiki.AddPortletLink(sidebarID, template.name, 'ts-link-' + template.id, template.tooltip, template.accessKey, function() { instance.apply(template.id); });
-			if(template.accessKey) {
-				$item.append(
-					$('<small>')
-						.addClass('ts-shortcut')
-						.append(template.accessKey)
-				);
-			}
-			return $item;
+				return sidebar;
+			};
+
+			/**
+			 * Add a link to a navigation sidebar menu.
+			 * @param {string} portletID The unique navigation portlet ID.
+			 * @param {string} text The link text.
+			 * @param {string} id A unique ID for the link.
+			 * @param {string} accessKey A keyboard shortcut key which invokes the template or script directly; see [[w:Wikipedia:Keyboard shortcuts]].
+			 * @param {string} tooltip A short explanation of the template or script, typically shown when the user hovers their cursor over the link.
+			 * @param {string|function} target The link URI or callback.
+			 * @return
+			 */
+			var _addPortletLink = function(portletID, text, id, tooltip, accessKey, target) {
+				// create link
+				var isCallback = $.isFunction(target);
+				var uri = isCallback ? '#' : target;
+				var link = $(mw.util.addPortletLink(portletID, uri, text, id, tooltip || ''));
+				if (isCallback)
+					link.click(function (e) { e.preventDefault(); target(e); });
+
+				// add access key
+				if(accessKey) {
+					// steal access key if needed
+					var previousTarget = $('[accesskey="' + accessKey.replace('"', '\\"') + '"]')
+					if(previousTarget.length) {
+						_warn('overwrote access key [' + accessKey + '] previously assigned to "' + previousTarget.text() + '".');
+						previousTarget.removeAttr('accesskey');
+					}
+
+					// set key
+					link.find('a:first').attr('accesskey', accessKey);
+				}
+
+				return link;
+			};
+
+
+			/*********
+			** Plugin method
+			*********/
+			/**
+			 * Add a sidebar entry for a template.
+			 * @param {Template} template The template for which to create an entry.
+			 * @param {TemplateScript} instance The script instance.
+			 * @returns the generated item.
+			 */
+			return function(template, instance) {
+				// build the sidebar
+				var category = template.category;
+				if (!(category in state.sidebars)) {
+					var id = state.sidebars[category] = 'p-templatescript-' + state.sidebarCount;
+					_addPortlet(id, category);
+					++state.sidebarCount;
+				}
+				var sidebarID = state.sidebars[category];
+
+				// add link
+				var $item = _addPortletLink(sidebarID, template.name, 'ts-link-' + template.id, template.tooltip, template.accessKey, function() { instance.apply(template.id); });
+				if(template.accessKey) {
+					$item.append(
+						$('<small>')
+							.addClass('ts-shortcut')
+							.append(template.accessKey)
+					);
+				}
+				return $item;
+			};
 		};
 
 
@@ -553,7 +614,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			state.$editSummary = $('#wpSummary:first');
 
 			// init plugins
-			self.addRenderer('sidebar', _renderSidebar);
+			self.addRenderer('sidebar', _getSidebarRenderer());
 
 			// init UI
 			mw.util.addCSS('.ts-shortcut { margin-left:.5em; color:#CCC; }');
