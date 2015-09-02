@@ -138,28 +138,32 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 */
 		var _addInputs = function() {
 			var id = $('.tsre-pattern').length + 1;
+			var searchID = 'tsre-search-' + id;
+			var replaceID = 'tsre-replace-' + id;
 			$('#' + state.containerID + ' ol:first')
 				.append(
 					_make('li')
-					.attr('class', 'tsre-pattern')
+					.addClass('tsre-pattern')
 					.append(
 						_make('label')
-						.attr('for', 'tsre-search-' + id)
+						.attr('for', searchID)
 						.text(self.strings.search + ':')
 					)
 					.append(
-						_make('textarea')
-						.attr({ 'name': 'tsre-search-' + id, 'tabindex': id + 100 })
+						_make('pre')
+						.attr({ 'contenteditable': true, 'name': searchID, 'tabindex': id + 100 })
+						.addClass(searchID + ' search')
 					)
 					.append(_make('br'))
 					.append(
 						_make('label')
-						.attr('for', 'tsre-replace-' + id)
+						.attr('for', replaceID)
 						.text(self.strings.replace + ':')
 					)
 					.append(
-						_make('textarea')
-						.attr({ 'name': 'tsre-replace-' + id, 'tabindex': id + 101 })
+						_make('pre')
+						.addClass('replace')
+						.attr({ 'contenteditable': true, 'name': replaceID, 'tabindex': id + 101 })
 					)
 				);
 		};
@@ -173,8 +177,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				// extract input
 				var $item = $(item);
 				var pattern = {
-					'input': $item.find('textarea:eq(0)').val(),
-					'replace': $item.find('textarea:eq(1)').val()
+					'input': $item.find('pre.search').text(),
+					'replace': $item.find('pre.replace').text()
 				};
 
 				// parse search expression
@@ -227,8 +231,11 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 			$('.tsre-pattern').each(function(i, item) {
 				var $item = $(item);
-				$item.find('textarea:eq(0)').val(patterns[i].input);
-				$item.find('textarea:eq(1)').val(patterns[i].replace);
+				var $search = $item.find('pre.search');
+				var $replace = $item.find('pre.replace');
+
+				$search.text(patterns[i].input);
+				$replace.text(patterns[i].replace);
 			});
 		};
 
