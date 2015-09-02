@@ -85,7 +85,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			containerID: 'tsre', // unique ID of the regex editor container
 			undoText: null,      // the original text before the last patterns were applied
 			$target: null,       // the DOM elements before which to insert the regex editor UI
-			editor: null         // the TemplateScript editor
+			editor: null,        // the TemplateScript editor
+			initialisation: null // a promise completed when initialisation is done
 		};
 		self.config = $.extend({ alwaysVisible: false }, config);
 
@@ -103,14 +104,33 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 		/**
 		 * Load the scripts required by the regex editor.
-		 * @param {function} callback The method to invoke (with no arguments) when the dependencies have been loaded.
+		 * @returns A promise completed when the dependencies have been loaded.
 		 */
-		var _loadDependencies = function(callback) {
-			var invokeCallback = function() { callback.call(pathoschild.RegexEditor); };
-			if (pathoschild.util)
-				invokeCallback();
-			else
-				$.ajax({ url:'//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
+		var _initialise = function() {
+			// already initialising or initialised
+			if(state.initialisation)
+				return state.initialisation;
+
+			// apply localisation
+			if(pathoschild.i18n && pathoschild.i18n.regexeditor)
+				$.extend(self.strings, pathoschild.i18n.regexeditor);
+
+			// add CSS
+			mw.loader.load('//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.css', 'text/css');
+			pathoschild.util.AddStyles(
+				  '#tsre { position: relative; margin: 0.5em; padding: 0.5em; border: 1px solid #AAA; border-radius: 15px; line-height: normal; }\n'
+				+ '.tsre-close { position: absolute; top: 10px; right: 10px; }\n'
+				+ '.tsre-warning { color: red; }\n'
+				+ '.tsre-sessions { color: #AAA; }\n'
+				+ '.tsre-session-tag { border: 1px solid #057BAC; border-radius: 2px; background: #1DA1D8; padding: 0 2px; }\n'
+				+ '.tsre-session-tag a { color: #FFF; }\n'
+				+ 'a.tsre-delete-session { color: red; font-family: monospace; font-weight: bold; }'
+			);
+
+			// load dependencies
+			return state.initialisation = $.when(
+				$.ajax('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', { dataType:'script', crossDomain:true, cached:true })
+			);
 		};
 
 		/**
@@ -202,9 +222,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		var _loadSession = function(sessionName) {
 			var patterns = pathoschild.util.storage.Read('tsre-sessions.' + sessionName);
 			self.reset();
-			for (var i = 1, len = patterns.length; i < len; i++) {
+			for (var i = 1, len = patterns.length; i < len; i++)
 				_addInputs();
-			}
 
 			$('.tsre-pattern').each(function(i, item) {
 				var $item = $(item);
@@ -270,27 +289,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 * @param {object} editor The TemplateScript editor (if available).
 		 */
 		self.create = function($target, editor) {
-			// apply localisation
-			if(pathoschild.i18n && pathoschild.i18n.regexeditor)
-				$.extend(self.strings, pathoschild.i18n.regexeditor);
-
-			_loadDependencies(function() {
+			_initialise().then(function() {
 				// initialize state
 				state.$target = $target;
 				state.editor = editor || TemplateScriptShim($target);
 				var $container = $('#' + state.containerID);
 				var $warning = $('#' + state.containerID + ' .tsre-warning');
-
-				// add CSS
-				pathoschild.util.AddStyles(
-					  '#tsre { position: relative; margin: 0.5em; padding: 0.5em; border: 1px solid #AAA; border-radius: 15px; line-height: normal; }\n'
-					+ '.tsre-close { position: absolute; top: 10px; right: 10px; }\n'
-					+ '.tsre-warning { color: red; }\n'
-					+ '.tsre-sessions { color: #AAA; }\n'
-					+ '.tsre-session-tag { border: 1px solid #057BAC; border-radius: 2px; background: #1DA1D8; padding: 0 2px; }\n'
-					+ '.tsre-session-tag a { color: #FFF; }\n'
-					+ 'a.tsre-delete-session { color: red; font-family: monospace; font-weight: bold; }'
-				);
 
 				// display reset warning if already open (unless it's already displayed)
 				if ($container.length) {
@@ -333,7 +337,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 					}
 				}
 
-					// build form
+				// build form
 				else {
 					// container
 					$container =
