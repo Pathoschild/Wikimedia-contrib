@@ -61,7 +61,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '0.11';
+		self.version = '1.0-alpha';
 		self.strings = {
 			header: 'Regex editor', // the header text shown in the form
 			search: 'Search',       // the search input label
@@ -129,8 +129,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 			// load dependencies
 			return state.initialisation = $.when(
-				$.ajax('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', { dataType:'script', crossDomain:true, cached:true })
-			);
+				$.ajax('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', { dataType:'script', crossDomain:true, cached:true }),
+				$.ajax('//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.js', { dataType:'script', crossDomain:true, cached:true }),
+				$.ajax('//tools-static.wmflabs.org/cdnjs/ajax/libs/rangy/1.3.0/rangy-core.js', { dataType:'script', crossDomain:true, cached:true })
+			).then(function() {
+				return $.ajax('//tools-static.wmflabs.org/cdnjs/ajax/libs/rangy/1.3.0/rangy-textrange.js', { dataType:'script', crossDomain:true, cached:true });
+			});
 		};
 
 		/**
@@ -152,7 +156,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 					.append(
 						_make('pre')
 						.attr({ 'contenteditable': true, 'name': searchID, 'tabindex': id + 100 })
-						.addClass(searchID + ' search')
+						.addClass(searchID + ' search regex')
+						.on('keyup', function() {
+							var selection = rangy.getSelection().saveCharacterRanges(this);
+							RegexColorizer.colorizeAll(searchID);
+							rangy.getSelection().restoreCharacterRanges(this, selection);
+						})
 					)
 					.append(_make('br'))
 					.append(
@@ -236,6 +245,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 				$search.text(patterns[i].input);
 				$replace.text(patterns[i].replace);
+				RegexColorizer.colorizeAll($search.attr('id'));
 			});
 		};
 
