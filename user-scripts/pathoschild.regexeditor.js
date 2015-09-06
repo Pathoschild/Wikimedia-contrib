@@ -117,15 +117,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				$.extend(self.strings, pathoschild.i18n.regexeditor);
 
 			// add CSS
+			mw.loader.load('//tools-static.wmflabs.org/meta/scripts/pathoschild-regexeditor.css', 'text/css');
 			mw.loader.load('//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.css', 'text/css');
-			pathoschild.util.AddStyles(
-				  '#regex-editor { position: relative; margin: 0.5em; padding: 0.5em; border: 1px solid #AAA; border-radius: 15px; line-height: normal; }\n'
-				+ '#regex-editor .re-close { position: absolute; top: 10px; right: 10px; }\n'
-				+ '#regex-editor .re-sessions { color: #AAA; }\n'
-				+ '#regex-editor .re-session { border: 1px solid #057BAC; border-radius: 2px; background: #1DA1D8; padding: 0 2px; }\n'
-				+ '#regex-editor .re-session a { color: #FFF; }\n'
-				+ '#regex-editor a.re-delete-session { color: red; font-family: monospace; font-weight: bold; }'
-			);
 
 			// load dependencies
 			return state.initialisation = $.when(
@@ -271,7 +264,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 */
 		var _populateSessionList = function() {
 			var sessions = pathoschild.util.storage.Read('tsre-sessions') || [];
-			var container = $('.re-sessions').empty();
+			var container = $('#re-sessions');
+			container.find('.re-session-apply, .re-session-delete').remove();
 			$.each(sessions, function() {
 				var session = this;
 
@@ -280,20 +274,18 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 					class: 're-session',
 					append: [
 						// apply link
-						_make('a', {
+						_make('button', {
+							class: 're-session-apply',
 							text: session,
 							title: self.strings.loadSession.replace(/\{name\}/g, session),
-							href: '#',
 							click: function() { _loadSession(session); return false; }
 						}),
-						' ',
 
 						// delete link
-						_make('a', {
+						_make('button', {
+							class: 're-session-delete',
 							text: 'x',
 							title: self.strings.deleteSession.replace(/\{name\}/g, session),
-							href: '#',
-							class: 're-delete-session',
 							click: function() { _deleteSession(session); return false; }
 						})
 					],
@@ -330,29 +322,22 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 						// form
 						_make('form', {
+							submit: function() { return false; }, // suppress default submit behaviour
 							append: [
 								// input list
 								_make('ol'),
 
 								// exit button
-								_make('div', {
+								_make('button', {
 									class: 're-close',
-									append: [
-										_make('a', {
-											title: self.strings.closeEditor,
-											href: '#',
-											click: function() {
-												if(self.config.alwaysVisible)
-													self.reset();
-												else
-													self.remove();
-												return false;
-											},
-											append: [
-												_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/4/47/Noun_project_-_supprimer_round.svg/16px-Noun_project_-_supprimer_round.svg.png' })
-											]
-										})
-									]
+									title: self.strings.closeEditor,
+									click: function() {
+										if(self.config.alwaysVisible)
+											self.reset();
+										else
+											self.remove();
+										return false;
+									}
 								}),
 
 								// field buttons
@@ -360,67 +345,39 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 									class: 're-buttons',
 									append: [
 										// add button
-										_make('a', {
-											title: self.strings.addPatternsTooltip,
+										_make('button', {
 											class: 're-add',
-											'href': '#',
-											click: function() { _addInputs(); return false; },
-											append: [
-												_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Noun_project_-_plus_round.svg/16px-Noun_project_-_plus_round.svg.png' }),
-												' ' + self.strings.addPatterns
-											]
+											text: self.strings.addPatterns,
+											title: self.strings.addPatternsTooltip,
+											click: _addInputs
 										}),
-										' | ',
 
 										// execute button
-										_make('a', { 
-											title: self.strings.applyTooltip,
+										_make('button', {
 											class: 're-execute',
-											href: '#',
-											click: function() { self.execute(); return false; },
-											append: [
-												_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/5/57/Noun_project_-_crayon.svg/16px-Noun_project_-_crayon.svg.png' }),
-												' ' + self.strings.apply
-											]
+											text: self.strings.apply,
+											title: self.strings.applyTooltip,
+											click: self.execute
 										}),
 
 										// undo button
-										_make('span', { 
+										_make('button', {
 											class: 're-undo',
-											append: [
-												' | ',
-												_make('a', {
-													title: self.strings.undoTooltip,
-													href: '#',
-													click: function() { self.undo(); return false; },
-													append: [
-														_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/1/13/Noun_project_-_Undo.svg/16px-Noun_project_-_Undo.svg.png' }),
-														' ' + self.strings.undo
-													]
-												})
-											]
+											text: self.strings.undo,
+											title: self.strings.undoTooltip,
+											click: self.undo
 										}).hide(),
 
-
-										// session buttons
+										// save button & session list
 										_make('span', {
-											class: 're-session-buttons',
-											append: [
-												' | ',
-												_make('a', {
-													title: self.strings.saveTooltip,
-													class: 're-save',
-													href: '#',
-													click: function() { _saveSession(); return false; },
-													append: [
-														_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Noun_project_-_USB.svg/16px-Noun_project_-_USB.svg.png' }),
-														' ' + self.strings.save
-													]
-												})
-											]
-										}),
-										' ',
-										_make('span', { class: 're-sessions' })
+											id: 're-sessions',
+											append: _make('button', {
+												class: 're-save',
+												text: self.strings.save,
+												title: self.strings.saveTooltip,
+												click: _saveSession
+											})
+										})
 									]
 								})
 							]
@@ -435,7 +392,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 				// hide sessions if browser doesn't support it
 				if (!pathoschild.util.storage.IsAvailable())
-					$('.re-session-buttons').hide();
+					$('#re-sessions').hide();
 			});
 		};
 

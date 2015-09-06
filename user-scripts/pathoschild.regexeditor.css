@@ -1,0 +1,74 @@
+#regex-editor {
+	position: relative;
+	margin: 0.5em;
+	padding: 0.5em;
+	border: 1px solid #AAA;
+	border-radius: 15px;
+	line-height: normal;
+}
+
+#regex-editor .re-close,
+#regex-editor .re-add,
+#regex-editor .re-execute,
+#regex-editor .re-undo,
+#regex-editor .re-save,
+#regex-editor .re-session-apply,
+#regex-editor .re-session-delete {
+	background-color: transparent;
+	border: 0;
+	cursor: pointer;
+}
+
+#regex-editor .re-close {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 16px;
+	height: 16px;
+	background: url("//upload.wikimedia.org/wikipedia/commons/thumb/4/47/Noun_project_-_supprimer_round.svg/16px-Noun_project_-_supprimer_round.svg.png") no-repeat;
+}
+
+#regex-editor .re-add,
+#regex-editor .re-execute,
+#regex-editor .re-undo,
+#regex-editor .re-save {
+	margin-right: 0.5em;
+	padding-left: 18px;
+}
+
+#regex-editor .re-add {
+	background: url("//upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Noun_project_-_plus_round.svg/16px-Noun_project_-_plus_round.svg.png") no-repeat;
+}
+
+#regex-editor .re-execute {
+	background: url("//upload.wikimedia.org/wikipedia/commons/thumb/5/57/Noun_project_-_crayon.svg/16px-Noun_project_-_crayon.svg.png") no-repeat;
+}
+
+#regex-editor .re-undo {
+	background: url("//upload.wikimedia.org/wikipedia/commons/thumb/1/13/Noun_project_-_Undo.svg/16px-Noun_project_-_Undo.svg.png") no-repeat;
+}
+
+#regex-editor .re-save {
+	background: url("//upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Noun_project_-_USB.svg/16px-Noun_project_-_USB.svg.png") no-repeat;
+}
+
+#regex-editor #re-sessions {
+	padding: 2px;
+	border: 1px solid #CCC;
+	border-radius: 2px;
+}
+
+#regex-editor .re-session-apply {
+	padding: 2px;
+	font-size: 0.9em;
+	background-color: #6C6;
+	border-radius: 2px;
+}
+
+#regex-editor .re-session-delete {
+	padding: 0;
+	margin-right: 0.5em;
+	font-family: monospace;
+	font-weight: bold;
+	color:red;
+}
