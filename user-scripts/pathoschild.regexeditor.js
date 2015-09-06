@@ -69,7 +69,6 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			nameSession: 'Enter a name for this session', // the prompt shown when saving the session
 			loadSession: 'Load session "{name}"',         // tooltip shown for a saved session, where {name} is replaced with the session name
 			deleteSession: 'Delete session "{name}"',     // tooltip shown for the delete icon on a saved session, where {name} is replaced with the session name
-			launchConflict: 'You are launching the regex editor tool, but it\'s already open. Do you want to {resetForm|text=reset the form} or {cancelForm|text=cancel the form}?', // the message shown when relaunching the form, where {resetForm} and {cancelForm} will be replaced with appropriate form elements.
 			closeEditor: 'Close the regex editor',        // tooltip shown for the close-editor icon
 			addPatterns: 'add patterns',                  // button text
 			addPatternsTooltip: 'Add search & replace boxes', // button tooltip
@@ -82,7 +81,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			instructions: 'Enter any number of regular expressions to execute. The search pattern can be like "{code|text=search pattern}" or "{code|text=/pattern/modifiers}", and the replace pattern can contain reference groups like "{code|text=$1}" (see {helplink|text=tutorial|title=JavaScript regex tutorial|url=http://www.regular-expressions.info/javascript.html}).'
 		};
 		var state = {
-			containerID: 'tsre', // unique ID of the regex editor container
+			containerID: 'regex-editor', // unique ID of the regex editor container
 			undoText: null,      // the original text before the last patterns were applied
 			$target: null,       // the DOM elements before which to insert the regex editor UI
 			editor: null,        // the TemplateScript editor
@@ -121,9 +120,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			// add CSS
 			mw.loader.load('//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.css', 'text/css');
 			pathoschild.util.AddStyles(
-				  '#tsre { position: relative; margin: 0.5em; padding: 0.5em; border: 1px solid #AAA; border-radius: 15px; line-height: normal; }\n'
+				  '#regex-editor { position: relative; margin: 0.5em; padding: 0.5em; border: 1px solid #AAA; border-radius: 15px; line-height: normal; }\n'
 				+ '.tsre-close { position: absolute; top: 10px; right: 10px; }\n'
-				+ '.tsre-warning { color: red; }\n'
 				+ '.tsre-sessions { color: #AAA; }\n'
 				+ '.tsre-session-tag { border: 1px solid #057BAC; border-radius: 2px; background: #1DA1D8; padding: 0 2px; }\n'
 				+ '.tsre-session-tag a { color: #FFF; }\n'
@@ -320,169 +318,125 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				state.$target = $target;
 				state.editor = editor || TemplateScriptShim($target);
 				var $container = $('#' + state.containerID);
-				var $warning = $('#' + state.containerID + ' .tsre-warning');
-
-				// display reset warning if already open (unless it's already displayed)
-				if ($container.length) {
-					if (!$warning.length) {
-						// create container
-						$warning = _make('div', {
-							class: 'tsre-warning',
-							text: self.strings.launchConflict
-						});
-
-						// inject form elements
-						$warning.html($warning.html().replace(/(\{(reset|cancel)Form.+?\})/g, '<placeholder class="$2">$1</placeholder>'));
-						$warning.find('placeholder.reset').each(function(i, placeholder) {
-							placeholder = $(placeholder);
-							var format = placeholder.text().match(/\{resetForm\|text=(.+)\}/);
-							var text = format && format[1];
-
-							placeholder.replaceWith(_make('a', {
-								text: text,
-								title: text,
-								class: 'tsre-reset',
-								href: '#',
-								click: function() { self.reset(); return false; }
-							}));
-						});
-						$warning.find('placeholder.cancel').each(function(i, placeholder) {
-							placeholder = $(placeholder);
-							var format = placeholder.text().match(/\{cancelForm\|text=(.+)\}/);
-							var text = format && format[1];
-
-							placeholder.replaceWith(_make('a', {
-								text: text,
-								title: text,
-								class: 'tsre-reset',
-								href: '#',
-								click: function() { $warning.remove(); return false; }
-							}));
-						});
-
-						// add to DOM
-						$warning.prependTo($container);
-					}
-				}
+				if ($container.length)
+					return; // already loaded
 
 				// build form
-				else {
-					$container = _make('div', {
-						id: state.containerID,
-						append: [
-							// header
-							_make('h3', { text: self.strings.header }),
-							self.createInstructions(_make('p')),
+				$container = _make('div', {
+					id: state.containerID,
+					append: [
+						// header
+						_make('h3', { text: self.strings.header }),
+						self.createInstructions(_make('p')),
 
-							// form
-							_make('form', {
-								append: [
-									// input list
-									_make('ol'),
+						// form
+						_make('form', {
+							append: [
+								// input list
+								_make('ol'),
 
-									// exit button
-									_make('div', {
-										class: 'tsre-close',
-										append: [
-											_make('a', {
-												title: self.strings.closeEditor,
-												href: '#',
-												click: function() {
-													if(self.config.alwaysVisible)
-														self.reset();
-													else
-														self.remove();
-													return false;
-												},
-												append: [
-													_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/4/47/Noun_project_-_supprimer_round.svg/16px-Noun_project_-_supprimer_round.svg.png' })
-												]
-											})
-										]
-									}),
+								// exit button
+								_make('div', {
+									class: 'tsre-close',
+									append: [
+										_make('a', {
+											title: self.strings.closeEditor,
+											href: '#',
+											click: function() {
+												if(self.config.alwaysVisible)
+													self.reset();
+												else
+													self.remove();
+												return false;
+											},
+											append: [
+												_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/4/47/Noun_project_-_supprimer_round.svg/16px-Noun_project_-_supprimer_round.svg.png' })
+											]
+										})
+									]
+								}),
 
-									// field buttons
-									_make('div', {
-										class: 'tsre-buttons',
-										append: [
-											// add button
-											_make('a', {
-												title: self.strings.addPatternsTooltip,
-												class: 'tsre-add',
-												'href': '#',
-												click: function() { _addInputs(); return false; },
-												append: [
-													_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Noun_project_-_plus_round.svg/16px-Noun_project_-_plus_round.svg.png' }),
-													' ' + self.strings.addPatterns
-												]
-											}),
-											' | ',
+								// field buttons
+								_make('div', {
+									class: 'tsre-buttons',
+									append: [
+										// add button
+										_make('a', {
+											title: self.strings.addPatternsTooltip,
+											class: 'tsre-add',
+											'href': '#',
+											click: function() { _addInputs(); return false; },
+											append: [
+												_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Noun_project_-_plus_round.svg/16px-Noun_project_-_plus_round.svg.png' }),
+												' ' + self.strings.addPatterns
+											]
+										}),
+										' | ',
 
-											// execute button
-											_make('a', { 
-												title: self.strings.applyTooltip,
-												class: 'tsre-execute',
-												href: '#',
-												click: function() { self.execute(); return false; },
-												append: [
-													_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/5/57/Noun_project_-_crayon.svg/16px-Noun_project_-_crayon.svg.png' }),
-													' ' + self.strings.apply
-												]
-											}),
+										// execute button
+										_make('a', { 
+											title: self.strings.applyTooltip,
+											class: 'tsre-execute',
+											href: '#',
+											click: function() { self.execute(); return false; },
+											append: [
+												_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/5/57/Noun_project_-_crayon.svg/16px-Noun_project_-_crayon.svg.png' }),
+												' ' + self.strings.apply
+											]
+										}),
 
-											// undo button
-											_make('span', { 
-												class: 'tsre-undo',
-												append: [
-													' | ',
-													_make('a', {
-														title: self.strings.undoTooltip,
-														href: '#',
-														click: function() { self.undo(); return false; },
-														append: [
-															_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/1/13/Noun_project_-_Undo.svg/16px-Noun_project_-_Undo.svg.png' }),
-															' ' + self.strings.undo
-														]
-													})
-												]
-											}).hide(),
+										// undo button
+										_make('span', { 
+											class: 'tsre-undo',
+											append: [
+												' | ',
+												_make('a', {
+													title: self.strings.undoTooltip,
+													href: '#',
+													click: function() { self.undo(); return false; },
+													append: [
+														_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/1/13/Noun_project_-_Undo.svg/16px-Noun_project_-_Undo.svg.png' }),
+														' ' + self.strings.undo
+													]
+												})
+											]
+										}).hide(),
 
 
-											// session buttons
-											_make('span', {
-												class: 'tsre-session-buttons',
-												append: [
-													' | ',
-													_make('a', {
-														title: self.strings.saveTooltip,
-														class: 'tsre-save',
-														href: '#',
-														click: function() { _saveSession(); return false; },
-														append: [
-															_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Noun_project_-_USB.svg/16px-Noun_project_-_USB.svg.png' }),
-															' ' + self.strings.save
-														]
-													})
-												]
-											}),
-											' ',
-											_make('span', { class: 'tsre-sessions' })
-										]
-									})
-								]
-							})
-						]
-					});
-					$container.insertBefore(state.$target);
+										// session buttons
+										_make('span', {
+											class: 'tsre-session-buttons',
+											append: [
+												' | ',
+												_make('a', {
+													title: self.strings.saveTooltip,
+													class: 'tsre-save',
+													href: '#',
+													click: function() { _saveSession(); return false; },
+													append: [
+														_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Noun_project_-_USB.svg/16px-Noun_project_-_USB.svg.png' }),
+														' ' + self.strings.save
+													]
+												})
+											]
+										}),
+										' ',
+										_make('span', { class: 'tsre-sessions' })
+									]
+								})
+							]
+						})
+					]
+				});
+				$container.insertBefore(state.$target);
 
-					// add first pair of input boxes
-					_addInputs();
-					_populateSessionList();
+				// add first pair of input boxes
+				_addInputs();
+				_populateSessionList();
 
-					// hide sessions if browser doesn't support it
-					if (!pathoschild.util.storage.IsAvailable())
-						$('.tsre-session-buttons').hide();
-				}
+				// hide sessions if browser doesn't support it
+				if (!pathoschild.util.storage.IsAvailable())
+					$('.tsre-session-buttons').hide();
 			});
 		};
 

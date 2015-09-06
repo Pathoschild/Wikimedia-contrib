@@ -16,7 +16,6 @@ pathoschild.i18n = {
 		nameSession: 'Forneça um nome para esta sessão', // the prompt shown when saving the session
 		loadSession: 'Carregar esta sessão "{name}"',         // tooltip shown for a saved session, where {name} is replaced with the session name
 		deleteSession: 'Apagar sessão "{name}"',     // tooltip shown for the delete icon on a saved session, where {name} is replaced with the session name
-		launchConflict: 'Você está carregando a ferramenta para editar expressões regulares, mas ela já está aberta. Deseja {resetForm|text=restaurar o formulário} ou {cancelForm|text=cancelar o formulário}?', // the message shown when relaunching the form, where {resetForm} and {cancelForm} will be replaced with appropriate form elements.
 		closeEditor: 'Fechar o editor de expressões regulares',        // tooltip shown for the close-editor icon
 		addPatterns: 'incluir padrões',                  // button text
 		addPatternsTooltip: 'Incluir caixas de localizar e substituir', // button tooltip
