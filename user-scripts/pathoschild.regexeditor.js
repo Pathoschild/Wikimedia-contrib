@@ -117,7 +117,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				$.extend(self.strings, pathoschild.i18n.regexeditor);
 
 			// add CSS
-			mw.loader.load('//tools-static.wmflabs.org/meta/scripts/pathoschild-regexeditor.css', 'text/css');
+			mw.loader.load('//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.css', 'text/css');
 			mw.loader.load('//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.css', 'text/css');
 
 			// load dependencies
@@ -135,38 +135,49 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 */
 		var _addInputs = function() {
 			var id = $('.re-pattern').length + 1;
-			var searchID = 're-search-' + id;
-			var replaceID = 're-replace-' + id;
 
+			// create layout
+			var search, preview;
 			_make('li', {
 				class: 're-pattern',
 				append: [
 					// search
-					_make('label', { for: searchID, text: self.strings.search + ':' }),
-					_make('pre', {
-						contenteditable: true,
-						name: searchID,
-						tabindex: id + 100,
-						class: searchID + ' search regex',
-						keyup: function() {
-							var selection = rangy.getSelection().saveCharacterRanges(this);
-							RegexColorizer.colorizeAll(searchID);
-							rangy.getSelection().restoreCharacterRanges(this, selection);
-						}
+					_make('label', { for: 're-search-' + id, text: self.strings.search + ':' }),
+					_make('div', {
+						class: 're-syntax-highlighted',
+						append: [
+							preview = _make('pre', {
+								class: 'preview regex',
+								click: function() {
+									search.focus();
+								}
+							}),
+							search = _make('textarea', {
+								name: 're-search-' + id,
+								tabindex: id + 100,
+								class: 'search',
+								keyup: function() {
+									preview.html(RegexColorizer.colorizeText(search.val()));
+								}
+							})
+						]
 					}),
 
 					// replace
 					_make('br'),
-					_make('label', { for: replaceID, text: self.strings.replace + ':' }),
-					_make('pre', {
+					_make('label', { for: 're-replace-' + id, text: self.strings.replace + ':' }),
+					_make('textarea', {
 						class: 'replace',
 						contenteditable: true,
-						name: replaceID,
+						name: 're-replace-' + id,
 						tabindex: id + 101
 					})
 				],
 				appendTo: '#regex-editor ol:first'
 			});
+
+			// overlay syntax highlighting over input
+			preview.position()
 		};
 
 		/**
@@ -178,8 +189,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				// extract input
 				var $item = $(item);
 				var pattern = {
-					'input': $item.find('pre.search').text(),
-					'replace': $item.find('pre.replace').text()
+					'input': $item.find('.search').val(),
+					'replace': $item.find('.replace').val()
 				};
 
 				// parse search expression

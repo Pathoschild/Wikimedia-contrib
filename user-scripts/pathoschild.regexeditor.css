@@ -1,3 +1,6 @@
+/*********
+** Layout
+*********/
 #regex-editor {
 	position: relative;
 	margin: 0.5em;
@@ -7,6 +10,50 @@
 	line-height: normal;
 }
 
+
+/*********
+** Syntax highlighting
+** This overlays a formatted <pre> over the raw <textarea>. The <pre> must have a transparent
+** background (so the cursor shows through) and the text formatting must match exactly (so the
+** text aligns). This glorious hack is derived from regexpal.com, whose open-source library we
+** use for the syntax highlighting.
+*********/
+#regex-editor .re-syntax-highlighted {
+	position:relative;
+	height:2em;
+}
+
+#regex-editor .re-syntax-highlighted .search,
+#regex-editor .re-syntax-highlighted .preview {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 2em;
+	width: 100%;
+	margin: 0;
+	padding:.1em;
+	border: 0;
+	box-sizing: border-box;
+	font-family: 'courier new', monospace;
+	line-height: 1.3em;
+	font-size: 1em;
+}
+
+
+#regex-editor .re-syntax-highlighted .search {
+	z-index: 1;
+}
+
+#regex-editor .re-syntax-highlighted .preview {
+	z-index: 2;
+	background: transparent;
+	opacity: 0.7em; /* let cursor show through background */
+}
+
+
+/*********
+** Button formatting
+*********/
 #regex-editor .re-close,
 #regex-editor .re-add,
 #regex-editor .re-execute,
@@ -25,7 +72,7 @@
 	right: 10px;
 	width: 16px;
 	height: 16px;
-	background: url("//upload.wikimedia.org/wikipedia/commons/thumb/4/47/Noun_project_-_supprimer_round.svg/16px-Noun_project_-_supprimer_round.svg.png") no-repeat;
+	background: url('//upload.wikimedia.org/wikipedia/commons/thumb/4/47/Noun_project_-_supprimer_round.svg/16px-Noun_project_-_supprimer_round.svg.png') no-repeat;
 }
 
 #regex-editor .re-add,
@@ -37,19 +84,19 @@
 }
 
 #regex-editor .re-add {
-	background: url("//upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Noun_project_-_plus_round.svg/16px-Noun_project_-_plus_round.svg.png") no-repeat;
+	background: url('//upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Noun_project_-_plus_round.svg/16px-Noun_project_-_plus_round.svg.png') no-repeat;
 }
 
 #regex-editor .re-execute {
-	background: url("//upload.wikimedia.org/wikipedia/commons/thumb/5/57/Noun_project_-_crayon.svg/16px-Noun_project_-_crayon.svg.png") no-repeat;
+	background: url('//upload.wikimedia.org/wikipedia/commons/thumb/5/57/Noun_project_-_crayon.svg/16px-Noun_project_-_crayon.svg.png') no-repeat;
 }
 
 #regex-editor .re-undo {
-	background: url("//upload.wikimedia.org/wikipedia/commons/thumb/1/13/Noun_project_-_Undo.svg/16px-Noun_project_-_Undo.svg.png") no-repeat;
+	background: url('//upload.wikimedia.org/wikipedia/commons/thumb/1/13/Noun_project_-_Undo.svg/16px-Noun_project_-_Undo.svg.png') no-repeat;
 }
 
 #regex-editor .re-save {
-	background: url("//upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Noun_project_-_USB.svg/16px-Noun_project_-_USB.svg.png") no-repeat;
+	background: url('//upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Noun_project_-_USB.svg/16px-Noun_project_-_USB.svg.png') no-repeat;
 }
 
 #regex-editor #re-sessions {
