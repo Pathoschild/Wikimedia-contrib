@@ -13,7 +13,7 @@
 
 /*********
 ** Syntax highlighting
-** This overlays a formatted <pre> over the raw <textarea>. The <pre> must have a transparent
+** This places a formatted <pre> behind the raw <textarea>. The <textarea> must have a transparent
 ** background (so the cursor shows through) and the text formatting must match exactly (so the
 ** text aligns). This glorious hack is derived from regexpal.com, whose open-source library we
 ** use for the syntax highlighting.
@@ -23,8 +23,8 @@
 	height:2em;
 }
 
-#regex-editor .re-syntax-highlighted .search,
-#regex-editor .re-syntax-highlighted .preview {
+#regex-editor .search,
+#regex-editor .preview {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -39,15 +39,14 @@
 	font-size: 1em;
 }
 
-
-#regex-editor .re-syntax-highlighted .search {
+#regex-editor .preview {
 	z-index: 1;
+	background: #FFF;
 }
 
-#regex-editor .re-syntax-highlighted .preview {
+#regex-editor .search {
 	z-index: 2;
 	background: transparent;
-	opacity: 0.7em; /* let cursor show through background */
 }
 
 

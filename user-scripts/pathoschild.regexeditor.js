@@ -147,10 +147,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 						class: 're-syntax-highlighted',
 						append: [
 							preview = _make('pre', {
-								class: 'preview regex',
-								click: function() {
-									search.focus();
-								}
+								class: 'preview regex'
 							}),
 							search = _make('textarea', {
 								name: 're-search-' + id,
