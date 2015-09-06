@@ -1,4 +1,4 @@
-﻿/*
+/*
 
 
 This regex editor lets the user define any number of arbitrary search & replace patterns using regex,
@@ -9,7 +9,7 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 
 
 */
-/* global $ */
+/* global $, mw, pathoschild, rangy, RegexColorizer */
 /* jshint eqeqeq: true, latedef: true, nocomma: true, undef: true */
 window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader compatibility
 (function() {
@@ -97,9 +97,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/**
 		 * Construct a DOM element.
 		 * @param {string} tag The name of the DOM element to construct.
+		 * @param {object} attr (optional) The attributes to set on the DOM element.
 		 */
-		var _make = function(tag) {
-			return $(document.createElement(tag));
+		var _make = function(tag, attr) {
+			// Convert the tag to jQuery creation syntax. Using document.createElement would be cleaner,
+			// but the jQuery attr argument only works for elements created this way.
+			return $('<' + tag + '></' + tag + '>', attr);
 		};
 
 		/**
@@ -144,37 +147,36 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			var id = $('.tsre-pattern').length + 1;
 			var searchID = 'tsre-search-' + id;
 			var replaceID = 'tsre-replace-' + id;
-			$('#' + state.containerID + ' ol:first')
-				.append(
-					_make('li')
-					.addClass('tsre-pattern')
-					.append(
-						_make('label')
-						.attr('for', searchID)
-						.text(self.strings.search + ':')
-					)
-					.append(
-						_make('pre')
-						.attr({ 'contenteditable': true, 'name': searchID, 'tabindex': id + 100 })
-						.addClass(searchID + ' search regex')
-						.on('keyup', function() {
+
+			_make('li', {
+				class: 'tsre-pattern',
+				append: [
+					// search
+					_make('label', { for: searchID, text: self.strings.search + ':' }),
+					_make('pre', {
+						contenteditable: true,
+						name: searchID,
+						tabindex: id + 100,
+						class: searchID + ' search regex',
+						keyup: function() {
 							var selection = rangy.getSelection().saveCharacterRanges(this);
 							RegexColorizer.colorizeAll(searchID);
 							rangy.getSelection().restoreCharacterRanges(this, selection);
-						})
-					)
-					.append(_make('br'))
-					.append(
-						_make('label')
-						.attr('for', replaceID)
-						.text(self.strings.replace + ':')
-					)
-					.append(
-						_make('pre')
-						.addClass('replace')
-						.attr({ 'contenteditable': true, 'name': replaceID, 'tabindex': id + 101 })
-					)
-				);
+						}
+					}),
+
+					// replace
+					_make('br'),
+					_make('label', { for: replaceID, text: self.strings.replace + ':' }),
+					_make('pre', {
+						class: 'replace',
+						contenteditable: true,
+						name: replaceID,
+						tabindex: id + 101
+					})
+				],
+				appendTo: '#' + state.containerID + ' ol:first'
+			});
 		};
 
 		/**
@@ -272,28 +274,35 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 */
 		var _populateSessionList = function() {
 			var sessions = pathoschild.util.storage.Read('tsre-sessions') || [];
+			var container = $('.tsre-sessions').empty();
+			$.each(sessions, function() {
+				var session = this;
 
-			var $box = $('.tsre-sessions').empty();
-			for (var i = 0, len = sessions.length; i < len; i++) {
-				$box
-					.append(
-						_make('span')
-						.attr('class', 'tsre-session-tag')
-						.append(
-							_make('a')
-							.text(sessions[i])
-							.attr({ 'title': self.strings.loadSession.replace(/\{name\}/g, sessions[i]), 'href': '#', 'data-key': sessions[i] })
-							.click(function() { _loadSession($(this).attr('data-key')); return false; })
-						)
-						.append(' ')
-						.append(
-							_make('a')
-							.text('x')
-							.attr({ 'title': self.strings.deleteSession.replace(/\{name\}/g, sessions[i]), 'href': '#', 'class': 'tsre-delete-session', 'data-key': sessions[i] })
-							.click(function() { _deleteSession($(this).attr('data-key')); return false; })
-						)
-					);
-			}
+				// build layout
+				_make('span', {
+					class: 'tsre-session-tag',
+					append: [
+						// apply link
+						_make('a', {
+							text: session,
+							title: self.strings.loadSession.replace(/\{name\}/g, session),
+							href: '#',
+							click: function() { _loadSession(session); return false; }
+						}),
+						' ',
+
+						// delete link
+						_make('a', {
+							text: 'x',
+							title: self.strings.deleteSession.replace(/\{name\}/g, session),
+							href: '#',
+							class: 'tsre-delete-session',
+							click: function() { _deleteSession(session); return false; }
+						})
+					],
+					appendTo: container
+				});
+			});
 		};
 
 
@@ -316,11 +325,11 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				// display reset warning if already open (unless it's already displayed)
 				if ($container.length) {
 					if (!$warning.length) {
-						// create warning
-						$warning = 
-							_make('div')
-							.attr('class', 'tsre-warning')
-							.text(self.strings.launchConflict);
+						// create container
+						$warning = _make('div', {
+							class: 'tsre-warning',
+							text: self.strings.launchConflict
+						});
 
 						// inject form elements
 						$warning.html($warning.html().replace(/(\{(reset|cancel)Form.+?\})/g, '<placeholder class="$2">$1</placeholder>'));
@@ -329,24 +338,26 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 							var format = placeholder.text().match(/\{resetForm\|text=(.+)\}/);
 							var text = format && format[1];
 
-							placeholder.replaceWith(
-								_make('a')
-								.text(text || '')
-								.attr({ 'title': text, 'class': 'tsre-reset', 'href': '#' })
-								.click(function() { self.reset(); return false; })
-							);
+							placeholder.replaceWith(_make('a', {
+								text: text,
+								title: text,
+								class: 'tsre-reset',
+								href: '#',
+								click: function() { self.reset(); return false; }
+							}));
 						});
 						$warning.find('placeholder.cancel').each(function(i, placeholder) {
 							placeholder = $(placeholder);
 							var format = placeholder.text().match(/\{cancelForm\|text=(.+)\}/);
 							var text = format && format[1];
 
-							placeholder.replaceWith(
-								_make('a')
-								.text(text || '')
-								.attr({ 'title': text, 'class': 'tsre-reset', 'href': '#' })
-								.click(function() { $warning.remove(); return false; })
-							);
+							placeholder.replaceWith(_make('a', {
+								text: text,
+								title: text,
+								class: 'tsre-reset',
+								href: '#',
+								click: function() { $warning.remove(); return false; }
+							}));
 						});
 
 						// add to DOM
@@ -356,117 +367,121 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 				// build form
 				else {
-					// container
-					$container =
-						// form
-						_make('div')
-						.attr('id', state.containerID)
-						.append(
-							_make('h3')
-							.text(self.strings.header)
-						)
+					$container = _make('div', {
+						id: state.containerID,
+						append: [
+							// header
+							_make('h3', { text: self.strings.header }),
+							self.createInstructions(_make('p')),
 
-						// instructions
-						.append(self.createInstructions(_make('p')))
+							// form
+							_make('form', {
+								append: [
+									// input list
+									_make('ol'),
 
-						// form
-						.append(
-							_make('form')
-							.append(_make('ol')) // inputlist
-							// exit button
-							.append(
-								_make('div')
-								.attr('class', 'tsre-close')
-								.append(
-									_make('a')
-									.attr({ 'title': self.strings.closeEditor, href: '#' })
-									.click(function() {
-										if(self.config.alwaysVisible)
-											self.reset();
-										else
-											self.remove();
-										return false;
+									// exit button
+									_make('div', {
+										class: 'tsre-close',
+										append: [
+											_make('a', {
+												title: self.strings.closeEditor,
+												href: '#',
+												click: function() {
+													if(self.config.alwaysVisible)
+														self.reset();
+													else
+														self.remove();
+													return false;
+												},
+												append: [
+													_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/4/47/Noun_project_-_supprimer_round.svg/16px-Noun_project_-_supprimer_round.svg.png' })
+												]
+											})
+										]
+									}),
+
+									// field buttons
+									_make('div', {
+										class: 'tsre-buttons',
+										append: [
+											// add button
+											_make('a', {
+												title: self.strings.addPatternsTooltip,
+												class: 'tsre-add',
+												'href': '#',
+												click: function() { _addInputs(); return false; },
+												append: [
+													_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Noun_project_-_plus_round.svg/16px-Noun_project_-_plus_round.svg.png' }),
+													' ' + self.strings.addPatterns
+												]
+											}),
+											' | ',
+
+											// execute button
+											_make('a', { 
+												title: self.strings.applyTooltip,
+												class: 'tsre-execute',
+												href: '#',
+												click: function() { self.execute(); return false; },
+												append: [
+													_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/5/57/Noun_project_-_crayon.svg/16px-Noun_project_-_crayon.svg.png' }),
+													' ' + self.strings.apply
+												]
+											}),
+
+											// undo button
+											_make('span', { 
+												class: 'tsre-undo',
+												append: [
+													' | ',
+													_make('a', {
+														title: self.strings.undoTooltip,
+														href: '#',
+														click: function() { self.undo(); return false; },
+														append: [
+															_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/1/13/Noun_project_-_Undo.svg/16px-Noun_project_-_Undo.svg.png' }),
+															' ' + self.strings.undo
+														]
+													})
+												]
+											}).hide(),
+
+
+											// session buttons
+											_make('span', {
+												class: 'tsre-session-buttons',
+												append: [
+													' | ',
+													_make('a', {
+														title: self.strings.saveTooltip,
+														class: 'tsre-save',
+														href: '#',
+														click: function() { _saveSession(); return false; },
+														append: [
+															_make('img', { src: '//upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Noun_project_-_USB.svg/16px-Noun_project_-_USB.svg.png' }),
+															' ' + self.strings.save
+														]
+													})
+												]
+											}),
+											' ',
+											_make('span', { class: 'tsre-sessions' })
+										]
 									})
-									.append(
-										_make('img')
-										.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/4/47/Noun_project_-_supprimer_round.svg/16px-Noun_project_-_supprimer_round.svg.png')
-									)
-								)
-							)
-							// field buttons
-							.append(
-								_make('div')
-								.attr('class', 'tsre-buttons')
-								.append(
-									_make('a')
-									.append(
-										_make('img')
-										.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Noun_project_-_plus_round.svg/16px-Noun_project_-_plus_round.svg.png')
-									)
-									.append(' ' + self.strings.addPatterns)
-									.attr({ 'title': self.strings.addPatternsTooltip, 'class': 'tsre-add', 'href': '#' })
-									.click(function() { _addInputs(); return false; })
-								)
-								.append(' | ')
-								.append(
-									_make('a')
-									.append(
-										_make('img')
-										.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/5/57/Noun_project_-_crayon.svg/16px-Noun_project_-_crayon.svg.png')
-									)
-									.append(' ' + self.strings.apply)
-									.attr({ 'title': self.strings.applyTooltip, 'class': 'tsre-execute', 'href': '#' })
-									.click(function() { self.execute(); return false; })
-								)
-								.append(
-									_make('span')
-									.attr('class', 'tsre-undo')
-									.append(' | ')
-									.append(
-										_make('a')
-										.append(
-											_make('img')
-											.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/1/13/Noun_project_-_Undo.svg/16px-Noun_project_-_Undo.svg.png')
-										)
-										.append(' ' + self.strings.undo)
-										.attr({ 'title': self.strings.undoTooltip, 'href': '#' })
-										.click(function() { self.undo(); return false; })
-									)
-									.hide()
-								)
-								// session buttons
-								.append(
-									_make('span')
-									.attr('class', 'tsre-session-buttons')
-									.append(' | ')
-									.append(
-										_make('a')
-										.append(
-											_make('img')
-											.attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Noun_project_-_USB.svg/16px-Noun_project_-_USB.svg.png')
-										)
-										.append(' ' + self.strings.save)
-										.attr({ 'title': self.strings.saveTooltip, 'class': 'tsre-save', 'href': '#' })
-										.click(function() { _saveSession(); return false; })
-									)
-									.append(' ')
-									.append(
-										_make('span')
-										.attr('class', 'tsre-sessions')
-									)
-								)
-							)
-						)
-						.insertBefore(state.$target);
+								]
+							})
+						]
+					});
+					$container.insertBefore(state.$target);
 
 					// add first pair of input boxes
 					_addInputs();
 					_populateSessionList();
 
 					// hide sessions if browser doesn't support it
-					if (!pathoschild.util.storage.IsAvailable()) {
+					if (!pathoschild.util.storage.IsAvailable())
 						$('.tsre-session-buttons').hide();
-					}
 				}
 			});
 		};
