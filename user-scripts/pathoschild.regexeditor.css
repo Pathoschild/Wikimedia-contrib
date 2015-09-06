@@ -42,6 +42,7 @@
 #regex-editor .preview {
 	z-index: 1;
 	background: #FFF;
+	color: #FFF;
 }
 
 #regex-editor .search {
