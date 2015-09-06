@@ -9,7 +9,7 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 
 
 */
-/* global $, mw, pathoschild, rangy, RegexColorizer */
+/* global $, mw, pathoschild, RegexColorizer */
 /* jshint eqeqeq: true, latedef: true, nocomma: true, undef: true */
 window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader compatibility
 (function() {
@@ -123,11 +123,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			// load dependencies
 			return state.initialisation = $.when(
 				$.ajax('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', { dataType:'script', crossDomain:true, cached:true }),
-				$.ajax('//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.js', { dataType:'script', crossDomain:true, cached:true }),
-				$.ajax('//tools-static.wmflabs.org/cdnjs/ajax/libs/rangy/1.3.0/rangy-core.js', { dataType:'script', crossDomain:true, cached:true })
-			).then(function() {
-				return $.ajax('//tools-static.wmflabs.org/cdnjs/ajax/libs/rangy/1.3.0/rangy-textrange.js', { dataType:'script', crossDomain:true, cached:true });
-			});
+				$.ajax('//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.js', { dataType:'script', crossDomain:true, cached:true })
+			);
 		};
 
 		/**
