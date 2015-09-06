@@ -81,7 +81,6 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			instructions: 'Enter any number of regular expressions to execute. The search pattern can be like "{code|text=search pattern}" or "{code|text=/pattern/modifiers}", and the replace pattern can contain reference groups like "{code|text=$1}" (see {helplink|text=tutorial|title=JavaScript regex tutorial|url=http://www.regular-expressions.info/javascript.html}).'
 		};
 		var state = {
-			containerID: 'regex-editor', // unique ID of the regex editor container
 			undoText: null,      // the original text before the last patterns were applied
 			$target: null,       // the DOM elements before which to insert the regex editor UI
 			editor: null,        // the TemplateScript editor
@@ -121,11 +120,11 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			mw.loader.load('//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.css', 'text/css');
 			pathoschild.util.AddStyles(
 				  '#regex-editor { position: relative; margin: 0.5em; padding: 0.5em; border: 1px solid #AAA; border-radius: 15px; line-height: normal; }\n'
-				+ '.tsre-close { position: absolute; top: 10px; right: 10px; }\n'
-				+ '.tsre-sessions { color: #AAA; }\n'
-				+ '.tsre-session-tag { border: 1px solid #057BAC; border-radius: 2px; background: #1DA1D8; padding: 0 2px; }\n'
-				+ '.tsre-session-tag a { color: #FFF; }\n'
-				+ 'a.tsre-delete-session { color: red; font-family: monospace; font-weight: bold; }'
+				+ '#regex-editor .re-close { position: absolute; top: 10px; right: 10px; }\n'
+				+ '#regex-editor .re-sessions { color: #AAA; }\n'
+				+ '#regex-editor .re-session { border: 1px solid #057BAC; border-radius: 2px; background: #1DA1D8; padding: 0 2px; }\n'
+				+ '#regex-editor .re-session a { color: #FFF; }\n'
+				+ '#regex-editor a.re-delete-session { color: red; font-family: monospace; font-weight: bold; }'
 			);
 
 			// load dependencies
@@ -142,12 +141,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 * Add a pair of regular expression input boxes to the regex editor.
 		 */
 		var _addInputs = function() {
-			var id = $('.tsre-pattern').length + 1;
-			var searchID = 'tsre-search-' + id;
-			var replaceID = 'tsre-replace-' + id;
+			var id = $('.re-pattern').length + 1;
+			var searchID = 're-search-' + id;
+			var replaceID = 're-replace-' + id;
 
 			_make('li', {
-				class: 'tsre-pattern',
+				class: 're-pattern',
 				append: [
 					// search
 					_make('label', { for: searchID, text: self.strings.search + ':' }),
@@ -173,7 +172,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 						tabindex: id + 101
 					})
 				],
-				appendTo: '#' + state.containerID + ' ol:first'
+				appendTo: '#regex-editor ol:first'
 			});
 		};
 
@@ -182,7 +181,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 */
 		var _getPatterns = function() {
 			var patterns = [];
-			$('.tsre-pattern').each(function(i, item) {
+			$('.re-pattern').each(function(i, item) {
 				// extract input
 				var $item = $(item);
 				var pattern = {
@@ -238,7 +237,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			for (var i = 1, len = patterns.length; i < len; i++)
 				_addInputs();
 
-			$('.tsre-pattern').each(function(i, item) {
+			$('.re-pattern').each(function(i, item) {
 				var $item = $(item);
 				var $search = $item.find('pre.search');
 				var $replace = $item.find('pre.replace');
@@ -272,13 +271,13 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 */
 		var _populateSessionList = function() {
 			var sessions = pathoschild.util.storage.Read('tsre-sessions') || [];
-			var container = $('.tsre-sessions').empty();
+			var container = $('.re-sessions').empty();
 			$.each(sessions, function() {
 				var session = this;
 
 				// build layout
 				_make('span', {
-					class: 'tsre-session-tag',
+					class: 're-session',
 					append: [
 						// apply link
 						_make('a', {
@@ -294,7 +293,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 							text: 'x',
 							title: self.strings.deleteSession.replace(/\{name\}/g, session),
 							href: '#',
-							class: 'tsre-delete-session',
+							class: 're-delete-session',
 							click: function() { _deleteSession(session); return false; }
 						})
 					],
@@ -317,13 +316,13 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				// initialize state
 				state.$target = $target;
 				state.editor = editor || TemplateScriptShim($target);
-				var $container = $('#' + state.containerID);
+				var $container = $('#regex-editor');
 				if ($container.length)
 					return; // already loaded
 
 				// build form
 				$container = _make('div', {
-					id: state.containerID,
+					id: 'regex-editor',
 					append: [
 						// header
 						_make('h3', { text: self.strings.header }),
@@ -337,7 +336,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 								// exit button
 								_make('div', {
-									class: 'tsre-close',
+									class: 're-close',
 									append: [
 										_make('a', {
 											title: self.strings.closeEditor,
@@ -358,12 +357,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 								// field buttons
 								_make('div', {
-									class: 'tsre-buttons',
+									class: 're-buttons',
 									append: [
 										// add button
 										_make('a', {
 											title: self.strings.addPatternsTooltip,
-											class: 'tsre-add',
+											class: 're-add',
 											'href': '#',
 											click: function() { _addInputs(); return false; },
 											append: [
@@ -376,7 +375,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 										// execute button
 										_make('a', { 
 											title: self.strings.applyTooltip,
-											class: 'tsre-execute',
+											class: 're-execute',
 											href: '#',
 											click: function() { self.execute(); return false; },
 											append: [
@@ -387,7 +386,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 										// undo button
 										_make('span', { 
-											class: 'tsre-undo',
+											class: 're-undo',
 											append: [
 												' | ',
 												_make('a', {
@@ -405,12 +404,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 										// session buttons
 										_make('span', {
-											class: 'tsre-session-buttons',
+											class: 're-session-buttons',
 											append: [
 												' | ',
 												_make('a', {
 													title: self.strings.saveTooltip,
-													class: 'tsre-save',
+													class: 're-save',
 													href: '#',
 													click: function() { _saveSession(); return false; },
 													append: [
@@ -421,7 +420,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 											]
 										}),
 										' ',
-										_make('span', { class: 'tsre-sessions' })
+										_make('span', { class: 're-sessions' })
 									]
 								})
 							]
@@ -436,7 +435,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 				// hide sessions if browser doesn't support it
 				if (!pathoschild.util.storage.IsAvailable())
-					$('.tsre-session-buttons').hide();
+					$('.re-session-buttons').hide();
 			});
 		};
 
@@ -447,7 +446,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		self.createInstructions = function($container) {
 			// create instructions
 			$container
-				.attr('class', 'tsre-instructions')
+				.attr('class', 're-instructions')
 				.empty()
 				.text(self.strings.instructions);
 
@@ -490,7 +489,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			if (newText !== oldText) {
 				state.editor.set(newText);
 				state.undoText = oldText;
-				$('.tsre-undo').show();
+				$('.re-undo').show();
 			}
 		};
 
@@ -503,14 +502,14 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 			state.editor.set(state.undoText);
 			state.undoText = null;
-			$('.tsre-undo').hide();
+			$('.re-undo').hide();
 		};
 
 		/**
 		 * Remove the regex editor.
 		 */
 		self.remove = function() {
-			$('#' + state.containerID).remove();
+			$('#regex-editor').remove();
 		};
 
 
