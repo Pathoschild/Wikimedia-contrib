@@ -135,19 +135,14 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		var _addInputs = function(search, replace) {
 			var id = $('.re-pattern').length + 1;
 
-			// syntax highlight the new inputs
-			var $search, $preview;
-			var highlight = function() {
-				$preview.html(RegexColorizer.colorizeText($search.val()));
-			};
-
 			// create layout
+			var $searchContainer, $search, $preview;
 			_make('li', {
 				'class': 're-pattern',
 				append: [
 					// search
 					_make('label', { 'for': 're-search-' + id, text: self.strings.search + ':' }),
-					_make('div', {
+					$searchContainer = _make('div', {
 						'class': 're-syntax-highlighted',
 						append: [
 							$preview = _make('pre', {
@@ -158,8 +153,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 								name: 're-search-' + id,
 								tabindex: id + 100,
 								'class': 'search',
-								text: search,
-								keyup: highlight
+								text: search
 							})
 						]
 					}),
@@ -178,9 +172,24 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				appendTo: '#regex-editor ol:first'
 			});
 
+			// add search formatting
+			var updateFormatting = function() {
+				// update syntax highlighting
+				var formatted = RegexColorizer.colorizeText($search.val());
+				if(formatted.match(/\n$/))
+					formatted += '&nbsp;'; // height:auto is calculated incorrectly if the last line is blank
+				$preview.html(formatted);
+
+				// resize search to fit contents
+				var previewHeight = $preview.height();
+				$searchContainer.height(previewHeight);
+				$search.height(previewHeight);
+			};
+			$search.on('keyup', updateFormatting);
+
 			// highlight initial text
 			if(search)
-				highlight();
+				updateFormatting();
 		};
 
 		/**
