@@ -551,7 +551,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				// add access key
 				if(accessKey) {
 					// steal access key if needed
-					var previousTarget = $('[accesskey="' + accessKey.replace('"', '\\"') + '"]')
+					var previousTarget = $('[accesskey="' + accessKey.replace('"', '\\"') + '"]');
 					if(previousTarget.length) {
 						_warn('overwrote access key [' + accessKey + '] previously assigned to "' + previousTarget.text() + '".');
 						previousTarget.removeAttr('accesskey');
@@ -725,7 +725,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 						return '*';
 
 					// parse numeric value
-					var numeric = parseInt(value);
+					var numeric = parseInt(value, 10);
 					if(!isNaN(numeric))
 						return numeric;
 

@@ -143,21 +143,21 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 			// create layout
 			_make('li', {
-				class: 're-pattern',
+				'class': 're-pattern',
 				append: [
 					// search
-					_make('label', { for: 're-search-' + id, text: self.strings.search + ':' }),
+					_make('label', { 'for': 're-search-' + id, text: self.strings.search + ':' }),
 					_make('div', {
-						class: 're-syntax-highlighted',
+						'class': 're-syntax-highlighted',
 						append: [
 							$preview = _make('pre', {
-								class: 'preview regex',
+								'class': 'preview regex',
 								text: search
 							}),
 							$search = _make('textarea', {
 								name: 're-search-' + id,
 								tabindex: id + 100,
-								class: 'search',
+								'class': 'search',
 								text: search,
 								keyup: highlight
 							})
@@ -166,9 +166,9 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 					// replace
 					_make('br'),
-					_make('label', { for: 're-replace-' + id, text: self.strings.replace + ':' }),
+					_make('label', { 'for': 're-replace-' + id, text: self.strings.replace + ':' }),
 					_make('textarea', {
-						class: 'replace',
+						'class': 'replace',
 						text: replace,
 						contenteditable: true,
 						name: 're-replace-' + id,
@@ -276,11 +276,11 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 				// build layout
 				_make('span', {
-					class: 're-session',
+					'class': 're-session',
 					append: [
 						// apply link
 						_make('button', {
-							class: 're-session-apply',
+							'class': 're-session-apply',
 							text: session,
 							title: self.strings.loadSession.replace(/\{name\}/g, session),
 							click: function() { _loadSession(session); return false; }
@@ -288,7 +288,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 						// delete link
 						_make('button', {
-							class: 're-session-delete',
+							'class': 're-session-delete',
 							text: 'x',
 							title: self.strings.deleteSession.replace(/\{name\}/g, session),
 							click: function() { _deleteSession(session); return false; }
@@ -298,7 +298,6 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				});
 			});
 		};
-
 
 		/*********
 		** Public methods
@@ -335,7 +334,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 								// exit button
 								_make('button', {
-									class: 're-close',
+									'class': 're-close',
 									title: self.strings.closeEditor,
 									click: function() {
 										if(self.config.alwaysVisible)
@@ -348,11 +347,11 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 								// field buttons
 								_make('div', {
-									class: 're-buttons',
+									'class': 're-buttons',
 									append: [
 										// add button
 										_make('button', {
-											class: 're-add',
+											'class': 're-add',
 											text: self.strings.addPatterns,
 											title: self.strings.addPatternsTooltip,
 											click: _addInputs
@@ -360,7 +359,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 										// execute button
 										_make('button', {
-											class: 're-execute',
+											'class': 're-execute',
 											text: self.strings.apply,
 											title: self.strings.applyTooltip,
 											click: self.execute
@@ -368,7 +367,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 										// undo button
 										_make('button', {
-											class: 're-undo',
+											'class': 're-undo',
 											text: self.strings.undo,
 											title: self.strings.undoTooltip,
 											click: self.undo
@@ -378,7 +377,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 										_make('span', {
 											id: 're-sessions',
 											append: _make('button', {
-												class: 're-save',
+												'class': 're-save',
 												text: self.strings.save,
 												title: self.strings.saveTooltip,
 												click: _saveSession
