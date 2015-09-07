@@ -129,11 +129,15 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 		/**
 		 * Add a pair of regular expression input boxes to the regex editor.
-		 * @param {string} search The search text to preload (if any).
+		 * @param {string|RegExp} search The search text to preload (if any).
 		 * @param {string} replace The replace text to preload (if any).
 		 */
 		var _addInputs = function(search, replace) {
 			var id = $('.re-pattern').length + 1;
+
+			// stringify regex
+			if(search && search instanceof RegExp)
+				search = search.toString();
 
 			// create layout
 			var $searchContainer, $search, $preview;
@@ -175,9 +179,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			// add search formatting
 			var updateFormatting = function() {
 				// update syntax highlighting
-				var formatted = RegexColorizer.colorizeText($search.val());
-				if(formatted.match(/\n$/))
-					formatted += '&nbsp;'; // height:auto is calculated incorrectly if the last line is blank
+				var formatted = RegexColorizer.colorizeText($search.val())
+					+ '&nbsp;'; // height:auto is calculated incorrectly if the last line is blank
 				$preview.html(formatted);
 
 				// resize search to fit contents
@@ -187,9 +190,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			};
 			$search.on('keyup', updateFormatting);
 
-			// highlight initial text
-			if(search)
-				updateFormatting();
+			// format initial text
+			updateFormatting();
 		};
 
 		/**
@@ -363,7 +365,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 											'class': 're-add',
 											text: self.strings.addPatterns,
 											title: self.strings.addPatternsTooltip,
-											click: _addInputs
+											click: function() { _addInputs(); }
 										}),
 
 										// execute button
