@@ -129,12 +129,19 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 		/**
 		 * Add a pair of regular expression input boxes to the regex editor.
+		 * @param {string} search The search text to preload (if any).
+		 * @param {string} replace The replace text to preload (if any).
 		 */
-		var _addInputs = function() {
+		var _addInputs = function(search, replace) {
 			var id = $('.re-pattern').length + 1;
 
+			// syntax highlight the new inputs
+			var $search, $preview;
+			var highlight = function() {
+				$preview.html(RegexColorizer.colorizeText($search.val()));
+			};
+
 			// create layout
-			var search, preview;
 			_make('li', {
 				class: 're-pattern',
 				append: [
@@ -143,16 +150,16 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 					_make('div', {
 						class: 're-syntax-highlighted',
 						append: [
-							preview = _make('pre', {
-								class: 'preview regex'
+							$preview = _make('pre', {
+								class: 'preview regex',
+								text: search
 							}),
-							search = _make('textarea', {
+							$search = _make('textarea', {
 								name: 're-search-' + id,
 								tabindex: id + 100,
 								class: 'search',
-								keyup: function() {
-									preview.html(RegexColorizer.colorizeText(search.val()));
-								}
+								text: search,
+								keyup: highlight
 							})
 						]
 					}),
@@ -162,6 +169,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 					_make('label', { for: 're-replace-' + id, text: self.strings.replace + ':' }),
 					_make('textarea', {
 						class: 'replace',
+						text: replace,
 						contenteditable: true,
 						name: 're-replace-' + id,
 						tabindex: id + 101
@@ -170,8 +178,9 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				appendTo: '#regex-editor ol:first'
 			});
 
-			// overlay syntax highlighting over input
-			preview.position()
+			// highlight initial text
+			if(search)
+				highlight();
 		};
 
 		/**
@@ -231,18 +240,9 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 */
 		var _loadSession = function(sessionName) {
 			var patterns = pathoschild.util.storage.Read('tsre-sessions.' + sessionName);
-			self.reset();
-			for (var i = 1, len = patterns.length; i < len; i++)
-				_addInputs();
-
-			$('.re-pattern').each(function(i, item) {
-				var $item = $(item);
-				var $search = $item.find('pre.search');
-				var $replace = $item.find('pre.replace');
-
-				$search.text(patterns[i].input);
-				$replace.text(patterns[i].replace);
-				RegexColorizer.colorizeAll($search.attr('id'));
+			self.reset(false/* don't add empty inputs */);
+			$.each(patterns, function(i, pattern) {
+				_addInputs(pattern.input, pattern.replace);
 			});
 		};
 
@@ -307,8 +307,9 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 * Construct the regex editor and add it to the page.
 		 * @param {jQuery} $target The DOM elements before which to insert the regex editor UI.
 		 * @param {object} editor The TemplateScript editor (if available).
+		 * @param {bool} addInputs Whether to add empty inputs for the first pattern.
 		 */
-		self.create = function($target, editor) {
+		self.create = function($target, editor, addInputs) {
 			_initialise().then(function() {
 				// initialize state
 				state.$target = $target;
@@ -392,10 +393,11 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				$container.insertBefore(state.$target);
 
 				// add first pair of input boxes
-				_addInputs();
-				_populateSessionList();
+				if(addInputs !== false)
+					_addInputs();
 
-				// hide sessions if browser doesn't support it
+				// add sessions
+				_populateSessionList();
 				if (!pathoschild.util.storage.IsAvailable())
 					$('#re-sessions').hide();
 			});
@@ -428,10 +430,11 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 		/**
 		 * Reset the regex editor.
+		 * @param {bool} addInputs Whether to add empty inputs for the first pattern.
 		 */
-		self.reset = function() {
+		self.reset = function(addInputs) {
 			self.remove();
-			self.create(state.$target);
+			self.create(state.$target, null, addInputs);
 		};
 
 		/**
