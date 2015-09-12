@@ -61,7 +61,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '0.12';
+		self.version = '0.13';
 		self.strings = {
 			header: 'Regex editor', // the header text shown in the form
 			search: 'Search',       // the search input label
@@ -251,10 +251,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 */
 		var _loadSession = function(sessionName) {
 			var patterns = pathoschild.util.storage.Read('tsre-sessions.' + sessionName);
-			self.reset(false/* don't add empty inputs */);
-			$.each(patterns, function(i, pattern) {
-				_addInputs(pattern.input, pattern.replace);
-			});
+			self.reset(patterns);
 		};
 
 		/**
@@ -317,9 +314,9 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 * Construct the regex editor and add it to the page.
 		 * @param {jQuery} $target The DOM elements before which to insert the regex editor UI.
 		 * @param {object} editor The TemplateScript editor (if available).
-		 * @param {bool} addInputs Whether to add empty inputs for the first pattern.
+		 * @param {object[]} patterns The patterns with which to reinitialise the form.
 		 */
-		self.create = function($target, editor, addInputs) {
+		self.create = function($target, editor, patterns) {
 			_initialise().then(function() {
 				// initialize state
 				state.$target = $target;
@@ -402,8 +399,13 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				});
 				$container.insertBefore(state.$target);
 
-				// add first pair of input boxes
-				if(addInputs !== false)
+				// add input boxes
+				if(patterns) {
+					$.each(patterns, function(i, pattern) {
+						_addInputs(pattern.input, pattern.replace);
+					});
+				}
+				else
 					_addInputs();
 
 				// add sessions
@@ -440,11 +442,11 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 		/**
 		 * Reset the regex editor.
-		 * @param {bool} addInputs Whether to add empty inputs for the first pattern.
+		 * @param {object[]} patterns The patterns with which to reinitialise the form.
 		 */
-		self.reset = function(addInputs) {
+		self.reset = function(patterns) {
 			self.remove();
-			self.create(state.$target, null, addInputs);
+			self.create(state.$target, state.editor, patterns);
 		};
 
 		/**
