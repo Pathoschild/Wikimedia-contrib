@@ -61,7 +61,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '1.0-alpha';
+		self.version = '0.12';
 		self.strings = {
 			header: 'Regex editor', // the header text shown in the form
 			search: 'Search',       // the search input label
