@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.0.3';
+		self.version = '2.1';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -207,6 +207,16 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				** Public methods
 				*********/
 				/**
+				 * Get whether the target element contains a search value.
+				 * @param {string|RegExp} search A literal or regex search pattern.
+				 */
+				wrapper.contains = function(search) {
+					return search instanceof RegExp
+						? wrapper.get().search(search) !== -1
+						: wrapper.get().indexOf(search) !== -1;
+				};
+
+				/**
 				 * Get the value of the target element.
 				 */
 				wrapper.get = function() {
@@ -226,7 +236,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				/**
 				 * Perform a search & replace in the target element.
 				 * @param {string|regexp} search The search string or regular expression.
-				 * @param {string} replace The replace pattern.
+				 * @param {string|function} replace The replace pattern or function (as described at https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/String/replace ).
 				 * @returns The wrapper for chaining.
 				 */
 				wrapper.replace = function(search, replace) {
@@ -301,6 +311,16 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				};
 
 				return wrapper;
+			};
+
+			/**
+			 * Get whether the target element contains a search value.
+			 * @param {string|RegExp} search A literal or regex search pattern.
+			 */
+			context.contains = function(search) {
+				return search instanceof RegExp
+					? context.get().search(search) !== -1
+					: context.get().indexOf(search) !== -1;
 			};
 
 			/**
