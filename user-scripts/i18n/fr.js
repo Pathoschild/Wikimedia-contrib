@@ -16,7 +16,6 @@ pathoschild.i18n = {
 		nameSession: 'Entrez un nom pour cette session', // the prompt shown when saving the session
 		loadSession: 'Charger la session "{name}"',      // tooltip shown for a saved session, where {name} is replaced with the session name
 		deleteSession: 'Supprimer la session "{name}"',  // tooltip shown for the delete icon on a saved session, where {name} is replaced with the session name
-		launchConflict: 'Vous lancez l\'outil de l\'éditeur d\'expressions régulières, mais il est déjà ouvert. Voulez-vous {resetForm|texte=réinitialiser l\'outil} ou {cancelForm|texte=annuler la réouverture}?', // the message shown when relaunching the form, where {resetForm} and {cancelForm} will be replaced with appropriate form elements.
 		closeEditor: 'Fermer l\'éditeur de regex',      // tooltip shown for the close-editor icon
 		addPatterns: 'ajouter des motifs',              // button text
 		addPatternsTooltip: 'Ajouter des motifs',       // button tooltip
