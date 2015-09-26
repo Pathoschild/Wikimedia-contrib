@@ -6,7 +6,7 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 
 
 */
-/* global $, mw */
+/* global $, Handlebars, JSON, mw, pathoschild */
 /* jshint eqeqeq: true, latedef: true, nocomma: true, undef: true */
 window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader compatibility
 (function() {
@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.1';
+		self.version = '2.2';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -45,6 +45,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			queue: [],        // the template objects to add to the DOM when it's ready
 			sidebarCount: 0,  // number of rendered sidebars (excluding the default sidebar)
 			sidebars: {},     // hash of rendered sidebars by name
+			libraries: [],    // the imported libraries
 
 			// state management
 			renderers: {},    // the plugins which render template/script links
@@ -58,7 +59,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		** Objects
 		*********/
 		/**
-		 * Represents an insertable template schema.
+		 * Represents an configured script or template.
 		 * @property {string} name The name displayed as the sidebar link text.
 		 * @property {boolean} enabled Whether this template is available.
 		 * @property {string} category An arbitrary category name (for grouping templates into multiple sidebars). The default is `self.strings.defaultHeaderText`.
@@ -123,6 +124,33 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			after: 'after',
 			cursor: 'cursor',
 			replace: 'replace'
+		};
+
+		/**
+		 * Represents a library of scripts which can be configured via [[Special:TemplateScript]].
+		 * @property {string} key A unique key which identifies the library.
+		 * @property {string} url The URL to a page with more information about the library.
+		 * @property {string} description An HTML string describing the library for the user.
+		 * @property {LibraryCategory[]} categories The script categories to import.
+		 * @class
+		 */
+		self.Library = {
+			key: null,
+			name: null,
+			url: null,
+			description: null,
+			categories: []
+		};
+
+		/**
+		 * Represents a script category in a library which can be configured via [[Special:TemplateScript]].
+		 * @property {string} name The name of the library shown to the user.
+		 * @property {Template[]} scripts The script to import.
+		 * @class
+		 */
+		self.LibraryCategory = {
+			name: null,
+			scripts: []
 		};
 
 		/**
@@ -638,25 +666,24 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 			// init UI
 			mw.util.addCSS('.ts-shortcut { margin-left:.5em; color:#CCC; }');
-			_loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', pathoschild.util, function() {
+			_loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js').then(function() {
 				state.isReady = true;
 				for (var i = 0; i < state.queue.length; i++)
 					self.add(state.queue[i]);
 			});
+			if(mw.config.get('wgCanonicalNamespace') === 'Special' && mw.config.get('wgTitle') === 'TemplateScript')
+				_showSettingsView();
 		};
 
 		/**
-		 * Asynchronously load a script and invoke the callback when loaded. This method is used to bootstrap TemplateScript and shouldn't be called directly.
+		 * Asynchronously load a script and cache it.
 		 * @param {string} url The URL of the script to load.
-		 * @param {bool} test Indicates whether the dependency is already loaded.
-		 * @param {function} callback The method to invoke (with no arguments) when the dependencies have been loaded.
+		 * @returns Returns a promise completed when the script has been fetched.
 		 */
-		var _loadDependency = function(url, test, callback) {
-			var invokeCallback = function() { callback.call(self); };
-			if (test)
-				invokeCallback();
-			else
-				$.ajax({ url:url, dataType:'script', crossDomain:true, cached:true, success:invokeCallback });
+		var _loadDependency = function(url) {
+			if(!state.dependencies[url])
+				state.dependencies[url] = $.ajax(url, { cache: true, dataType: 'script' });
+			return state.dependencies[url];
 		};
 
 		/**
@@ -802,6 +829,52 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			}
 		}
 
+		/**
+		 * Load the TemplateScript library configuration view on the current page. This replaces the current page content.
+		 */
+		var _showSettingsView = function() {
+			// initialise UI
+			$('title:first, #firstHeading').text('TemplateScript settings');
+			$('#mw-content-text').html('↻ loading...');
+
+			// fetch dependencies
+			$.when(
+				mw.loader.using(['mediawiki.api.options']),
+				_loadDependency('//tools-static.wmflabs.org/cdnjs/ajax/libs/handlebars.js/4.0.2/handlebars.js')
+			)
+
+			// render template
+			.then(function() {
+				return $.ajax('//tools-static.wmflabs.org/meta/scripts/templates/pathoschild.templatescript.settings.htm', { dataType: 'html' });
+			})
+			.then(function(template) {
+				// fetch settings
+				var settings = self.library.getSettings();
+
+				// generate view
+				Handlebars.registerHelper('optional', function(condition, str) { return condition ? str : ''; });
+				Handlebars.registerHelper('counter', function(index, startFrom) { return startFrom + index; });
+				template = Handlebars.compile(template);
+				var html = template({ username: mw.config.get('wgUserName'), libraries: state.libraries });
+
+				// load view
+				$('#mw-content-text').html(html);
+
+				// save settings on change
+				$('#mw-content-text input[type="checkbox"]').click(function() {
+					var key = this.name;
+					var enabled = this.checked;
+
+					if(enabled)
+						delete settings[key];
+					else
+						settings[key] = false;
+
+					self.library.saveSettings(settings);
+				});
+			});
+		};
+
 
 		/*********
 		** Public methods
@@ -850,10 +923,76 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				/* load dependency */
 				if(opts.scriptUrl) {
 					$entry.hide();
-					if(!state.dependencies[opts.scriptUrl])
-						state.dependencies[opts.scriptUrl] = $.ajax(opts.scriptUrl, { cache: true, dataType: 'script' });
-					state.dependencies[opts.scriptUrl].done(function() { $entry.show(); });
+					_loadDependency(opts.scriptUrl).then(function() { $entry.show(); });
 				}
+			}
+		};
+
+		/**
+		 * Contains methods for managing script libraries. A library is a collection of scripts imported by the user, who can choose which scripts are enabled through [[Special:TemplateScript]].
+		 */
+		self.library = {
+			/**
+			 * Define a library.
+			 * @param {Library} library The library configuration.
+			 */
+			define: function(library) {
+				// validate library
+				library = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript::defineLibrary(key:' + (library.key || 'no key') + ')', library, self.Library);
+				if(!library.key)
+					return _warn('can\'t add library: it doesn\'t define a key');
+				if(!library.name)
+					return _warn('can\'t add library \'' + library.key + '\': it doesn\'t define a name');
+				if(!library.categories || !library.categories.length)
+					return _warn('can\'t add library \'' + library.key + '\': it doesn\'t contain any scripts');
+
+				// preprocess scripts
+				var settings = self.library.getSettings();
+				var scripts = [];
+				$.each(library.categories, function(c, category) {
+					// validate
+					if(!category.scripts)
+						return _warn('can\'t add category \'' + category + '\' from library \'' + library.key + '\': there are no scripts defined');
+
+					$.each(category.scripts, function(s, script) {
+						// validate
+						if(!script.key)
+							return _warn('can\'t add script \'' + script.name + '\' from library \'' + library.key + '\': it doesn\t define a key');
+
+						// normalise
+						script.category = category;
+						script.key = library.key + '\\' + script.key;
+						script.enabled = (script.enabled || script.enabled == undefined) && settings[script.key] !== false;
+
+						scripts.push(script);
+					});
+				});
+
+				// load library
+				state.libraries.push(library);
+				self.add(scripts);
+			},
+
+			/**
+			 * Get the user's saved library settings.
+			 */
+			getSettings: function() {
+				try {
+					var options = mw.user.options.get('userjs-ts-libraries') || '{}';
+					return JSON.parse(options);
+				}
+				catch(err) {
+					_warn('ignored saved settings due to parse error: "' + err + "'.");
+					return {};
+				}
+			},
+
+			/**
+			 * Save the user's library settings.
+			 * @param {object} settings The settings to save.
+			 */
+			saveSettings: function(settings) {
+				new mw.Api().saveOptions({ 'userjs-ts-libraries': JSON.stringify(settings) });
 			}
 		};
 

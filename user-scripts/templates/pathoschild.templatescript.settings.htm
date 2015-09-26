@@ -1,0 +1,39 @@
+<p><strong>TemplateScript</strong> adds custom one-click templates and scripts to your sidebar when editing pages (or other forms). You can import libraries of scripts maintained by other users, or <a href="/wiki/m:TemplateScript">write your own scripts</a> if you're feeling adventurous. See <a href="/wiki/m:TemplateScript">m:TemplateScript</a> for more information.</p>
+
+<p style="color:red;">This is a secret preview interface. Don't depend on it!</p>
+
+<div id="toc" class="toc">
+	<div id="toctitle">
+		<h2>Contents</h2>
+		<span class="toctoggle">&nbsp;[<a href="#" id="togglelink">hide</a>]&nbsp;</span>
+	</div>
+	<ul>
+		<li class="toclevel-1 tocsection-1"><a href="#Imported_libraries"><span class="tocnumber">1</span> <span class="toctext">Imported libraries</span></a>
+			<ul>
+				{{#each libraries}}
+					<li class="toclevel-2 tocsection-{{counter @index 2}}"><a href="#library-{{counter @index 1}}"><span class="tocnumber">1.{{counter @index 1}}</span> <span class="toctext">{{this.name}}</span></a></li>
+				{{/each}}
+			</ul>
+		</li>
+	</ul>
+</div>
+
+<h2 id="Imported_libraries">Imported libraries</h2>
+<p>These libraries have been imported for you (probably via <a href="/wiki/User:{{username}}/common.js">your common.js</a> or <a href="/wiki/Special:Preferences#mw-prefsection-gadgets">a gadget</a>). You can choose which scripts will be shown. Your settings will be saved permanently to your user preferences; you can return to this page anytime to edit them. Changes are saved immediately.</p>
+
+{{#each libraries}}
+	<h3 id="library-{{counter @index 1}}"><a href="{{this.url}}">{{this.name}}</a></h3>
+	<p><em>{{{this.description}}}</em></p>
+	<ul>
+		{{#each categories}}
+			<li>
+				<b>{{this.name}}</b>
+				<ul>
+					{{#each this.scripts}}
+						<li><input type="checkbox" name="{{this.key}}" {{optional enabled 'checked'}} /> {{this.name}}</li>
+					{{/each}}
+				</ul>
+			</li>
+		{{/each}}
+	</ul>
+{{/each}}
