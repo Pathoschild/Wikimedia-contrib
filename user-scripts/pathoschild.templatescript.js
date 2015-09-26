@@ -60,6 +60,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		*********/
 		/**
 		 * Represents an configured script or template.
+		 * @property {string} key The unique key within its library (if it's from a library).
 		 * @property {string} name The name displayed as the sidebar link text.
 		 * @property {boolean} enabled Whether this template is available.
 		 * @property {string} category An arbitrary category name (for grouping templates into multiple sidebars). The default is `self.strings.defaultHeaderText`.
@@ -85,6 +86,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 */
 		self.Template = {
 			/* UI options */
+			key: null,
 			name: null,
 			enabled: true,
 			category: null,
@@ -937,40 +939,42 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			 * @param {Library} library The library configuration.
 			 */
 			define: function(library) {
-				// validate library
-				library = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript::defineLibrary(key:' + (library.key || 'no key') + ')', library, self.Library);
-				if(!library.key)
-					return _warn('can\'t add library: it doesn\'t define a key');
-				if(!library.name)
-					return _warn('can\'t add library \'' + library.key + '\': it doesn\'t define a name');
-				if(!library.categories || !library.categories.length)
-					return _warn('can\'t add library \'' + library.key + '\': it doesn\'t contain any scripts');
+				_loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js').then(function() {
+					// validate library
+					library = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript::defineLibrary(key:' + (library.key || 'no key') + ')', library, self.Library);
+					if(!library.key)
+						return _warn('can\'t add library: it doesn\'t define a key');
+					if(!library.name)
+						return _warn('can\'t add library \'' + library.key + '\': it doesn\'t define a name');
+					if(!library.categories || !library.categories.length)
+						return _warn('can\'t add library \'' + library.key + '\': it doesn\'t contain any scripts');
 
-				// preprocess scripts
-				var settings = self.library.getSettings();
-				var scripts = [];
-				$.each(library.categories, function(c, category) {
-					// validate
-					if(!category.scripts)
-						return _warn('can\'t add category \'' + category + '\' from library \'' + library.key + '\': there are no scripts defined');
-
-					$.each(category.scripts, function(s, script) {
+					// preprocess scripts
+					var settings = self.library.getSettings();
+					var scripts = [];
+					$.each(library.categories, function(c, category) {
 						// validate
-						if(!script.key)
-							return _warn('can\'t add script \'' + script.name + '\' from library \'' + library.key + '\': it doesn\t define a key');
+						if(!category.scripts)
+							return _warn('can\'t add category \'' + category + '\' from library \'' + library.key + '\': there are no scripts defined');
 
-						// normalise
-						script.category = category;
-						script.key = library.key + '\\' + script.key;
-						script.enabled = (script.enabled || script.enabled == undefined) && settings[script.key] !== false;
+						$.each(category.scripts, function(s, script) {
+							// validate
+							if(!script.key)
+								return _warn('can\'t add script \'' + script.name + '\' from library \'' + library.key + '\': it doesn\t define a key');
 
-						scripts.push(script);
+							// normalise
+							script.category = category;
+							script.key = library.key + '\\' + script.key;
+							script.enabled = (script.enabled || script.enabled == undefined) && settings[script.key] !== false;
+
+							scripts.push(script);
+						});
 					});
-				});
 
-				// load library
-				state.libraries.push(library);
-				self.add(scripts);
+					// load library
+					state.libraries.push(library);
+					self.add(scripts);
+				});
 			},
 
 			/**

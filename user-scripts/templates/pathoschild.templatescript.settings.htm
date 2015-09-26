@@ -21,19 +21,23 @@
 <h2 id="Imported_libraries">Imported libraries</h2>
 <p>These libraries have been imported for you (probably via <a href="/wiki/User:{{username}}/common.js">your common.js</a> or <a href="/wiki/Special:Preferences#mw-prefsection-gadgets">a gadget</a>). You can choose which scripts will be shown. Your settings will be saved permanently to your user preferences; you can return to this page anytime to edit them. Changes are saved immediately.</p>
 
-{{#each libraries}}
-	<h3 id="library-{{counter @index 1}}"><a href="{{this.url}}">{{this.name}}</a></h3>
-	<p><em>{{{this.description}}}</em></p>
-	<ul>
-		{{#each categories}}
-			<li>
-				<b>{{this.name}}</b>
-				<ul>
-					{{#each this.scripts}}
-						<li><input type="checkbox" name="{{this.key}}" {{optional enabled 'checked'}} /> {{this.name}}</li>
-					{{/each}}
-				</ul>
-			</li>
-		{{/each}}
-	</ul>
-{{/each}}
+{{#if libraries.length}}
+	{{#each libraries}}
+		<h3 id="library-{{counter @index 1}}"><a href="{{this.url}}">{{this.name}}</a></h3>
+		<p><em>{{{this.description}}}</em></p>
+		<ul>
+			{{#each categories}}
+				<li>
+					<b>{{this.name}}</b>
+					<ul>
+						{{#each this.scripts}}
+							<li><input type="checkbox" name="{{this.key}}" {{optional enabled 'checked'}} /> {{this.name}}</li>
+						{{/each}}
+					</ul>
+				</li>
+			{{/each}}
+		</ul>
+	{{/each}}
+{{else}}
+	<p>(You haven't imported any libraries.)</p>
+{{/if}}
