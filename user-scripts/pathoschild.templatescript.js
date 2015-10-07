@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.2';
+		self.version = '2.2.1';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -133,6 +133,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		 * @property {string} key A unique key which identifies the library.
 		 * @property {string} url The URL to a page with more information about the library.
 		 * @property {string} description An HTML string describing the library for the user.
+		 * @property {boolean} defaultEnabled Whether the library is enabled by default. If this is false, the user must explicitly enable it through [[Special:TemplateScript]].
 		 * @property {LibraryCategory[]} categories The script categories to import.
 		 * @class
 		 */
@@ -141,6 +142,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			name: null,
 			url: null,
 			description: null,
+			defaultEnabled: true,
 			categories: []
 		};
 
@@ -941,7 +943,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			define: function(library) {
 				_loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js').then(function() {
 					// validate library
-					library = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript::defineLibrary(key:' + (library.key || 'no key') + ')', library, self.Library);
+					library = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript.library::define(key:' + (library.key || 'no key') + ')', library, self.Library);
 					if(!library.key)
 						return _warn('can\'t add library: it doesn\'t define a key');
 					if(!library.name)
@@ -963,9 +965,9 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 								return _warn('can\'t add script \'' + script.name + '\' from library \'' + library.key + '\': it doesn\t define a key');
 
 							// normalise
-							script.category = category;
+							script.category = category.name;
 							script.key = library.key + '\\' + script.key;
-							script.enabled = (script.enabled || script.enabled == undefined) && settings[script.key] !== false;
+							script.enabled = settings[script.key] !== false && (library.defaultEnabled || !!settings[script.key]);
 
 							scripts.push(script);
 						});
