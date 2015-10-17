@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.2.1';
+		self.version = '2.2.2';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -675,8 +675,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				for (var i = 0; i < state.queue.length; i++)
 					self.add(state.queue[i]);
 			});
-			if(mw.config.get('wgCanonicalNamespace') === 'Special' && mw.config.get('wgTitle') === 'TemplateScript')
-				_showSettingsView();
+			
+			_updateSettingsView();
 		};
 
 		/**
@@ -834,9 +834,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		}
 
 		/**
-		 * Load the TemplateScript library configuration view on the current page. This replaces the current page content.
+		 * Load or reload the TemplateScript library settings view if the current page is [[Special:TemplateScript]]. This replaces the current page content.
 		 */
-		var _showSettingsView = function() {
+		var _updateSettingsView = function() {
+			if(mw.config.get('wgCanonicalNamespace') !== 'Special' || mw.config.get('wgTitle').toLowerCase() !== 'templatescript')
+				return;
+
 			// initialise UI
 			$('title:first, #firstHeading').text('TemplateScript settings');
 			$('#mw-content-text').html('↻ loading...');
@@ -976,6 +979,9 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 					// load library
 					state.libraries.push(library);
 					self.add(scripts);
+
+					// reload settings view if shown
+					_updateSettingsView();
 				});
 			},
 
