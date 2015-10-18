@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.2.3';
+		self.version = '2.2.4';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -110,7 +110,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			script: null,
 
 			/* internal */
-			id: null
+			id: null,
+			fromLibrary: false
 		};
 
 		/**
@@ -616,6 +617,24 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				return link;
 			};
 
+			/**
+			 * Add a [[Special:TemplateScript]] link to a sidebar containing scripts from a library.
+			 * @param {string} portletID The unique navigation portlet ID.
+			 */
+			var _addLibrarySettingsLink = function(portletID) {
+				// get sidebar
+				var sidebar = $('#' + portletID);
+				if(sidebar.is('.ts-library-portlet'))
+					return;
+
+				// add link
+				sidebar.addClass('ts-library-portlet');
+				sidebar.find('h1, h2, h3, h4, h5').first().append([
+					' ',
+					$('<a></a>', { href: '/wiki/Special:TemplateScript', html: '&#9965;', target: '_blank' })
+				]);
+			};
+
 
 			/*********
 			** Plugin method
@@ -645,6 +664,10 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 							.append(template.accessKey)
 					);
 				}
+
+				// add library setting link
+				if(template.fromLibrary)
+					_addLibrarySettingsLink(sidebarID);
 				return $item;
 			};
 		};
@@ -973,6 +996,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 							script.category = category.name;
 							script.key = library.key + '\\' + script.key;
 							script.enabled = settings[script.key] !== false && (library.defaultEnabled || !!settings[script.key]);
+							script.fromLibrary = true;
 
 							scripts.push(script);
 						});
