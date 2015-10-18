@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.2.2';
+		self.version = '2.2.3';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -676,7 +676,9 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 					self.add(state.queue[i]);
 			});
 			
+			// initialise settings UI
 			_updateSettingsView();
+			$('a.new').filter('[title^="' + mw.config.get('wgFormattedNamespaces')[-1] + ':TemplateScript"]').removeClass('new'); // unredlink [[Special:TemplateScript]]
 		};
 
 		/**
