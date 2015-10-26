@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.2.4';
+		self.version = '2.2.5';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -575,11 +575,15 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			 */
 			var _addPortlet = function(id, name) {
 				// copy the portlet structure for the current skin
-				var sidebar = $('#p-tb').clone().attr('id', id);
-				sidebar.find('h1, h2, h3, h4, h5').first().text(name);
-				sidebar.find('ul').empty();
-				$('#p-tb').parent().append(sidebar);
+				var sidebar = $('#p-tb').clone();
 
+				// adjust content
+				sidebar.attr({ id: id, 'aria-labelledby': id + '-label' });
+				sidebar.find('h1, h2, h3, h4, h5').first().text(name).attr({ id: id + '-label' });
+				sidebar.find('ul').empty();
+
+				// add to DOM
+				$('#p-tb').parent().append(sidebar);
 				return sidebar;
 			};
 
@@ -624,7 +628,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			var _addLibrarySettingsLink = function(portletID) {
 				// get sidebar
 				var sidebar = $('#' + portletID);
-				if(sidebar.is('.ts-library-portlet'))
+				if(sidebar.hasClass('ts-library-portlet'))
 					return;
 
 				// add link
