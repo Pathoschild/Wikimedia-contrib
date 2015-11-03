@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.2.6';
+		self.version = '2.3';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -46,6 +46,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			sidebarCount: 0,  // number of rendered sidebars (excluding the default sidebar)
 			sidebars: {},     // hash of rendered sidebars by name
 			libraries: [],    // the imported libraries
+			customLibrarySettings: {}, // custom settings to apply to imported library script (as a key => Template hash)
 
 			// state management
 			renderers: {},    // the plugins which render template/script links
@@ -992,13 +993,18 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 							return _warn('can\'t add category \'' + category + '\' from library \'' + library.key + '\': there are no scripts defined');
 
 						$.each(category.scripts, function(s, script) {
+							var key = library.key + '\\' + script.key;
+
 							// validate
 							if(!script.key)
 								return _warn('can\'t add script \'' + script.name + '\' from library \'' + library.key + '\': it doesn\t define a key');
 
+							// apply overrides
+							script = $.extend({}, script, state.customLibrarySettings[key]);
+
 							// normalise
 							script.category = category.name;
-							script.key = library.key + '\\' + script.key;
+							script.key = key;
 							script.enabled = settings[script.key] !== false && (library.defaultEnabled || !!settings[script.key]);
 							script.fromLibrary = true;
 
@@ -1035,6 +1041,16 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			 */
 			saveSettings: function(settings) {
 				new mw.Api().saveOptions({ 'userjs-ts-libraries': JSON.stringify(settings) });
+			},
+
+			/**
+			 * Override the configuration for an imported template or script.
+			 * @param {string} library The unique key of the library.
+			 * @param {string} key The unique key of the template or script.
+			 * @param {Template} settings The settings to apply. This should match the normal Template fields, with each field overwriting the corresponding field of the imported script.
+			 */
+			override: function(library, key, settings) {
+				state.customLibrarySettings[library + '\\' + key] = settings;
 			}
 		};
 
