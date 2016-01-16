@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.3';
+		self.version = '2.4';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -299,6 +299,27 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 				};
 
 				/**
+				 * Get whether the user has selected text in the target field.
+				 */
+				wrapper.hasSelection = function() {
+					var box = field.get(0);
+
+					// most browsers
+					if (box.selectionStart || box.selectionStart === false || box.selectionStart === '0' || box.selectionStart === 0)
+						return box.selectionStart !== box.selectionEnd;
+
+					// older browsers
+					else if (document.selection) {
+						var selection = document.selection.createRange();
+						return selection && selection.text && selection.text.length;
+					}
+
+					// unknown implementation
+					else
+						return false;
+				};
+
+				/**
 				 * Replace the selected text in the target field.
 				 * @param {string|function} text The new text with which to overwrite the selection (with any template format values preparsed), or a function which takes the selected text and returns the new text. If no text is selected, the function is passed an empty value and its return value is added to the end.
 				 * @returns The wrapper for chaining.
@@ -459,6 +480,19 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
 				context.set(text);
 				return context;
+			};
+
+			/**
+			 * Get whether the user has selected text in the target field.
+			 */
+			context.hasSelection = function() {
+				// code editor
+				var codeEditor = _getCodeEditor();
+				if(codeEditor)
+					return codeEditor.getSelectedText().length > 0;
+
+				// no editor
+				return _getFieldEditor().hasSelection();
 			};
 
 			/**
