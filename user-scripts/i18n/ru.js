@@ -25,7 +25,6 @@ pathoschild.i18n = {
 		undoTooltip: 'Отмена последнего действия', // button tooltip
 		save: 'Сохранить',                         // button text
 		saveTooltip: 'Сохранение сессии для применения в будущем', // button tooltip
-		instructions: 'Вы можете указать любое количество шаблонов для использования. Шаблон поиска может выглядеть как «{code|text=шаблон поиска}»\
- , либо как «{code|text=/шаблон/флаги}», а шаблон замены может содержать ссылки на группы вида «{code|text=$1}» (см. {helplink|text=tutorial|title=JavaScript regex tutorial|url=http://www.regular-expressions.info/javascript.html}).'
+		instructions: 'Вы можете указать любое количество шаблонов для использования. Шаблон поиска может выглядеть как «{code|text=шаблон поиска}», либо как «{code|text=/шаблон/флаги}», а шаблон замены может содержать ссылки на группы вида «{code|text=$1}» (см. {helplink|text=справку|title=Справка по регулярным выражениям JavaScript|url=https://learn.javascript.ru/regular-expressions-javascript}).'
 	}
 };
