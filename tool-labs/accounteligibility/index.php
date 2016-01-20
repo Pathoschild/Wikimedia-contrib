@@ -428,7 +428,6 @@ class Script extends Base {
 		foreach($this->db->getDomains() as $dbname => $domain) {
 			$this->wikis[$dbname] = array(
 				'dbname' => $dbname,
-				'code'   => substr($dbname, 0, -2),
 				'domain' => $domain
 			);
 		}
@@ -489,7 +488,7 @@ class Script extends Base {
 	########
 	public function connect_next() {
 		while ($this->queue_top >= 0) {
-			/* skip private wiki (not listed in toolserver.wiki) */
+			/* skip private wiki (not listed in meta_p.wiki) */
 			$dbname = $this->queue[$this->queue_top--];
 			if (!isset($this->wikis[$dbname])) {
 				continue;
@@ -681,7 +680,7 @@ class Script extends Base {
 			$comment = $row['log_comment'];
 
 			// filter logs for wrong wiki / deadline
-			if($title != $logName && $title != $logName . '@' . $this->wiki['code'])
+			if($title != $logName && $title != $logName . '@' . $this->wiki['dbname'])
 				continue;
 			if($date > $endDate)
 				continue;
@@ -1056,7 +1055,7 @@ while ($script->user['name'] && !$cached) {
 						$script->event['warn_ineligible'] = NULL;
 
 					/* link to log for double-checking */
-					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['code'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
+					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['dbname'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
 				}
 			}
 			while (!$script->eligible && $script->get_next());
@@ -1341,7 +1340,7 @@ while ($script->user['name'] && !$cached) {
 						$script->event['warn_ineligible'] = NULL;
 
 					/* link to log for double-checking */
-					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['code'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
+					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['dbname'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
 				}
 			}
 			while (!$script->eligible && $script->get_next());
@@ -1619,7 +1618,7 @@ while ($script->user['name'] && !$cached) {
 						$script->event['warn_ineligible'] = NULL;
 
 					/* link to log for double-checking */
-					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['code'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
+					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['dbname'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
 				}
 			}
 			while (!$script->eligible && $script->get_next());
@@ -1821,7 +1820,7 @@ while ($script->user['name'] && !$cached) {
 						$script->event['warn_ineligible'] = NULL;
 
 					/* link to log for double-checking */
-					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['code'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
+					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['dbname'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
 				}
 			}
 			while (!$script->eligible && $script->get_next());
@@ -2178,7 +2177,7 @@ while ($script->user['name'] && !$cached) {
 						$script->event['warn_ineligible'] = NULL;
 
 					/* link to log for double-checking */
-					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['code'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
+					$script->msg('<small>(See <a href="//' . $script->wiki['domain'] . '/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user['name'] . '@' . $script->wiki['dbname'] . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
 				}
 			}
 			while (!$script->eligible && $script->get_next());
