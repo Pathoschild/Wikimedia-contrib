@@ -121,12 +121,18 @@ $data = array();
 ***************/
 /* outputs a color-coded table cell for the given date */
 function color_cell($last_date) {
-	$date = $last_date ? preg_replace('/^(\d{8}).+$/','$1',$last_date) : 'never';
-	$color = ($date == 'never' ? 'FCC'
-		: ($date > date('Ymd', strtotime('-1 week')) ? 'CFC'
-		: ($date > date('Ymd', strtotime('-3 week')) ? 'FFC'
-		: 'FCC')));
-	return "<td style='background:#$color;'>$date</td>";
+	if($last_date) {
+		$date = DateTime::createFromFormat('YmdGis', $last_date, new DateTimeZone('UTC'));
+		if($date > new DateTime('-1 week'))
+			$color = 'CFC';
+		elseif($date > new DateTime('-3 week'))
+			$color = 'FFC';
+		else
+			$color = 'FCC';
+		return "<td style='background:#$color;'>" . $date->format('Y-m-d H:i') . "</td>";
+	}
+
+	return '<td style="background:#FCC;">never</td>';
 }
 
 /***************
