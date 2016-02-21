@@ -31,7 +31,17 @@ if (!empty($user)) {
 	echo 'See also <a href="', $backend->url('/stalktoy/' . urlencode($user)), '" title="Global account details">global account details</a>, <a href="', $backend->url('/crossactivity/' . urlencode($user)), '" title="Crosswiki activity">recent activity</a>, <a href="//meta.wikimedia.org/?title=Special:CentralAuth/', urlencode($user), '" title="Special:CentralAuth">Special:CentralAuth</a>.';
 }
 if ($user) {
-	echo '<hr />Filters: <a href="#" class="selected filter" data-filter="misc">wikitext</a> <a href="#" class="selected filter" data-filter="css">CSS</a> <a href="#" class="selected filter" data-filter="js">JS</a>';
+	echo '<hr />',
+		'Filters: ',
+		'type is <a href="#" class="selected filter" data-filter-key="css" data-filters=".type-css">CSS</a> ',
+		'<a href="#" class="selected filter" data-filter-key="js" data-filters=".type-js">JS</a> ',
+		'<a href="#" class="selected filter" data-filter-key="misc" data-filters=".type-misc">other</a> ',
+		'| namespace is ',
+		'<a href="#" class="selected filter" data-filter-key="user" data-filters="[data-ns=\'2\']">user</a> ',
+		'<a href="#" class="selected filter" data-filter-key="talk" data-filters="[data-ns=\'3\']">talk</a> ',
+		'| include ',
+		'<a href="#" class="selected filter" data-filter-key="top-pages" data-filters="[data-is-subpage=\'0\']">top pages</a> ',
+		'<a href="#" class="selected filter" data-filter-key="subpages" data-filters="[data-is-subpage=\'1\']">subpages</a>';
 }
 
 /***************
@@ -75,12 +85,14 @@ do {
 		echo '<ul class="page-list">';
 		foreach($pages as $page) {
 			// metadata
-			$ns = $page['page_namespace'] == 3 ? 'User talk' : 'User';
-			$title = $ns . ':' . $page['page_title'];
+			$namespaceNumber = $page['page_namespace'];
+			$namespaceName = $namespaceNumber == 3 ? 'User talk' : 'User';
+			$title = $namespaceName . ':' . $page['page_title'];
 			$size = $page['page_len'];
 			$is_redirect = $page['page_is_redirect'];
 			$touched = new DateTime($page['page_touched']);
 			$touched = $touched->format('Y-m-d');
+			$is_subpage = strpos($title, '/') ? '1' : '0';
 
 			// filter type
 			$type = 'misc';
@@ -90,7 +102,7 @@ do {
 				$type = 'css';
 
 			// output
-			echo "<li class='redirect type-$type size-$size' data-redirect='$is_redirect' data-type='$type' data-size='$size' data-ns='$ns' data-title='", $backend->formatValue($page['page_title']), "'><a href='//$domain/wiki/", $backend->formatValue($title), "'>", $backend->formatValue($title), "</a> <small>(<span class='page-size'>$size bytes</span>, <span class='page-edited'>last <a href='https://www.mediawiki.org/wiki/Manual:Page_table#page_touched'>touched</a> $touched</span>)</small></li>";
+			echo "<li class='type-$type' data-redirect='$is_redirect' data-is-subpage='$is_subpage' data-type='$type' data-size='$size' data-ns='$namespaceNumber' data-title='", $backend->formatValue($page['page_title']), "'><a href='//$domain/wiki/", $backend->formatValue($title), "'>", $backend->formatValue($title), "</a> <small>(<span class='page-size'>$size bytes</span>, <span class='page-edited'>last <a href='https://www.mediawiki.org/wiki/Manual:Page_table#page_touched'>touched</a> $touched</span>)</small></li>";
 		}
 		echo '</ul>';
 	}

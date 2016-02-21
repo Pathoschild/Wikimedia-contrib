@@ -9,6 +9,7 @@ li[data-redirect="1"], li[data-redirect="1"] a {
 	border-radius:5px;
 	padding:3px 5px;
 	color:#CCC;
+	text-decoration:none;
 }
 
 .filter.selected {

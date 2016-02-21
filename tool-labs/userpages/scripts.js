@@ -9,14 +9,16 @@ pathoschild.PageFilters = function() {
 		/**
 		 * Reapply the selected filters.
 		 */
-		// apply filters
+		// reset filters
 		$('.result-box').find('ul, li, h2').filter(':hidden').show();
-		if(!this.isEnabled('misc'))
-			$('.result-box li.type-misc:visible').hide();
-		if(!this.isEnabled('css'))
-			$('.result-box li.type-css:visible').hide();
-		if(!this.isEnabled('js'))
-			$('.result-box li.type-js:visible').hide();
+
+		// apply filters
+		var items = $('.result-box li');
+		$('[data-filters]').each(function() {
+			var toggle = $(this);
+			if(!toggle.hasClass('selected'))
+				items.filter(toggle.data('filters')).hide();
+		});
 
 		// hide wikis with no pages shown
 		$('.result-box ul:not(:has(li:visible))').hide();
@@ -28,7 +30,7 @@ pathoschild.PageFilters = function() {
 		 * Get the toggle element for a filter.
 		 * @param key {string} The unique key for the filter.
 		 */
-		return filters.filter('[data-filter="' + key + '"]');
+		return filters.filter('[data-filter-key="' + key + '"]');
 	}
 
 	this.isEnabled = function(key) {
@@ -45,7 +47,7 @@ pathoschild.PageFilters = function() {
 		 * @param key {string} The unique key for the filter.
 		 */
 		this.getToggle(key).toggleClass('selected');
-		location.hash = '#' + $('[data-filter].selected').map(function() { return $(this).attr('data-filter'); }).get().join();
+		location.hash = '#' + $('[data-filters].selected').map(function() { return $(this).attr('data-filter-key'); }).get().join();
 		this.apply();
 	}
 
@@ -62,7 +64,7 @@ pathoschild.PageFilters = function() {
 		// apply
 		selected = selected.split(',');
 		if(selected.length) {
-			$('[data-filter]').removeClass('selected');
+			$('[data-filters]').removeClass('selected');
 			for(var i = 0, len = selected.length; i < len; i++)
 				this.getToggle(selected[i]).addClass('selected');
 			this.apply();
@@ -75,7 +77,7 @@ pathoschild.PageFilters = function() {
 $(function() {
 	var filters = pathoschild.PageFilters();
 	$('.filter').click(function(event) {
-		filters.toggle($(this).attr('data-filter'));
+		filters.toggle($(this).attr('data-filter-key'));
 		event.preventDefault();
 	});
 	filters.readHash();
