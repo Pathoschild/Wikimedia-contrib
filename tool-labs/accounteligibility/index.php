@@ -13,8 +13,14 @@ class Script extends Base {
 	############################
 	## Configuration
 	############################
-	const DEFAULT_EVENT = 38;
+	const DEFAULT_EVENT = 39;
 	public $events = Array(
+		39 => Array(
+			'year' => 2016,
+			'name' => 'Commons Picture of the Year for 2015',
+			'url' => '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2015'
+		),
+	
 		38 => Array(
 			'year' => 2016,
 			'name' => 'steward elections',
@@ -935,6 +941,44 @@ while ($script->user['name'] && !$cached) {
 	 ***************/
 	$script->profiler->start('verify requirements');
 	switch ($script->event['id']) {
+		############################
+		## 2016 Commons Picture of the Year 2015
+		############################
+		case 39:
+			$script->printWiki();
+			$age_okay = false;
+			$edits_okay = false;
+			do {
+				$script->eligible = true;
+
+				########
+				## registered < 2016-Jan-01
+				########
+				if(!$age_okay) {
+					$age_okay = $script->condition(
+						$date_okay = ($script->user['registration_raw'] < 20160101000000),
+						"has an account registered before 01 January 2016 (registered {$script->user['registration']})...",
+						"does not have an account registered before 01 January 2016 (registered {$script->user['registration']})."
+					);
+				}
+
+				########
+				## >= 75 edits before 2016-Jan-01
+				########
+				if(!$edits_okay) {
+					$edits = $script->edit_count(NULL, 20160101000000);
+					$edits_okay = $script->condition(
+						$edits_okay = ($edits >= 75),
+						"has at least 75 edits before 01 January 2016 (has {$edits})...",
+						"does not have at least 75 edits before 01 January 2016 (has {$edits})."
+					);
+				}
+
+				$script->eligible = ($age_okay && $edits_okay);
+			}
+			while (!$script->eligible && $script->get_next());
+			break;
+
 		############################
 		## 2016 steward elections
 		############################
