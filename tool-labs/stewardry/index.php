@@ -27,7 +27,7 @@ class Engine {
 	 * @var string The input dbname to analyze.
 	 */
 	public $dbname = null;
-	
+
 	/**
 	 * @var string The selected groups.
 	 */
@@ -204,7 +204,7 @@ do {
 			$domain = $engine->wiki->domain;
 
 			echo "<tr>",
-				"<td><a href='//$domain/wiki/User:$name' title='$name&#39;s user page'>$name</a> <small>[<a href='", $backend->url('/crossactivity/' . $urlName), "' title='scan this user&#39;s activity on all wikis'>all wikis</a>]</small></td>",
+				"<td><a href='//$domain/wiki/User:$urlName' title='$urlName&#39;s user page'>$name</a> <small>[<a href='", $backend->url('/crossactivity/' . $urlName), "' title='scan this user&#39;s activity on all wikis'>all wikis</a>]</small></td>",
 				 color_cell($last_edit),
 				 ($show_log ? color_cell($last_log) : ''),
 			 "</tr>";
