@@ -32,10 +32,10 @@ if (!empty($user)) {
 }
 if ($user) {
 	echo '<hr />',
-		'Filters: ',
-		'type is <a href="#" class="selected filter" data-filter-key="css" data-filters=".type-css">CSS</a> ',
+		'Filters: page is ',
+		'<a href="#" class="selected filter" data-filter-key="misc" data-filters=".type-misc">text</a> ',
+		'<a href="#" class="selected filter" data-filter-key="css" data-filters=".type-css">CSS</a> ',
 		'<a href="#" class="selected filter" data-filter-key="js" data-filters=".type-js">JS</a> ',
-		'<a href="#" class="selected filter" data-filter-key="misc" data-filters=".type-misc">other</a> ',
 		'| namespace is ',
 		'<a href="#" class="selected filter" data-filter-key="user" data-filters="[data-ns=\'2\']">user</a> ',
 		'<a href="#" class="selected filter" data-filter-key="talk" data-filters="[data-ns=\'3\']">talk</a> ',
