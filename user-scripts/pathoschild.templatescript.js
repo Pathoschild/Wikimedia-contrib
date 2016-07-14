@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 		/*********
 		** Fields
 		*********/
-		self.version = '2.4';
+		self.version = '2.5';
 		self.strings = {
 			defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
 			regexEditor: 'Regex editor' // the default 'regex editor' script
@@ -549,12 +549,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 			 */
 			context.appendEditSummary = function(summary) {
 				var editor = context.forField(state.$editSummary);
-				var text = editor.get();
+				var text = editor.get().replace(/\s+$/, ''); // get text without trailing whitespace
 
 				if(text.match(/\*\/$/))
-					editor.append(' ' + summary); // "/* section */ reason"
-				else if(text.match(/[^\s]/))
-					editor.append(', ' + summary); // old summary, new summary
+					editor.set(text + ' ' + summary); // "/* section */ reason"
+				else if(text.length)
+					editor.set(text + ', ' + summary); // old summary, new summary
 				else
 					editor.set(summary); // new summary
 
