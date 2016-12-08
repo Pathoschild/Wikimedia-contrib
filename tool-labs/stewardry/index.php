@@ -197,7 +197,7 @@ do {
 		echo "<table class='pretty sortable' id='${group}_metrics'><thead><tr><th>user</th><th>last edit</th>", ($show_log ? "<th>last log action</th>" : ""), "</tr></thead><tbody>";
 
 		foreach($matching as $row) {
-			$name = $row["user_name"];
+			$name = addslashes($row["user_name"]);
 			$urlName = $backend->formatValue($name);
 			$last_edit = $row["last_edit"];
 			$last_log = $row["last_$group"];
