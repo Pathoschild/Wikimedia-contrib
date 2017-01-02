@@ -2,6 +2,9 @@
 #################################################
 ## Constants
 #################################################
+##########
+## Paths
+##########
 # the directory to which to write non-public data like logs and cache files.
 DEFINE('DATA_PATH', '/data/project/meta/');
 
@@ -16,6 +19,14 @@ DEFINE('CACHE_PATH', DATA_PATH . '/cache/');
 
 # the web-accessible directory containing the backend modules.
 DEFINE('BACKEND_PATH', __DIR__);
+
+##########
+## Database
+##########
+# always use this hostname when connecting to a database.
+# This simplifies SSH tunnelling, but reduces the effectiveness of load balancing. This should only
+# be uncommented if needed for local development.
+#DEFINE('FORCE_DB_HOST', 'localhost:65001');
 
 
 #################################################

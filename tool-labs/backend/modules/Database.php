@@ -145,6 +145,8 @@ class Database {
 		/* normalize database name for Tools Labs */
 		if(isset($database) && substr($database, -2) != '_p')
 			$database .= '_p';
+		if(defined('FORCE_DB_HOST'))
+			$host = FORCE_DB_HOST;
 
 		/* change states */
 		$this->borked = false;
