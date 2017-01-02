@@ -1,9 +1,27 @@
 <?php
 #################################################
-## Site configuration and constants
+## Constants
+#################################################
+# the directory to which to write non-public data like logs and cache files.
+DEFINE('DATA_PATH', '/data/project/meta/');
+
+# the directory to which to write log files.
+DEFINE('REPLICA_CNF_PATH', DATA_PATH . '/replica.my.cnf');
+
+# the directory to which to write log files.
+DEFINE('LOG_PATH', DATA_PATH . '/logs/');
+
+# the directory to which to write cache files.
+DEFINE('CACHE_PATH', DATA_PATH . '/cache/');
+
+# the web-accessible directory containing the backend modules.
+DEFINE('BACKEND_PATH', __DIR__);
+
+
+#################################################
+## Site configuration
 #################################################
 $settings = Array();
-
 
 #############################
 ## Error-reporting

@@ -68,11 +68,11 @@ class Backend extends Base {
 
 		/* start logger */
 		$key = hash('crc32b', $_SERVER['REQUEST_TIME'] . $_SERVER['REQUEST_URI']);
-		$this->logger = new Logger('/data/project/meta/logs', $key);
+		$this->logger = new Logger(LOG_PATH, $key);
 		$this->logger->log('request: [' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . '] by [' . $_SERVER['HTTP_USER_AGENT'] . ']');
 
 		/* build cache */
-		$this->cache = new Cacher('/data/project/meta/public_html/backend/modules/cache/', $this->logger, !!$this->get('purge'));
+		$this->cache = new Cacher(CACHE_PATH, $this->logger, !!$this->get('purge'));
 	}
 	public static function create($title, $blurb) {
 		return new Backend($title, $blurb);
@@ -203,7 +203,7 @@ class Backend extends Base {
 		</div>
 		<div id="content-column">
 			<div id="content">';
-		include('/data/project/meta/public_html/backend/notice.php');
+		include(BACKEND_PATH . "/../notice.php");
 		echo '<h1>', $this->title, '<sup>beta</sup></h1>
 				<p id="blurb">', $this->blurb, '</p>';
 		echo '
