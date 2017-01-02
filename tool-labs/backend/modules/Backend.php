@@ -68,7 +68,7 @@ class Backend extends Base {
 
 		/* start logger */
 		$key = hash('crc32b', $_SERVER['REQUEST_TIME'] . $_SERVER['REQUEST_URI']);
-		$this->logger = new Logger(LOG_PATH, $key);
+		$this->logger = new Logger(LOG_PATH, $key, $settings['debug']);
 		$this->logger->log('request: [' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . '] by [' . $_SERVER['HTTP_USER_AGENT'] . ']');
 
 		/* build cache */

@@ -27,15 +27,20 @@ class Logger {
      * Construct an instance.
      * @param $path string The directory path to which logs should be written.
      * @param $key string A unique session key used to group related log entries.
+     * @param $enabled bool Whether to enable logging.
      */
-    public function __construct($path, $key) {
+    public function __construct($path, $key, $enabled) {
         $this->key = $key;
-        #$this->logger = new KLogger($path, KLogger::DEBUG);
+        $this->logger = $enabled
+            ? new KLogger($path, KLogger::DEBUG)
+            : null;
     }
 
     public function log($message) {
-        #$message = '[' . $this->key . '] ' . $message;
-        #$this->logger->logInfo($message);
+        if($this->logger != null) {
+            $message = "[{$this->key}] $message";
+            $this->logger->logInfo($message);
+        }
     }
 }
 ?>
