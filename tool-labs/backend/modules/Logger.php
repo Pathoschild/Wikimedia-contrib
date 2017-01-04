@@ -1,10 +1,11 @@
 <?php
-require_once( 'KLogger.php' );
+require_once('external/KLogger.php');
 
 /**
- * Writes messages to a dated log file.
+ * Writes messages to a log file for troubleshooting.
  */
-class Logger {
+class Logger
+{
     ##########
     ## Properties
     ##########
@@ -12,35 +13,40 @@ class Logger {
      * A unique session key used to group related log entries.
      * @var string
      */
-    public $key = NULL;
+    public $key = null;
 
     /**
      * The underlying logging library.
      * @var KLogger|null
      */
-    private $logger = NULL;
+    private $logger = null;
 
     ##########
     ## Public methods
     ##########
     /**
      * Construct an instance.
-     * @param $path string The directory path to which logs should be written.
-     * @param $key string A unique session key used to group related log entries.
-     * @param $enabled bool Whether to enable logging.
+     * @param string $path The directory path to which logs should be written.
+     * @param string $key A unique session key used to group related log entries.
+     * @param bool $enabled Whether to enable logging.
      */
-    public function __construct($path, $key, $enabled) {
+    public function __construct($path, $key, $enabled)
+    {
         $this->key = $key;
         $this->logger = $enabled
             ? new KLogger($path, KLogger::DEBUG)
             : null;
     }
 
-    public function log($message) {
-        if($this->logger != null) {
+    /**
+     * Write a message to the log.
+     * @param string $message The message to log.
+     */
+    public function log($message)
+    {
+        if ($this->logger != null) {
             $message = "[{$this->key}] $message";
             $this->logger->logInfo($message);
         }
     }
 }
-?>

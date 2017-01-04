@@ -1,91 +1,91 @@
 [
-	{
-		"name" : "meta-accounteligibility",
-		"title" : "Account Eligibility",
-		"description" : "Analyzes a user account to determine whether it's eligible to vote in the specified event.",
-		"url" : "https://tools.wmflabs.org/meta/accounteligibility/",
-		"keywords" : "cross-wiki, user analysis, vote",
-		"author" : "Pathoschild",
-		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
-	},
-	{
-		"name" : "meta-catanalysis",
-		"title" : "Category Analysis",
-		"description" : "Analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix).",
-		"url" : "https://tools.wmflabs.org/meta/catanalysis/",
-		"keywords" : "category, edit analysis, prefix",
-		"author" : "Pathoschild",
-		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
-	},
-	{
-		"name" : "meta-crossactivity",
-		"title" : "Crosswiki Activity",
-		"description" : "Measures a user's latest edit, bureaucrat, or sysop activity on all wikis.",
-		"url" : "https://tools.wmflabs.org/meta/crossactivity/",
-		"keywords" : "cross-wiki, user analysis",
-		"author" : "Pathoschild",
-		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
-	},
-	{
-		"name" : "meta-globalgroups",
-		"title" : "Global Groups",
-		"description" : "A live review of permissions assigned to global groups on Wikimedia Foundation wikis.",
-		"url" : "https://tools.wmflabs.org/meta/globalgroups/",
-		"keywords" : "cross-wiki, permissions",
-		"author" : "Pathoschild",
-		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
-	},
-	{
-		"name" : "meta-gusersearch",
-		"title" : "Global User Search",
-		"description" : "Search and filter global users on Wikimedia wikis.",
-		"url" : "https://tools.wmflabs.org/meta/gusersearch/",
-		"keywords" : "cross-wiki",
-		"author" : "Pathoschild",
-		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
-	},
-	{
-		"name" : "meta-magicredirect",
-		"title" : "Magic Redirect",
-		"description" : "Redirects to an arbitrary URL with tokens based on user and wiki filled in.",
-		"url" : "https://tools.wmflabs.org/meta/magicredirect/",
-		"keywords" : "cross-wiki",
-		"author" : "Pathoschild",
-		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
-	},
-	{
-		"name" : "meta-stalktoy",
-		"title" : "Stalktoy",
-		"description" : "Shows global details about a user across all Wikimedia wikis. You can provide a username, an IPv4/IPv6 address, or a CIDR block.",
-		"url" : "https://tools.wmflabs.org/meta/stalktoy/",
-		"keywords" : "cross-wiki, sul, user analysis",
-		"author" : "Pathoschild",
-		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
-	},
-	{
-		"name" : "meta-stewardry",
-		"title" : "Stewardry",
-		"description" : "Estimates which users in a group are available based on their last edit or action.",
-		"url" : "https://tools.wmflabs.org/meta/stewardry/",
-		"keywords" : "cross-wiki, user analysis",
-		"author" : "Pathoschild",
-		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
-	},
-	{
-		"name" : "meta-userpages",
-		"title" : "User pages",
-		"description" : "Find your user pages on all wikis (or find wikis where you don't have user pages).",
-		"url" : "https://tools.wmflabs.org/meta/userpages/",
-		"keywords" : "cross-wiki, user analysis, prefix",
-		"author" : "Pathoschild",
-		"repository" : "https://github.com/Pathoschild/Wikimedia-contrib.git"
-	},
-	{
-		"name" : "meta-synchbot",
-		"title" : "Synchbot",
-		"description" : "Synchronises user pages across Wikimedia projects in every language. This allows users to create user pages on every wiki, or to have global JavaScript and CSS. (Due to potential for misuse, must submit an on-wiki request.)",
-		"url" : "meta.wikimedia.org/wiki/Synchbot",
-		"keywords" : "batch, cross-wiki, editing",
-		"author" : "Pathoschild"
-	}
+  {
+    "name": "meta-accounteligibility",
+    "title": "Account Eligibility",
+    "description": "Analyzes a user account to determine whether it's eligible to vote in the specified event.",
+    "url": "https://tools.wmflabs.org/meta/accounteligibility/",
+    "keywords": "cross-wiki, user analysis, vote",
+    "author": "Pathoschild",
+    "repository": "https://github.com/Pathoschild/Wikimedia-contrib.git"
+  },
+  {
+    "name": "meta-catanalysis",
+    "title": "Category Analysis",
+    "description": "Analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix).",
+    "url": "https://tools.wmflabs.org/meta/catanalysis/",
+    "keywords": "category, edit analysis, prefix",
+    "author": "Pathoschild",
+    "repository": "https://github.com/Pathoschild/Wikimedia-contrib.git"
+  },
+  {
+    "name": "meta-crossactivity",
+    "title": "Crosswiki Activity",
+    "description": "Measures a user's latest edit, bureaucrat, or sysop activity on all wikis.",
+    "url": "https://tools.wmflabs.org/meta/crossactivity/",
+    "keywords": "cross-wiki, user analysis",
+    "author": "Pathoschild",
+    "repository": "https://github.com/Pathoschild/Wikimedia-contrib.git"
+  },
+  {
+    "name": "meta-globalgroups",
+    "title": "Global Groups",
+    "description": "A live review of permissions assigned to global groups on Wikimedia Foundation wikis.",
+    "url": "https://tools.wmflabs.org/meta/globalgroups/",
+    "keywords": "cross-wiki, permissions",
+    "author": "Pathoschild",
+    "repository": "https://github.com/Pathoschild/Wikimedia-contrib.git"
+  },
+  {
+    "name": "meta-gusersearch",
+    "title": "Global User Search",
+    "description": "Search and filter global users on Wikimedia wikis.",
+    "url": "https://tools.wmflabs.org/meta/gusersearch/",
+    "keywords": "cross-wiki",
+    "author": "Pathoschild",
+    "repository": "https://github.com/Pathoschild/Wikimedia-contrib.git"
+  },
+  {
+    "name": "meta-magicredirect",
+    "title": "Magic Redirect",
+    "description": "Redirects to an arbitrary URL with tokens based on user and wiki filled in.",
+    "url": "https://tools.wmflabs.org/meta/magicredirect/",
+    "keywords": "cross-wiki",
+    "author": "Pathoschild",
+    "repository": "https://github.com/Pathoschild/Wikimedia-contrib.git"
+  },
+  {
+    "name": "meta-stalktoy",
+    "title": "Stalktoy",
+    "description": "Shows global details about a user across all Wikimedia wikis. You can provide a username, an IPv4/IPv6 address, or a CIDR block.",
+    "url": "https://tools.wmflabs.org/meta/stalktoy/",
+    "keywords": "cross-wiki, sul, user analysis",
+    "author": "Pathoschild",
+    "repository": "https://github.com/Pathoschild/Wikimedia-contrib.git"
+  },
+  {
+    "name": "meta-stewardry",
+    "title": "Stewardry",
+    "description": "Estimates which users in a group are available based on their last edit or action.",
+    "url": "https://tools.wmflabs.org/meta/stewardry/",
+    "keywords": "cross-wiki, user analysis",
+    "author": "Pathoschild",
+    "repository": "https://github.com/Pathoschild/Wikimedia-contrib.git"
+  },
+  {
+    "name": "meta-userpages",
+    "title": "User pages",
+    "description": "Find your user pages on all wikis (or find wikis where you don't have user pages).",
+    "url": "https://tools.wmflabs.org/meta/userpages/",
+    "keywords": "cross-wiki, user analysis, prefix",
+    "author": "Pathoschild",
+    "repository": "https://github.com/Pathoschild/Wikimedia-contrib.git"
+  },
+  {
+    "name": "meta-synchbot",
+    "title": "Synchbot",
+    "description": "Synchronises user pages across Wikimedia projects in every language. This allows users to create user pages on every wiki, or to have global JavaScript and CSS. (Due to potential for misuse, must submit an on-wiki request.)",
+    "url": "meta.wikimedia.org/wiki/Synchbot",
+    "keywords": "batch, cross-wiki, editing",
+    "author": "Pathoschild"
+  }
 ]

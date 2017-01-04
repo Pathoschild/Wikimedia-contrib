@@ -1,40 +1,41 @@
-/*######
-## Generic
-######*/
-table        { font-size:0.8em; }
-th           { font-size:1.2em; }
-th a {
-	text-decoration:none;
-	color:#000;
+table {
+    font-size: 0.8em;
 }
 
-/*######
-## Data formatting
-######*/
+th {
+    font-size: 1.2em;
+}
+
+th a {
+    text-decoration: none;
+    color: #000;
+}
+
 .search-results-0 {
-	font-size:0.8em;
-	color:gray;
+    font-size: 0.8em;
+    color: gray;
 }
 
 .user-in-groups-0 td.groups {
-	background:#CCC;
+    background: #CCC;
 }
+
 .user-in-groups-1 td.groups {
-	background:#CFC;
+    background: #CFC;
 }
 
 .user-okay-0 td.status {
-	background:#FCC;
+    background: #FCC;
 }
+
 .user-okay-1 td.status {
-	background:#CCC;
+    background: #CCC;
 }
 
 td.linkies {
-	font-size:0.8em;
+    font-size: 0.8em;
 }
 
-.user-oversighted-1 td.linkies
-{
-	background:#CCC;
+.user-oversighted-1 td.linkies {
+    background: #CCC;
 }

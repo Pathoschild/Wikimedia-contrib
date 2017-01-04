@@ -1,19 +1,19 @@
 li[data-redirect="1"], li[data-redirect="1"] a {
-	font-style:italic;
-	color:gray;
+    font-style: italic;
+    color: gray;
 }
 
 .filter {
-	background:#EEE;
-	border:1px solid #CCC;
-	border-radius:5px;
-	padding:3px 5px;
-	color:#CCC;
-	text-decoration:none;
+    background: #EEE;
+    border: 1px solid #CCC;
+    border-radius: 5px;
+    padding: 3px 5px;
+    color: #CCC;
+    text-decoration: none;
 }
 
 .filter.selected {
-	background:#CFC;
-	border-color:#0C0;
-	color:#000;
+    background: #CFC;
+    border-color: #0C0;
+    color: #000;
 }

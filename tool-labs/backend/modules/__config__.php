@@ -5,34 +5,50 @@
 ##########
 ## Paths
 ##########
-# the directory to which to write non-public data like logs and cache files.
+/**
+ * The directory to which to write non-public data like logs and cache files.
+ * @var string
+ */
 DEFINE('DATA_PATH', '/data/project/meta/');
 
-# the directory to which to write log files.
+/**
+ * The directory to which to write log files.
+ * @var string
+ */
 DEFINE('REPLICA_CNF_PATH', DATA_PATH . '/replica.my.cnf');
 
-# the directory to which to write log files.
+/**
+ * The directory to which to write log files.
+ * @var string
+ */
 DEFINE('LOG_PATH', DATA_PATH . '/logs/');
 
-# the directory to which to write cache files.
+/**
+ * The directory to which to write cache files.
+ * @var string
+ */
 DEFINE('CACHE_PATH', DATA_PATH . '/cache/');
 
-# the web-accessible directory containing the backend modules.
+/**
+ * The web-accessible directory containing the backend modules.
+ * @var string
+ */
 DEFINE('BACKEND_PATH', __DIR__);
 
 ##########
 ## Database
 ##########
-# always use this hostname when connecting to a database.
-# This simplifies SSH tunnelling, but reduces the effectiveness of load balancing. This should only
-# be uncommented if needed for local development.
-#DEFINE('FORCE_DB_HOST', 'localhost:65001');
+/**
+ * A database server hostname to always use when connecting to a database. This is intended to simplify SSH tunnelling,
+ * but it reduces the effectiveness of load balancing. This should only be set during local development.
+ */
+DEFINE('FORCE_DB_HOST', null);
 
 
 #################################################
 ## Site configuration
 #################################################
-$settings = Array();
+$settings = [];
 
 #############################
 ## Error-reporting
@@ -47,24 +63,24 @@ $settings['debug'] = false;
 #############################
 $settings['root_url']  = '//tools.wmflabs.org/meta';
 
-$settings['tools'] = array(
-	'Wikimedia' => array(
-		array( '/accounteligibility', 'analyze an account to determine whether it is eligible to vote in a given event.', 'Account eligibility' ),
-		array( '/catanalysis', 'analyze edits to pages in a category tree or with a prefix over time.', 'Category analysis' ),
-		array( '/crossactivity', 'measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.', 'Crosswiki activity' ),
-		array( '/globalgroups', 'lists rights with descriptions for each global group.', 'Global groups' ),
-		array( '/gusersearch', 'searches and filters global account creations', 'Global user search' ),
-		array( '/magicredirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.', 'Magic redirect' ),
-		array( '/stalktoy', 'provides comprehensive global information about the given user, IP address, or CIDR range.', 'Stalk toy' ),
-		array( '/stewardry', 'analyze user activity by group on a Wikimedia wiki.', 'Stewardry' ),
-		array( '/userpages', 'find your user pages on all wikis.', 'User pages' )
-	),
-	'generic' => array(
-		array( '/regextoy', 'perform regex search and replace', 'Regex toy' ),
-		array( '/iso639db','search ISO 639 codes.', 'ISO-639 database' ),
-		array( '/pgkbot', 'IRC-based wiki monitoring bot', 'pgkbot' )
-	)
-);
+$settings['tools'] = [
+    'Wikimedia' => [
+        ['/accounteligibility', 'analyze an account to determine whether it is eligible to vote in a given event.', 'Account eligibility'],
+        ['/catanalysis', 'analyze edits to pages in a category tree or with a prefix over time.', 'Category analysis'],
+        ['/crossactivity', 'measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.', 'Crosswiki activity'],
+        ['/globalgroups', 'lists rights with descriptions for each global group.', 'Global groups'],
+        ['/gusersearch', 'searches and filters global account creations', 'Global user search'],
+        ['/magicredirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.', 'Magic redirect'],
+        ['/stalktoy', 'provides comprehensive global information about the given user, IP address, or CIDR range.', 'Stalk toy'],
+        ['/stewardry', 'analyze user activity by group on a Wikimedia wiki.', 'Stewardry'],
+        ['/userpages', 'find your user pages on all wikis.', 'User pages']
+    ],
+    'generic' => [
+        ['/regextoy', 'perform regex search and replace', 'Regex toy'],
+        ['/iso639db', 'search ISO 639 codes.', 'ISO-639 database'],
+        ['/pgkbot', 'IRC-based wiki monitoring bot', 'pgkbot']
+    ]
+];
 
 #############################
 ## Footer
@@ -75,4 +91,3 @@ $settings['license'] = 'This toy is open-source and released under the <a href="
 /* benchmark precision */
 $settings['profile_time_precision'] = 3;
 $settings['profile_perc_precision'] = 2;
-?>
