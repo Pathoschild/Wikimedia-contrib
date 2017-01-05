@@ -404,7 +404,7 @@ class Script extends Base
         ########
         else {
             /* fetch unified wikis */
-            $this->profiler->start('fetch unified wikis');
+            $this->profiler->start('init wiki queue: fetch unified wikis');
             $unifiedDbnames = $this->db->getUnifiedWikis($this->user->name);
             if (!$unifiedDbnames) {
                 $this->selectManually = true;
@@ -412,18 +412,17 @@ class Script extends Base
                 echo '<div id="result" class="neutral" data-is-error="1">', $this->formatText($this->user->name), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="', $this->backend->url('/stalktoy/' . $encoded), '" title="global details about this user">global details about this user</a>).</div>';
                 return false;
             }
-            $this->profiler->stop('fetch unified wikis');
+            $this->profiler->stop('init wiki queue: fetch unified wikis');
 
             /* fetch user edit count for each wiki & sort by edit count */
-            $this->profiler->start('fetch edit counts');
+            $this->profiler->start('init wiki queue: fetch edit counts');
             foreach ($unifiedDbnames as $unifiedDbname) {
                 if (!isset($this->wikis[$unifiedDbname]))
                     continue; // skip private wikis (not listed in meta_p.wiki)
                 $this->db->connect($unifiedDbname);
                 $this->queue[$unifiedDbname] = $this->db->query('SELECT user_editcount FROM user WHERE user_name = ? LIMIT 1', array($this->user->name))->fetchColumn();
             }
-            $this->profiler->stop('fetch edit counts');
-            asort($this->queue);
+            $this->profiler->stop('init wiki queue: fetch edit counts');
 
             /**
              * Get whether an edit count meets the minimum edit count needed.
@@ -436,9 +435,9 @@ class Script extends Base
                 return $count >= $minEdits;
             }
 
-            $this->queue = array_filter($this->queue, 'filter');
-
             /* initialize queue */
+            asort($this->queue);
+            $this->queue = array_filter($this->queue, 'filter');
             $this->queue = array_keys($this->queue);
             $this->nextQueueIndex = count($this->queue) - 1;
             $this->unified = true;
@@ -450,7 +449,10 @@ class Script extends Base
         ########
         ## Connect & return
         ########
-        return $this->getNext(false /*don't output name@wiki yet*/);
+        $this->profiler->start('init wiki queue: fetch user data from first wiki');
+        $result = $this->getNext(false /*don't output name@wiki yet*/);
+        $this->profiler->stop('init wiki queue: fetch user data from first wiki');
+        return $result;
     }
 
     #####
@@ -736,8 +738,9 @@ class Script extends Base
 $event = $backend->get('event') ?: $backend->getRouteValue() ?: Script::DEFAULT_EVENT;
 $user = $backend->get('user') ?: $backend->getRouteValue(2) ?: '';
 $wiki = $backend->get('wiki', null);
+$backend->profiler->start('init engine');
 $script = new Script($backend, $user, $event, $wiki);
-
+$backend->profiler->stop('init engine');
 
 ############################
 ## Input form
@@ -809,11 +812,13 @@ while ($script->user->name) {
     }
 
     /* initialize wiki queue */
+    $script->profiler->start('init wiki queue');
     if (!$script->initWikiQueue($script->event->onlyDB, $script->event->minEditsForAutoselect)) {
         if (!$script->selectManually)
             $script->msg('Selection failed, aborted.');
         break;
     }
+    $script->profiler->stop('init wiki queue');
 
     /* validate user exists */
     if (!$script->user->id) {

@@ -150,6 +150,12 @@ class Database
     protected $logger = null;
 
     /**
+     * Provides basic performance profiling.
+     * @var Profiler
+     */
+    protected $profiler = null;
+
+    /**
      * Whether the database has been disposed.
      * @var bool
      */
@@ -171,15 +177,17 @@ class Database
     ##########
     /**
      * Construct an instance.
+     * @param Profiler $profiler Provides basic performance profiling.
      * @param Logger $logger Writes messages to a log file for troubleshooting.
      * @param integer $options Additional mode options which can be bitwise ORed together (one of {@see Database::ERROR_THROW} or {@see Database::ERROR_PRINT}).
      * @param string $default_username The username to use when authenticating to the database, or null to retrieve it from the user configuration file.
      * @param string $default_password The password to use when authenticating to the database, or null to retrieve it from the user configuration file.
      */
-    public function __construct($logger = null, $options = null, $default_username = null, $default_password = null)
+    public function __construct($profiler, $logger, $options = null, $default_username = null, $default_password = null)
     {
         /* configuration */
         $this->configFile = REPLICA_CNF_PATH;
+        $this->profiler = $profiler;
         $this->logger = $logger;
 
         /* get default login details */
@@ -476,18 +484,19 @@ class Toolserver extends Database
     ##########
     /**
      * Construct an instance.
+     * @param Profiler $profiler Provides basic performance profiling.
      * @param Logger $logger Logs trace messages for troubleshooting.
      * @param Cacher $cache Handles reading and writing data to a directory with expiry dates.
      * @param integer $options Additional mode options which can be bitwise ORed together (available options: ERROR_THROW, ERROR_PRINT).
      * @param string $default_username The username to use when authenticating to the database, or null to retrieve it from the user configuration file.
      * @param string $default_password The password to use when authenticating to the database, or null to retrieve it from the user configuration file.
      */
-    public function __construct($logger = null, $cache = null, $options = null, $default_username = null, $default_password = null)
+    public function __construct($profiler, $logger, $cache, $options = null, $default_username = null, $default_password = null)
     {
-        parent::__construct($logger, $options, $default_username, $default_password);
+        parent::__construct($profiler, $logger, $options, $default_username, $default_password);
 
         /* fetch toolserver data */
-        $this->wikis = new Wikimedia($this, $cache);
+        $this->wikis = new Wikimedia($this, $cache, $profiler);
 
         /* select random DB slice (every slice has every DB, but picking a random one reduces our dependence on any given one) */
         $slices = Array();

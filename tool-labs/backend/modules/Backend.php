@@ -121,7 +121,7 @@ class Backend extends Base
     public function getDatabase($options = null)
     {
         if (!$this->db)
-            $this->db = new Toolserver($this->logger, $this->cache, $options);
+            $this->db = new Toolserver($this->profiler, $this->logger, $this->cache, $options);
         return $this->db;
     }
 

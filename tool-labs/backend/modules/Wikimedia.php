@@ -23,11 +23,13 @@ class Wikimedia
      * Construct a Wikimedia instance.
      * @param Database $db The database with which to connect to the database.
      * @param Cacher $cache The cache with which to read and write cached data.
+     * @param Profiler $profiler Provides basic performance profiling.
      */
-    public function __construct($db, $cache)
+    public function __construct($db, $cache, $profiler)
     {
         $this->wikis = $cache->get('wikimedia-wikis');
         if (!$this->wikis) {
+            $profiler->start('DB: fetch wiki metadata');
             // build wiki list
             $this->wikis = [];
             $db->connect('metawiki.labsdb', 'metawiki_p');
@@ -41,6 +43,7 @@ class Wikimedia
             if (count($this->wikis)) // if the fetch failed, we *don't* want to cache the result for a full day
                 $cache->save('wikimedia-wikis', $this->wikis);
             $db->connectPrevious();
+            $profiler->stop('DB: fetch wiki metadata');
         }
     }
 
