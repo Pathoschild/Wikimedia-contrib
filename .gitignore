@@ -6,4 +6,5 @@
 *.user
 bin/
 obj/
-tool-labs/backend/modules/cache/wikimedia-wikis.dat
+.data/
+.idea/

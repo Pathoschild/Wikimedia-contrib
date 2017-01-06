@@ -1,70 +1,88 @@
 <?php
-#################################################
-## 
-## Form class
-## Provides static methods for generating form elements.
-## 
-#################################################
-error_reporting( E_ALL );
-class Form {
-	const SELF_CLOSING = 1;
+
+/**
+ * Provides static helpers for generating form elements.
+ */
+class Form
+{
+    ##########
+    ## Properties
+    ##########
+    /**
+     * A bit flag indicating a tag is self-closing.
+     */
+    const SELF_CLOSING = 1;
 
 
-	#############################
-	## Generic element constructor
-	#############################
-	static function Element( $tag, $attrs, $text, $options = NULL ) {
-		$out = "<{$tag}";
-		
-		foreach( $attrs as $field => $value )
-			$out .= " {$field}='{$value}'";
-		
-		if( $options & self::SELF_CLOSING )
-			$out .= " />";
-		else
-			$out .= ">{$text}</{$tag}>";
-		
-		return $out;
-	}
-	
+    ##########
+    ## Public methods
+    ##########
+    /**
+     * Get an HTML string for a generic element.
+     * @param string $tag The tag name.
+     * @param array $attrs The tag attributes as a name => value lookup.
+     * @param string $text The inner tag HTML.
+     * @param int $options The tag options (one of {@see Form::SELF_CLOSING}).
+     * @return string
+     */
+    static function element($tag, $attrs, $text, $options = null)
+    {
+        $out = "<{$tag}";
 
-	#############################
-	## Checkbox
-	#############################
-	static function Checkbox( $name, $checked, $attrs = Array(), $options = NULL ) {
-		$attrs['type']  = 'checkbox';
-		$attrs['name']  = $name;
-		$attrs['id']    = $name;
-		if( $checked )
-			$attrs['checked'] = 'checked';
-	
-		return self::Element( 'input', $attrs, NULL, $options | self::SELF_CLOSING );
-	}
-	
-	#############################
-	## Select (drop-down menu)
-	#############################
-	static function Select( $name, $selected_index, $select_options, $attrs = Array(), $options = NULL ) {
-		$attrs['name'] = $name;
-		$attrs['id']   = $name;
-		
-		/* generate <option> tags */
-		$opt_tags = '';
-		foreach( $select_options as $index => $value ) {
-			$opt_attrs = Array('value' => $index);
-			if( $index == $selected_index )
-				$opt_attrs['selected'] = 'selected';
-			$opt_tags .= self::Element( 'option', $opt_attrs, $value );
-		}
-		
-		/* generate <select> */
-		return self::Element( 'select', $attrs, $opt_tags, $options );
-	}
-	
-	static function SelectWiki( $name, $selected_index, $wikis ) {
-		function filter($var) {
-			return ($var != ''); // remove wikis with no domain
-		}
-		return Form::Select( $name, $selected_index, array_filter($wikis, 'filter') );
-	}
+        foreach ($attrs as $field => $value)
+            $out .= " {$field}='{$value}'";
+
+        if ($options & self::SELF_CLOSING)
+            $out .= " />";
+        else
+            $out .= ">{$text}</{$tag}>";
+
+        return $out;
+    }
+
+    /**
+     * Get an HTML string for a checkbox.
+     * @param string $name The checkbox name value.
+     * @param bool $checked Whether the checkbox should be checked.
+     * @param array $attrs The tag attributes as a name => value lookup.
+     * @param int $options The tag options (one of {@see Form::SELF_CLOSING}).
+     * @return string
+     */
+    static function checkbox($name, $checked, $attrs = [], $options = null)
+    {
+        $attrs['type'] = 'checkbox';
+        $attrs['name'] = $name;
+        $attrs['id'] = $name;
+        if ($checked)
+            $attrs['checked'] = 'checked';
+
+        return self::element('input', $attrs, null, $options | self::SELF_CLOSING);
+    }
+
+    /**
+     * Get an HTML string for a drop-down menu.
+     * @param string $name The dropdown name value.
+     * @param int $selectedIndex The index of the option to select.
+     * @param array $selectOptions The options with which to populate the dropdown as a key => value lookup.
+     * @param array $attrs The tag attributes as a name => value lookup.
+     * @param int $options The tag options (one of {@see Form::SELF_CLOSING}).
+     * @return string
+     */
+    static function select($name, $selectedIndex, $selectOptions, $attrs = [], $options = null)
+    {
+        $attrs['name'] = $name;
+        $attrs['id'] = $name;
+
+        /* generate <option> tags */
+        $optionTags = '';
+        foreach ($selectOptions as $index => $value) {
+            $optionAttrs = Array('value' => $index);
+            if ($index == $selectedIndex)
+                $optionAttrs['selected'] = 'selected';
+            $optionTags .= self::element('option', $optionAttrs, $value);
+        }
+
+        /* generate <select> */
+        return self::element('select', $attrs, $optionTags, $options);
+    }
 }

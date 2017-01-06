@@ -1,32 +1,32 @@
 h3 {
-	margin-top:0;
+    margin-top: 0;
 }
 
 .is-wiki {
-	margin:1em 0 0 2em;
+    margin: 1em 0 0 2em;
 }
 
 .is-note, .is-pass, .is-fail, .is-warn {
-	margin-left:4em;
+    margin-left: 4em;
 }
 
 .is-pass {
-	background:#CFC;
+    background: #CFC;
 }
 
 .is-fail {
-	background:#FCC;
-	font-weight:bold;
+    background: #FCC;
+    font-weight: bold;
 }
 
 .is-warn {
-	background:#FFC;
+    background: #FFC;
 }
 
 .is-obsolete {
-	color:gray;
+    color: gray;
 }
 
 .is-subnote {
-	margin-left:6em;
+    margin-left: 6em;
 }
