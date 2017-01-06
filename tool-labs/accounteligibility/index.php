@@ -92,7 +92,7 @@ class Script extends Base
      * The available wikis.
      * @var Wiki[]
      */
-    public $wikis = Array();
+    public $wikis = [];
 
     /**
      * The user's local accounts as a database name => local account lookup.
@@ -420,7 +420,7 @@ class Script extends Base
                 if (!isset($this->wikis[$unifiedDbname]))
                     continue; // skip private wikis (not listed in meta_p.wiki)
                 $this->db->connect($unifiedDbname);
-                $this->queue[$unifiedDbname] = $this->db->query('SELECT user_editcount FROM user WHERE user_name = ? LIMIT 1', array($this->user->name))->fetchColumn();
+                $this->queue[$unifiedDbname] = $this->db->query('SELECT user_editcount FROM user WHERE user_name = ? LIMIT 1', [$this->user->name])->fetchColumn();
             }
             $this->profiler->stop('init wiki queue: fetch edit counts');
 
@@ -480,7 +480,7 @@ class Script extends Base
             return true;
         else {
             $this->db->connect('metawiki');
-            $onMeta = $this->db->query('SELECT user_id FROM user WHERE user_name = ? LIMIT 1', array($this->user->name))->fetchColumn();
+            $onMeta = $this->db->query('SELECT user_id FROM user WHERE user_name = ? LIMIT 1', [$this->user->name])->fetchColumn();
             $this->db->connectPrevious();
             return $onMeta;
         }
@@ -520,7 +520,7 @@ class Script extends Base
     {
         if ($role != 'bot' && $role != 'sysop')
             throw new Exception('Unrecognized role "' . $role . '" not found in whitelist.');
-        return (bool)$this->db->query('SELECT COUNT(ug_user) FROM user_groups WHERE ug_user=? AND ug_group=? LIMIT 1', array($this->user->id, $role))->fetchColumn();
+        return (bool)$this->db->query('SELECT COUNT(ug_user) FROM user_groups WHERE ug_user=? AND ug_group=? LIMIT 1', [$this->user->id, $role])->fetchColumn();
     }
 
     /**
@@ -554,13 +554,13 @@ class Script extends Base
         $logName = str_replace(' ', '_', $this->user->name);
 
         // fetch local logs
-        $this->db->query($sql . ' = ?', array($logName));
+        $this->db->query($sql . ' = ?', [$logName]);
         $local = $this->db->fetchAllAssoc();
 
         // merge with Meta logs
         if (!array_key_exists($role, $this->metaRoleDurationCache)) {
             $this->db->connect('metawiki');
-            $this->db->query($sql . ' LIKE ?', array($logName . '@%'));
+            $this->db->query($sql . ' LIKE ?', [$logName . '@%']);
             $this->metaRoleDurationCache[$role] = $this->db->fetchAllAssoc();
             $this->db->connectPrevious();
         }
@@ -568,7 +568,7 @@ class Script extends Base
         $local = array_merge($local, $this->metaRoleDurationCache[$role]);
 
         // parse log entries
-        $logs = array();
+        $logs = [];
         foreach ($local as $row) {
             // alias fields
             $title = $row['log_title'];
@@ -598,7 +598,7 @@ class Script extends Base
         ksort($logs);
 
         // parse ranges
-        $ranges = array();
+        $ranges = [];
         $i = -1;
         $wasInRole = $nowInRole = false;
         foreach ($logs as $timestamp => $roles) {
@@ -607,7 +607,7 @@ class Script extends Base
             // start range
             if (!$wasInRole && $nowInRole) {
                 ++$i;
-                $ranges[$i] = array($timestamp, $endDate);
+                $ranges[$i] = [$timestamp, $endDate];
             }
 
             // end range
@@ -652,11 +652,11 @@ class Script extends Base
         /* within date range */
         $sql = 'SELECT COUNT(rev_id) FROM revision_userindex WHERE rev_user=? AND rev_timestamp ';
         if ($start && $end)
-            $this->db->query($sql . 'BETWEEN ? AND ?', Array($this->user->id, $start, $end));
+            $this->db->query($sql . 'BETWEEN ? AND ?', [$this->user->id, $start, $end]);
         elseif ($start)
-            $this->db->query($sql . '>= ?', Array($this->user->id, $start));
+            $this->db->query($sql . '>= ?', [$this->user->id, $start]);
         elseif ($end)
-            $this->db->query($sql . '<= ?', Array($this->user->id, $end));
+            $this->db->query($sql . '<= ?', [$this->user->id, $end]);
 
         return $this->db->fetchColumn();
     }
@@ -667,7 +667,7 @@ class Script extends Base
      */
     public function isBlocked()
     {
-        $this->db->query('SELECT COUNT(ipb_expiry) FROM ipblocks WHERE ipb_user=? LIMIT 1', array($this->user->id));
+        $this->db->query('SELECT COUNT(ipb_expiry) FROM ipblocks WHERE ipb_user=? LIMIT 1', [$this->user->id]);
         return (bool)$this->db->fetchColumn();
     }
 
@@ -677,7 +677,7 @@ class Script extends Base
      */
     public function isIndefBlocked()
     {
-        $this->db->query('SELECT COUNT(ipb_expiry) FROM ipblocks WHERE ipb_user=? AND ipb_expiry="infinity" LIMIT 1', array($this->user->id));
+        $this->db->query('SELECT COUNT(ipb_expiry) FROM ipblocks WHERE ipb_user=? AND ipb_expiry="infinity" LIMIT 1', [$this->user->id]);
         return (bool)$this->db->fetchColumn();
     }
 
