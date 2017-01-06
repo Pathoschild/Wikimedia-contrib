@@ -1,7 +1,7 @@
 <?php
 require_once('../backend/modules/Backend.php');
 require_once('../backend/models/LocalUser.php');
-require_once('Event.php');
+require_once('models.php');
 
 $backend = Backend::create('AccountEligibility', 'Analyzes a given user account to determine whether it\'s eligible to vote in the specified event.')
     ->link('/accounteligibility/stylesheet.css')
