@@ -533,7 +533,7 @@ if ($script->isValid() && $ip->ip->isValid()) {
     foreach ($global['wikis'] as $wiki => $wikiData) {
         $domain = $wikiData->domain;
         $blocked = (int)(bool)$localBlocks[$wiki];
-        $open = (int)$wikiData->isClosed;
+        $open = (int)!$wikiData->isClosed;
         $linkWiki = $script->link($domain, 'user:' . $script->targetWikiUrl, $domain);
 
         echo "
