@@ -57,8 +57,8 @@ class EditCountRule implements Rule
     /**
      * Construct an instance.
      * @param int $minCount The minimum number of edits.
-     * @param int $minDate The minimum date for which to consider edits in a format recognised by {@see DateWrapper::__construct}, or null for no minimum.
-     * @param int $maxDate The maximum date for which to consider edits in a format recognised by {@see DateWrapper::__construct}, or null for no maximum.
+     * @param string $minDate The minimum date for which to consider edits in a format recognised by {@see DateWrapper::__construct}, or null for no minimum.
+     * @param string $maxDate The maximum date for which to consider edits in a format recognised by {@see DateWrapper::__construct}, or null for no maximum.
      * @param int $options The eligibility options (any of {@see EditCountRule::ACCUMULATE}).
      */
     public function __construct($minCount, $minDate, $maxDate, $options = 1)
@@ -115,7 +115,7 @@ class EditCountRule implements Rule
         else if ($start)
             $message .= "after {$start->readable} ";
         else if ($end)
-            $message .= "before {$end->readable} ";
+            $message .= "as of {$end->readable} ";
 
         $message .= $this->accumulate
             ? " (has {$this->totalEdits} so far)"

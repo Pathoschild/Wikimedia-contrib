@@ -40,7 +40,7 @@ class HasGroupDurationRule implements Rule
      * Construct an instance.
      * @param string $group The group key to find.
      * @param int $minDays The minimum number of days required.
-     * @param int $maxDate The maximum date by which the minimum duration should have been met in a format recognised by {@see DateWrapper::__construct}.
+     * @param string $maxDate The maximum date by which the minimum duration should have been met in a format recognised by {@see DateWrapper::__construct}.
      */
     public function __construct($group, $minDays, $maxDate)
     {
@@ -64,8 +64,8 @@ class HasGroupDurationRule implements Rule
         // build result
         $result = $count >= $this->minDays ? Result::PASS : Result::FAIL;
         $message = $result == Result::PASS
-            ? "was flagged as a {$this->group} for a continuous period of at least {$this->minDays} days before {$this->maxDate->readable} (longest flag duration was {$count} days)."
-            : "was not flagged as a {$this->group} for a continuous period of at {$this->minDays} days before {$this->maxDate->readable} (" . ($count > 0 ? "longest flag duration was {$count} days" : "never flagged") . ")...";
+            ? "was flagged as a {$this->group} for a continuous period of at least {$this->minDays} days as of {$this->maxDate->readable} (longest flag duration was {$count} days)."
+            : "was not flagged as a {$this->group} for a continuous period of at {$this->minDays} days as of {$this->maxDate->readable} (" . ($count > 0 ? "longest flag duration was {$count} days" : "never flagged") . ")...";
         $result = new ResultInfo($result, $message);
 
         // add warning for edge case where user was registered before 2005 (before flag changes were logged)

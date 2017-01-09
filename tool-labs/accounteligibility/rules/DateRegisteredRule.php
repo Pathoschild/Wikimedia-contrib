@@ -20,7 +20,7 @@ class DateRegisteredRule implements Rule
     ##########
     /**
      * Construct an instance.
-     * @param int $maxDate The maximum date by which the account should have been registered in a format recognised by {@see DateWrapper::__construct}.
+     * @param string $maxDate The maximum date by which the account should have been registered in a format recognised by {@see DateWrapper::__construct}.
      */
     public function __construct($maxDate)
     {
@@ -45,8 +45,8 @@ class DateRegisteredRule implements Rule
         // get result
         $result = $isMet ? Result::PASS : Result::FAIL;
         $message = $isMet
-            ? "was registered before {$this->maxDate->readable}."
-            : "was not registered before {$this->maxDate->readable}...";
+            ? "was registered as of {$this->maxDate->readable}."
+            : "was not registered as of {$this->maxDate->readable}...";
         return new ResultInfo($result, $message);
     }
 }
