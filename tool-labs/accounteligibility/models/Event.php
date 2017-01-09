@@ -89,20 +89,6 @@ class Event
     }
 
     /**
-     * Construct an instance. This is a wrapper around the constructor to work around PHP's lack of chaining on
-     * constructors.
-     * @param int $id The unique event ID.
-     * @param int $year The year in which the event occurred.
-     * @param string $name The human-readable event name.
-     * @param string $url The URL for the page which provides more information about the event.
-     * @return Event
-     */
-    public static function make($id, $year, $name, $url)
-    {
-        return new Event($id, $year, $name, $url);
-    }
-
-    /**
      * Set a human-readable label for the action for which eligibility is being analysed (e.g. "be a candidate").
      * @param string $value The value to set.
      * @return $this

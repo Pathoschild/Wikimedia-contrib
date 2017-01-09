@@ -1,6 +1,7 @@
 <?php
 require_once("../backend/modules/Backend.php");
 require_once("../backend/models/LocalUser.php");
+require_once("events.php");
 spl_autoload_register(function ($className) {
     foreach (["constants/$className.php", "framework/$className.php", "models/$className.php", "rules/$className.php"] as $path) {
         if (file_exists($path))
@@ -145,147 +146,7 @@ class Script extends Base
         parent::__construct();
 
         /* configure */
-        $events = [
-            Event::make(39, 2016, 'Commons Picture of the Year for 2015', '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2015'),
-            Event::make(38, 2016, 'steward elections', '//meta.wikimedia.org/wiki/Stewards/Elections_2016'),
-            Event::make(37, 2016, 'steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/Elections_2016')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be 18 years old, and at the age of majority in your country.',
-                    'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
-                    'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_information_policy" title="Access to nonpublic information policy">sign the confidentiality agreement</a>.'
-                ]),
-            Event::make(36, 2015, 'Wikimedia Foundation elections', '//meta.wikimedia.org/wiki/Wikimedia_Foundation_elections_2015')
-                ->withExtraRequirements(['Your account must not be used by a bot.'])
-                ->withExceptions([
-                    'You are a Wikimedia server administrator with shell access.',
-                    'You have commit access and have made at least one merged commit in git to Wikimedia Foundation utilized repos between 15 October 2014 and 15 April 2015.',
-                    'You are a current Wikimedia Foundation staff member or contractor employed by the Foundation as of 15 April 2015.',
-                    'You are a current or former member of the Wikimedia Board of Trustees, Advisory Board or Funds Dissemination Committee.'
-                ])
-                ->withMinEditsForAutoselect(300),
-            Event::make(35, 2015, 'steward elections', '//meta.wikimedia.org/wiki/Stewards/Elections_2015'),
-            Event::make(34, 2015, 'steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/Elections_2015')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be 18 years old, and at the age of majority in your country.',
-                    'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
-                    'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2015.'
-                ]),
-            Event::make(33, 2015, 'Commons Picture of the Year for 2014', '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2014'),
-            Event::make(32, 2014, 'Commons Picture of the Year for 2013', '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2013'),
-            Event::make(31, 2014, 'steward elections', '//meta.wikimedia.org/wiki/Stewards/Elections_2014'),
-            Event::make(30, 2014, 'steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/Elections_2014')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be 18 years old, and at the age of majority in your country.',
-                    'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
-                    'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2014.'
-                ]),
-            Event::make(29, 2013, 'steward elections', '//meta.wikimedia.org/wiki/Stewards/Elections_2013'),
-            Event::make(28, 2013, 'steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/Elections_2013')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be 18 years old, and at the age of majority in your country.',
-                    'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
-                    'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2013.'
-                ]),
-            Event::make(27, 2013, 'Commons Picture of the Year for 2012', '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2012'),
-            Event::make(26, 2012, 'enwiki arbcom elections (voters)', '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2012')
-                ->withOnlyDB('enwiki_p'),
-            Event::make(25, 2012, 'enwiki arbcom elections (candidates)', '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2012')
-                ->withOnlyDB('enwiki_p')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be in good standing and not subject to active blocks or site-bans.',
-                    'You must meet the Wikimedia Foundation\'s <a href="//wikimediafoundation.org/w/index.php?title=Access_to_nonpublic_data_policy&oldid=47490" title="Access to nonpublic data policy">criteria for access to non-public data</a> and must identify with the Foundation if elected.',
-                    'You must have disclosed any alternate accounts in your election statement (legitimate accounts which have been declared to the Arbitration Committee before the close of nominations need not be publicly disclosed).'
-                ]),
-            Event::make(24, 2012, 'Commons Picture of the Year for 2011', '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2011'),
-            Event::make(23, 2012, 'steward elections', '//meta.wikimedia.org/wiki/Stewards/Elections_2012'),
-            Event::make(22, 2012, 'steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/Elections_2012')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be 18 years old, and at the age of majority in your country.',
-                    'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
-                    'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2012.'
-                ]),
-            Event::make(21, 2011, 'enwiki arbcom elections', '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2011')
-                ->withOnlyDB('enwiki_p'),
-            Event::make(20, 2011, 'enwiki arbcom elections (candidates)', '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2011')
-                ->withOnlyDB('enwiki_p')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be in good standing and not subject to active blocks or site-bans.',
-                    'You must meet the Wikimedia Foundation\'s criteria for access to non-public data and must identify with the Foundation if elected.',
-                    'You must have disclosed any alternate accounts in your election statement (legitimate accounts which have been declared to the Arbitration Committee prior to the close of nominations need not be publicly disclosed).'
-                ]),
-            Event::make(19, 2011, '2011-09 steward elections', '//meta.wikimedia.org/wiki/Stewards/elections_2011-2'),
-            Event::make(18, 2011, '2011-09 steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/elections_2011-2')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be 18 years old, and at the age of majority in your country.',
-                    'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
-                    'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 07 February 2011.'
-                ]),
-            Event::make(17, 2011, 'Board elections', '//meta.wikimedia.org/wiki/Board elections/2011')
-                ->withMinEditsForAutoselect(300)
-                ->withExtraRequirements(['Your account must not be used by a bot.'])
-                ->withExceptions([
-                    'You are a Wikimedia server administrator with shell access.',
-                    'You have MediaWiki commit access and made at least one commit between 15 May 2010 and 15 May 2011.',
-                    'You are a Wikimedia Foundation staff or contractor employed by Wikimedia between 15 February 2011 and 15 May 2011.',
-                    'You are a current or former member of the Wikimedia Board of Trustees or Advisory Board.'
-                ]),
-            Event::make(16, 2011, 'Commons Picture of the Year for 2010', '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2010'),
-            Event::make(15, 2011, 'steward confirmations', '//meta.wikimedia.org/wiki/Stewards/confirm/2011')
-                ->withAction('comment'),
-            Event::make(14, 2011, '2011-01 steward elections', '//meta.wikimedia.org/wiki/Stewards/elections_2011'),
-            Event::make(13, 2011, '2011-01 steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/elections_2011')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be 18 years old, and at the age of majority in your country.',
-                    'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
-                    'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 07 February 2011.'
-                ]),
-            Event::make(12, 2010, 'enwiki arbcom elections', '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2010')
-                ->withOnlyDB('enwiki_p'),
-            Event::make(11, 2010, '2010-09 steward elections', '//meta.wikimedia.org/wiki/Stewards/elections_2010-2'),
-            Event::make(10, 2010, '2010-09 steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/elections_2010-2')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be 18 years old, and at the age of majority in your country.',
-                    'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
-                    'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 01 February 2010.'
-                ]),
-            Event::make(9, 2010, 'Commons Picture of the Year for 2009', '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2009'),
-            Event::make(8, 2010, '2010-02 steward elections', '//meta.wikimedia.org/wiki/Stewards/elections_2010')
-                ->withExtraRequirements(['Your account must not be primarily used for automated (bot) tasks.']),
-            Event::make(7, 2010, '2010-02 steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/elections_2010')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be 18 years old, and at the age of majority in your country.',
-                    'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a>.',
-                    'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 01 February 2010.'
-                ]),
-            Event::make(6, 2010, 'create global sysops vote', '//meta.wikimedia.org/wiki/Global_sysops/Vote'),
-            Event::make(5, 2009, 'enwiki arbcom elections', '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2009')
-                ->withonlyDB('enwiki_p'),
-            Event::make(4, 2009, 'Commons Picture of the Year for 2008', '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2008'),
-            Event::make(3, 2009, 'steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/elections_2009')
-                ->withAction('<strong>be a candidate</strong>')
-                ->withExtraRequirements([
-                    'You must be 18 years old, and at the age of majority in your country.',
-                    'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a>.',
-                    'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation.'
-                ]),
-            Event::make(2, 2009, 'steward elections', '//meta.wikimedia.org/wiki/Stewards/elections_2009')
-                ->withMinEditsForAutoselect(600),
-            Event::make(1, 2008, 'enwiki arbcom elections', '//en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2008')
-                ->withOnlyDB('enwiki_p'),
-            Event::make(0, 2008, 'Board elections', '//meta.wikimedia.org/wiki/Board elections/2008')
-                ->withMinEditsForAutoselect(600)
-        ];
+        $events = (new EventFactory())->getEvents();
         foreach ($events as $event)
             $this->events[$event->id] = $event;
 
