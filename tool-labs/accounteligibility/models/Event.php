@@ -68,6 +68,12 @@ class Event
      */
     public $obsolete;
 
+    /**
+     * The eligibility rules.
+     * @var RuleEntry[]
+     */
+    public $rules = [];
+
 
     ##########
     ## Public methods
@@ -86,6 +92,18 @@ class Event
         $this->name = $name;
         $this->url = $url;
         $this->obsolete = $year < (new DateTime('now', new DateTimeZone('utc')))->format('Y');
+    }
+
+    /**
+     * Add a new eligibility rule for this event.
+     * @param Rule $rule The eligibility rule.
+     * @param int $options An optional bit flag (see {@see Workflow}).
+     * @return $this
+     */
+    public function addRule($rule, $options = null)
+    {
+        array_push($this->rules, new RuleEntry($rule, $options));
+        return $this;
     }
 
     /**

@@ -32,14 +32,11 @@ class RuleManager
     ##########
     /**
      * Add a new eligibility rule to the manager.
-     * @param Rule $rule The eligibility rule.
-     * @param int $options An optional bit flag (see {@see Workflow}).
-     * @return $this
+     * @param RuleEntry[] $rule The eligibility rules to check.
      */
-    public function addRule($rule, $options = null)
+    public function __construct($rules)
     {
-        array_push($this->rules, new RuleEntry($rule, $options));
-        return $this;
+        $this->rules = $rules;
     }
 
     /**

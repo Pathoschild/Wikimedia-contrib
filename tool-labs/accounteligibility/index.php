@@ -145,11 +145,6 @@ class Script extends Base
     {
         parent::__construct();
 
-        /* configure */
-        $events = (new EventFactory())->getEvents();
-        foreach ($events as $event)
-            $this->events[$event->id] = $event;
-
         /* set instances */
         $this->backend = $backend;
         $this->db = $backend->GetDatabase();
@@ -158,7 +153,14 @@ class Script extends Base
         /* set user */
         $this->username = $backend->formatUsername($user);
 
-        /* set event */
+        /* load events */
+        $this->profiler->start("init events");
+        $events = (new EventFactory())->getEvents();
+        foreach ($events as $event)
+            $this->events[$event->id] = $event;
+        $this->profiler->stop("init events");
+
+        /* select event */
         $this->eventID = isset($eventID) ? $eventID : self::DEFAULT_EVENT;
         $this->event = $this->events[$this->eventID];
 
@@ -350,51 +352,6 @@ class Script extends Base
         $domain = $this->wiki->domain;
         $this->msg("On <a href='//$domain/wiki/User:$name' title='$name&apos;s user page on $domain'>$domain</a>:", 'is-wiki');
     }
-
-    /**
-     * Verify eligibility for an event using a rule manager.
-     * @param Script $script The script engine.
-     * @param RuleManager $rules The rules to verify.
-     */
-    function verify($script, $rules)
-    {
-        $script->printWiki();
-
-        do {
-            foreach ($rules->accumulate($script->db, $script->wiki, $script->user) as $result) {
-                // print result
-                switch ($result->result) {
-                    case Result::FAIL:
-                        $this->msg("• {$result ->message}", "is-fail");
-                        break;
-
-                    case Result::ACCUMULATING:
-                        $this->msg("• {$result->message}", "is-warn");
-                        break;
-
-                    case Result::PASS:
-                        $this->msg("• {$result->message}", "is-pass");
-                        break;
-
-                    default:
-                        throw new InvalidArgumentException("Unknown rule eligibility result '{$result->result}'");
-                }
-
-                // print warnings
-                if ($result->warnings) {
-                    foreach ($result->warnings as $warning)
-                        $this->msg("{$warning}", "is-subnote is-warn");
-                }
-
-                // print notes
-                if ($result->notes) {
-                    foreach ($result->notes as $note)
-                        $this->msg("{$note}", "is-subnote");
-                }
-            }
-        } while (!$rules->final && $script->getNext());
-        $script->eligible = $rules->result == Result::PASS;
-    }
 }
 
 
@@ -461,17 +418,16 @@ if ($script->user->name)
     echo '<div class="result-box">';
 
 while ($script->user->name) {
+    /* validate event */
     if (!$script->event) {
         echo '<div class="error">There is no event matching the given ID.</div>';
         break;
     }
 
+    /* print header */
     echo '<h3>Analysis', ($script->user->name == 'Shanel' ? '♥' : ''), ' </h3>';
 
-    /***************
-     * Validate or default wiki
-     ***************/
-    /* incorrect wiki specified */
+    /* validate selected wiki */
     if ($script->wiki && $script->event->onlyDB && $script->wiki->dbName != $script->event->onlyDB) {
         echo '<div class="error">Account must be on ', $script->wikis[$script->event->onlyDB]->domain, '. Choose "auto-select wiki" above to select the correct wiki.</div>';
         break;
@@ -492,421 +448,45 @@ while ($script->user->name) {
         break;
     }
 
-    ##########
-    ## Verify requirements
-    ##########
+    /* verify eligibility rules */
     $script->profiler->start('verify requirements');
-    switch ($script->event->id) {
-        ##########
-        ## 2016 Commons Picture of the Year 2015
-        ##########
-        case 39:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(201601), Workflow::ON_ANY_WIKI)// registered before 01 January 2016
-                ->addRule(new EditCountRule(75, null, 201601), Workflow::ON_ANY_WIKI)// 75 edits before 01 January 2016
-            );
-            break;
+    $rules = new RuleManager($script->event->rules);
 
-        ##########
-        ## 2016 steward elections
-        ##########
-        case 38:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new EditCountRule(600, null, 201511, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2015
-                ->addRule(new EditCountRule(50, 201508, 201602, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2015 and 31 January 2016
-            );
-            break;
+    $script->printWiki();
+    do {
+        foreach ($rules->accumulate($script->db, $script->wiki, $script->user) as $result) {
+            // print result
+            switch ($result->result) {
+                case Result::FAIL:
+                    $script->msg("• {$result ->message}", "is-fail");
+                    break;
 
-        ##########
-        ## 2016 steward elections (candidates)
-        ##########
-        case 37:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(20150808), Workflow::ON_ANY_WIKI)// registered for six months
-                ->addRule(new HasGroupDurationRule('sysop', 90, 20160208), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
-            );
-            break;
+                case Result::ACCUMULATING:
+                    $script->msg("• {$result->message}", "is-warn");
+                    break;
 
-        ##########
-        ## 2015 WMF elections
-        ##########
-        case 36:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new EditCountRule(300, null, 20150416, EditCountRule::ACCUMULATE))// 300 edits before 15 April 2015
-                ->addRule(new EditCountRule(20, 20141015, 20150416, EditCountRule::ACCUMULATE))// 20 edits between 15 October 2014 and 15 April 2015
-            );
-            break;
+                case Result::PASS:
+                    $script->msg("• {$result->message}", "is-pass");
+                    break;
 
-        ##########
-        ## 2015 steward elections
-        ##########
-        case 35:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new EditCountRule(600, null, 201411, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2014
-                ->addRule(new EditCountRule(50, 201408, 201502, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2014 and 31 January 2015
-            );
-            break;
+                default:
+                    throw new InvalidArgumentException("Unknown rule eligibility result '{$result->result}'");
+            }
 
-        ##########
-        ## 2015 steward elections (candidates)
-        ##########
-        case 34:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(20140808), Workflow::ON_ANY_WIKI)// registered for six months
-                ->addRule(new HasGroupDurationRule('sysop', 90, 20150208), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
-            );
-            break;
+            // print warnings
+            if ($result->warnings) {
+                foreach ($result->warnings as $warning)
+                    $script->msg("{$warning}", "is-subnote is-warn");
+            }
 
-        ##########
-        ## 2015 Commons Picture of the Year 2014
-        ##########
-        case 33:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(201501), Workflow::ON_ANY_WIKI)// registered before 01 January 2015
-                ->addRule(new EditCountRule(75, null, 201501), Workflow::ON_ANY_WIKI)// 75 edits before 01 January 2015
-            );
-            break;
-
-        ##########
-        ## 2014 Commons Picture of the Year 2013
-        ##########
-        case 32:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(201401), Workflow::ON_ANY_WIKI)// registered before 01 January 2014
-                ->addRule(new EditCountRule(75, null, 201401), Workflow::ON_ANY_WIKI)// 75 edits before 01 January 2014
-            );
-            break;
-
-        ##########
-        ## 2014 steward elections
-        ##########
-        case 31:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new EditCountRule(600, null, 201311, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2013
-                ->addRule(new EditCountRule(50, 201308, 201402, EditCountRule::ACCUMULATE))// 50 edits between 2013-Aug-01 and 2014-Jan-31
-            );
-            break;
-
-        ##########
-        ## 2014 steward elections (candidates)
-        ##########
-        case 30:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(20130808), Workflow::ON_ANY_WIKI)// registered for six months
-                ->addRule(new HasGroupDurationRule('sysop', 90, 20140208), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
-            );
-            break;
-
-        ##########
-        ## 2013 steward elections
-        ##########
-        case 29:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new EditCountRule(600, null, 201211, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2012
-                ->addRule(new EditCountRule(50, 201208, 201302, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2012 and 31 January 2013
-            );
-            break;
-
-        ##########
-        ## 2013 steward elections (candidates)
-        ##########
-        case 28:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(20120808), Workflow::ON_ANY_WIKI)// registered for six months
-                ->addRule(new HasGroupDurationRule('sysop', 90, 20130208), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
-            );
-            break;
-
-        ##########
-        ## 2013 Commons Picture of the Year 2012
-        ##########
-        case 27:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(201301), Workflow::ON_ANY_WIKI)// registered before 01 January 2013
-                ->addRule(new EditCountRule(75, null, 201301), Workflow::ON_ANY_WIKI)// 75 edits before 01 January 2013
-            );
-            break;
-
-        ##########
-        ## 2012 enwiki arbcom elections (voters)
-        ##########
-        case 26:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBlockedRule())
-                ->addRule((new EditCountRule(150, null, 20121102))->inNamespace(0))// 150 main-namespace edits before 02 Nov 2012
-            );
-            break;
-
-        ##########
-        ## 2012 enwiki arbcom elections (candidates)
-        ##########
-        case 25:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBlockedRule())
-                ->addRule((new EditCountRule(500, null, 20121102))->inNamespace(0))// 500 main-namespace edits before 02 November 2012
-            );
-            break;
-
-        ##########
-        ## 2012 Commons Picture of the Year 2011
-        ##########
-        case 24:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(201204), Workflow::ON_ANY_WIKI)// registered before 01 April 2012
-                ->addRule(new EditCountRule(75, null, 201204), Workflow::ON_ANY_WIKI)// 75 edits before 01 April 2012
-            );
-            break;
-
-        ##########
-        ## 2012 steward elections
-        ##########
-        case 23:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new EditCountRule(600, null, 201111, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2011
-                ->addRule(new EditCountRule(50, 201108, 201202, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2011 and 31 January 2012
-            );
-            break;
-
-        ##########
-        ## 2012 steward elections (candidates)
-        ##########
-        case 22:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(20110710), Workflow::ON_ANY_WIKI)// registered for six months
-                ->addRule(new HasGroupDurationRule('sysop', 90, 20120129), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
-            );
-            break;
-
-        ##########
-        ## 2011 enwiki arbcom elections
-        ##########
-        case 20:
-        case 21:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBlockedRule())
-                ->addRule((new EditCountRule(150, null, 201111))->inNamespace(0))// 150 main-namespace edits before 01 November 2011
-            );
-            break;
-
-        ##########
-        ## 2011-09 steward elections
-        ##########
-        case 19:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new EditCountRule(600, null, 20110615, EditCountRule::ACCUMULATE))// 600 edits before 15 June 2011
-                ->addRule(new EditCountRule(50, 20110315, 20110914, EditCountRule::ACCUMULATE)) // 50 edits between 15 March 2011 and 14 September 2011
-            );
-            break;
-
-        ##########
-        ## 2011 steward elections (candidates)
-        ##########
-        case 18:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(20110314), Workflow::ON_ANY_WIKI)// registered for six months
-                ->addRule(new HasGroupDurationRule('sysop', 90, 20110913), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
-            );
-            break;
-
-        ##########
-        ## 2011 Board elections
-        ##########
-        case 17:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
-                ->addRule(new EditCountRule(300, null, 20110415, EditCountRule::ACCUMULATE))// 300 edits before 15 April 2011
-                ->addRule(new EditCountRule(20, 20101115, 20110516, EditCountRule::ACCUMULATE))// 20 edits between 15 November 2010 and 15 May 2011
-            );
-            break;
-
-        ##########
-        ## 2011 Commons Picture of the Year 2010
-        ##########
-        case 16:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(201101), Workflow::ON_ANY_WIKI)// registered before 01 January 2011
-                ->addRule(new EditCountRule(200, null, 201101), Workflow::ON_ANY_WIKI)// 200 edits before 01 January 2011
-            );
-            break;
-
-        ##########
-        ## 2011 steward confirmations
-        ##########
-        case 15:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new EditCountRule(1, null, 201102, EditCountRule::ACCUMULATE))// one edit before 01 February 2011
-            );
-            break;
-
-        ##########
-        ## 2011 steward elections
-        ##########
-        case 14:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new EditCountRule(600, null, 201011, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2010
-                ->addRule(new EditCountRule(50, 201008, 201102, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2010 and 31 January 2011
-            );
-            break;
-
-        ##########
-        ## 2011 steward elections (candidates)
-        ##########
-        case 13:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(20100829), Workflow::ON_ANY_WIKI)// registered for six months
-                ->addRule(new HasGroupDurationRule('sysop', 90, 20110129), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
-            );
-            break;
-
-        ##########
-        ## 2010 enwiki arbcom elections
-        ##########
-        case 12:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBlockedRule())
-                ->addRule((new EditCountRule(150, null, 20101102))->inNamespace(0))// 150 main-namespace edits by 01 November 2010
-            );
-            break;
-
-        ##########
-        ## 2010 steward elections, September
-        ##########
-        case 11:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new EditCountRule(600, null, 201006, EditCountRule::ACCUMULATE))// 600 edits before 01 June 2010
-                ->addRule(new EditCountRule(50, 201003, 201009, EditCountRule::ACCUMULATE))// 50 edits between 01 March 2010 and 31 August 2010
-            );
-            break;
-
-        ##########
-        ## 2010 steward elections, September (candidates)
-        ##########
-        case 10:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(20100329))// registered before 29 March 2010
-            );
-            break;
-
-        ##########
-        ## 2010 Commons Picture of the Year 2009
-        ##########
-        case 9:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(201001), Workflow::ON_ANY_WIKI)// registered before 01 January 2010
-                ->addRule(new EditCountRule(200, null, 20100116), Workflow::ON_ANY_WIKI)// 200 edits before 16 January 2010
-            );
-            break;
-
-        ##########
-        ## 2010 steward elections, February
-        ##########
-        case 8:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-                ->addRule(new EditCountRule(600, null, 200911, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2009
-                ->addRule(new EditCountRule(50, 200908, 201002, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2009 and 31 January 2010
-            );
-            break;
-
-        ##########
-        ## 2010 steward elections, February (candidates)
-        ##########
-        case 7:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(20091029))// registered for three months
-            );
-            break;
-
-        ##########
-        ## 2010 global sysops vote
-        ##########
-        case 6:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(200910), Workflow::ON_ANY_WIKI)// registered for three months
-                ->addRule(new EditCountRule(150, null, 201001), Workflow::ON_ANY_WIKI)// 150 edits before 01 January 2010
-            );
-            break;
-
-        ##########
-        ## 2009 enwiki arbcom elections
-        ##########
-        case 5:
-            $script->verify($script, (new RuleManager())
-                ->addRule((new EditCountRule(150, null, 20091102))->inNamespace(0))// 150 main-namespace edits before 02 November 2009
-            );
-            break;
-
-        ##########
-        ## 2009 Commons Picture of the Year 2008
-        ##########
-        case 4:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(200901), Workflow::ON_ANY_WIKI)// registered before 01 January 2009
-                ->addRule(new EditCountRule(200, null, 20090212), Workflow::ON_ANY_WIKI)// 200 edits before 12 February 2009
-            );
-            break;
-
-        ##########
-        ## 2009 steward elections (candidates)
-        ##########
-        case 3:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new DateRegisteredRule(200811))// registered for three months before 01 November 2008
-            );
-            break;
-
-        ##########
-        ## 2009 steward elections
-        ##########
-        case 2:
-            $script->verify($script, (new RuleManager())
-                ->addRule((new NotBlockedRule())->onWiki('metawiki'), Workflow::HARD_FAIL)
-                ->addRule(new NotBotRule())
-                ->addRule(new DateRegisteredRule(200901))// registered before 01 January 2009
-                ->addRule(new EditCountRule(600, null, 200811))// 600 edits before 01 November 2008
-                ->addRule(new EditCountRule(50, 200808, 200902))// 50 edits between 01 August 2008 and 31 January 2009
-            );
-            break;
-
-        ##########
-        ## 2008 enwiki arbcom elections
-        ##########
-        case 1:
-            $script->verify($script, (new RuleManager())
-                ->addRule((new EditCountRule(150, null, 20081102))->inNamespace(0))// 150 main-namespace before 02 November 2008
-            );
-            break;
-
-        ##########
-        ## 2008 Board elections
-        ##########
-        case 0:
-            $script->verify($script, (new RuleManager())
-                ->addRule(new NotBlockedRule())
-                ->addRule(new NotBotRule())
-                ->addRule(new EditCountRule(600, null, 200803))// 600 edits before 01 March 2008
-                ->addRule(new EditCountRule(50, 200801, 20080529))// 50 edits between 01 January and 29 May 2008
-            );
-            break;
-
-        ##########
-        ## No such event
-        ##########
-        default:
-            echo '<div class="fail">No such event.</div>';
-    }
+            // print notes
+            if ($result->notes) {
+                foreach ($result->notes as $note)
+                    $script->msg("{$note}", "is-subnote");
+            }
+        }
+    } while (!$rules->final && $script->getNext());
+    $script->eligible = $rules->result == Result::PASS;
     $script->profiler->stop('verify requirements');
 
 
