@@ -1,7 +1,12 @@
 <?php
-require_once('../backend/modules/Backend.php');
-require_once('../backend/models/LocalUser.php');
-require_once('models.php');
+require_once("../backend/modules/Backend.php");
+require_once("../backend/models/LocalUser.php");
+spl_autoload_register(function ($className) {
+    foreach (["constants/$className.php", "framework/$className.php", "models/$className.php", "rules/$className.php"] as $path) {
+        if (file_exists($path))
+            include($path);
+    }
+});
 
 $backend = Backend::create('AccountEligibility', 'Analyzes a given user account to determine whether it\'s eligible to vote in the specified event.')
     ->link('/accounteligibility/stylesheet.css')
@@ -123,12 +128,6 @@ class Script extends Base
      * @var bool
      */
     public $unified = false;
-
-    /**
-     * The user's role assignment/removal logs on Meta as a role => array hash.
-     * @var array
-     */
-    private $metaRoleDurationCache = [];
 
 
     ############################
@@ -455,46 +454,6 @@ class Script extends Base
         return $result;
     }
 
-    #####
-    ## Data methods
-    #####
-    /**
-     * Get whether the user has a global account.
-     * @return bool
-     */
-    public function isGlobal()
-    {
-        if (!isset($this->user->global))
-            $this->user->global = $this->unified || $this->getHomeWiki();
-        return $this->user->global;
-    }
-
-    /**
-     * Get whether the user has a local account on the specified wiki.
-     * @param string $wiki The wiki database name to check.
-     * @return bool
-     */
-    public function hasAccount($wiki)
-    {
-        if ($this->wiki->dbName == $wiki || in_array($wiki, $this->queue))
-            return true;
-        else {
-            $this->db->connect('metawiki');
-            $onMeta = $this->db->query('SELECT user_id FROM user WHERE user_name = ? LIMIT 1', [$this->user->name])->fetchColumn();
-            $this->db->connectPrevious();
-            return $onMeta;
-        }
-    }
-
-    /**
-     * Get the user's home wiki.
-     * @return string|null
-     */
-    public function getHomeWiki()
-    {
-        return $this->db->getHomeWiki($this->user->name);
-    }
-
     /**
      * Get the user's local account information for the current wiki.
      * @return LocalUser
@@ -511,193 +470,14 @@ class Script extends Base
     }
 
     /**
-     * Get whether the user has the specified role.
-     * @param string $role The name of the user role.
-     * @return bool
-     * @throws Exception The specified role is not whitelisted for use.
-     */
-    public function hasRole($role)
-    {
-        if ($role != 'bot' && $role != 'sysop')
-            throw new Exception('Unrecognized role "' . $role . '" not found in whitelist.');
-        return (bool)$this->db->query('SELECT COUNT(ug_user) FROM user_groups WHERE ug_user=? AND ug_group=? LIMIT 1', [$this->user->id, $role])->fetchColumn();
-    }
-
-    /**
-     * Get the longest duration (in days) that the user had the specified role on the current wiki.
-     * @param string $role The role to check.
-     * @param $endDate
-     * @return bool|float
-     */
-    public function getRoleLongestDuration($role, $endDate)
-    {
-        // SQL to determine the current groups after each log entry
-        // (depending on how it was stored on that particular day)
-        $sql = '
-			SELECT
-				log_title,
-				log_timestamp,
-				log_params,
-				log_comment'/*,
-				CASE
-					WHEN log_params <> "" THEN
-						CASE WHEN INSTR("\n", log_params) >= 0
-							THEN SUBSTR(log_params, INSTR(log_params, "\n") + 1)
-							ELSE log_params
-						END
-					ELSE log_comment
-				END AS "log_resulting_groups"*/ . '
-			FROM logging_logindex
-			WHERE
-				log_type = "rights"
-				AND log_title';
-        $logName = str_replace(' ', '_', $this->user->name);
-
-        // fetch local logs
-        $this->db->query($sql . ' = ?', [$logName]);
-        $local = $this->db->fetchAllAssoc();
-
-        // merge with Meta logs
-        if (!array_key_exists($role, $this->metaRoleDurationCache)) {
-            $this->db->connect('metawiki');
-            $this->db->query($sql . ' LIKE ?', [$logName . '@%']);
-            $this->metaRoleDurationCache[$role] = $this->db->fetchAllAssoc();
-            $this->db->connectPrevious();
-        }
-
-        $local = array_merge($local, $this->metaRoleDurationCache[$role]);
-
-        // parse log entries
-        $logs = [];
-        foreach ($local as $row) {
-            // alias fields
-            $title = $row['log_title'];
-            $date = $row['log_timestamp'];
-            $params = $row['log_params'];
-            $comment = $row['log_comment'];
-
-            // filter logs for wrong wiki / deadline
-            if ($title != $logName && $title != "{$logName}@{$this->wiki->dbName}")
-                continue;
-            if ($date > $endDate)
-                continue;
-
-            // parse format (changed over the years)
-            if (($i = strpos($params, "\n")) !== false) // params: old\nnew
-                $groups = substr($params, $i + 1);
-            else if ($params != '')                     // ...or params: new
-                $groups = $params;
-            else                                       // ...or comment: +new +new OR =
-                $groups = $comment;
-
-            // append to timeline
-            $logs[$date] = $groups;
-        }
-        if (count($logs) == 0)
-            return false;
-        ksort($logs);
-
-        // parse ranges
-        $ranges = [];
-        $i = -1;
-        $wasInRole = $nowInRole = false;
-        foreach ($logs as $timestamp => $roles) {
-            $nowInRole = (strpos($roles, $role) !== false);
-
-            // start range
-            if (!$wasInRole && $nowInRole) {
-                ++$i;
-                $ranges[$i] = [$timestamp, $endDate];
-            }
-
-            // end range
-            if ($wasInRole && !$nowInRole)
-                $ranges[$i][1] = $timestamp;
-
-            // update trackers
-            $wasInRole = $nowInRole;
-        }
-        if (count($ranges) == 0)
-            return false;
-
-        // determine widest range
-        $maxDuration = 0;
-        foreach ($ranges as $i => $range) {
-            $duration = $range[1] - $range[0];
-            if ($duration > $maxDuration) {
-                $maxDuration = $duration;
-            }
-        }
-
-        // calculate range length
-        $start = DateTime::createFromFormat('YmdHis', $ranges[$i][0]);
-        $end = DateTime::createFromFormat('YmdHis', $ranges[$i][1]);
-        $diff = $start->diff($end);
-        $months = $diff->days / (365.25 / 12);
-        return round($months, 2);
-    }
-
-    /**
-     * Get the number of edits the user has on the current wiki.
-     * @param int|null $start The minimum date for which to count edits.
-     * @param int|null $end The maximum date for which to count edits.
-     * @return int
-     */
-    public function editCount($start = null, $end = null)
-    {
-        /* all edits */
-        if (!$start && !$end)
-            return $this->user->edits;
-
-        /* within date range */
-        $sql = 'SELECT COUNT(rev_id) FROM revision_userindex WHERE rev_user=? AND rev_timestamp ';
-        if ($start && $end)
-            $this->db->query($sql . 'BETWEEN ? AND ?', [$this->user->id, $start, $end]);
-        elseif ($start)
-            $this->db->query($sql . '>= ?', [$this->user->id, $start]);
-        elseif ($end)
-            $this->db->query($sql . '<= ?', [$this->user->id, $end]);
-
-        return $this->db->fetchColumn();
-    }
-
-    /**
-     * Get whether the user is blocked on the current wiki.
-     * @return bool
-     */
-    public function isBlocked()
-    {
-        $this->db->query('SELECT COUNT(ipb_expiry) FROM ipblocks WHERE ipb_user=? LIMIT 1', [$this->user->id]);
-        return (bool)$this->db->fetchColumn();
-    }
-
-    /**
-     * Get whether the user is blocked indefinitely on the current wiki.
-     * @return bool
-     */
-    public function isIndefBlocked()
-    {
-        $this->db->query('SELECT COUNT(ipb_expiry) FROM ipblocks WHERE ipb_user=? AND ipb_expiry="infinity" LIMIT 1', [$this->user->id]);
-        return (bool)$this->db->fetchColumn();
-    }
-
-    #####
-    ## Output methods
-    #####
-    /**
      * Write a message to the output.
      * @param string $message The message to print.
      * @param string $classes The CSS classes to add to the output line.
      */
     function msg($message, $classes = null)
     {
-        // normalize classes
-        $classes = $classes
-            ? trim($classes)
-            : 'is-note';
-
-        // output
-        echo '<div class="', $classes, '">', $message, '</div>';
+        $classes = $classes ? trim($classes) : 'is-note';
+        echo "<div class='$classes'>$message</div>";
     }
 
     /**
@@ -707,27 +487,52 @@ class Script extends Base
     {
         $name = $this->user->name;
         $domain = $this->wiki->domain;
-        $this->msg('On <a href="//' . $domain . '/wiki/User:' . $name . '" title="' . $name . '\'s user page on ' . $domain . '">' . $domain . '</a>:', 'is-wiki');
+        $this->msg("On <a href='//$domain/wiki/User:$name' title='$name&apos;s user page on $domain'>$domain</a>:", 'is-wiki');
     }
 
     /**
-     * Print a conditional message, set $this->eligible to false if the condition fails, and return the condition value.
-     * @param bool $bool The condition to check.
-     * @param string $msgEligible The message to print if the condition passed.
-     * @param string $msgFailed The message to print if the condition failed.
-     * @param string $classEligible The CSS class with which to format the message if the condition passed.
-     * @param string $classFailed The CSS class with which to format the message if the condition failed.
-     * @return bool
+     * Verify eligibility for an event using a rule manager.
+     * @param Script $script The script engine.
+     * @param RuleManager $rules The rules to verify.
      */
-    function condition($bool, $msgEligible, $msgFailed, $classEligible = '', $classFailed = '')
+    function verify($script, $rules)
     {
-        if ($bool) {
-            $this->msg("• $msgEligible", "is-pass $classEligible");
-        } else {
-            $this->msg("• $msgFailed", "is-fail $classFailed");
-            $this->eligible = false;
-        }
-        return $bool;
+        $script->printWiki();
+
+        do {
+            foreach ($rules->accumulate($script->db, $script->wiki, $script->user) as $result) {
+                // print result
+                switch ($result->result) {
+                    case Result::FAIL:
+                        $this->msg("• {$result ->message}", "is-fail");
+                        break;
+
+                    case Result::ACCUMULATING:
+                        $this->msg("• {$result->message}", "is-warn");
+                        break;
+
+                    case Result::PASS:
+                        $this->msg("• {$result->message}", "is-pass");
+                        break;
+
+                    default:
+                        throw new InvalidArgumentException("Unknown rule eligibility result '{$result->result}'");
+                }
+
+                // print warnings
+                if ($result->warnings) {
+                    foreach ($result->warnings as $warning)
+                        $this->msg("{$warning}", "is-subnote is-warn");
+                }
+
+                // print notes
+                if ($result->notes) {
+                    foreach ($result->notes as $note)
+                        $this->msg("{$note}", "is-subnote");
+                }
+            }
+        } while (!$rules->final && $script->getNext());
+        $script->eligible = $rules->result == Result::PASS;
     }
 }
 
@@ -826,2582 +631,418 @@ while ($script->user->name) {
         break;
     }
 
-    /***************
-     * Verify requirements
-     ***************/
+    ##########
+    ## Verify requirements
+    ##########
     $script->profiler->start('verify requirements');
     switch ($script->event->id) {
-        ############################
+        ##########
         ## 2016 Commons Picture of the Year 2015
-        ############################
+        ##########
         case 39:
-            $script->printWiki();
-            $ageOkay = false;
-            $editsOkay = false;
-            do {
-                $script->eligible = true;
-
-                ########
-                ## registered < 2016-Jan-01
-                ########
-                if (!$ageOkay) {
-                    $ageOkay = $script->condition(
-                        $dateOkay = ($script->user->registered < 20160101000000),
-                        "has an account registered before 01 January 2016 (registered {$script->user->registeredStr})...",
-                        "does not have an account registered before 01 January 2016 (registered {$script->user->registeredStr})."
-                    );
-                }
-
-                ########
-                ## >= 75 edits before 2016-Jan-01
-                ########
-                if (!$editsOkay) {
-                    $edits = $script->editCount(null, 20160101000000);
-                    $editsOkay = $script->condition(
-                        $editsOkay = ($edits >= 75),
-                        "has at least 75 edits before 01 January 2016 (has {$edits})...",
-                        "does not have at least 75 edits before 01 January 2016 (has {$edits})."
-                    );
-                }
-
-                $script->eligible = ($ageOkay && $editsOkay);
-            } while (!$script->eligible && $script->getNext());
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(201601), Workflow::ON_ANY_WIKI)// registered before 01 January 2016
+                ->addRule(new EditCountRule(75, null, 201601), Workflow::ON_ANY_WIKI)// 75 edits before 01 January 2016
+            );
             break;
 
-        ############################
+        ##########
         ## 2016 steward elections
-        ############################
+        ##########
         case 38:
-            $script->printWiki();
-
-            /* check requirements */
-            $priorEdits = 0;
-            $recentEdits = 0;
-            $combining = false;
-            $markedBot = false;
-            do {
-                ########
-                ## Should not be a bot
-                ########
-                $isBot = $script->hasRole('bot');
-                $script->condition(
-                    !$isBot,
-                    "no bot flag...",
-                    "has a bot flag &mdash; the global account must not be primarily automated (bot), but I can't check this so won't mark ineligible.",
-                    "",
-                    "is-warn"
-                );
-                $script->eligible = true;
-                if ($isBot && !$markedBot) {
-                    $script->event->append_eligible = "<br /><strong>Note:</strong> this account is marked as a bot on some wikis. If it is primarily an automated account (bot), it is <em>not</em> eligible.";
-                    $markedBot = true;
-                }
-
-                ########
-                ## >=600 edits before 01 November 2015
-                ########
-                $edits = $script->editCount(null, 20151101000000);
-                $priorEdits += $edits;
-                $script->condition(
-                    $edits >= 600,
-                    "has 600 edits before 01 November 2015 (has {$edits})...",
-                    "does not have 600 edits before 01 November 2015 (has {$edits}). However, edits will be combined with other unified wikis.",
-                    "",
-                    "is-warn"
-                );
-                if (!$script->eligible)
-                    $combining = true;
-
-                ########
-                ## >=50 edits between 2015-Aug-01 and 2016-Jan-31
-                ########
-                $edits = $script->editCount(20150801000000, 20160131000000);
-                $recentEdits += $edits;
-                $script->condition(
-                    $edits >= 50,
-                    "has 50 edits between 01 August 2015 and 31 January 2016 (has {$edits})...",
-                    "does not have 50 edits between 01 August 2015 and 31 January 2016 (has {$edits}). However, edits will be combined with other unified wikis.",
-                    "",
-                    "is-warn"
-                );
-                if (!$script->eligible)
-                    $combining = true;
-
-
-                ########
-                ## Exit conditions
-                ########
-                $script->eligible = $priorEdits >= 600 && $recentEdits >= 50;
-
-                /* unified met requirements */
-                if (!$script->isQueueEmpty()) {
-                    if ($script->eligible)
-                        break;
-                    $combining = true;
-                }
-            } while (!$script->eligible && $script->getNext());
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new EditCountRule(600, null, 201511, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2015
+                ->addRule(new EditCountRule(50, 201508, 201602, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2015 and 31 January 2016
+            );
             break;
 
-
-        ############################
+        ##########
         ## 2016 steward elections (candidates)
-        ############################
+        ##########
         case 37:
-            /* check local requirements */
-            $minDurationMet = false;
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Registered for six months (as of 2015-Feb-08)
-                ########
-                $script->condition(
-                    $script->user->registered < 20150808000000,
-                    "has an account registered before 08 August 2015 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 08 August 2015 (registered {$script->user->registeredStr})."
-                );
-
-                ########
-                ## Flagged as a sysop for three months (as of 2015-Feb-08)
-                ########
-                if (!$minDurationMet) {
-                    /* check flag duration */
-                    $months = $script->getRoleLongestDuration('sysop', 20160208000000);
-                    $minDurationMet = $months >= 3;
-                    $script->condition(
-                        $minDurationMet,
-                        'was flagged as an administrator for a continuous period of at least three months before 08 February 2016 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
-                        'was not flagged as an administrator for a continuous period of at least three months before 08 February 2016 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
-                    );
-
-                    /* edge case: if the user was registered before 2005, they might have been flagged before flag changes were logged */
-                    if (!$minDurationMet && (!$script->user->registered || $script->user->registered < 20050000000000)) {
-                        // output warning
-                        $script->msg('<small>' . $script->user->name . ' registered here before 2005, so he might have been flagged before the rights log was created.</small>', 'is-warn is-subnote');
-
-                        // add note
-                        $script->event->warn_ineligible = '<strong>This result might be inaccurate.</strong> ' . $script->user->name . ' registered on some wikis before the rights log was created in 2005. You may need to investigate manually.';
-                    } else if ($minDurationMet)
-                        $script->event->warn_ineligible = null;
-
-                    /* link to log for double-checking */
-                    $script->msg('<small>(See <a href="//' . $script->wiki->domain . '/wiki/Special:Log/rights?page=User:' . $script->user->name . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user->name . '@' . $script->wiki->dbName . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
-                }
-            } while (!$script->eligible && $script->getNext());
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(20150808), Workflow::ON_ANY_WIKI)// registered for six months
+                ->addRule(new HasGroupDurationRule('sysop', 90, 20160208), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
+            );
             break;
 
-
-        ############################
+        ##########
         ## 2015 WMF elections
-        ############################
+        ##########
         case 36:
-            $blockMessage = "Blocked (account is still eligible if only blocked on one wiki).";
-            $blockMessageMultiple = "Blocked on more than one wiki.";
-            $blockClass = "is-warn";
-
-            $blockCount = 0;
-            $editCount = 0;
-            $editCountRecent = 0;
-
-            $script->printWiki();
-
-            do {
-                $script->eligible = true;
-
-
-                ########
-                ## Not  blocked on more than one wiki
-                ########
-                $isBlocked = $script->isBlocked();
-                $script->condition(
-                    !$isBlocked,
-                    "not blocked...",
-                    $blockMessage,
-                    "",
-                    $blockClass
-                );
-                if ($isBlocked) {
-                    $blockCount++;
-                    $blockClass = "";
-                    $blockMessage = $blockMessageMultiple;
-                }
-
-                ########
-                ## Not a bot
-                ########
-                $script->condition(
-                    !$script->hasRole('bot'),
-                    "no bot flag...",
-                    "has a bot flag: this account is not eligible.",
-                    "",
-                    "is-fail"
-                );
-
-
-                ########
-                ## >=300 edits before 2015-04-15
-                ########
-                $edits = $script->editCount(null, 20150415235959);
-                $script->condition(
-                    $edits >= 300,
-                    "has 300 edits before 15 April 2015 (has {$edits})...",
-                    "does not have 300 edits before 15 April 2015 (has {$edits}); edits can be combined across wikis.",
-                    "",
-                    "is-warn"
-                );
-                $editCount += $edits;
-
-                ########
-                ## >=20 edits between 2014-10-15 and 2015-04-15
-                ########
-                $edits = $script->editCount(20141015000000, 20150415235959);
-                $script->condition(
-                    $edits >= 20,
-                    "has 20 edits between 15 October 2014 and 15 April 2015 (has {$edits})...",
-                    "does not have 20 edits between 15 October 2014 and 15 April 2015 (has {$edits}); edits can be combined across wikis.",
-                    "",
-                    "is-warn"
-                );
-                $editCountRecent += $edits;
-
-                ########
-                ## Exit conditions
-                ########
-                $script->eligible = ($blockCount <= 1 && $editCount >= 300 && $editCountRecent >= 20);
-            } while (!$script->eligible && $script->getNext());
-
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new EditCountRule(300, null, 20150416, EditCountRule::ACCUMULATE))// 300 edits before 15 April 2015
+                ->addRule(new EditCountRule(20, 20141015, 20150416, EditCountRule::ACCUMULATE))// 20 edits between 15 October 2014 and 15 April 2015
+            );
             break;
 
-        ############################
+        ##########
         ## 2015 steward elections
-        ############################
+        ##########
         case 35:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new EditCountRule(600, null, 201411, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2014
+                ->addRule(new EditCountRule(50, 201408, 201502, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2014 and 31 January 2015
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a> (optional)...",
-                "",
-                "is-warn"
-            );
-            $script->eligible = true;
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-
-            /* set messages for global accounts */
-            if ($script->unified) {
-                $editsFailAppend = "However, edits will be combined with other unified wikis.";
-                $editsFailAttrs = "is-warn";
-            } else {
-                $editsFailAppend = '';
-                $editsFailAttrs = '';
-            }
-
-            /* check requirements */
-            $priorEdits = 0;
-            $recentEdits = 0;
-            $combining = false;
-            $markedBot = false;
-            do {
-                ########
-                ## Should not be a bot
-                ########
-                $isBot = $script->hasRole('bot');
-                $script->condition(
-                    !$isBot,
-                    "no bot flag...",
-                    "has a bot flag &mdash; the global account must not be primarily automated (bot), but I can't check this so won't mark ineligible.",
-                    "",
-                    "is-warn"
-                );
-                $script->eligible = true;
-                if ($isBot && !$markedBot) {
-                    $script->event->append_eligible = "<br /><strong>Note:</strong> this account is marked as a bot on some wikis. If it is primarily an automated account (bot), it is <em>not</em> eligible.";
-                    $markedBot = true;
-                }
-
-                ########
-                ## >=600 edits before 01 November 2014
-                ########
-                $edits = $script->editCount(null, 20141101000000);
-                $priorEdits += $edits;
-                $script->condition(
-                    $edits >= 600,
-                    "has 600 edits before 01 November 2014 (has {$edits})...",
-                    "does not have 600 edits before 01 November 2014 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-                ########
-                ## >=50 edits between 2014-Aug-01 and 2015-Jan-31
-                ########
-                $edits = $script->editCount(20140801000000, 20150131000000);
-                $recentEdits += $edits;
-                $script->condition(
-                    $edits >= 50,
-                    "has 50 edits between 01 August 2014 and 31 January 2015 (has {$edits})...",
-                    "does not have 50 edits between 01 August 2014 and 31 January 2015 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-
-                ########
-                ## Exit conditions
-                ########
-                $script->eligible = $priorEdits >= 600 && $recentEdits >= 50;
-
-                /* unified met requirements */
-                if ($script->unified && !$script->isQueueEmpty()) {
-                    if ($script->eligible) {
-                        break;
-                    }
-                    $combining = true;
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2015 steward elections (candidates)
-        ############################
+        ##########
         case 34:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(20140808), Workflow::ON_ANY_WIKI)// registered for six months
+                ->addRule(new HasGroupDurationRule('sysop', 90, 20150208), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>."
-            );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Check local requirements
-            ########
-            /* check local requirements */
-            $minDurationMet = false;
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Registered for six months (i.e. <= 2014-Aug-08)
-                ########
-                $script->condition(
-                    $script->user->registered < 20140808000000,
-                    "has an account registered before 08 August 2014 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 08 August 2014 (registered {$script->user->registeredStr})."
-                );
-
-                ########
-                ## Flagged as a sysop for three months (as of 2015-Feb-08)
-                ########
-                if (!$minDurationMet) {
-                    /* check flag duration */
-                    $months = $script->getRoleLongestDuration('sysop', 20150208000000);
-                    $minDurationMet = $months >= 3;
-                    $script->condition(
-                        $minDurationMet,
-                        'was flagged as an administrator for a continuous period of at least three months before 08 February 2015 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
-                        'was not flagged as an administrator for a continuous period of at least three months before 08 February 2015 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
-                    );
-
-                    /* edge case: if the user was registered before 2005, they might have been flagged before flag changes were logged */
-                    if (!$minDurationMet && (!$script->user->registered || $script->user->registered < 20050000000000)) {
-                        // output warning
-                        $script->msg('<small>' . $script->user->name . ' registered here before 2005, so he might have been flagged before the rights log was created.</small>', 'is-warn is-subnote');
-
-                        // add note
-                        $script->event->warn_ineligible = '<strong>This result might be inaccurate.</strong> ' . $script->user->name . ' registered on some wikis before the rights log was created in 2005. You may need to investigate manually.';
-                    } else if ($minDurationMet)
-                        $script->event->warn_ineligible = null;
-
-                    /* link to log for double-checking */
-                    $script->msg('<small>(See <a href="//' . $script->wiki->domain . '/wiki/Special:Log/rights?page=User:' . $script->user->name . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user->name . '@' . $script->wiki->dbName . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-        ############################
+        ##########
         ## 2015 Commons Picture of the Year 2014
-        ############################
+        ##########
         case 33:
-            $script->printWiki();
-            $ageOkay = false;
-            $editsOkay = false;
-            do {
-                $script->eligible = true;
-
-                ########
-                ## registered < 2014-Jan-01
-                ########
-                if (!$ageOkay) {
-                    $ageOkay = $script->condition(
-                        $dateOkay = ($script->user->registered < 20150101000000),
-                        "has an account registered before 01 January 2015 (registered {$script->user->registeredStr})...",
-                        "does not have an account registered before 01 January 2015 (registered {$script->user->registeredStr})."
-                    );
-                }
-
-                ########
-                ## >= 75 edits before 2014-Jan-01
-                ########
-                if (!$editsOkay) {
-                    $edits = $script->editCount(null, 20150101000000);
-                    $editsOkay = $script->condition(
-                        $editsOkay = ($edits >= 75),
-                        "has at least 75 edits before 01 January 2015 (has {$edits})...",
-                        "does not have at least 75 edits before 01 January 2015 (has {$edits})."
-                    );
-                }
-
-                $script->eligible = ($ageOkay && $editsOkay);
-            } while (!$script->eligible && $script->getNext());
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(201501), Workflow::ON_ANY_WIKI)// registered before 01 January 2015
+                ->addRule(new EditCountRule(75, null, 201501), Workflow::ON_ANY_WIKI)// 75 edits before 01 January 2015
+            );
             break;
 
-        ############################
+        ##########
         ## 2014 Commons Picture of the Year 2013
-        ############################
+        ##########
         case 32:
-            $script->printWiki();
-            $ageOkay = false;
-            $editsOkay = false;
-            do {
-                $script->eligible = true;
-
-                ########
-                ## registered < 2014-Jan-01
-                ########
-                if (!$ageOkay) {
-                    $ageOkay = $script->condition(
-                        $dateOkay = ($script->user->registered < 20140101000000),
-                        "has an account registered before 01 January 2014 (registered {$script->user->registeredStr})...",
-                        "does not have an account registered before 01 January 2014 (registered {$script->user->registeredStr})."
-                    );
-                }
-
-                ########
-                ## > 75 edits before 2014-Jan-01
-                ########
-                if (!$editsOkay) {
-                    $edits = $script->editCount(null, 20140101000000);
-                    $editsOkay = $script->condition(
-                        $editsOkay = ($edits > 75),
-                        "has more than 75 edits before 01 January 2014 (has {$edits})...",
-                        "does not have more than 75 edits before 01 January 2014 (has {$edits})."
-                    );
-                }
-
-                $script->eligible = ($ageOkay && $editsOkay);
-            } while (!$script->eligible && $script->getNext());
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(201401), Workflow::ON_ANY_WIKI)// registered before 01 January 2014
+                ->addRule(new EditCountRule(75, null, 201401), Workflow::ON_ANY_WIKI)// 75 edits before 01 January 2014
+            );
             break;
 
-        ############################
+        ##########
         ## 2014 steward elections
-        ############################
+        ##########
         case 31:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new EditCountRule(600, null, 201311, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2013
+                ->addRule(new EditCountRule(50, 201308, 201402, EditCountRule::ACCUMULATE))// 50 edits between 2013-Aug-01 and 2014-Jan-31
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a> (optional)...",
-                "",
-                "is-warn"
-            );
-            $script->eligible = true;
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-
-            /* set messages for global accounts */
-            if ($script->unified) {
-                $editsFailAppend = "However, edits will be combined with other unified wikis.";
-                $editsFailAttrs = "is-warn";
-            } else {
-                $editsFailAppend = '';
-                $editsFailAttrs = '';
-            }
-
-            /* check requirements */
-            $priorEdits = 0;
-            $recentEdits = 0;
-            $combining = false;
-            $markedBot = false;
-            do {
-                ########
-                ## Should not be a bot
-                ########
-                $isBot = $script->hasRole('bot');
-                $script->condition(
-                    !$isBot,
-                    "no bot flag...",
-                    "has a bot flag &mdash; the global account must not be primarily automated (bot), but I can't check this so won't mark ineligible.",
-                    "",
-                    "is-warn"
-                );
-                $script->eligible = true;
-                if ($isBot && !$markedBot) {
-                    $script->event->append_eligible = "<br /><strong>Note:</strong> this account is marked as a bot on some wikis. If it is primarily an automated account (bot), it is <em>not</em> eligible.";
-                    $markedBot = true;
-                }
-
-                ########
-                ## >=600 edits before 01 November 2013
-                ########
-                $edits = $script->editCount(null, 20131101000000);
-                $priorEdits += $edits;
-                $script->condition(
-                    $edits >= 600,
-                    "has 600 edits before 01 November 2013 (has {$edits})...",
-                    "does not have 600 edits before 01 November 2013 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-                ########
-                ## >=50 edits between 2013-Aug-01 and 2014-Jan-31
-                ########
-                $edits = $script->editCount(20130801000000, 20140131000000);
-                $recentEdits += $edits;
-                $script->condition(
-                    $edits >= 50,
-                    "has 50 edits between 01 August 2013 and 31 January 2014 (has {$edits})...",
-                    "does not have 50 edits between 01 August 2013 and 31 January 2014 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-
-                ########
-                ## Exit conditions
-                ########
-                $script->eligible = $priorEdits >= 600 && $recentEdits >= 50;
-
-                /* unified met requirements */
-                if ($script->unified && !$script->isQueueEmpty()) {
-                    if ($script->eligible) {
-                        break;
-                    }
-                    $combining = true;
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2014 steward elections (candidates)
-        ############################
+        ##########
         case 30:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(20130808), Workflow::ON_ANY_WIKI)// registered for six months
+                ->addRule(new HasGroupDurationRule('sysop', 90, 20140208), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>."
-            );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Check local requirements
-            ########
-            /* check local requirements */
-            $minDurationMet = false;
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Registered for six months (i.e. <= 2013-Aug-08)
-                ########
-                $script->condition(
-                    $script->user->registered < 20130808000000,
-                    "has an account registered before 08 August 2013 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 08 August 2013 (registered {$script->user->registeredStr})."
-                );
-
-                ########
-                ## Flagged as a sysop for three months (as of 2014-Feb-08)
-                ########
-                if (!$minDurationMet) {
-                    /* check flag duration */
-                    $months = $script->getRoleLongestDuration('sysop', 20140208000000);
-                    $minDurationMet = $months >= 3;
-                    $script->condition(
-                        $minDurationMet,
-                        'was flagged as an administrator for a continuous period of at least three months before 08 February 2014 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
-                        'was not flagged as an administrator for a continuous period of at least three months before 08 February 2014 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
-                    );
-
-                    /* edge case: if the user was registered before 2005, they might have been flagged before flag changes were logged */
-                    if (!$minDurationMet && (!$script->user->registered || $script->user->registered < 20050000000000)) {
-                        // output warning
-                        $script->msg('<small>' . $script->user->name . ' registered here before 2005, so he might have been flagged before the rights log was created.</small>', 'is-warn is-subnote');
-
-                        // add note
-                        $script->event->warn_ineligible = '<strong>This result might be inaccurate.</strong> ' . $script->user->name . ' registered on some wikis before the rights log was created in 2005. You may need to investigate manually.';
-                    } else if ($minDurationMet)
-                        $script->event->warn_ineligible = null;
-
-                    /* link to log for double-checking */
-                    $script->msg('<small>(See <a href="//' . $script->wiki->domain . '/wiki/Special:Log/rights?page=User:' . $script->user->name . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user->name . '@' . $script->wiki->dbName . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-        ############################
+        ##########
         ## 2013 steward elections
-        ############################
+        ##########
         case 29:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new EditCountRule(600, null, 201211, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2012
+                ->addRule(new EditCountRule(50, 201208, 201302, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2012 and 31 January 2013
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a> (optional)...",
-                "",
-                "is-warn"
-            );
-            $script->eligible = true;
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-
-            /* set messages for global accounts */
-            if ($script->unified) {
-                $editsFailAppend = "However, edits will be combined with other unified wikis.";
-                $editsFailAttrs = "is-warn";
-            } else {
-                $editsFailAppend = '';
-                $editsFailAttrs = '';
-            }
-
-            /* check requirements */
-            $priorEdits = 0;
-            $recentEdits = 0;
-            $combining = false;
-            $markedBot = false;
-            do {
-                ########
-                ## Should not be a bot
-                ########
-                $isBot = $script->hasRole('bot');
-                $script->condition(
-                    !$isBot,
-                    "no bot flag...",
-                    "has a bot flag &mdash; the global account must not be primarily automated (bot), but I can't check this so won't mark ineligible.",
-                    "",
-                    "is-warn"
-                );
-                $script->eligible = true;
-                if ($isBot && !$markedBot) {
-                    $script->event->append_eligible = "<br /><strong>Note:</strong> this account is marked as a bot on some wikis. If it is primarily an automated account (bot), it is <em>not</em> eligible.";
-                    $markedBot = true;
-                }
-
-                ########
-                ## >=600 edits before 01 November 2012
-                ########
-                $edits = $script->editCount(null, 20121101000000);
-                $priorEdits += $edits;
-                $script->condition(
-                    $edits >= 600,
-                    "has 600 edits before 01 November 2012 (has {$edits})...",
-                    "does not have 600 edits before 01 November 2012 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-                ########
-                ## >=50 edits between 2012-Aug-01 and 2013-Jan-31
-                ########
-                $edits = $script->editCount(20120801000000, 20130131000000);
-                $recentEdits += $edits;
-                $script->condition(
-                    $edits >= 50,
-                    "has 50 edits between 01 August 2012 and 31 January 2013 (has {$edits})...",
-                    "does not have 50 edits between 01 August 2012 and 31 January 2013 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-
-                ########
-                ## Exit conditions
-                ########
-                $script->eligible = $priorEdits >= 600 && $recentEdits >= 50;
-
-                /* unified met requirements */
-                if ($script->unified && !$script->isQueueEmpty()) {
-                    if ($script->eligible) {
-                        break;
-                    }
-                    $combining = true;
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2013 steward elections (candidates)
-        ############################
+        ##########
         case 28:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(20120808), Workflow::ON_ANY_WIKI)// registered for six months
+                ->addRule(new HasGroupDurationRule('sysop', 90, 20130208), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>."
-            );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Check local requirements
-            ########
-            /* check local requirements */
-            $minDurationMet = false;
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Registered for six months (i.e. <= 2012-Aug-08)
-                ########
-                $script->condition(
-                    $script->user->registered < 20120808000000,
-                    "has an account registered before 08 August 2012 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 08 August 2012 (registered {$script->user->registeredStr})."
-                );
-
-                ########
-                ## Flagged as a sysop for three months (as of 2013-Feb-08)
-                ########
-                if (!$minDurationMet) {
-                    /* check flag duration */
-                    $months = $script->getRoleLongestDuration('sysop', 20130208000000);
-                    $minDurationMet = $months >= 3;
-                    $script->condition(
-                        $minDurationMet,
-                        'was flagged as an administrator for a continuous period of at least three months before 08 February 2013 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
-                        'was not flagged as an administrator for a continuous period of at least three months before 08 February 2013 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
-                    );
-
-                    /* edge case: if the user was registered before 2005, they might have been flagged before flag changes were logged */
-                    if (!$minDurationMet && (!$script->user->registered || $script->user->registered < 20050000000000)) {
-                        // output warning
-                        $script->msg('<small>' . $script->user->name . ' registered here before 2005, so he might have been flagged before the rights log was created.</small>', 'is-warn is-subnote');
-
-                        // add note
-                        $script->event->warn_ineligible = '<strong>This result might be inaccurate.</strong> ' . $script->user->name . ' registered on some wikis before the rights log was created in 2005. You may need to investigate manually.';
-                    } else if ($minDurationMet)
-                        $script->event->warn_ineligible = null;
-
-                    /* link to log for double-checking */
-                    $script->msg('<small>(See <a href="//' . $script->wiki->domain . '/wiki/Special:Log/rights?page=User:' . $script->user->name . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user->name . '@' . $script->wiki->dbName . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-        ############################
+        ##########
         ## 2013 Commons Picture of the Year 2012
-        ############################
+        ##########
         case 27:
-            $script->printWiki();
-            $ageOkay = false;
-            $editsOkay = false;
-            do {
-                $script->eligible = true;
-
-                ########
-                ## registered < 2013-Jan-01
-                ########
-                if (!$ageOkay) {
-                    $ageOkay = $script->condition(
-                        $dateOkay = ($script->user->registered < 20130101000000),
-                        "has an account registered before 01 January 2013 (registered {$script->user->registeredStr})...",
-                        "does not have an account registered before 01 January 2013 (registered {$script->user->registeredStr})."
-                    );
-                }
-
-                ########
-                ## > 75 edits before 2013-Jan-01
-                ########
-                if (!$editsOkay) {
-                    $edits = $script->editCount(null, 20130101000000);
-                    $editsOkay = $script->condition(
-                        $editsOkay = ($edits >= 75),
-                        "has more than 75 edits before 01 January 2013 (has {$edits})...",
-                        "does not have more than 75 edits before 01 January 2013 (has {$edits})."
-                    );
-                }
-
-                $script->eligible = ($ageOkay && $editsOkay);
-            } while (!$script->eligible && $script->getNext());
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(201301), Workflow::ON_ANY_WIKI)// registered before 01 January 2013
+                ->addRule(new EditCountRule(75, null, 201301), Workflow::ON_ANY_WIKI)// 75 edits before 01 January 2013
+            );
             break;
 
-        ############################
+        ##########
         ## 2012 enwiki arbcom elections (voters)
-        ############################
+        ##########
         case 26:
-            $script->printWiki();
-
-            ########
-            ## registered < 2012-Oct-28
-            ########
-            $script->condition(
-                ($script->user->registered < 20121028000000),
-                "has an account registered before 28 October 2012 (registered {$script->user->registeredStr})...",
-                "does not have an account registered before 28 October 2012 (registered {$script->user->registeredStr})."
-            );
-
-            ########
-            ## >=150 main-NS edits before 2012-Nov-01
-            ########
-            /* SQL derived from query written by [[en:user:Cobi]], from < //toolserver.org/~sql/sqlbot.txt > */
-            $script->db->query(
-                'SELECT data.count FROM ('
-                . 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-                . 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
-                . ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
-                . ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
-                [$script->user->id, 20121102000000]
-            );
-            $edits = $script->db->fetchColumn();
-            $script->condition(
-                $edits >= 150,
-                "has 150 main-namespace edits on or before 01 November 2012 (has {$edits})...",
-                "does not have 150 main-namespace edits on or before 01 November 2012 (has {$edits})."
-            );
-
-            ########
-            ## Not currently blocked
-            ########
-            $script->condition(
-                !$script->isBlocked(),
-                "not currently blocked...",
-                "must not be blocked during at least part of election (verify <a href='//en.wikipedia.org/wiki/Special:Log/block?user=" . urlencode($script->user->name) . "' title='block log'>block log</a>)."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBlockedRule())
+                ->addRule((new EditCountRule(150, null, 20121102))->inNamespace(0))// 150 main-namespace edits before 02 Nov 2012
             );
             break;
 
-        ############################
+        ##########
         ## 2012 enwiki arbcom elections (candidates)
-        ############################
+        ##########
         case 25:
-            $script->printWiki();
-
-            ########
-            ## >=500 main-NS edits before 2012-Nov-02
-            ########
-            /* SQL derived from query written by [[en:user:Cobi]], from < //toolserver.org/~sql/sqlbot.txt > */
-            $script->db->query(
-                'SELECT data.count FROM ('
-                . 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-                . 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
-                . ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
-                . ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
-                [$script->user->id, 20121102000000]
-            );
-            $edits = $script->db->fetchColumn();
-            $script->condition(
-                $edits >= 500,
-                "has 500 main-namespace edits on or before 01 November 2012 (has {$edits})...",
-                "does not have 500 main-namespace edits on or before 01 November 2012 (has {$edits})."
-            );
-
-            ########
-            ## Not currently blocked
-            ########
-            $script->condition(
-                !$script->isBlocked(),
-                "not currently blocked...",
-                "must not be currently blocked (verify <a href='//en.wikipedia.org/wiki/Special:Log/block?user=" . urlencode($script->user->name) . "' title='block log'>block log</a>)."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBlockedRule())
+                ->addRule((new EditCountRule(500, null, 20121102))->inNamespace(0))// 500 main-namespace edits before 02 November 2012
             );
             break;
 
-        ############################
+        ##########
         ## 2012 Commons Picture of the Year 2011
-        ############################
+        ##########
         case 24:
-            $script->printWiki();
-            $ageOkay = false;
-            $editsOkay = false;
-            do {
-                $script->eligible = true;
-
-                ########
-                ## registered < 2012-Apr-01
-                ########
-                if (!$ageOkay) {
-                    $ageOkay = $script->condition(
-                        $dateOkay = ($script->user->registered < 20120401000000),
-                        "has an account registered before 01 April 2012 (registered {$script->user->registeredStr})...",
-                        "does not have an account registered before 01 April 2012 (registered {$script->user->registeredStr})."
-                    );
-                }
-
-                ########
-                ## > 75 edits before 2012-Apr-01
-                ########
-                if (!$editsOkay) {
-                    $edits = $script->editCount(null, 20120401000000);
-                    $editsOkay = $script->condition(
-                        $editsOkay = ($edits >= 75),
-                        "has more than 75 edits before 01 April 2012 (has {$edits})...",
-                        "does not have more than 75 edits before 01 April 2012 (has {$edits})."
-                    );
-                }
-
-                $script->eligible = ($ageOkay && $editsOkay);
-            } while (!$script->eligible && $script->getNext());
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(201204), Workflow::ON_ANY_WIKI)// registered before 01 April 2012
+                ->addRule(new EditCountRule(75, null, 201204), Workflow::ON_ANY_WIKI)// 75 edits before 01 April 2012
+            );
             break;
 
-        ############################
+        ##########
         ## 2012 steward elections
-        ############################
+        ##########
         case 23:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new EditCountRule(600, null, 201111, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2011
+                ->addRule(new EditCountRule(50, 201108, 201202, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2011 and 31 January 2012
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a> (<strong>optional</strong>)...",
-                "",
-                "is-warn"
-            );
-            $script->eligible = true;
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-
-            /* set messages for global accounts */
-            if ($script->unified) {
-                $editsFailAppend = "However, edits will be combined with other unified wikis.";
-                $editsFailAttrs = "is-warn";
-            } else {
-                $editsFailAppend = '';
-                $editsFailAttrs = '';
-            }
-
-            /* check requirements */
-            $priorEdits = 0;
-            $recentEdits = 0;
-            $combining = false;
-            $markedBot = false;
-            do {
-                ########
-                ## Should not be a bot
-                ########
-                $isBot = $script->hasRole('bot');
-                $script->condition(
-                    !$isBot,
-                    "no bot flag...",
-                    "has a bot flag &mdash; the global account must not be primarily automated (bot), but I can't check this so won't mark ineligible.",
-                    "",
-                    "is-warn"
-                );
-                $script->eligible = true;
-                if ($isBot && !$markedBot) {
-                    $script->event->append_eligible = "<br /><strong>Note:</strong> this account is marked as a bot on some wikis. If it is primarily an automated account (bot), it is <em>not</em> eligible.";
-                    $markedBot = true;
-                }
-
-                ########
-                ## >=600 edits before 01 November 2011
-                ########
-                $edits = $script->editCount(null, 20111101000000);
-                $priorEdits += $edits;
-                $script->condition(
-                    $edits >= 600,
-                    "has 600 edits before 01 November 2011 (has {$edits})...",
-                    "does not have 600 edits before 01 November 2011 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-                ########
-                ## >=50 edits between 2011-Aug-01 and 2012-Jan-31
-                ########
-                $edits = $script->editCount(20110801000000, 20120131000000);
-                $recentEdits += $edits;
-                $script->condition(
-                    $edits >= 50,
-                    "has 50 edits between 01 August 2011 and 31 January 2012 (has {$edits})...",
-                    "does not have 50 edits between 01 August 2011 and 31 January 2012 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-
-                ########
-                ## Exit conditions
-                ########
-                $script->eligible = $priorEdits >= 600 && $recentEdits >= 50;
-
-                /* unified met requirements */
-                if ($script->unified && !$script->isQueueEmpty()) {
-                    if ($script->eligible) {
-                        break;
-                    }
-                    $combining = true;
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2012 steward elections (candidates)
-        ############################
+        ##########
         case 22:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(20110710), Workflow::ON_ANY_WIKI)// registered for six months
+                ->addRule(new HasGroupDurationRule('sysop', 90, 20120129), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>."
-            );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Check local requirements
-            ########
-            /* check local requirements */
-            $minDurationMet = false;
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Registered before 2011-July-10
-                ########
-                $script->condition(
-                    $script->user->registered < 20110710000000,
-                    "has an account registered before 10 July 2011 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 10 July 2011 (registered {$script->user->registeredStr})."
-                );
-
-                ########
-                ## Must have been a sysop for three months (as of 29 January 2012)
-                ########
-                if (!$minDurationMet) {
-                    /* check flag duration */
-                    $months = $script->getRoleLongestDuration('sysop', 20120129000000);
-                    $minDurationMet = $months >= 3;
-                    $script->condition(
-                        $minDurationMet,
-                        'was flagged as an administrator for a continuous period of at least three months before 29 January 2012 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
-                        'was not flagged as an administrator for a continuous period of at least three months before 29 January 2012 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
-                    );
-
-                    /* edge case: if the user was registered before 2005, they might have been flagged before flag changes were logged */
-                    if (!$minDurationMet && (!$script->user->registered || $script->user->registered < 20050000000000)) {
-                        // output warning
-                        $script->msg('<small>' . $script->user->name . ' registered here before 2005, so he might have been flagged before the rights log was created.</small>', 'is-warn is-subnote');
-
-                        // add note
-                        $script->event->warn_ineligible = '<strong>This result might be inaccurate.</strong> ' . $script->user->name . ' registered on some wikis before the rights log was created in 2005. You may need to investigate manually.';
-                    } else if ($minDurationMet)
-                        $script->event->warn_ineligible = null;
-
-                    /* link to log for double-checking */
-                    $script->msg('<small>(See <a href="//' . $script->wiki->domain . '/wiki/Special:Log/rights?page=User:' . $script->user->name . '" title="local rights log">local</a> & <a href="//meta.wikimedia.org/wiki/Special:Log/rights?page=User:' . $script->user->name . '@' . $script->wiki->dbName . '" title="crosswiki rights log">crosswiki</a> rights logs.)</small>', 'is-subnote');
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-        ############################
+        ##########
         ## 2011 enwiki arbcom elections
-        ############################
-        case 20: // candidates
-        case 21: // voters (same checked rules)
-            $script->printWiki();
-
-            ########
-            ## >=150 main-NS edits before 2011-Nov-01
-            ########
-            /* SQL derived from query written by [[en:user:Cobi]], from < //toolserver.org/~sql/sqlbot.txt > */
-            $script->db->query(
-                'SELECT data.count FROM ('
-                . 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-                . 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
-                . ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
-                . ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
-                [$script->user->id, 20111101000000]
-            );
-            $edits = $script->db->fetchColumn();
-            $script->condition(
-                $edits >= 150,
-                "has 150 main-namespace edits on or before 01 November 2011 (has {$edits})...",
-                "does not have 150 main-namespace edits on or before 01 November 2011 (has {$edits})."
-            );
-
-            ########
-            ## Not currently blocked
-            ########
-            $script->condition(
-                !$script->isBlocked(),
-                "not currently blocked...",
-                "must not be blocked during at least part of election (verify <a href='//en.wikipedia.org/wiki/Special:Log/block?user=" . urlencode($script->user->name) . "' title='block log'>block log</a>)."
+        ##########
+        case 20:
+        case 21:
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBlockedRule())
+                ->addRule((new EditCountRule(150, null, 201111))->inNamespace(0))// 150 main-namespace edits before 01 November 2011
             );
             break;
 
-        ############################
+        ##########
         ## 2011-09 steward elections
-        ############################
+        ##########
         case 19:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new EditCountRule(600, null, 20110615, EditCountRule::ACCUMULATE))// 600 edits before 15 June 2011
+                ->addRule(new EditCountRule(50, 20110315, 20110914, EditCountRule::ACCUMULATE)) // 50 edits between 15 March 2011 and 14 September 2011
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a> (<strong>optional</strong>)...",
-                "",
-                "is-warn"
-            );
-            $script->eligible = true;
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-
-            /* set messages for global accounts */
-            if ($script->unified) {
-                $editsFailAppend = "However, edits will be combined with other unified wikis.";
-                $editsFailAttrs = "is-warn";
-            } else {
-                $editsFailAppend = '';
-                $editsFailAttrs = '';
-            }
-
-            /* check requirements */
-            $priorEdits = 0;
-            $recentEdits = 0;
-            $combining = false;
-            $markedBot = false;
-            do {
-                ########
-                ## Should not be a bot
-                ########
-                $isBot = $script->hasRole('bot');
-                $script->condition(
-                    !$isBot,
-                    "no bot flag...",
-                    "has a bot flag &mdash; the global account must not be primarily automated (bot), but I can't check this so won't mark ineligible.",
-                    "",
-                    "is-warn"
-                );
-                $script->eligible = true;
-                if ($isBot && !$markedBot) {
-                    $script->event->append_eligible = "<br /><strong>Note:</strong> this account is marked as a bot on some wikis. If it is primarily an automated account (bot), it is <em>not</em> eligible.";
-                    $markedBot = true;
-                }
-
-                ########
-                ## >=600 edits before 15 June 2011
-                ########
-                $edits = $script->editCount(null, 20110614000000);
-                $priorEdits += $edits;
-                $script->condition(
-                    $edits >= 600,
-                    "has 600 edits before 15 June 2011 (has {$edits})...",
-                    "does not have 600 edits before 15 June 2011 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-                ########
-                ## >=50 edits between 2011-Mar-15 and 2011-Sep-14
-                ########
-                $edits = $script->editCount(20110315000000, 20110914000000);
-                $recentEdits += $edits;
-                $script->condition(
-                    $edits >= 50,
-                    "has 50 edits between 15 March 2011 and 14 September 2011 (has {$edits})...",
-                    "does not have 50 edits between 15 March 2011 and 14 September 2011 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-
-                ########
-                ## Exit conditions
-                ########
-                $script->eligible = $priorEdits >= 600 && $recentEdits >= 50;
-
-                /* unified met requirements */
-                if ($script->unified && !$script->isQueueEmpty()) {
-                    if ($script->eligible) {
-                        break;
-                    }
-                    $combining = true;
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2011 steward elections (candidates)
-        ############################
+        ##########
         case 18:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(20110314), Workflow::ON_ANY_WIKI)// registered for six months
+                ->addRule(new HasGroupDurationRule('sysop', 90, 20110913), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>..."
-            );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Check local requirements
-            ########
-            /* check local requirements */
-            $minDurationMet = false;
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Registered before 2010-Mar-29
-                ########
-                $script->condition(
-                    $script->user->registered < 20110314000000,
-                    "has an account registered before 14 March 2011 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 14 March 2011 (registered {$script->user->registeredStr})."
-                );
-
-                ########
-                ## Must have been a sysop for three months
-                ########
-                if (!$minDurationMet) {
-                    $months = $script->getRoleLongestDuration('sysop', 20110913000000);
-                    $minDurationMet = $months >= 3;
-                    $script->condition(
-                        $minDurationMet,
-                        'was flagged as an administrator for a continuous period of at least three months before 13 September 2011 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
-                        'was not flagged as an administrator for a continuous period of at least three months before 13 September 2011 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
-                    );
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2011 Board elections
-        ############################
+        ##########
         case 17:
-            $indefBlockMessage = "indefinitely blocked: account is still eligible if only blocked on one wiki.";
-            $indefBlockMessageMultiple = "indefinitely blocked on more than one wiki.";
-            $indefBlockClass = "is-warn";
-
-            $indefBlockCount = 0;
-            $editCount = 0;
-            $editCountRecent = 0;
-
-            $script->printWiki();
-
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Not a bot
-                ########
-                $script->condition(
-                    !$script->hasRole('bot'),
-                    "no bot flag...",
-                    "has a bot flag: this account might not be eligible (refer to the requirements).",
-                    "",
-                    "is-warn"
-                );
-
-                ########
-                ## Not indefinitely blocked on more than one wiki
-                ########
-                $isBlocked = $script->isIndefBlocked();
-                $script->condition(
-                    !$isBlocked,
-                    "not indefinitely blocked...",
-                    $indefBlockMessage,
-                    "",
-                    $indefBlockClass
-                );
-                if ($isBlocked) {
-                    $indefBlockCount++;
-                    $indefBlockClass = "";
-                    $indefBlockMessage = $indefBlockMessageMultiple;
-                }
-
-                ########
-                ## >=300 edits before 2011-04-15
-                ########
-                $edits = $script->editCount(null, 20110415000000);
-                $script->condition(
-                    $edits >= 300,
-                    "has 300 edits before 15 April 2011 (has {$edits})...",
-                    "does not have 300 edits before 15 April 2011 (has {$edits}); edits can be combined across wikis.",
-                    "",
-                    "is-warn"
-                );
-                $editCount += $edits;
-
-                ########
-                ## >=20 edits between 2010-Nov-15 and 2011-May-15
-                ########
-                $edits = $script->editCount(20101115000000, 20110516000000);
-                $script->condition(
-                    $edits >= 20,
-                    "has 20 edits between 15 November 2010 and 15 May 2011 (has {$edits})...",
-                    "does not have 20 edits between 15 November 2010 and 15 May 2011 (has {$edits}); edits can be combined across wikis.",
-                    "",
-                    "is-warn"
-                );
-                $editCountRecent += $edits;
-
-                ########
-                ## Exit conditions
-                ########
-                $script->eligible = ($indefBlockCount <= 1 && $editCount >= 300 && $editCountRecent >= 20);
-            } while (!$script->eligible && $script->getNext());
-
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
+                ->addRule(new EditCountRule(300, null, 20110415, EditCountRule::ACCUMULATE))// 300 edits before 15 April 2011
+                ->addRule(new EditCountRule(20, 20101115, 20110516, EditCountRule::ACCUMULATE))// 20 edits between 15 November 2010 and 15 May 2011
+            );
             break;
 
-
-        ############################
+        ##########
         ## 2011 Commons Picture of the Year 2010
-        ############################
+        ##########
         case 16:
-            $script->printWiki();
-            $ageOkay = false;
-            $editsOkay = false;
-            do {
-                $script->eligible = true;
-
-                ########
-                ## registered < 2011-Jan-01
-                ########
-                if (!$ageOkay) {
-                    $ageOkay = $script->condition(
-                        $dateOkay = ($script->user->registered < 20110101000000),
-                        "has an account registered before 01 January 2011 (registered {$script->user->registeredStr})...",
-                        "does not have an account registered before 01 January 2011 (registered {$script->user->registeredStr})."
-                    );
-                }
-
-                ########
-                ## >= 200 edits before 2011-Jan-01
-                ########
-                if (!$editsOkay) {
-                    $edits = $script->editCount(null, 20110101000000);
-                    $editsOkay = $script->condition(
-                        $editsOkay = ($edits >= 200),
-                        "has 200 edits before 01 January 2011 (has {$edits})...",
-                        "does not have 200 edits before 01 January 2011 (has {$edits})."
-                    );
-                }
-
-                $script->eligible = ($ageOkay && $editsOkay);
-            } while (!$script->eligible && $script->getNext());
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(201101), Workflow::ON_ANY_WIKI)// registered before 01 January 2011
+                ->addRule(new EditCountRule(200, null, 201101), Workflow::ON_ANY_WIKI)// 200 edits before 01 January 2011
+            );
             break;
 
-        ############################
+        ##########
         ## 2011 steward confirmations
-        ############################
+        ##########
         case 15:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new EditCountRule(1, null, 201102, EditCountRule::ACCUMULATE))// one edit before 01 February 2011
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-            do {
-                ########
-                ## >=1 edits before 01 February 2011
-                ########
-                $edits = $script->editCount(null, 20110201000000);
-                $script->condition(
-                    $edits >= 1,
-                    "has one edit before 01 February 2011 (has {$edits})...",
-                    "does not have one edit before 01 February 2011 (has {$edits})."
-                );
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2011 steward elections
-        ############################
+        ##########
         case 14:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new EditCountRule(600, null, 201011, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2010
+                ->addRule(new EditCountRule(50, 201008, 201102, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2010 and 31 January 2011
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a> (<strong>optional</strong>)...",
-                "",
-                "is-warn"
-            );
-            $script->eligible = true;
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-
-            /* set messages for global accounts */
-            if ($script->unified) {
-                $editsFailAppend = "However, edits will be combined with other unified wikis.";
-                $editsFailAttrs = "is-warn";
-            } else {
-                $editsFailAppend = '';
-                $editsFailAttrs = '';
-            }
-
-            /* check requirements */
-            $priorEdits = 0;
-            $recentEdits = 0;
-            $combining = false;
-            $markedBot = false;
-            do {
-                ########
-                ## Should not be a bot
-                ########
-                $isBot = $script->hasRole('bot');
-                $script->condition(
-                    !$isBot,
-                    "no bot flag...",
-                    "has a bot flag &mdash; the global account must not be primarily automated (bot), but I can't check this so won't mark ineligible.",
-                    "",
-                    "is-warn"
-                );
-                $script->eligible = true;
-                if ($isBot && !$markedBot) {
-                    $script->event->append_eligible = "<br /><strong>Note:</strong> this account is marked as a bot on some wikis. If it is primarily an automated account (bot), it is <em>not</em> eligible.";
-                    $markedBot = true;
-                }
-
-                ########
-                ## >=600 edits before 01 November 2010
-                ########
-                $edits = $script->editCount(null, 20101101000000);
-                $priorEdits += $edits;
-                $script->condition(
-                    $edits >= 600,
-                    "has 600 edits before 01 November 2010 (has {$edits})...",
-                    "does not have 600 edits before 01 November 2010 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-                ########
-                ## >=50 edits between 2010-Aug-01 and 2010-Jan-31
-                ########
-                $edits = $script->editCount(20100800000000, 20110200000000);
-                $recentEdits += $edits;
-                $script->condition(
-                    $edits >= 50,
-                    "has 50 edits between 01 August 2010 and 31 January 2011 (has {$edits})...",
-                    "does not have 50 edits between 01 August 2010 and 31 January 2011 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-
-                ########
-                ## Exit conditions
-                ########
-                $script->eligible = $priorEdits >= 600 && $recentEdits >= 50;
-
-                /* unified met requirements */
-                if ($script->unified && !$script->isQueueEmpty()) {
-                    if ($script->eligible) {
-                        break;
-                    }
-                    $combining = true;
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2011 steward elections (candidates)
-        ############################
+        ##########
         case 13:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(20100829), Workflow::ON_ANY_WIKI)// registered for six months
+                ->addRule(new HasGroupDurationRule('sysop', 90, 20110129), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>..."
-            );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Check local requirements
-            ########
-            /* check local requirements */
-            $minDurationMet = false;
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Registered before 2010-Mar-29
-                ########
-                $script->condition(
-                    $script->user->registered < 20100829000000,
-                    "has an account registered before 29 August 2010 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 29 August 2010 (registered {$script->user->registeredStr})."
-                );
-
-                ########
-                ## Must have been a sysop for three months
-                ########
-                if (!$minDurationMet) {
-                    $months = $script->getRoleLongestDuration('sysop', 20110129000000);
-                    $minDurationMet = $months >= 3;
-                    $script->condition(
-                        $minDurationMet,
-                        'was flagged as an administrator for a continuous period of at least three months before 29 January 2011 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ')...',
-                        'was not flagged as an administrator for a continuous period of at least three months before 29 January 2011 (' . ($months > 0 ? 'longest flag duration is ' . $months . ' months' : 'never flagged') . ').'
-                    );
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2010 enwiki arbcom elections
-        ############################
+        ##########
         case 12:
-            $script->printWiki();
-
-            ########
-            ## >=150 main-NS edits before 2010-Nov-02
-            ########
-            /* SQL derived from query written by [[en:user:Cobi]], from < //toolserver.org/~sql/sqlbot.txt > */
-            $script->db->query(
-                'SELECT data.count FROM ('
-                . 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-                . 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
-                . ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
-                . ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
-                [$script->user->id, 20101102000000]
-            );
-            $edits = $script->db->fetchColumn();
-
-            $script->condition(
-                $edits >= 150,
-                "has 150 main-namespace edits on or before 01 November 2010 (has {$edits})...",
-                "does not have 150 main-namespace edits on or before 01 November 2010 (has {$edits})."
-            );
-
-
-            ########
-            ## Not currently blocked
-            ########
-            $script->condition(
-                !$script->isBlocked(),
-                "not currently blocked...",
-                "must not be blocked during at least part of election (verify <a href='//en.wikipedia.org/wiki/Special:Log/block?user=" . urlencode($script->user->name) . "' title='block log'>block log</a>)."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBlockedRule())
+                ->addRule((new EditCountRule(150, null, 20101102))->inNamespace(0))// 150 main-namespace edits by 01 November 2010
             );
             break;
 
-
-        ############################
+        ##########
         ## 2010 steward elections, September
-        ############################
+        ##########
         case 11:
-            $startDate = 20100901000000;
-
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new EditCountRule(600, null, 201006, EditCountRule::ACCUMULATE))// 600 edits before 01 June 2010
+                ->addRule(new EditCountRule(50, 201003, 201009, EditCountRule::ACCUMULATE))// 50 edits between 01 March 2010 and 31 August 2010
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a> (<strong>optional</strong>)...",
-                "",
-                "is-warn"
-            );
-
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-
-            /* set messages for global accounts */
-            if ($script->unified) {
-                $editsFailAppend = "However, edits will be combined with other unified wikis.";
-                $editsFailAttrs = "is-warn";
-            } else {
-                $editsFailAppend = '';
-                $editsFailAttrs = '';
-            }
-
-            /* check requirements */
-            $priorEdits = 0;
-            $recentEdits = 0;
-            $combining = false;
-            $markedBot = false;
-            do {
-                ########
-                ## Should not be a bot
-                ########
-                $script->condition(
-                    !$script->hasRole('bot'),
-                    "no bot flag...",
-                    "has a bot flag &mdash; the global account must not be primarily automated (bot), but I can't check this so won't mark ineligible.",
-                    "",
-                    "is-warn"
-                );
-                $script->eligible = true;
-                if ($script->hasRole('bot') && !$markedBot) {
-                    $script->event->append_eligible = "<br /><strong>Note:</strong> this account is marked as a bot on some wikis. If it is primarily an automated account (bot), it is <em>not</em> eligible.";
-                    $markedBot = true;
-                }
-
-
-                ########
-                ## >=600 edits before 01 June 2010
-                ########
-                $edits = $script->editCount(null, 20100601000000);
-                $priorEdits += $edits;
-                $script->condition(
-                    $edits >= 600,
-                    "has 600 edits before 01 June 2010 (has {$edits})...",
-                    "does not have 600 edits before 01 June 2010 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-                ########
-                ## >=50 edits between 2010-Mar-01 and 2010-Aug-31
-                ########
-                $edits = $script->editCount(20100300000000, 20100900000000);
-                $recentEdits += $edits;
-                $script->condition(
-                    $edits >= 50,
-                    "has 50 edits between 01 March 2010 and 31 August 2010 (has {$edits})...",
-                    "does not have 50 edits between 01 March 2010 and 31 August 2010 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-                ########
-                ## Exit conditions
-                ########
-                $script->eligible = $priorEdits >= 600 && $recentEdits >= 50;
-
-                /* unified met requirements */
-                if ($script->unified && !$script->isQueueEmpty()) {
-                    if ($script->eligible) {
-                        break;
-                    }
-                    $combining = true;
-                }
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2010 steward elections, September (candidates)
-        ############################
+        ##########
         case 10:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(20100329))// registered before 29 March 2010
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>..."
-            );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Registered before 2010-Mar-29
-                ########
-                $script->eligible = true;
-                $script->condition(
-                    $script->user->registered < 20100329000000,
-                    "has an account registered before 29 March 2010 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 29 March 2010 (registered $script->user->registeredStr)."
-                );
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2010 Commons Picture of the Year 2009
-        ############################
+        ##########
         case 9:
-            $dateOkay = false;
-            $editsOkay = false;
-
-            $script->printWiki();
-            do {
-                ########
-                ## registered < 2010-Jan-01
-                ########
-                if (!$dateOkay) {
-                    $script->condition(
-                        $dateOkay = ($script->user->registered < 20100101000000),
-                        "has an account registered before 01 January 2010 (registered {$script->user->registeredStr})...",
-                        "does not have an account registered before 01 January 2010 (registered {$script->user->registeredStr})."
-                    );
-                }
-
-                ########
-                ## >= 200 edits before 2010-Jan-16
-                ########
-                if (!$editsOkay) {
-                    $edits = $script->editCount(null, 20100116000000);
-                    $script->condition(
-                        $editsOkay = ($edits >= 200),
-                        "has 200 edits before 16 January 2010 (has {$edits})...",
-                        "does not have 200 edits before 16 January 2010 (has {$edits})."
-                    );
-                }
-            } while ((!$dateOkay || !$editsOkay) && $script->getNext());
-            $script->eligible = ($dateOkay && $editsOkay);
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(201001), Workflow::ON_ANY_WIKI)// registered before 01 January 2010
+                ->addRule(new EditCountRule(200, null, 20100116), Workflow::ON_ANY_WIKI)// 200 edits before 16 January 2010
+            );
             break;
 
-
-        ############################
+        ##########
         ## 2010 steward elections, February
-        ############################
+        ##########
         case 8:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+                ->addRule(new EditCountRule(600, null, 200911, EditCountRule::ACCUMULATE))// 600 edits before 01 November 2009
+                ->addRule(new EditCountRule(50, 200908, 201002, EditCountRule::ACCUMULATE))// 50 edits between 01 August 2009 and 31 January 2010
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Has a global account (optional)
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a> (<strong>optional</strong>)...",
-                "",
-                "is-warn"
-            );
-
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-
-            /* set messages for global accounts */
-            if ($script->unified) {
-                $editsFailAppend = "However, edits will be combined with other unified wikis.";
-                $editsFailAttrs = "is-warn";
-            } else {
-                $editsFailAppend = '';
-                $editsFailAttrs = '';
-            }
-
-            /* check requirements */
-            $priorEdits = 0;
-            $recentEdits = 0;
-            $combining = false;
-            do {
-                ########
-                ## Should not be a bot
-                ########
-                $script->condition(
-                    !$script->hasRole('bot'),
-                    "no bot flag...",
-                    "has a bot flag &mdash; the global account must not be primarily automated (bot), but I can't check this so won't mark ineligible.",
-                    "",
-                    "is-warn"
-                );
-                $script->eligible = true;
-                if ($script->hasRole('bot')) {
-                    $script->event->append_eligible = "<br /><strong>Note:</strong> this account is marked as a bot on some wikis. If it is primarily an automated account (bot), it is <em>not</em> eligible.";
-                }
-
-
-                ########
-                ## >=600 edits before 2009-Nov-01
-                ########
-                $edits = $script->editCount(null, 20091101000000);
-                $priorEdits += $edits;
-                $script->condition(
-                    $edits >= 600,
-                    "has 600 edits before 01 November 2009 (has {$edits})...",
-                    "does not have 600 edits before 01 November 2009 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-                ########
-                ## >=50 edits between 2009-Aug-01 and 2010-Jan-31
-                ########
-                $edits = $script->editCount(20090801000000, 20100200000000);
-                $recentEdits += $edits;
-                $script->condition(
-                    $edits >= 50,
-                    "has 50 edits between 01 August 2009 and 31 January 2010 (has {$edits})...",
-                    "does not have 50 edits between 01 August 2009 and 31 January 2010 (has {$edits}). {$editsFailAppend}",
-                    "",
-                    $editsFailAttrs
-                );
-                if (!$script->eligible) {
-                    if (!$script->unified) {
-                        continue;
-                    }
-                    $combining = true;
-                }
-
-                ########
-                ## Exit conditions
-                ########
-                $script->eligible = $priorEdits >= 600 && $recentEdits >= 50;
-
-                /* unified met requirements */
-                if ($script->unified && !$script->isQueueEmpty()) {
-                    if ($script->eligible) {
-                        break;
-                    }
-                    $combining = true;
-                }
-            } while (!$script->eligible && $script->getNext());
-
-
-            ########
-            ## Add requirement for non-unified accounts
-            ########
-            if ($script->eligible && !$script->unified) {
-                $script->event->extraRequirements[] = "If you do not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>, your user page on Meta must link to your main user page, and your main user page must link your Meta user page.";
-            }
-
-
-            ########
-            ## Print message about combined edits
-            ########
-            if ($script->eligible) {
-                if ($script->unified && $combining) {
-                    $script->msg("<br />Met edit requirements.");
-                }
-            } else {
-                if ($script->unified && $combining) {
-                    $script->msg("<br />Combined edits did not meet edit requirements.");
-                } elseif ($script->isGlobal()) {
-                    $script->event->append_ineligible = "<br /><strong>But wait!</strong> This is a global account, which is eligible to combine edits across wikis to meet the requirements. Select 'auto-select wiki' above to combine edits.";
-                }
-            }
             break;
 
-
-        ############################
+        ##########
         ## 2010 steward elections, February (candidates)
-        ############################
+        ##########
         case 7:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(20091029))// registered for three months
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-
-            ########
-            ## Has a global account
-            ########
-            $script->condition(
-                $script->isGlobal(),
-                "has a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>...",
-                "does not have a <a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about global accounts'>global account</a>..."
-            );
-            if (!$script->eligible) {
-                break;
-            }
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Registered before 2009-Oct-28
-                ########
-                $script->eligible = true;
-                $script->condition(
-                    $script->user->registered < 20091029000000,
-                    "has an account registered before 29 October 2009 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 29 October 2009 (registered $script->user->registeredStr)."
-                );
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2010 global sysops vote
-        ############################
+        ##########
         case 6:
-            $ageOkay = false;
-            $editsOkay = false;
-
-            $script->printWiki();
-            do {
-                ########
-                ## Registered (on any wiki) before 2009-Oct
-                ########
-                if (!$ageOkay) {
-                    $ageOkay = $script->condition(
-                        $script->user->registered <= 20091001000000,
-                        "has an account registered before 01 October 2009, on any wiki (registered {$script->user->registeredStr})...",
-                        "does not have an account registered before 01 October 2009, on any wiki (registered {$script->user->registeredStr})."
-                    );
-                }
-
-
-                ########
-                ## >=150 edits (on any wiki) before start of vote (2010-Jan-01)
-                ########
-                if (!$editsOkay) {
-                    $edits = $script->editCount(null, 20100101000000);
-                    $editsOkay = $script->condition(
-                        $edits >= 150,
-                        "has 150 edits before 01 January 2010, on any wiki (has {$edits})...",
-                        "does not have 150 edits before 01 January 2010, on any wiki (has {$edits})."
-                    );
-
-                    if (!$editsOkay && $script->user->edits < 150) {
-                        break;
-                    } // no other wiki can qualify (sorted by edit count)
-                }
-            } while ((!$ageOkay || !$editsOkay) && $script->getNext());
-
-            $script->eligible = $ageOkay && $editsOkay;
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(200910), Workflow::ON_ANY_WIKI)// registered for three months
+                ->addRule(new EditCountRule(150, null, 201001), Workflow::ON_ANY_WIKI)// 150 edits before 01 January 2010
+            );
             break;
 
-
-        ############################
+        ##########
         ## 2009 enwiki arbcom elections
-        ############################
+        ##########
         case 5:
-            $script->printWiki();
-
-            ########
-            ## >=150 main-NS edits before 2009-Nov-02
-            ########
-            /* SQL derived from query written by [[en:user:Cobi]], from < //toolserver.org/~sql/sqlbot.txt > */
-            $script->db->query(
-                'SELECT data.count FROM ('
-                . 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-                . 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
-                . ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
-                . ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
-                [$script->user->id, 20091102000000]
-            );
-            $edits = $script->db->fetchColumn();
-
-            $script->condition(
-                $edits >= 150,
-                "has 150 main-namespace edits on or before 01 November 2009 (has {$edits}).",
-                "does not have 150 main-namespace edits on or before 01 November 2009 (has {$edits})."
+            $script->verify($script, (new RuleManager())
+                ->addRule((new EditCountRule(150, null, 20091102))->inNamespace(0))// 150 main-namespace edits before 02 November 2009
             );
             break;
 
-
-        ############################
+        ##########
         ## 2009 Commons Picture of the Year 2008
-        ############################
+        ##########
         case 4:
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## registered < 2009-Jan-01
-                ########
-                $script->condition(
-                    $script->user->registered < 20090101000000,
-                    "has an account registered before 01 January 2009 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 01 January 2009 (registered {$script->user->registeredStr})."
-                );
-                if (!$script->eligible) {
-                    continue;
-                }
-
-                ########
-                ## >= 200 edits before 2009-Feb-12
-                ########
-                $edits = $script->editCount(null, 20090212000000);
-                $script->condition(
-                    $edits >= 200,
-                    "has 200 edits before 12 February 2009 (has {$edits})...",
-                    "does not have 200 edits before 12 February 2009 (has {$edits})."
-                );
-            } while (!$script->eligible && $script->getNext());
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(200901), Workflow::ON_ANY_WIKI)// registered before 01 January 2009
+                ->addRule(new EditCountRule(200, null, 20090212), Workflow::ON_ANY_WIKI)// 200 edits before 12 February 2009
+            );
             break;
 
-
-        ############################
+        ##########
         ## 2009 steward elections (candidates)
-        ############################
+        ##########
         case 3:
-            ########
-            ## Has an account on Meta
-            ########
-            $script->msg('Global requirements:', 'is-wiki');
-            $script->condition(
-                $script->hasAccount('metawiki_p'),
-                "has an account on Meta...",
-                "does not have an account on Meta."
+            $script->verify($script, (new RuleManager())
+                ->addRule(new DateRegisteredRule(200811))// registered for three months before 01 November 2008
             );
-            if (!$script->eligible) {
-                break;
-            }
-
-
-            ########
-            ## Registered before 2008-Nov-01
-            ########
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-                $script->condition(
-                    $script->user->registered <= 20081101000000,
-                    "has an account registered before 01 November 2008 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 01 November 2008 (registered $script->user->registeredStr)."
-                );
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2009 steward elections
-        ############################
+        ##########
         case 2:
-            ########
-            ## Must not be blocked on Meta
-            ########
-            $script->db->connect('metawiki');
-            $script->db->query(
-                'SELECT COUNT(ipb_expiry) FROM metawiki_p.ipblocks WHERE ipb_user=(SELECT user_id FROM metawiki_p.user WHERE user_name=? LIMIT 1) AND ipb_expiry="infinity" LIMIT 1',
-                [$script->user->name]
+            $script->verify($script, (new RuleManager())
+                ->addRule((new NotBlockedRule())->onWiki('metawiki'), Workflow::HARD_FAIL)
+                ->addRule(new NotBotRule())
+                ->addRule(new DateRegisteredRule(200901))// registered before 01 January 2009
+                ->addRule(new EditCountRule(600, null, 200811))// 600 edits before 01 November 2008
+                ->addRule(new EditCountRule(50, 200808, 200902))// 50 edits between 01 August 2008 and 31 January 2009
             );
-            $script->condition(
-                !$script->db->fetchColumn(),
-                'is not blocked on Meta...',
-                'is blocked on Meta.'
-            );
-            if (!$script->eligible) {
-                break;
-            }
-            $script->db->connectPrevious();
-
-
-            ########
-            ## Check local requirements
-            ########
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Must not be a bot
-                ########
-                $script->condition(
-                    !$script->hasRole('bot'),
-                    "no bot flag...",
-                    "has a bot flag."
-                );
-                if (!$script->eligible) {
-                    continue;
-                }
-
-                ########
-                ## Registered before 20090101
-                ########
-                $script->condition(
-                    $script->user->registered <= 20090101000000,
-                    "has an account registered before 01 January 2009 (registered {$script->user->registeredStr})...",
-                    "does not have an account registered before 01 January 2009 (registered {$script->user->registeredStr})."
-                );
-                if (!$script->eligible) {
-                    continue;
-                }
-
-                ########
-                ## >=600 edits before 2008-Nov-01
-                ########
-                $edits = $script->editCount(null, 20081101000000);
-                $script->condition(
-                    $edits >= 600,
-                    "has 600 edits before 01 November 2008 (has {$edits})...",
-                    "does not have 600 edits before 01 November 2008 (has {$edits})."
-                );
-                if (!$script->eligible) {
-                    continue;
-                }
-
-                ########
-                ## >=50 edits between 2008-Aug-01 and 2009-Jan-31
-                ########
-                $edits = $script->editCount(20080801000000, 20090131000000);
-                $script->condition(
-                    $edits >= 50,
-                    "has 50 edits between 01 August 2008 and 31 January 2009 (has {$edits})...",
-                    "does not have 50 edits between 01 August 2008 and 31 January 2009 (has {$edits})."
-                );
-            } while (!$script->eligible && $script->getNext());
             break;
 
-
-        ############################
+        ##########
         ## 2008 enwiki arbcom elections
-        ############################
+        ##########
         case 1:
-            $script->printWiki();
-
-            ########
-            ## >=150 main-NS edits before 2008-Nov-02
-            ########
-            /* SQL derived from query written by [[en:user:Cobi]], from < //toolserver.org/~sql/sqlbot.txt > */
-            $script->db->query(
-                'SELECT data.count FROM ('
-                . 'SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ('
-                . 'SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp<? GROUP BY rev_page'
-                . ') AS rev WHERE rev.rev_page=page_id AND page_namespace=0'
-                . ') AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname="enwiki_p"',
-                [$script->user->id, 20081102000000]
+            $script->verify($script, (new RuleManager())
+                ->addRule((new EditCountRule(150, null, 20081102))->inNamespace(0))// 150 main-namespace before 02 November 2008
             );
-
-            $edits = $script->db->fetchColumn();
-            $script->condition(
-                $edits >= 150,
-                "has 150 main-namespace edits on or before 01 November 2008 (has {$edits}).",
-                "does not have 150 main-namespace edits on or before 01 November 2008 (has {$edits})."
-            );
-
             break;
 
-
-        ############################
+        ##########
         ## 2008 Board elections
-        ############################
+        ##########
         case 0:
-            $script->printWiki();
-            do {
-                $script->eligible = true;
-
-                ########
-                ## Not indefinitely blocked
-                ########
-                $script->condition(
-                    !$script->isIndefBlocked(),
-                    "not indefinitely blocked...",
-                    "indefinitely blocked."
-                );
-                if (!$script->eligible) {
-                    continue;
-                }
-
-                ########
-                ## Not a bot
-                ########
-                $script->condition(
-                    !$script->hasRole('bot'),
-                    "no bot flag...",
-                    "has a bot flag."
-                );
-                if (!$script->eligible) {
-                    continue;
-                }
-
-                ########
-                ## >=600 edits before 2008-Mar
-                ########
-                $edits = $script->editCount(null, 20080301000000);
-                $script->condition(
-                    $edits >= 600,
-                    "has 600 edits before 01 March 2008 (has {$edits})...",
-                    "does not have 600 edits before 01 March 2008 (has {$edits})."
-                );
-                if (!$script->eligible) {
-                    continue;
-                }
-
-                ########
-                ## >=50 edits between 2008-Jan and 2008-Jun
-                ########
-                $edits = $script->editCount(20080101000000, 20080529000000);
-                $script->condition(
-                    $edits >= 50,
-                    "has 50 edits between 01 January 2008 and 29 May 2008 (has {$edits})...",
-                    "does not have 50 edits between 01 January 2008 and 29 May 2008 (has {$edits})."
-                );
-
-                ########
-                ## Exit conditions
-                ########
-                /* eligible */
-                if ($script->eligible) {
-                    break;
-                }
-            } while (!$script->eligible && $script->getNext());
+            $script->verify($script, (new RuleManager())
+                ->addRule(new NotBlockedRule())
+                ->addRule(new NotBotRule())
+                ->addRule(new EditCountRule(600, null, 200803))// 600 edits before 01 March 2008
+                ->addRule(new EditCountRule(50, 200801, 20080529))// 50 edits between 01 January and 29 May 2008
+            );
             break;
 
-
-        ############################
+        ##########
         ## No such event
-        ############################
+        ##########
         default:
             echo '<div class="fail">No such event.</div>';
     }
