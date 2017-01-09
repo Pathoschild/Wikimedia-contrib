@@ -69,7 +69,7 @@ class RuleManager
             }
             if (!$result->isPass())
                 $allPassed = false;
-            if ($result->isFail() && $rule->shouldFailHard)
+            if ($result->isFail() && ($result->isFinal || $rule->shouldFailHard))
                 $anyFailedHard = true;
             array_push($results, $result);
         }
