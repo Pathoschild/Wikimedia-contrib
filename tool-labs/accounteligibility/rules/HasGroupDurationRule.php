@@ -70,7 +70,7 @@ class HasGroupDurationRule implements Rule
 
         // add warning for edge case where user was registered before 2005 (before flag changes were logged)
         if (!$result->isPass() && (!$user->registered || $user->registered < 20050000000000))
-            $result->addWarning("{$user->name} registered here before 2005, so they might have been flagged before the rights log was created.");
+            $result->addWarning("{$user->name}'s account on this wiki might predate the rights log. If they're not eligible due to this rule, you may need to verify manually.");
 
         // add note
         $result->addNote("See <a href='//{$wiki->domain}/wiki/Special:Log/rights?page=User:{$user->name}' title='local rights log'>local</a> and <a href='//meta.wikimedia.org/wiki/Special:Log/rights?page=User:{$user->name}@{$wiki->dbName}' title='crosswiki rights log'>crosswiki</a> rights logs.");

@@ -684,7 +684,7 @@ class Toolserver extends Database
      * Get a local account's registration date as an array containing the raw and formatted value.
      * @param int $userID The user ID.
      * @param string $format The date format.
-     * @param bool $skipUserTable Whether to ignore the user table, which can be very slow.
+     * @param bool $skipUserTable Whether to ignore the user table (e.g. because you already checked there).
      * @return array|null
      */
     public function getRegistrationDate($userID, $format = '%Y-%m-%d %H:%i', $skipUserTable = false)
