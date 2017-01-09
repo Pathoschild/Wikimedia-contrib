@@ -48,7 +48,7 @@ class ResultInfo
      * @param string $message Whether the result is final (i.e. there's no need to check further wikis).
      * @param bool $isFinal A human-readable message summarising the eligibility result.
      */
-    public function __construct($result, $message, $isFinal = true)
+    public function __construct($result, $message, $isFinal = false)
     {
         $this->result = $result;
         $this->message = $message;
