@@ -10,7 +10,7 @@ class ResultInfo
     ##########
     /**
      * The eligibility check result (one of the {@see Result} values).
-     * @var int
+     * @var string
      */
     public $result;
 
@@ -44,7 +44,7 @@ class ResultInfo
     ##########
     /**
      * Construct an instance.
-     * @param int $result The eligibility check result (one of the {@see Result} values).
+     * @param string $result The eligibility check result (one of the {@see Result} values).
      * @param string $message Whether the result is final (i.e. there's no need to check further wikis).
      * @param bool $isFinal A human-readable message summarising the eligibility result.
      */

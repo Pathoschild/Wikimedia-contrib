@@ -16,7 +16,7 @@ class RuleManager
 
     /**
      * The aggregate result of the eligibility checks (one of the {@see Result} values).
-     * @var int
+     * @var string
      */
     public $result = Result::ACCUMULATING;
 
@@ -55,7 +55,6 @@ class RuleManager
         // accumulate rules
         $results = [];
         $allPassed = true;
-        $allFinal = 0;
         $anyFailedHard = null;
         foreach ($this->rules as $rule) {
             // ignore finalised rules

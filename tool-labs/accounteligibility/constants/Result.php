@@ -7,19 +7,19 @@ class Result
 {
     /**
      * The user is not eligible.
-     * @var int
+     * @var string
      */
-    const FAIL = 0;
+    const FAIL = 'fail';
 
     /**
      * The user is not eligible yet, but the rule is collecting data for crosswiki eligibility (e.g. edit count across all wikis).
-     * @var int
+     * @var string
      */
-    const ACCUMULATING = 2;
+    const ACCUMULATING = 'accumulating';
 
     /**
      * The user is eligible.
-     * @var int
+     * @var string
      */
-    const PASS = 3;
+    const PASS = 'pass';
 }

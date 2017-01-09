@@ -40,7 +40,7 @@ class RuleEntry
 
     /**
      * The aggregate result (one of the {@see Result} values).
-     * @var int
+     * @var string
      */
     public $result = Result::ACCUMULATING;
 
