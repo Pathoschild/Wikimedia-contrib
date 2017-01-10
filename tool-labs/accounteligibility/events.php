@@ -28,8 +28,8 @@ class EventFactory
         // voters
         yield (new Event(41, 2017, 'steward elections', '//meta.wikimedia.org/wiki/Stewards/Elections_2017'))
             ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-            ->addRule(new EditCountRule(600, null, '<201611', EditCountRule::ACCUMULATE))// 600 edits before 01 November 2016
-            ->addRule(new EditCountRule(50, '201608', '<201702', EditCountRule::ACCUMULATE));// 50 edits between 01 August 2016 and 31 January 2017
+            ->addRule(new EditCountRule(600, null, '<201611', EditCountRule::ACCUMULATE | EditCountRule::COUNT_DELETED))// 600 edits before 01 November 2016
+            ->addRule(new EditCountRule(50, '201608', '<201702', EditCountRule::ACCUMULATE | EditCountRule::COUNT_DELETED));// 50 edits between 01 August 2016 and 31 January 2017
 
         // candidates
         yield (new Event(40, 2017, 'steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/Elections_2017'))

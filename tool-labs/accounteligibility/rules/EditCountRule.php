@@ -15,6 +15,12 @@ class EditCountRule implements Rule
     const ACCUMULATE = 1;
 
     /**
+     * Include the number of deleted edits in the count. This increases query time.
+     * @var int
+     */
+    const COUNT_DELETED = 2;
+
+    /**
      * The minimum number of edits.
      * @var int
      */
@@ -22,13 +28,13 @@ class EditCountRule implements Rule
 
     /**
      * The minimum date for which to consider edits, or null for no minimum.
-     * @var DateWrapper
+     * @var DateWrapper|null
      */
     private $minDate;
 
     /**
      * The maximum date for which to consider edits, or null for no maximum.
-     * @var DateWrapper
+     * @var DateWrapper|null
      */
     private $maxDate;
 
@@ -45,6 +51,12 @@ class EditCountRule implements Rule
     private $accumulate;
 
     /**
+     * Whether to count deleted edits. This significantly increases query time.
+     * @var bool
+     */
+    private $countDeleted;
+
+    /**
      * The number of edits on all analysed wikis.
      * @var int
      */
@@ -57,9 +69,9 @@ class EditCountRule implements Rule
     /**
      * Construct an instance.
      * @param int $minCount The minimum number of edits.
-     * @param string $minDate The minimum date for which to consider edits in a format recognised by {@see DateWrapper::__construct}, or null for no minimum.
-     * @param string $maxDate The maximum date for which to consider edits in a format recognised by {@see DateWrapper::__construct}, or null for no maximum.
-     * @param int $options The eligibility options (any of {@see EditCountRule::ACCUMULATE}).
+     * @param string|null $minDate The minimum date for which to consider edits in a format recognised by {@see DateWrapper::__construct}, or null for no minimum.
+     * @param string|null $maxDate The maximum date for which to consider edits in a format recognised by {@see DateWrapper::__construct}, or null for no maximum.
+     * @param int $options The eligibility options (any of {@see EditCountRule::ACCUMULATE} or {@see EditCountRule::COUNT_DELETED}).
      */
     public function __construct($minCount, $minDate, $maxDate, $options = 1)
     {
@@ -67,6 +79,7 @@ class EditCountRule implements Rule
         $this->minDate = $minDate ? new DateWrapper($minDate) : null;
         $this->maxDate = $maxDate ? new DateWrapper($maxDate) : null;
         $this->accumulate = (bool)($options & self::ACCUMULATE);
+        $this->countDeleted = (bool)($options & self::COUNT_DELETED);
     }
 
     /**
@@ -131,7 +144,7 @@ class EditCountRule implements Rule
     ## Private methods
     ##########
     /**
-     * Get the number of edits the user has on the current wiki.
+     * Get the number of live edits the user has on the current wiki.
      * @param Database $db The database wrapper.
      * @param LocalUser $user The local user account.
      * @param Wiki $wiki The current wiki.
@@ -139,62 +152,79 @@ class EditCountRule implements Rule
      */
     private function getEditCount($db, $user, $wiki)
     {
-        $start = $this->minDate->mediawiki;
-        $end = $this->maxDate->mediawiki;
-        $ns = $this->namespace;
+        $count = 0;
 
+        ##########
+        ## Live edits
+        ##########
         // not filtered by namespace
-        if ($ns === null) {
-            // all edits
-            if (!$this->minDate && !$this->maxDate)
-                return $user->edits;
-
-            // within date range
-            $sql = 'SELECT COUNT(rev_id) FROM revision_userindex WHERE rev_user=? AND rev_timestamp ';
-            if ($start && $end)
-                $db->query("$sql BETWEEN ? AND ?", [$user->id, $start, $end]);
-            elseif ($start)
-                $db->query("$sql >= ?", [$user->id, $start]);
-            elseif ($end)
-                $db->query("$sql <= ?", [$user->id, $end]);
-
-            return $db->fetchColumn();
+        if ($this->namespace === null) {
+            $values = [$user->id];
+            $sql =
+                'SELECT COUNT(rev_id) FROM revision_userindex WHERE rev_user=? AND '
+                . $this->getDateFilterSql('rev_timestamp', $this->minDate, $this->maxDate, $values);
+            $db->query($sql, $values);
+            $count += $db->fetchColumn();
         }
 
         // filtered by namespace
         // SQL derived from query written by [[en:user:Cobi]] at toolserver.org/~sql/sqlbot.txt
         else {
-            $values = [];
-
-            // start SQL
-            $sql = /** @lang text -- prevent SQL validation errors due to incomplete SQL */
+            $ns = $this->namespace;
+            $values = [$user->id];
+            $sql =
                 "SELECT data.count FROM ("
-                . "SELECT IFNULL(page_namespace, $ns) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ("
-                . "SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND rev_timestamp";
-            $values[] = $user->id;
-
-            // date filter
-            if ($start && $end) {
-                $sql .= " BETWEEN ? AND ?";
-                $values[] = $start;
-                $values[] = $end;
-            } elseif ($start) {
-                $sql .= " >= ?";
-                $values[] = $start;
-            } elseif ($end) {
-                $sql .= " <= ?";
-                $values[] = $end;
-            }
-
-            // end SQL
-            $sql .=
-                " GROUP BY rev_page"
+                . "SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ("
+                . "SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND "
+                . $this->getDateFilterSql('rev_timestamp', $this->minDate, $this->maxDate, $values)
+                . " GROUP BY rev_page"
                 . ") AS rev WHERE rev.rev_page=page_id AND page_namespace=$ns"
                 . ") AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname='{$wiki->dbName}'";
 
-            // fetch values
             $db->query($sql, $values);
-            return $db->fetchColumn();
+            $count += $db->fetchColumn();
         }
+
+        ##########
+        ## Deleted edits
+        ##########
+        if ($this->countDeleted) {
+            $values = [$user->id];
+            $sql =
+                'SELECT COUNT(ar_id) FROM archive_userindex WHERE ar_user=? AND '
+                . $this->getDateFilterSql('ar_timestamp', $this->minDate, $this->maxDate, $values);
+            if ($this->namespace) {
+                $sql .= 'AND ar_namespace = ?';
+                $values[] = $this->namespace;
+            }
+            $db->query($sql, $values);
+            $count += $db->fetchColumn();
+        }
+
+        return $count;
+    }
+
+    /**
+     * Get the SQL expression for a date range.
+     * @param string $fieldName The name of the date field.
+     * @param DateWrapper|null $start The minimum date for which to consider edits, or null for no minimum.
+     * @param DateWrapper|null $end The maximum date for which to consider edits, or null for no maximum.
+     * @param string[] $tokens The parameterised SQL values to populate.
+     * @return string
+     */
+    private function getDateFilterSql($fieldName, $start, $end, &$tokens)
+    {
+        if ($start && $end) {
+            $tokens[] = $start->mediawiki;
+            $tokens[] = $end->mediawiki;
+            return "$fieldName BETWEEN ? AND ?";
+        } elseif ($start) {
+            $tokens[] = $start->mediawiki;
+            return "$fieldName >= ?";
+        } elseif ($end) {
+            $tokens[] = $end->mediawiki;
+            return "$fieldName <= ?";
+        } else
+            return "1 = 1"; // not filtered by range
     }
 }
