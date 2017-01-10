@@ -59,13 +59,13 @@ class HasGroupDurationRule implements Rule
     public function accumulate($db, $wiki, $user)
     {
         // get data
-        $count = $this->getLongestRoleDuration($db, $user, $this->group, $wiki);
+        $days = $this->getLongestRoleDuration($db, $user, $this->group, $wiki);
 
         // build result
-        $result = $count >= $this->minDays ? Result::PASS : Result::FAIL;
+        $result = $days >= $this->minDays ? Result::PASS : Result::FAIL;
         $message = $result == Result::PASS
-            ? "was flagged as a {$this->group} for a continuous period of at least {$this->minDays} days as of {$this->maxDate->readable} (longest flag duration was {$count} days)."
-            : "was not flagged as a {$this->group} for a continuous period of at {$this->minDays} days as of {$this->maxDate->readable} (" . ($count > 0 ? "longest flag duration was {$count} days" : "never flagged") . ")...";
+            ? "was flagged as a {$this->group} for a continuous period of at least {$this->minDays} days as of {$this->maxDate->readable} (longest flag duration was {$days} days)."
+            : "was not flagged as a {$this->group} for a continuous period of at {$this->minDays} days as of {$this->maxDate->readable} (" . ($days > 0 ? "longest flag duration was {$days} days" : "never flagged") . ")...";
         $result = new ResultInfo($result, $message);
 
         // add warning for edge case where user was registered before 2005 (before flag changes were logged)
@@ -89,7 +89,7 @@ class HasGroupDurationRule implements Rule
      * @param LocalUser $user The local user account.
      * @param string $group The group key to find.
      * @param Wiki $wiki The current wiki.
-     * @return float
+     * @return float The number of days flagged.
      */
     public function getLongestRoleDuration($db, $user, $group, $wiki)
     {
@@ -195,7 +195,6 @@ class HasGroupDurationRule implements Rule
         $start = DateTime::createFromFormat('YmdHis', $ranges[$i][0]);
         $end = DateTime::createFromFormat('YmdHis', $ranges[$i][1]);
         $diff = $start->diff($end);
-        $months = $diff->days / (365.25 / 12);
-        return round($months, 2);
+        return $diff->days;
     }
 }
