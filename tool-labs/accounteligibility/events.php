@@ -9,6 +9,15 @@ class EventFactory
     ## Public methods
     ##########
     /**
+     * Get the event ID to select by default.
+     * @return int
+     */
+    public function getDefaultEventID()
+    {
+        return 41;
+    }
+
+    /**
      * Get all available events.
      */
     public function getEvents()

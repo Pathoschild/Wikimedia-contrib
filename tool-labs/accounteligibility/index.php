@@ -27,12 +27,6 @@ class Script extends Base
     ## Configuration
     ##########
     /**
-     * The default event ID to preselect.
-     * @var int
-     */
-    const DEFAULT_EVENT = 39;
-
-    /**
      * The event data.
      * @var Event[]
      */
@@ -155,14 +149,13 @@ class Script extends Base
 
         /* load events */
         $this->profiler->start("init events");
-        $events = (new EventFactory())->getEvents();
+        $eventFactory = new EventFactory();
+        $events = $eventFactory->getEvents();
         foreach ($events as $event)
             $this->events[$event->id] = $event;
-        $this->profiler->stop("init events");
-
-        /* select event */
-        $this->eventID = isset($eventID) ? $eventID : self::DEFAULT_EVENT;
+        $this->eventID = isset($eventID) ? $eventID : $eventFactory->getDefaultEventID();
         $this->event = $this->events[$this->eventID];
+        $this->profiler->stop("init events");
 
         /* get wikis */
         $this->wikis = $this->db->getWikis();
@@ -358,7 +351,7 @@ class Script extends Base
 ############################
 ## Initialize
 ############################
-$event = $backend->get('event') ?: $backend->getRouteValue() ?: Script::DEFAULT_EVENT;
+$event = $backend->get('event') ?: $backend->getRouteValue();
 $user = $backend->get('user') ?: $backend->getRouteValue(2) ?: '';
 $wiki = $backend->get('wiki', null);
 $backend->profiler->start('init engine');
@@ -378,7 +371,7 @@ echo '
 foreach ($script->db->getDomains() as $dbname => $domain) {
     if (!$script->db->getLocked($dbname)) {
         $selected = ($dbname == $wiki);
-        echo "<option value='$dbname' ", ($selected ? " selected='yes'" : ""), ">{$script->formatText($domain)}</option>";
+        echo "<option value='$dbname' ", ($selected ? " selected" : ""), ">{$script->formatText($domain)}</option>";
     }
 }
 echo '
@@ -391,7 +384,7 @@ foreach ($script->events as $id => $event) {
     echo "
         <option
             value='{$id}'
-            ", ($id == $script->event->id ? " selected='yes' " : ""), "
+            ", ($id == $script->event->id ? " selected " : ""), "
             ", ($event->obsolete ? " class='is-obsolete'" : ""), "
         >{$event->year} &mdash; {$script->formatText($event->name)}</option>
         ";
