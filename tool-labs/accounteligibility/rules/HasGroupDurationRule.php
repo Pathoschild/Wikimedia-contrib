@@ -169,7 +169,7 @@ class HasGroupDurationRule implements Rule
             // start range
             if (!$wasInRole && $nowInRole) {
                 ++$i;
-                $ranges[$i] = [$timestamp, $this->maxDate];
+                $ranges[$i] = [$timestamp, $this->maxDate->mediawiki];
             }
 
             // end range
