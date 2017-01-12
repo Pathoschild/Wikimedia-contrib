@@ -15,7 +15,7 @@ class Database
     ## Properties
     ##########
     #####
-    ## Constants
+    ## constants
     #####
     /**
      * A bitflag indicating exceptions should be thrown.
@@ -670,19 +670,9 @@ class Toolserver extends Database
     public function getUserDetails($wiki, $username, $dateFormat = '%Y-%b-%d %H:%i')
     {
         try {
-            /* fetch available user details */
             $query = $this->db->prepare('SELECT user_id AS id, user_name AS name, user_registration AS registration_raw, DATE_FORMAT(user_registration, "' . $dateFormat . '") as registration, user_editcount AS edits FROM user WHERE user_name = ? LIMIT 1');
             $query->execute(array($username));
             $user = $query->fetch(PDO::FETCH_ASSOC);
-
-            /* if needed, use more complex date algorithm */
-            if ($user['id'] && !$user['registration_raw']) {
-                $date = $this->getRegistrationDate($user['id'], $dateFormat, true);
-                $user['registration_raw'] = $date['raw'];
-                $user['registration'] = $date['formatted'];
-            }
-
-            /* done! */
             return new LocalUser($user['id'], $user['name'], $user['registration_raw'], $user['registration'], $user['edits']);
         } catch (PDOException $exc) {
             $this->handleException($exc, 'Could not retrieve local account details for user "' . htmlentities($username) . '" at wiki "' . htmlentities($wiki) . '".');
@@ -694,7 +684,7 @@ class Toolserver extends Database
      * Get a local account's registration date as an array containing the raw and formatted value.
      * @param int $userID The user ID.
      * @param string $format The date format.
-     * @param bool $skipUserTable Whether to ignore the user table, which can be very slow.
+     * @param bool $skipUserTable Whether to ignore the user table (e.g. because you already checked there).
      * @return array|null
      */
     public function getRegistrationDate($userID, $format = '%Y-%m-%d %H:%i', $skipUserTable = false)

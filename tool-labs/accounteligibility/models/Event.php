@@ -68,6 +68,12 @@ class Event
      */
     public $obsolete;
 
+    /**
+     * The eligibility rules.
+     * @var RuleEntry[]
+     */
+    public $rules = [];
+
 
     ##########
     ## Public methods
@@ -89,17 +95,15 @@ class Event
     }
 
     /**
-     * Construct an instance. This is a wrapper around the constructor to work around PHP's lack of chaining on
-     * constructors.
-     * @param int $id The unique event ID.
-     * @param int $year The year in which the event occurred.
-     * @param string $name The human-readable event name.
-     * @param string $url The URL for the page which provides more information about the event.
-     * @return Event
+     * Add a new eligibility rule for this event.
+     * @param Rule $rule The eligibility rule.
+     * @param int $options An optional bit flag (see {@see Workflow}).
+     * @return $this
      */
-    public static function make($id, $year, $name, $url)
+    public function addRule($rule, $options = null)
     {
-        return new Event($id, $year, $name, $url);
+        array_push($this->rules, new RuleEntry($rule, $options));
+        return $this;
     }
 
     /**
