@@ -93,7 +93,7 @@ pathoschild.ajax_mw = {
 			var title = href.match(/title=([^&]+)/)[1];
 			var user = href.match(/from=([^&]+)/)[1];
 			title = decodeURIComponent(title);
-			user = decodeURIComponent(user);
+			user = decodeURIComponent(user).replace('+', ' ');
 
 			var id = (new Date()).getTime();
 
