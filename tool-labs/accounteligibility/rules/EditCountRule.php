@@ -73,7 +73,7 @@ class EditCountRule implements Rule
      * @param string|null $maxDate The maximum date for which to consider edits in a format recognised by {@see DateWrapper::__construct}, or null for no maximum.
      * @param int $options The eligibility options (any of {@see EditCountRule::ACCUMULATE} or {@see EditCountRule::COUNT_DELETED}).
      */
-    public function __construct($minCount, $minDate, $maxDate, $options = 1)
+    public function __construct($minCount, $minDate, $maxDate, $options = 0)
     {
         $this->minCount = $minCount;
         $this->minDate = $minDate ? new DateWrapper($minDate) : null;
