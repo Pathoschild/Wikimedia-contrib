@@ -35,11 +35,10 @@ class EventFactory
             ->withExceptions([
                 'You are a Wikimedia server administrator with shell access.',
                 'You have commit access and have made at least one merged commit in git to Wikimedia Foundation utilized repos between 1 October 2016 and 1 April 2017.',
-                'You are a current Wikimedia Foundation staff member or contractor employed by the Foundation as of 1 April 2015.',
+                'You are a current Wikimedia Foundation staff member or contractor employed by the Foundation as of 1 April 2017.',
                 'You are a current staff member or contractor employed by an approved Wikimedia Chapter, Thematic Organization or User Group as of 1 April 2017.',
                 'You are a current or former member of the Wikimedia Board of Trustees, Advisory Board or Funds Dissemination Committee.'
-            ])
-            ->withMinEditsForAutoselect(300);
+            ]);
 
         ##########
         ## 2017: Wikimedia Foundation elections (candidates)
@@ -60,8 +59,7 @@ class EventFactory
                 'You are a current Wikimedia Foundation staff member or contractor employed by the Foundation as of 1 April 2015.',
                 'You are a current staff member or contractor employed by an approved Wikimedia Chapter, Thematic Organization or User Group as of 1 April 2017.',
                 'You are a current or former member of the Wikimedia Board of Trustees, Advisory Board or Funds Dissemination Committee.'
-            ])
-            ->withMinEditsForAutoselect(300);
+            ]);
         
         ##########
         ## 2017: Commons Picture of the Year for 2016
