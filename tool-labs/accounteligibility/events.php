@@ -22,6 +22,44 @@ class EventFactory
      */
     public function getEvents()
     {
+
+        ##########
+        ## 2017: Wikimedia Foundation elections
+        ##########
+        yield (new Event(44, 2017, 'Wikimedia Foundation elections', '//meta.wikimedia.org/wiki/Wikimedia Foundation elections/2017'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20170401', EditCountRule::ACCUMULATE))// 300 edits before 1 April 2017
+            ->addRule(new EditCountRule(20, '20161001', '<20170401', EditCountRule::ACCUMULATE))// 20 edits between 1 October 2016 and 1 April 2017
+            ->withExtraRequirements(['Your account must not be used by a bot.'])
+            ->withExceptions([
+                'You are a Wikimedia server administrator with shell access.',
+                'You have commit access and have made at least one merged commit in git to Wikimedia Foundation utilized repos between 1 October 2016 and 1 April 2017.',
+                'You are a current Wikimedia Foundation staff member or contractor employed by the Foundation as of 1 April 2017.',
+                'You are a current staff member or contractor employed by an approved Wikimedia Chapter, Thematic Organization or User Group as of 1 April 2017.',
+                'You are a current or former member of the Wikimedia Board of Trustees, Advisory Board or Funds Dissemination Committee.'
+            ]);
+
+        ##########
+        ## 2017: Wikimedia Foundation elections (candidates)
+        ##########
+        yield (new Event(43, 2017, 'Wikimedia Foundation elections (candidates)', '//meta.wikimedia.org/wiki/Wikimedia Foundation elections/2017'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new DateRegisteredRule('<201501'), Workflow::ON_ANY_WIKI)// registered before 01 April 2015
+            ->addRule(new EditCountRule(300, null, '<20170401', EditCountRule::ACCUMULATE))// 300 edits before 1 April 2017
+            ->addRule(new EditCountRule(20, '20161001', '<20170401', EditCountRule::ACCUMULATE))// 20 edits between 1 October 2016 and 1 April 2017
+            ->withExtraRequirements([
+                'Your account must not be used by a bot.',
+                'Your first edit must be before 1 April 2015'
+            ])
+            ->withExceptions([
+                'You are a Wikimedia server administrator with shell access.',
+                'You have commit access and have made at least one merged commit in git to Wikimedia Foundation utilized repos between 1 October 2016 and 1 April 2017.',
+                'You are a current Wikimedia Foundation staff member or contractor employed by the Foundation as of 1 April 2015.',
+                'You are a current staff member or contractor employed by an approved Wikimedia Chapter, Thematic Organization or User Group as of 1 April 2017.',
+                'You are a current or former member of the Wikimedia Board of Trustees, Advisory Board or Funds Dissemination Committee.'
+            ]);
         
         ##########
         ## 2017: Commons Picture of the Year for 2016
