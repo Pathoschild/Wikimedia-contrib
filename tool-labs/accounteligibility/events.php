@@ -46,7 +46,7 @@ class EventFactory
         yield (new Event(43, 2017, 'Wikimedia Foundation elections (candidates)', '//meta.wikimedia.org/wiki/Wikimedia Foundation elections/2017'))
             ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
             ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-            ->addRule(new DateRegisteredRule('<201501'), Workflow::ON_ANY_WIKI)// registered before 01 April 2015
+            ->addRule(new DateRegisteredRule('<20150401'), Workflow::ON_ANY_WIKI)// registered before 01 April 2015
             ->addRule(new EditCountRule(300, null, '<20170401', EditCountRule::ACCUMULATE))// 300 edits before 1 April 2017
             ->addRule(new EditCountRule(20, '20161001', '<20170401', EditCountRule::ACCUMULATE))// 20 edits between 1 October 2016 and 1 April 2017
             ->withExtraRequirements([
