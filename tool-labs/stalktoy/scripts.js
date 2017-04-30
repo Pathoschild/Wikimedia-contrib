@@ -14,13 +14,13 @@ var pathoschild = pathoschild || {};
          * @param {object} options The options object to pass to the underlying chart object.
          */
         Chart: function (id, options) {
-            this.$chart = $(document.createElement('div')).attr('id', id).addClass('viz-chart').prependTo('#account-visualizations');
+            this.$chart = $(document.createElement("div")).attr("id", id).addClass("viz-chart").prependTo("#account-visualizations");
             this.options = $.extend(true, {}, {
                 width: 200,
                 height: 200,
                 is3D: true,
                 chartArea: {width: 200, height: 170},
-                legend: {position: 'bottom'}
+                legend: {position: "bottom"}
             }, options);
             this.chart = null;
             this.data = null;
@@ -56,59 +56,60 @@ var pathoschild = pathoschild || {};
          * Extract the data from the page and generate the visualisations.
          */
         Initialize: function () {
-            if (!$('#account-visualizations').length)
+            if (!$("#account-visualizations").length)
                 return;
 
             // build data table
             var data = new google.visualization.DataTable();
-            data.addColumn('string', 'Wiki');
-            data.addColumn('string', 'Family');
-            data.addColumn('string', 'Language');
-            data.addColumn('number', 'Edits');
-            $('tr[data-wiki]').each(function (i, row) {
+            data.addColumn("string", "Wiki");
+            data.addColumn("string", "Family");
+            data.addColumn("string", "Language");
+            data.addColumn("number", "Edits");
+            $("tr[data-wiki]").each(function (i, row) {
                 var $row = $(row);
-                if ($row.attr('data-exists') === '0')
+                if ($row.attr("data-exists") === "0")
                     return;
                 data.addRow([
-                    $row.attr('data-wiki'),
-                    $row.attr('data-family'),
-                    $row.attr('data-lang'),
-                    parseInt($row.attr('data-edits'), 10)
+                    $row.attr("data-wiki"),
+                    $row.attr("data-family"),
+                    $row.attr("data-lang"),
+                    parseInt($row.attr("data-edits"), 10)
                 ]);
             });
 
             // edits by language
-            new pathoschild.Stalktoy.Chart('viz-edits-by-language', {title: 'Edits by language:'})
+            new pathoschild.Stalktoy.Chart("viz-edits-by-language", {title: "Edits by language:"})
                 .withChart(function (e) {
                     return new google.visualization.PieChart(e);
                 })
                 .withData(google.visualization.data.group(data, [2], [{
                     column: 3,
                     aggregation: google.visualization.data.sum,
-                    type: 'number'
+                    type: "number"
                 }]))
                 .draw();
 
             // edits by project
-            new pathoschild.Stalktoy.Chart('viz-edits-by-project', {title: 'Edits by project:'})
+            new pathoschild.Stalktoy.Chart("viz-edits-by-project", {title: "Edits by project:"})
                 .withChart(function (e) {
                     return new google.visualization.PieChart(e);
                 })
                 .withData(google.visualization.data.group(data, [1], [{
                     column: 3,
                     aggregation: google.visualization.data.sum,
-                    type: 'number'
+                    type: "number"
                 }]))
                 .draw();
         }
     };
 
-    google.load('visualization', '1.0', {
-        'packages': ['corechart'], 'callback': function () {
+    google.load("visualization", "1.0", {
+        "packages": ["corechart"],
+        "callback": function () {
             pathoschild.Stalktoy.Initialize();
         }
     });
     $(function () {
-        $('#local-ips, #local-accounts').tablesorter({sortList: [[1, 1]]});
+        $("#local-ips, #local-accounts").tablesorter({sortList: [[1, 1]]});
     });
 }());

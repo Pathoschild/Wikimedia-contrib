@@ -13,7 +13,7 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 /* jshint eqeqeq: true, latedef: true, nocomma: true, undef: true */
 window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader compatibility
 (function() {
-    'use strict';
+    "use strict";
 
     /**
      * Singleton that lets the user define custom regular expressions using a dynamic form and execute them against the text.
@@ -61,23 +61,23 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         /*********
         ** Fields
         *********/
-        self.version = '0.13';
+        self.version = "0.13";
         self.strings = {
-            header: 'Regex editor', // the header text shown in the form
-            search: 'Search',       // the search input label
-            replace: 'Replace',     // the replace input label
-            nameSession: 'Enter a name for this session', // the prompt shown when saving the session
+            header: "Regex editor", // the header text shown in the form
+            search: "Search",       // the search input label
+            replace: "Replace",     // the replace input label
+            nameSession: "Enter a name for this session", // the prompt shown when saving the session
             loadSession: 'Load session "{name}"',         // tooltip shown for a saved session, where {name} is replaced with the session name
             deleteSession: 'Delete session "{name}"',     // tooltip shown for the delete icon on a saved session, where {name} is replaced with the session name
-            closeEditor: 'Close the regex editor',        // tooltip shown for the close-editor icon
-            addPatterns: 'add patterns',                  // button text
-            addPatternsTooltip: 'Add search & replace boxes', // button tooltip
-            apply: 'apply',                               // button text
-            applyTooltip: 'Perform the above patterns',   // button tooltip
-            undo: 'undo the last apply',                  // button text
-            undoTooltip: 'Undo the last apply',           // button tooltip
-            save: 'save',                                 // button text
-            saveTooltip: 'Save this session for later use', // button tooltip
+            closeEditor: "Close the regex editor",        // tooltip shown for the close-editor icon
+            addPatterns: "add patterns",                  // button text
+            addPatternsTooltip: "Add search & replace boxes", // button tooltip
+            apply: "apply",                               // button text
+            applyTooltip: "Perform the above patterns",   // button tooltip
+            undo: "undo the last apply",                  // button text
+            undoTooltip: "Undo the last apply",           // button tooltip
+            save: "save",                                 // button text
+            saveTooltip: "Save this session for later use", // button tooltip
             instructions: 'Enter any number of regular expressions to execute. The search pattern can be like "{code|text=search pattern}" or "{code|text=/pattern/modifiers}", and the replace pattern can contain reference groups like "{code|text=$1}" (see {helplink|text=tutorial|title=JavaScript regex tutorial|url=http://www.regular-expressions.info/javascript.html}).'
         };
         var state = {
@@ -100,7 +100,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         var _make = function(tag, attr) {
             // Convert the tag to jQuery creation syntax. Using document.createElement would be cleaner,
             // but the jQuery attr argument only works for elements created this way.
-            return $('<' + tag + '></' + tag + '>', attr);
+            return $("<" + tag + "></" + tag + ">", attr);
         };
 
         /**
@@ -117,13 +117,13 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 $.extend(self.strings, pathoschild.i18n.regexeditor);
 
             // add CSS
-            mw.loader.load('//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.css', 'text/css');
-            mw.loader.load('//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.css', 'text/css');
+            mw.loader.load("//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.css", "text/css");
+            mw.loader.load("//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.css", "text/css");
 
             // load dependencies
             return state.initialisation = $.when(
-                $.ajax('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', { dataType: 'script', crossDomain: true, cached: true }),
-                $.ajax('//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.js', { dataType: 'script', crossDomain: true, cached: true })
+                $.ajax("//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js", { dataType: "script", crossDomain: true, cached: true }),
+                $.ajax("//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.js", { dataType: "script", crossDomain: true, cached: true })
             );
         };
 
@@ -133,7 +133,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          * @param {string} replace The replace text to preload (if any).
          */
         var _addInputs = function(search, replace) {
-            var id = $('.re-pattern').length + 1;
+            var id = $(".re-pattern").length + 1;
 
             // stringify regex
             if (search && search instanceof RegExp)
@@ -141,46 +141,46 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
             // create layout
             var $searchContainer, $search, $preview;
-            _make('li', {
-                'class': 're-pattern',
+            _make("li", {
+                "class": "re-pattern",
                 append: [
                     // search
-                    _make('label', { 'for': 're-search-' + id, text: self.strings.search + ':' }),
-                    $searchContainer = _make('div', {
-                        'class': 're-syntax-highlighted',
+                    _make("label", { "for": "re-search-" + id, text: self.strings.search + ":" }),
+                    $searchContainer = _make("div", {
+                        "class": "re-syntax-highlighted",
                         append: [
-                            $preview = _make('pre', {
-                                'class': 'preview regex',
+                            $preview = _make("pre", {
+                                "class": "preview regex",
                                 text: search
                             }),
-                            $search = _make('textarea', {
-                                name: 're-search-' + id,
+                            $search = _make("textarea", {
+                                name: "re-search-" + id,
                                 tabindex: id + 100,
-                                'class': 'search',
+                                "class": "search",
                                 text: search
                             })
                         ]
                     }),
 
                     // replace
-                    _make('br'),
-                    _make('label', { 'for': 're-replace-' + id, text: self.strings.replace + ':' }),
-                    _make('textarea', {
-                        'class': 'replace',
+                    _make("br"),
+                    _make("label", { "for": "re-replace-" + id, text: self.strings.replace + ":" }),
+                    _make("textarea", {
+                        "class": "replace",
                         text: replace,
                         contenteditable: true,
-                        name: 're-replace-' + id,
+                        name: "re-replace-" + id,
                         tabindex: id + 101
                     })
                 ],
-                appendTo: '#regex-editor ol:first'
+                appendTo: "#regex-editor ol:first"
             });
 
             // add search formatting
             var updateFormatting = function() {
                 // update syntax highlighting
                 var formatted = RegexColorizer.colorizeText($search.val())
-                    + '&nbsp;'; // height:auto is calculated incorrectly if the last line is blank
+                    + "&nbsp;"; // height:auto is calculated incorrectly if the last line is blank
                 $preview.html(formatted);
 
                 // resize search to fit contents
@@ -188,7 +188,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 $searchContainer.height(previewHeight);
                 $search.height(previewHeight);
             };
-            $search.on('keyup', updateFormatting);
+            $search.on("keyup", updateFormatting);
 
             // format initial text
             updateFormatting();
@@ -199,21 +199,21 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          */
         var _getPatterns = function() {
             var patterns = [];
-            $('.re-pattern').each(function(i, item) {
+            $(".re-pattern").each(function(i, item) {
                 // extract input
                 var $item = $(item);
                 var pattern = {
-                    'input': $item.find('.search').val(),
-                    'replace': $item.find('.replace').val()
+                    "input": $item.find(".search").val(),
+                    "replace": $item.find(".replace").val()
                 };
 
                 // parse search expression
                 if (!pattern.input.match(/^\s*\/[\s\S]*\/[a-z]*\s*$/i))
                     pattern.search = new RegExp(pattern.input);
                 else {
-                    var search = pattern.input.replace(/^\s*\/([\s\S]*)\/[a-z]*\s*$/i, '$1');
-                    var modifiers = pattern.input.replace(/^\s*\/[\s\S]*\/([a-z]*)\s*$/, '$1');
-                    modifiers = modifiers.replace(/[^gim]/ig, '');
+                    var search = pattern.input.replace(/^\s*\/([\s\S]*)\/[a-z]*\s*$/i, "$1");
+                    var modifiers = pattern.input.replace(/^\s*\/[\s\S]*\/([a-z]*)\s*$/, "$1");
+                    modifiers = modifiers.replace(/[^gim]/ig, "");
                     pattern.search = new RegExp(search, modifiers);
                 }
 
@@ -229,17 +229,17 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          */
         var _saveSession = function() {
             // get session name
-            var sessionName = prompt(self.strings.nameSession + ':', '');
+            var sessionName = prompt(self.strings.nameSession + ":", "");
             if (!sessionName)
                 return;
 
             // save patterns
             var patterns = _getPatterns();
-            var sessions = pathoschild.util.storage.Read('tsre-sessions') || [];
+            var sessions = pathoschild.util.storage.Read("tsre-sessions") || [];
             sessions.push(sessionName);
             sessions.sort();
-            pathoschild.util.storage.Write('tsre-sessions', sessions);
-            pathoschild.util.storage.Write('tsre-sessions.' + sessionName, patterns);
+            pathoschild.util.storage.Write("tsre-sessions", sessions);
+            pathoschild.util.storage.Write("tsre-sessions." + sessionName, patterns);
 
             // update list
             _populateSessionList();
@@ -250,7 +250,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          * @param {string} sessionName The unique name of the session to load.
          */
         var _loadSession = function(sessionName) {
-            var patterns = pathoschild.util.storage.Read('tsre-sessions.' + sessionName);
+            var patterns = pathoschild.util.storage.Read("tsre-sessions." + sessionName);
             self.reset(patterns);
         };
 
@@ -259,14 +259,14 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          * @param {string} sessionName The unique name of the session to delete.
          */
         var _deleteSession = function(sessionName) {
-            var sessions = pathoschild.util.storage.Read('tsre-sessions') || [];
+            var sessions = pathoschild.util.storage.Read("tsre-sessions") || [];
             var index = $.inArray(sessionName, sessions);
             if (index === -1)
                 return;
 
             sessions.splice(index, 1);
 
-            pathoschild.util.storage.Write('tsre-sessions', sessions);
+            pathoschild.util.storage.Write("tsre-sessions", sessions);
             pathoschild.util.storage.Delete(sessionName);
 
             _populateSessionList();
@@ -276,28 +276,28 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          * Populate the list of sessions.
          */
         var _populateSessionList = function() {
-            var sessions = pathoschild.util.storage.Read('tsre-sessions') || [];
-            var container = $('#re-sessions');
-            container.find('.re-session-apply, .re-session-delete').remove();
+            var sessions = pathoschild.util.storage.Read("tsre-sessions") || [];
+            var container = $("#re-sessions");
+            container.find(".re-session-apply, .re-session-delete").remove();
             $.each(sessions, function() {
                 var session = this;
 
                 // build layout
-                _make('span', {
-                    'class': 're-session',
+                _make("span", {
+                    "class": "re-session",
                     append: [
                         // apply link
-                        _make('button', {
-                            'class': 're-session-apply',
+                        _make("button", {
+                            "class": "re-session-apply",
                             text: session,
                             title: self.strings.loadSession.replace(/\{name\}/g, session),
                             click: function() { _loadSession(session); return false; }
                         }),
 
                         // delete link
-                        _make('button', {
-                            'class': 're-session-delete',
-                            text: 'x',
+                        _make("button", {
+                            "class": "re-session-delete",
+                            text: "x",
                             title: self.strings.deleteSession.replace(/\{name\}/g, session),
                             click: function() { _deleteSession(session); return false; }
                         })
@@ -321,28 +321,28 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 // initialize state
                 state.$target = $target;
                 state.editor = editor || TemplateScriptShim($target);
-                var $container = $('#regex-editor');
+                var $container = $("#regex-editor");
                 if ($container.length)
                     return; // already loaded
 
                 // build form
-                $container = _make('div', {
-                    id: 'regex-editor',
+                $container = _make("div", {
+                    id: "regex-editor",
                     append: [
                         // header
-                        _make('h3', { text: self.strings.header }),
-                        self.createInstructions(_make('p')),
+                        _make("h3", { text: self.strings.header }),
+                        self.createInstructions(_make("p")),
 
                         // form
-                        _make('form', {
+                        _make("form", {
                             submit: function() { return false; }, // suppress default submit behaviour
                             append: [
                                 // input list
-                                _make('ol'),
+                                _make("ol"),
 
                                 // exit button
-                                _make('button', {
-                                    'class': 're-close',
+                                _make("button", {
+                                    "class": "re-close",
                                     title: self.strings.closeEditor,
                                     click: function() {
                                         if (self.config.alwaysVisible)
@@ -354,38 +354,38 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                                 }),
 
                                 // field buttons
-                                _make('div', {
-                                    'class': 're-buttons',
+                                _make("div", {
+                                    "class": "re-buttons",
                                     append: [
                                         // add button
-                                        _make('button', {
-                                            'class': 're-add',
+                                        _make("button", {
+                                            "class": "re-add",
                                             text: self.strings.addPatterns,
                                             title: self.strings.addPatternsTooltip,
                                             click: function() { _addInputs(); }
                                         }),
 
                                         // execute button
-                                        _make('button', {
-                                            'class': 're-execute',
+                                        _make("button", {
+                                            "class": "re-execute",
                                             text: self.strings.apply,
                                             title: self.strings.applyTooltip,
                                             click: self.execute
                                         }),
 
                                         // undo button
-                                        _make('button', {
-                                            'class': 're-undo',
+                                        _make("button", {
+                                            "class": "re-undo",
                                             text: self.strings.undo,
                                             title: self.strings.undoTooltip,
                                             click: self.undo
                                         }).hide(),
 
                                         // save button & session list
-                                        _make('span', {
-                                            id: 're-sessions',
-                                            append: _make('button', {
-                                                'class': 're-save',
+                                        _make("span", {
+                                            id: "re-sessions",
+                                            append: _make("button", {
+                                                "class": "re-save",
                                                 text: self.strings.save,
                                                 title: self.strings.saveTooltip,
                                                 click: _saveSession
@@ -411,7 +411,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 // add sessions
                 _populateSessionList();
                 if (!pathoschild.util.storage.IsAvailable())
-                    $('#re-sessions').hide();
+                    $("#re-sessions").hide();
             });
         };
 
@@ -422,18 +422,18 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         self.createInstructions = function($container) {
             // create instructions
             $container
-                .attr('class', 're-instructions')
+                .attr("class", "re-instructions")
                 .empty()
                 .text(self.strings.instructions);
 
             // inject form elements
             $container.html($container.html()
-                .replace(/\{code\|text=(.+?)\}/g, '<code>$1</code>')
+                .replace(/\{code\|text=(.+?)\}/g, "<code>$1</code>")
                 .replace(/\{helplink\|text=(.+?)\|title=(.+)?\|url=(.+)?\}/g, function(match, text, title, url) {
-                    var link = _make('a')
-                        .text(text || '')
-                        .attr({ title: title, 'class': 'external text', href: url, target: '_blank' });
-                    return _make('div').append(link).html();
+                    var link = _make("a")
+                        .text(text || "")
+                        .attr({ title: title, "class": "external text", href: url, target: "_blank" });
+                    return _make("div").append(link).html();
                 })
             );
 
@@ -466,7 +466,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             if (newText !== oldText) {
                 state.editor.set(newText);
                 state.undoText = oldText;
-                $('.re-undo').show();
+                $(".re-undo").show();
             }
         };
 
@@ -479,14 +479,14 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
             state.editor.set(state.undoText);
             state.undoText = null;
-            $('.re-undo').hide();
+            $(".re-undo").hide();
         };
 
         /**
          * Remove the regex editor.
          */
         self.remove = function() {
-            $('#regex-editor').remove();
+            $("#regex-editor").remove();
         };
 
 

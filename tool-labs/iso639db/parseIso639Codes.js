@@ -15,10 +15,10 @@ pathoschild.ParseIso639Codes = {
      * Import jQuery.
      */
     ImportJquery: function () {
-        var head = document.getElementsByTagName('head')[0];
-        var script = document.createElement('script');
-        script.setAttribute('src', '//tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/1.7.1/jquery.min.js');
-        script.setAttribute('type', 'text/javascript');
+        var head = document.getElementsByTagName("head")[0];
+        var script = document.createElement("script");
+        script.setAttribute("src", "//tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/1.7.1/jquery.min.js");
+        script.setAttribute("type", "text/javascript");
         head.appendChild(script);
     },
 
@@ -29,27 +29,27 @@ pathoschild.ParseIso639Codes = {
      */
     ParseCodes_Iso6392: function () {
         var _this = this;
-        $('table:eq(1) tr:not(:eq(0))').each(function (i, row) {
+        $("table:eq(1) tr:not(:eq(0))").each(function (i, row) {
             // parse
             var $row = $(row);
-            var names = $.trim($row.find('td:eq(1)').text());
-            var code_1 = $.trim($row.find('td:eq(4)').text());
-            var code_2 = $.trim($row.find('td:eq(3)').text());
-            var code_2b = '';
-            if (code_2.indexOf('/') != -1) {
-                var codes = code_2.split('/');
+            var names = $.trim($row.find("td:eq(1)").text());
+            var code_1 = $.trim($row.find("td:eq(4)").text());
+            var code_2 = $.trim($row.find("td:eq(3)").text());
+            var code_2b = "";
+            if (code_2.indexOf("/") != -1) {
+                var codes = code_2.split("/");
                 code_2b = codes[0];
                 code_2 = codes[1];
             }
 
             // output ISO 639-1 SQL
             if (code_1)
-                console.log('INSERT INTO `u_pathoschild_iso639`.`codes` (`list`, `code`, `name`) VALUES(\'1\', ' + _this.Quote(code_1) + ', ' + _this.Quote(names) + ');');
+                console.log("INSERT INTO `u_pathoschild_iso639`.`codes` (`list`, `code`, `name`) VALUES('1', " + _this.Quote(code_1) + ", " + _this.Quote(names) + ");");
 
             // output ISO 639-2 SQL
-            console.log('INSERT INTO `u_pathoschild_iso639`.`codes` (`list`, `code`, `name`) VALUES(\'2\', ' + _this.Quote(code_2) + ', ' + _this.Quote(names) + ');');
+            console.log("INSERT INTO `u_pathoschild_iso639`.`codes` (`list`, `code`, `name`) VALUES('2', " + _this.Quote(code_2) + ", " + _this.Quote(names) + ");");
             if (code_2b)
-                console.log('INSERT INTO `u_pathoschild_iso639`.`codes` (`list`, `code`, `name`) VALUES(\'2/B\', ' + _this.Quote(code_2b) + ', ' + _this.Quote(names) + ');')
+                console.log("INSERT INTO `u_pathoschild_iso639`.`codes` (`list`, `code`, `name`) VALUES('2/B', " + _this.Quote(code_2b) + ", " + _this.Quote(names) + ");")
         });
     },
 
@@ -59,13 +59,13 @@ pathoschild.ParseIso639Codes = {
      */
     ParseCodes_Iso6393: function () {
         var text = $(document.body).text();
-        var lines = text.split('\n');
+        var lines = text.split("\n");
         lines = lines.splice(1, lines.length - 1);
 
         for (var i = 0; i < lines.length; i++) {
             // parse
-            lines[i] = lines[i].replace(/	/g, '|');
-            var columns = lines[i].split('|');
+            lines[i] = lines[i].replace(/	/g, "|");
+            var columns = lines[i].split("|");
             var code = columns[0];
             var name = columns[6];
             var scope = columns[4];
@@ -74,52 +74,52 @@ pathoschild.ParseIso639Codes = {
 
             // convert acronyms
             switch (type) {
-                case 'L':
-                    type = 'living';
+                case "L":
+                    type = "living";
                     break;
-                case 'E':
-                    type = 'extinct';
+                case "E":
+                    type = "extinct";
                     break;
-                case 'A':
-                    type = 'ancient';
+                case "A":
+                    type = "ancient";
                     break;
-                case 'H':
-                    type = 'historic';
+                case "H":
+                    type = "historic";
                     break;
-                case 'C':
-                    type = 'constructed';
+                case "C":
+                    type = "constructed";
                     break;
-                case 'S':
-                    type = 'special';
+                case "S":
+                    type = "special";
                     break;
                 default:
-                    throw 'Unrecognized language type code "' + type + '".';
+                    throw "Unrecognized language type code '" + type + "'.";
             }
             switch (scope) {
-                case 'I':
-                    scope = 'individual';
+                case "I":
+                    scope = "individual";
                     break;
-                case 'M':
-                    scope = 'macrolanguage';
+                case "M":
+                    scope = "macrolanguage";
                     break;
-                case 'C':
-                    scope = 'collection';
+                case "C":
+                    scope = "collection";
                     break;
-                case 'D':
-                    scope = 'dialect';
+                case "D":
+                    scope = "dialect";
                     break;
-                case 'R':
-                    scope = 'reserved';
+                case "R":
+                    scope = "reserved";
                     break;
-                case 'S':
-                    scope = 'special';
+                case "S":
+                    scope = "special";
                     break;
                 default:
-                    throw 'Unrecognized language scope code "' + scope + '".';
+                    throw "Unrecognized language scope code '" + scope + "'.";
             }
 
             // output SQL
-            console.log('INSERT INTO `u_pathoschild_iso639`.`codes` (`list`, `code`, `name`, `scope`, `type`, `notes`) VALUES(\'3\', ' + this.Quote(code) + ', ' + this.Quote(name) + ', ' + this.Quote(scope) + ', ' + this.Quote(type) + ', ' + this.Quote(notes) + ');');
+            console.log("INSERT INTO `u_pathoschild_iso639`.`codes` (`list`, `code`, `name`, `scope`, `type`, `notes`) VALUES('3', " + this.Quote(code) + ", " + this.Quote(name) + ", " + this.Quote(scope) + ", " + this.Quote(type) + ", " + this.Quote(notes) + ");");
         }
     },
 
@@ -135,53 +135,53 @@ pathoschild.ParseIso639Codes = {
         var _this = this;
         switch (code) {
             case 1:
-                $('table.wikitable tr:not(:eq(0))').each(function (i, row) {
+                $("table.wikitable tr:not(:eq(0))").each(function (i, row) {
                     // extract values
                     var $row = $(row);
-                    var code = $.trim($row.find('td:eq(4)').text());
-                    var nativeName = $.trim($row.find('td:eq(3)').text());
-                    var nativeNameHtml = $.trim($row.find('td:eq(3)').html());
+                    var code = $.trim($row.find("td:eq(4)").text());
+                    var nativeName = $.trim($row.find("td:eq(3)").text());
+                    var nativeNameHtml = $.trim($row.find("td:eq(3)").html());
 
                     // skip if no native name
                     if (!nativeName)
                         return;
 
                     // write SQL
-                    console.log('UPDATE `u_pathoschild_iso639`.`codes` SET `native_name` = ' + _this.Quote(nativeName) + ', `native_name_html` = ' + _this.Quote(nativeNameHtml) + ' WHERE `list` = \'1\' AND `code` = ' + _this.Quote(code) + ';');
+                    console.log("UPDATE `u_pathoschild_iso639`.`codes` SET `native_name` = " + _this.Quote(nativeName) + ", `native_name_html` = " + _this.Quote(nativeNameHtml) + " WHERE `list` = '1' AND `code` = " + _this.Quote(code) + ";");
                 });
                 break;
 
             case 2:
-                $('table.wikitable tr:not(:eq(0))').each(function (i, row) {
+                $("table.wikitable tr:not(:eq(0))").each(function (i, row) {
                     // extract values
                     var $row = $(row);
-                    var code = $.trim($row.find('td:eq(0)').text());
-                    var nativeName = $.trim($row.find('td:eq(3)').text());
-                    var nativeNameHtml = $.trim($row.find('td:eq(3)').html());
+                    var code = $.trim($row.find("td:eq(0)").text());
+                    var nativeName = $.trim($row.find("td:eq(3)").text());
+                    var nativeNameHtml = $.trim($row.find("td:eq(3)").html());
 
                     // skip if no native name
                     if (!nativeName)
                         return;
 
                     // write SQL
-                    console.log('UPDATE `u_pathoschild_iso639`.`codes` SET `native_name` = ' + _this.Quote(nativeName) + ', `native_name_html` = ' + _this.Quote(nativeNameHtml) + ' WHERE `list` IN (\'2\', \'2/B\') AND `code` = ' + _this.Quote(code) + ';');
+                    console.log("UPDATE `u_pathoschild_iso639`.`codes` SET `native_name` = " + _this.Quote(nativeName) + ", `native_name_html` = " + _this.Quote(nativeNameHtml) + " WHERE `list` IN ('2', '2/B') AND `code` = " + _this.Quote(code) + ";");
                 });
                 break;
 
             case 3:
-                $('table.wikitable tr:not(:eq(0))').each(function (i, row) {
+                $("table.wikitable tr:not(:eq(0))").each(function (i, row) {
                     // extract values
                     var $row = $(row);
-                    var code = $.trim($row.find('th:eq(0)').text());
-                    var nativeName = $.trim($row.find('td:eq(4)').text());
-                    var nativeNameHtml = $.trim($row.find('td:eq(4)').html());
+                    var code = $.trim($row.find("th:eq(0)").text());
+                    var nativeName = $.trim($row.find("td:eq(4)").text());
+                    var nativeNameHtml = $.trim($row.find("td:eq(4)").html());
 
                     // skip if no native name
                     if (!nativeName) $
                     return;
 
                     // write SQL
-                    console.log('UPDATE `u_pathoschild_iso639`.`codes` SET `native_name` = ' + _this.Quote(nativeName) + ', `native_name_html` = ' + _this.Quote(nativeNameHtml) + ' WHERE `list` = \'3\' AND `code` = ' + _this.Quote(code) + ';');
+                    console.log("UPDATE `u_pathoschild_iso639`.`codes` SET `native_name` = " + _this.Quote(nativeName) + ", `native_name_html` = " + _this.Quote(nativeNameHtml) + " WHERE `list` = '3' AND `code` = " + _this.Quote(code) + ";");
                 });
                 break;
         }

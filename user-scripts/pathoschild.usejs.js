@@ -20,18 +20,18 @@ pathoschild.usejs = function() {
         if (!scriptName)
             return;
         var scriptUrl = self.getScriptUrl(scriptName);
-        var scriptLink = '<a href="' + mw.util.getUrl(scriptName) + '">' + scriptName + '</a>';
+        var scriptLink = '<a href="' + mw.util.getUrl(scriptName) + '">' + scriptName + "</a>";
         // load script
-        self.notify('↻ loading ' + scriptName + '...');
+        self.notify("↻ loading " + scriptName + "...");
         $.getScript(scriptUrl)
             .done(function(data) {
                 if (!data)
-                    self.notify('Couldn\'t load ' + scriptLink + ' because it doesn\'t exist.', 'error');
+                    self.notify("Couldn't load " + scriptLink + " because it doesn't exist.", "error");
                 else
-                    self.notify('Loaded ' + scriptLink + '!');
+                    self.notify("Loaded " + scriptLink + "!");
             })
             .fail(function(xhr, settings, err) {
-                self.notify('Couldn\'t load ' + scriptLink + ': ' + err, 'error');
+                self.notify("Couldn't load " + scriptLink + ": " + err, "error");
             });
     };
 
@@ -42,8 +42,8 @@ pathoschild.usejs = function() {
      * Get the normalised name of the script to load (like 'MediaWiki:Common.js').
      */
     this.getScriptName = function() {
-        var script = mw.util.getParamValue('usejs');
-        return script && 'MediaWiki:' + script.replace(/^MediaWiki:|\.js$/ig, '') + '.js';
+        var script = mw.util.getParamValue("usejs");
+        return script && "MediaWiki:" + script.replace(/^MediaWiki:|\.js$/ig, "") + ".js";
     };
 
     /**
@@ -51,7 +51,7 @@ pathoschild.usejs = function() {
      * @param name The page name of the script to load (like 'MediaWiki:Common.js').
      */
     this.getScriptUrl = function(name) {
-        return mw.config.get('wgScript') + '?title=' + name + '&action=raw&ctype=text/javascript';
+        return mw.config.get("wgScript") + "?title=" + name + "&action=raw&ctype=text/javascript";
     };
 
     /**
@@ -60,9 +60,9 @@ pathoschild.usejs = function() {
      * @param cssClass a CSS class with which to wrap the content (default is 'warning').
      */
     this.notify = function(content, cssClass) {
-        var message = '<span class="' + (cssClass || 'warning') + '">' + content + '</span>';
-        var infoBlurb = '<small>You see this because <a href="' + mw.util.getUrl('User:Pathoschild/Scripts/Usejs') + '">usejs</a> is enabled and the URL has &usejs.</small>';
-        mw.notify($(message + '<br />' + infoBlurb), { tag: 'usejs' });
+        var message = '<span class="' + (cssClass || "warning") + '">' + content + "</span>";
+        var infoBlurb = '<small>You see this because <a href="' + mw.util.getUrl("User:Pathoschild/Scripts/Usejs") + '">usejs</a> is enabled and the URL has &usejs.</small>';
+        mw.notify($(message + "<br />" + infoBlurb), { tag: "usejs" });
     };
 
     this.initialise();

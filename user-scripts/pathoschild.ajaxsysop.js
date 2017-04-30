@@ -6,7 +6,7 @@
 ###     by [[user:Pathoschild]] (Jesse Plamondon-Willard)
 ###     see http://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/Ajax_sysop#Installation
 ##############################################*/
-mw.loader.load('//tools-static.wmflabs.org/meta/scripts/pathoschild.ajaxsysop.css', 'text/css');
+mw.loader.load("//tools-static.wmflabs.org/meta/scripts/pathoschild.ajaxsysop.css", "text/css");
 
 var pathoschild = pathoschild || {};
 pathoschild.ajax_mw = {
@@ -54,27 +54,27 @@ pathoschild.ajax_mw = {
         links.each(function(i, link) {
             /* get link & rcid */
             link = $(link);
-            var rcid = link.attr('href').match(/rcid=(\d+)/)[1];
+            var rcid = link.attr("href").match(/rcid=(\d+)/)[1];
 
             /* add container */
             link.wrap(
-                $(document.createElement('span'))
+                $(document.createElement("span"))
                     .attr({
-                        'id': 'ajax-mediawiki-patrol-' + rcid,
-                        'class': 'ajax-mediawiki-patrol'
+                        "id": "ajax-mediawiki-patrol-" + rcid,
+                        "class": "ajax-mediawiki-patrol"
                     })
             );
 
             /* add links */
             link.parent().append(
-                $(document.createElement('sup'))
+                $(document.createElement("sup"))
                     .append(
-                    $(document.createElement('a'))
-                        .text('ajax')
-                        .attr('href', '#')
-                        .bind('click', function() { pathoschild.ajax_mw.OnPatrolClick(rcid); })
+                    $(document.createElement("a"))
+                        .text("ajax")
+                        .attr("href", "#")
+                        .bind("click", function() { pathoschild.ajax_mw.OnPatrolClick(rcid); })
                     ).append(
-                    $(document.createElement('span'))
+                    $(document.createElement("span"))
                     )
             );
         });
@@ -88,34 +88,34 @@ pathoschild.ajax_mw = {
         links.each(function(i, link) {
             /* get link & values */
             link = $(link);
-            var href = link.attr('href');
+            var href = link.attr("href");
 
             var title = href.match(/title=([^&]+)/)[1];
             var user = href.match(/from=([^&]+)/)[1];
             title = decodeURIComponent(title);
-            user = decodeURIComponent(user).replace('+', ' ');
+            user = decodeURIComponent(user).replace("+", " ");
 
             var id = (new Date()).getTime();
 
             /* add container */
             link.wrap(
-                $(document.createElement('span'))
+                $(document.createElement("span"))
                     .attr({
-                        'id': 'ajax-mediawiki-rollback-' + id,
-                        'class': 'ajax-mediawiki-rollback'
+                        "id": "ajax-mediawiki-rollback-" + id,
+                        "class": "ajax-mediawiki-rollback"
                     })
             );
 
             /* add links */
             link.parent().append(
-                $(document.createElement('sup'))
+                $(document.createElement("sup"))
                     .append(
-                    $(document.createElement('a'))
-                        .text('ajax')
-                        .attr('href', '#')
-                        .bind('click', function() { pathoschild.ajax_mw.OnRollbackClick(id, title, user); })
+                    $(document.createElement("a"))
+                        .text("ajax")
+                        .attr("href", "#")
+                        .bind("click", function() { pathoschild.ajax_mw.OnRollbackClick(id, title, user); })
                     ).append(
-                    $(document.createElement('span'))
+                    $(document.createElement("span"))
                     )
             );
         });
@@ -125,13 +125,13 @@ pathoschild.ajax_mw = {
     ** Initialize bot-mode rollback (Special:Contributions)
     *********/
     InitBotModeRollback: function() {
-        if (mw.config.get('wgCanonicalSpecialPageName') != 'Contributions') {
+        if (mw.config.get("wgCanonicalSpecialPageName") != "Contributions") {
             return;
         }
 
         /* get elements */
-        var form = $('#newbie').parents('form').first();
-        var botField = $('input[name=bot]').first();
+        var form = $("#newbie").parents("form").first();
+        var botField = $("input[name=bot]").first();
 
         /* if bot mode is already enabled, remove the hidden field but remember that it's enabled */
         var toggleTo = false;
@@ -144,24 +144,24 @@ pathoschild.ajax_mw = {
         form.append(
             this.BuildFormattedBox()
                 .append(
-                $(document.createElement('input'))
+                $(document.createElement("input"))
                     .attr({
-                        'type': 'checkbox',
-                        'id': 'bot',
-                        'name': 'bot',
-                        'checked': toggleTo
+                        "type": "checkbox",
+                        "id": "bot",
+                        "name": "bot",
+                        "checked": toggleTo
                     })
-                    .bind('change', function() {
-                        var enabled = ($('#bot').attr('checked') ? '1' : '0');
+                    .bind("change", function() {
+                        var enabled = ($("#bot").attr("checked") ? "1" : "0");
                         $('.mw-rollback-link a[href*="from="]').each(function(i, link) {
                             link = $(link);
-                            link.attr('href', link.attr('href') + '&bot=' + enabled);
+                            link.attr("href", link.attr("href") + "&bot=" + enabled);
                         });
                     })
                 ).append(
-                $(document.createElement('label'))
-                    .attr('for', 'bot')
-                    .text('Bot rollback flag (hide rollbacks on watchlists and Special:RecentChanges).')
+                $(document.createElement("label"))
+                    .attr("for", "bot")
+                    .text("Bot rollback flag (hide rollbacks on watchlists and Special:RecentChanges).")
                 )
         );
     },
@@ -173,12 +173,12 @@ pathoschild.ajax_mw = {
         /*********
         ** Initialize
         *********/
-        if (mw.config.get('wgAction') != 'delete') {
+        if (mw.config.get("wgAction") != "delete") {
             return;
         }
 
         /* prepare namespaces */
-        var ns_main = mw.config.get('wgNamespaceNumber');
+        var ns_main = mw.config.get("wgNamespaceNumber");
         if (ns_main % 2) {
             ns_main--;
         }
@@ -188,21 +188,21 @@ pathoschild.ajax_mw = {
         ** Build layout
         *********/
         var container;
-        $('#deleteconfirm, #mw-img-deleteconfirm').first().append(
+        $("#deleteconfirm, #mw-img-deleteconfirm").first().append(
             /* 'subpages' header */
             container = this.BuildFormattedBox().append(
-                $(document.createElement('h2'))
-                    .text('Subpages')
+                $(document.createElement("h2"))
+                    .text("Subpages")
 
                 /* main subpages */
             ).append(
-                $(document.createElement('h3'))
-                    .text('main subpages')
+                $(document.createElement("h3"))
+                    .text("main subpages")
                 ).append(
-                $(document.createElement('ul'))
-                    .attr('id', 'ajax-mediawiki-subpages-main')
+                $(document.createElement("ul"))
+                    .attr("id", "ajax-mediawiki-subpages-main")
                     .append(
-                    $(document.createElement('li'))
+                    $(document.createElement("li"))
                         .append(
                         this.BuildLoadingIndicator()
                         )
@@ -210,13 +210,13 @@ pathoschild.ajax_mw = {
 
                 /* talk subpages */
                 ).append(
-                $(document.createElement('h3'))
-                    .text('talk subpages')
+                $(document.createElement("h3"))
+                    .text("talk subpages")
                 ).append(
-                $(document.createElement('ul'))
-                    .attr('id', 'ajax-mediawiki-subpages-talk')
+                $(document.createElement("ul"))
+                    .attr("id", "ajax-mediawiki-subpages-talk")
                     .append(
-                    $(document.createElement('li'))
+                    $(document.createElement("li"))
                         .append(
                         this.BuildLoadingIndicator()
                         )
@@ -228,13 +228,13 @@ pathoschild.ajax_mw = {
         var blockLog = null;
         if (ns_main == 2) { // user or user_talk page
             container.append(
-                $(document.createElement('h2'))
-                    .text('Block log')
+                $(document.createElement("h2"))
+                    .text("Block log")
             ).append(
-                blockLog = $(document.createElement('ul'))
-                    .attr('id', 'ajax-mediawiki-block-log')
+                blockLog = $(document.createElement("ul"))
+                    .attr("id", "ajax-mediawiki-block-log")
                     .append(
-                    $(document.createElement('li'))
+                    $(document.createElement("li"))
                         .append(
                         this.BuildLoadingIndicator()
                         )
@@ -247,18 +247,18 @@ pathoschild.ajax_mw = {
         *********/
         function _GetSubpages(ul, namespace, prefix) {
             pathoschild.ajax_mw.ajax.FetchPrefixIndex({
-                'namespaceNumber': namespace,
-                'prefix': prefix,
-                'callback': function(pages, query) {
+                "namespaceNumber": namespace,
+                "prefix": prefix,
+                "callback": function(pages, query) {
                     /* error */
                     if (query.Error()) {
-                        ul.find('li').empty()
+                        ul.find("li").empty()
                             .append(
-                            $(document.createElement('li'))
+                            $(document.createElement("li"))
                                 .append(
-                                $(document.createElement('span'))
+                                $(document.createElement("span"))
                                     .text(query.Error())
-                                    .addClass('ajax-mediawiki-error-inline')
+                                    .addClass("ajax-mediawiki-error-inline")
                                 )
                             );
                         return;
@@ -268,21 +268,21 @@ pathoschild.ajax_mw = {
                     ul.empty();
                     if (!pages.length) {
                         ul
-                            .addClass('ajax-mediawiki-subpages-none')
+                            .addClass("ajax-mediawiki-subpages-none")
                             .append(
-                            $(document.createElement('li'))
-                                .text('none.')
+                            $(document.createElement("li"))
+                                .text("none.")
                             );
                     }
                     else {
                         for (var i = 0, len = pages.length; i < len; i++) {
                             ul.append(
-                                $(document.createElement('li'))
+                                $(document.createElement("li"))
                                     .append(
-                                    $(document.createElement('a'))
+                                    $(document.createElement("a"))
                                         .attr({
-                                            'href': mw.config.get('wgServer') + mw.config.get('wgArticlePath').replace('$1', encodeURIComponent(pages[i].title)),
-                                            'alt': pages[i].title
+                                            "href": mw.config.get("wgServer") + mw.config.get("wgArticlePath").replace("$1", encodeURIComponent(pages[i].title)),
+                                            "alt": pages[i].title
                                         })
                                         .text(pages[i].title)
                                     )
@@ -292,8 +292,8 @@ pathoschild.ajax_mw = {
                 }
             });
         }
-        _GetSubpages($('#ajax-mediawiki-subpages-main'), ns_main, mw.config.get('wgTitle') + '/');
-        _GetSubpages($('#ajax-mediawiki-subpages-talk'), ns_talk, mw.config.get('wgTitle') + '/');
+        _GetSubpages($("#ajax-mediawiki-subpages-main"), ns_main, mw.config.get("wgTitle") + "/");
+        _GetSubpages($("#ajax-mediawiki-subpages-talk"), ns_talk, mw.config.get("wgTitle") + "/");
 
         /*********
         ** Fetch whatlinkshere
@@ -305,15 +305,15 @@ pathoschild.ajax_mw = {
         *********/
         if (blockLog !== null) {
             pathoschild.ajax_mw.ajax.FetchBlockLog({
-                'callback': function(entries, query) {
+                "callback": function(entries, query) {
                     /* error */
                     if (query.Error()) {
                         blockLog.empty().append(
-                            $(document.createElement('li'))
+                            $(document.createElement("li"))
                                 .append(
-                                $(document.createElement('span'))
+                                $(document.createElement("span"))
                                     .text(query.Error())
-                                    .addClass('ajax-mediawiki-error-inline')
+                                    .addClass("ajax-mediawiki-error-inline")
                                 )
                         );
                         return;
@@ -323,55 +323,55 @@ pathoschild.ajax_mw = {
                     blockLog.empty();
                     for (var i = 0, len = entries.length; i < len; i++) {
                         var item = entries[i];
-                        console.log(i + '/' + len, entries[i]);
+                        console.log(i + "/" + len, entries[i]);
 
                         /* add entry */
                         var blockDetails, blockFlags;
                         blockLog.append(
-                            $(document.createElement('li'))
+                            $(document.createElement("li"))
                                 /* date */
                                 .append(
-                                $(document.createElement('small'))
-                                    .text(item.timestamp.replace(/(\d+-\d+-\d+)T(\d+:\d+).+/, '$1 $2') + ' ')
+                                $(document.createElement("small"))
+                                    .text(item.timestamp.replace(/(\d+-\d+-\d+)T(\d+:\d+).+/, "$1 $2") + " ")
                                 )
 
                                 /* blocker */
                                 .append(
-                                $(document.createElement('a'))
+                                $(document.createElement("a"))
                                     .attr({
-                                        'href': pathoschild.ajax_mw.parser.BuildLocalUrl(item.title),
-                                        'title': item.title
+                                        "href": pathoschild.ajax_mw.parser.BuildLocalUrl(item.title),
+                                        "title": item.title
                                     })
                                     .text(item.title)
                                 )
-                                .append(' ' + item.action + 'ed ')
+                                .append(" " + item.action + "ed ")
 
                                 /* block details */
                                 .append(
-                                blockDetails = $(document.createElement('span'))
+                                blockDetails = $(document.createElement("span"))
                                 )
 
                                 /* comment */
-                                .append(' &mdash; ' + pathoschild.ajax_mw.parser.ParseWikiLinksIntoHtml(item.comment))
+                                .append(" &mdash; " + pathoschild.ajax_mw.parser.ParseWikiLinksIntoHtml(item.comment))
 
                                 /* flags */
-                                .append(' ')
+                                .append(" ")
                                 .append(
-                                blockFlags = $(document.createElement('small'))
+                                blockFlags = $(document.createElement("small"))
                                 )
                         );
-                        console.log('    adding block details...');
-                        if (item.action == 'block') {
+                        console.log("    adding block details...");
+                        if (item.action == "block") {
                             blockDetails.append(
-                                $(document.createElement('span'))
+                                $(document.createElement("span"))
                                     .attr({
-                                        'title': item.block.expiry,
-                                        'style': 'border-bottom:1px dotted gray;'
+                                        "title": item.block.expiry,
+                                        "style": "border-bottom:1px dotted gray;"
                                     })
                                     .text(item.block.duration)
                             );
                             if (item.block.flags) {
-                                blockFlags.append('[' + item.block.flags + ']');
+                                blockFlags.append("[" + item.block.flags + "]");
                             }
                         }
                     }
@@ -384,20 +384,20 @@ pathoschild.ajax_mw = {
     ## Helper methods
     ############################*/
     BuildFormattedBox: function() {
-        return $(document.createElement('div'))
-            .addClass('ajax-mediawiki-box')
+        return $(document.createElement("div"))
+            .addClass("ajax-mediawiki-box")
             .append(
-            $(document.createElement('span'))
-                .addClass('ajax-mediawiki-box-title')
-                .text('Ajax sysop')
+            $(document.createElement("span"))
+                .addClass("ajax-mediawiki-box-title")
+                .text("Ajax sysop")
             );
     },
 
     BuildLoadingIndicator: function() {
-        return $(document.createElement('img'))
+        return $(document.createElement("img"))
             .attr({
-                'src': 'https://upload.wikimedia.org/wikipedia/commons/d/de/Ajax-loader.gif',
-                'alt': 'loading...'
+                "src": "https://upload.wikimedia.org/wikipedia/commons/d/de/Ajax-loader.gif",
+                "alt": "loading..."
             });
     },
 
@@ -409,24 +409,24 @@ pathoschild.ajax_mw = {
     *********/
     OnPatrolClick: function(rcid) {
         /* fetch elements */
-        var container = $('#ajax-mediawiki-patrol-' + rcid);
-        var span = container.find('sup span').first();
+        var container = $("#ajax-mediawiki-patrol-" + rcid);
+        var span = container.find("sup span").first();
 
         /* patrol through API */
-        span.text(' > loading...');
+        span.text(" > loading...");
         pathoschild.ajax_mw.ajax.Patrol({
-            'rcid': rcid,
-            'callback': function(success, query) {
+            "rcid": rcid,
+            "callback": function(success, query) {
                 if (!success) {
-                    span.text(' > ').append(
-                        $(document.createElement('span'))
-                            .addClass('ajax-mediawiki-error-inline')
-                            .text('\u2718' + query.Error())
+                    span.text(" > ").append(
+                        $(document.createElement("span"))
+                            .addClass("ajax-mediawiki-error-inline")
+                            .text("\u2718" + query.Error())
                     );
                 }
                 else {
-                    container.addClass('.ajax-mediawiki-patrol-done');
-                    span.parent().text(' \u2713');
+                    container.addClass(".ajax-mediawiki-patrol-done");
+                    span.parent().text(" \u2713");
                 }
             }
         });
@@ -440,31 +440,31 @@ pathoschild.ajax_mw = {
         title = decodeURIComponent(title);
         user = decodeURIComponent(user);
 
-        var container = $('#ajax-mediawiki-rollback-' + guid);
-        var span = container.find('sup span');
+        var container = $("#ajax-mediawiki-rollback-" + guid);
+        var span = container.find("sup span");
 
         /* check bot mode */
         var markAsBot = false;
-        if ($('#bot').length)
-            $('#bot').prop('checked');
+        if ($("#bot").length)
+            $("#bot").prop("checked");
 
         /* rollback through API */
-        span.text(' > loading... ');
+        span.text(" > loading... ");
         pathoschild.ajax_mw.ajax.Rollback({
-            'title': title,
-            'user': user,
-            'markAsBot': markAsBot,
-            'callback': function(success, query) {
+            "title": title,
+            "user": user,
+            "markAsBot": markAsBot,
+            "callback": function(success, query) {
                 if (!success) {
-                    span.text(' > ').append(
-                        $(document.createElement('span'))
-                            .addClass('ajax-mediawiki-error-inline')
-                            .text('\u2718' + query.Error())
+                    span.text(" > ").append(
+                        $(document.createElement("span"))
+                            .addClass("ajax-mediawiki-error-inline")
+                            .text("\u2718" + query.Error())
                     );
                 }
                 else {
-                    container.addClass('.ajax-mediawiki-rollback-done');
-                    span.parent().text(' \u2713');
+                    container.addClass(".ajax-mediawiki-rollback-done");
+                    span.parent().text(" \u2713");
                 }
             }
         });
@@ -500,7 +500,7 @@ pathoschild.ajax_mw = {
         * @returns {string} The equivalent string with HTML links.
         *********/
         BuildLocalUrl: function(targetTitle) {
-            return mw.config.get('wgServer') + mw.config.get('wgScript') + '?title=' + encodeURIComponent(targetTitle);
+            return mw.config.get("wgServer") + mw.config.get("wgScript") + "?title=" + encodeURIComponent(targetTitle);
         },
 
         /*********
@@ -525,7 +525,7 @@ pathoschild.ajax_mw = {
                 var link_text = parts[2] || link_title;
 
                 /* build link */
-                var link = '<a' + ' href="' + this.BuildLocalUrl(link_title) + '"' + ' title="' + link_title.replace('"', '\\"') + '"' + '>' + link_text.replace(/^User:/, '') + '</a>';
+                var link = "<a" + ' href="' + this.BuildLocalUrl(link_title) + '"' + ' title="' + link_title.replace('"', '\\"') + '"' + ">" + link_text.replace(/^User:/, "") + "</a>";
 
                 /* replace link */
                 text = this.LiteralReplace(text, links[i], link);
@@ -556,16 +556,16 @@ pathoschild.ajax_mw = {
         *    (object) context [= null]
         *    An arbitrary object accessible to the callback as query.context; default null.
         * 
-        *    (str) method [= 'GET']
+        *    (str) method [= "GET"]
         *    The HTTP method to use when submitting the data.
         * 
-        *    (str) url [= mw.config.get( 'wgServer' ) + mw.config.get( 'wgScriptPath' ) + '/api.php']
+        *    (str) url [= mw.config.get( "wgServer" ) + mw.config.get( "wgScriptPath" ) + "/api.php"]
         *    The URL of the page to query.
         * 
         *    (object) data [= {}]
         *    The query data to submit to the URL, as a key:value object.
         * 
-        *    (string) format [= 'json']
+        *    (string) format [= "json"]
         *    The API format to request. The result will be parsed automatically if known.
         * 
         *    (bool) deadQuery [= false]
@@ -584,17 +584,17 @@ pathoschild.ajax_mw = {
         Query: function(args) {
             /* set properties */
             pathoschild.util.ApplyArgumentSchema(
-                'Query',
+                "Query",
                 args,
                 {
-                    'callback': null,
-                    'context': null,
+                    "callback": null,
+                    "context": null,
 
-                    'url': mw.config.get('wgServer') + mw.config.get('wgScriptPath') + '/api.php',
-                    'data': {},
-                    'method': 'GET',
-                    'format': 'json',
-                    'deadQuery': false
+                    "url": mw.config.get("wgServer") + mw.config.get("wgScriptPath") + "/api.php",
+                    "data": {},
+                    "method": "GET",
+                    "format": "json",
+                    "deadQuery": false
                 }
             );
             $.extend(this, args);
@@ -657,13 +657,13 @@ pathoschild.ajax_mw = {
         _Query_Error: function() {
             if (this._error === null) {
                 if (this.xhr && this.xhr.status != 200) { // HTTP error
-                    this._error = this.xhr.status + ': ' + this.xhr.statusText;
+                    this._error = this.xhr.status + ": " + this.xhr.statusText;
                 }
                 else if (this.response && this.response.error) { // API error
-                    this._error = this.response.error.code + ': ' + this.response.error.info;
+                    this._error = this.response.error.code + ": " + this.response.error.info;
                 }
                 else {
-                    this._error = '';
+                    this._error = "";
                 }
             }
             return this._error;
@@ -682,14 +682,14 @@ pathoschild.ajax_mw = {
         GetToken: function(type, callback) {
             var _this = this;
             new pathoschild.ajax_mw.ajax.Query({
-                'data': {
-                    'action': 'query',
-                    'meta': 'tokens',
-                    'type': type
+                "data": {
+                    "action": "query",
+                    "meta": "tokens",
+                    "type": type
                 },
-                'callback': function(data, query) {
+                "callback": function(data, query) {
                     var token = !query.Error()
-                        ? data.query.tokens[type + 'token']
+                        ? data.query.tokens[type + "token"]
                         : null;
                     callback(token);
                 }
@@ -713,31 +713,31 @@ pathoschild.ajax_mw = {
         Patrol: function(args) {
             /* get arguments */
             pathoschild.util.ApplyArgumentSchema(
-                'Patrol',
+                "Patrol",
                 args,
                 {
-                    'rcid': null,
-                    'callback': null,
-                    'context': null
+                    "rcid": null,
+                    "callback": null,
+                    "context": null
                 }
             );
 
             /* query API */
-            this.GetToken('patrol', function(token) {
+            this.GetToken("patrol", function(token) {
                 console.log(token);
                 new pathoschild.ajax_mw.ajax.Query({
-                    'method': 'POST',
-                    'data': {
-                        'action': 'patrol',
-                        'token': token,
-                        'rcid': args.rcid
+                    "method": "POST",
+                    "data": {
+                        "action": "patrol",
+                        "token": token,
+                        "rcid": args.rcid
                     },
-                    'callback': function(data, query) {
+                    "callback": function(data, query) {
                         if (args.callback) {
                             args.callback(!query.Error(), query);
                         }
                     },
-                    'context': args.context
+                    "context": args.context
                 });
             });
         },
@@ -765,34 +765,34 @@ pathoschild.ajax_mw = {
         Rollback: function(args) {
             /* get arguments */
             pathoschild.util.ApplyArgumentSchema(
-                'Rollback',
+                "Rollback",
                 args,
                 {
-                    'title': null,
-                    'user': null,
-                    'markAsBot': false,
-                    'callback': null,
-                    'context': null
+                    "title": null,
+                    "user": null,
+                    "markAsBot": false,
+                    "callback": null,
+                    "context": null
                 }
             );
 
             /* query API */
-            this.GetToken('rollback', function(token) {
+            this.GetToken("rollback", function(token) {
                 new pathoschild.ajax_mw.ajax.Query({
-                    'method': 'POST',
-                    'data': {
-                        'action': 'rollback',
-                        'token': token,
-                        'title': args.title,
-                        'user': args.user,
-                        'markbot': (args.markAsBot ? '1' : '0')
+                    "method": "POST",
+                    "data": {
+                        "action": "rollback",
+                        "token": token,
+                        "title": args.title,
+                        "user": args.user,
+                        "markbot": (args.markAsBot ? "1" : "0")
                     },
-                    'callback': function(data, query) {
+                    "callback": function(data, query) {
                         if (args.callback) {
                             args.callback(!query.Error(), query);
                         }
                     },
-                    'context': args.context
+                    "context": args.context
                 });
             });
         },
@@ -817,27 +817,27 @@ pathoschild.ajax_mw = {
         FetchPrefixIndex: function(args) {
             /* get arguments */
             pathoschild.util.ApplyArgumentSchema(
-                'FetchPrefixIndex',
+                "FetchPrefixIndex",
                 args,
                 {
-                    'namespaceNumber': mw.config.get('wgNamespaceNumber'),
-                    'prefix': mw.config.get('wgTitle'),
-                    'callback': null,
-                    'context': null
+                    "namespaceNumber": mw.config.get("wgNamespaceNumber"),
+                    "prefix": mw.config.get("wgTitle"),
+                    "callback": null,
+                    "context": null
                 }
             );
 
             /* collect pages */
             var pages = [];
             new pathoschild.ajax_mw.ajax.Query({
-                'data': {
-                    'action': 'query',
-                    'list': 'allpages',
-                    'apprefix': args.prefix,
-                    'aplimit': 500,
-                    'apnamespace': args.namespaceNumber
+                "data": {
+                    "action": "query",
+                    "list": "allpages",
+                    "apprefix": args.prefix,
+                    "aplimit": 500,
+                    "apnamespace": args.namespaceNumber
                 },
-                'callback': function(data, query) {
+                "callback": function(data, query) {
                     if (!query.Error()) {
                         data = data.query.allpages;
                     }
@@ -845,7 +845,7 @@ pathoschild.ajax_mw = {
                         args.callback(data, query);
                     }
                 },
-                'context': args.context
+                "context": args.context
             });
         },
 
@@ -866,25 +866,25 @@ pathoschild.ajax_mw = {
         FetchBlockLog: function(args) {
             /* get arguments */
             pathoschild.util.ApplyArgumentSchema(
-                'FetchBlockLog',
+                "FetchBlockLog",
                 args,
                 {
-                    'user': 'user:' + mw.config.get('wgTitle').match(/[^\/]+/, '').toString(),
-                    'callback': null,
-                    'context': null
+                    "user": "user:" + mw.config.get("wgTitle").match(/[^\/]+/, "").toString(),
+                    "callback": null,
+                    "context": null
                 }
             );
 
             /* get log entries */
             new pathoschild.ajax_mw.ajax.Query({
-                'data': {
-                    'action': 'query',
-                    'list': 'logevents',
-                    'letype': 'block',
-                    'letitle': args.user,
-                    'lelimit': 500
+                "data": {
+                    "action": "query",
+                    "list": "logevents",
+                    "letype": "block",
+                    "letitle": args.user,
+                    "lelimit": 500
                 },
-                'callback': function(data, query) {
+                "callback": function(data, query) {
                     /* parse */
                     if (!query.Error()) {
                         data = data.query.logevents;
@@ -893,14 +893,14 @@ pathoschild.ajax_mw = {
                         args.callback(data, query);
                     }
                 },
-                'context': args.context
+                "context": args.context
             });
         }
     }
 };
 
 $(function() {
-    $.ajax('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js', { dataType: 'script', crossDomain: true, cached: true }).then(function() {
+    $.ajax("//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js", { dataType: "script", crossDomain: true, cached: true }).then(function() {
         pathoschild.ajax_mw.Initialize();
     });
 });

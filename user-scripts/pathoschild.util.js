@@ -9,14 +9,14 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 */
 var pathoschild = pathoschild || {};
 (function() {
-    'use strict';
+    "use strict";
 
     /**
      * Self-contained utility methods.
      * @namespace
      */
     pathoschild.util = {
-        _version: '1.1',
+        _version: "1.1",
 
         /**
          * Enforce a schema defining valid arguments and default values on a key:value object.
@@ -36,7 +36,7 @@ var pathoschild = pathoschild || {};
                         var x;
                         for (x in schema)
                             validArgs.push(x);
-                        pathoschild.util.Log('Ignoring invalid argument "' + i + '"; valid arguments for method "' + method + '" are [' + validArgs.toString() + '].');
+                        pathoschild.util.Log('Ignoring invalid argument "' + i + '"; valid arguments for method "' + method + '" are [' + validArgs.toString() + "].");
                         delete args[i];
                     }
                 }
@@ -90,7 +90,7 @@ var pathoschild = pathoschild || {};
             var k;
             for (k in enumObj)
                 valid.push(enumObj[k]);
-            throw new Error('The value "' + value + '" is not a valid ' + enumName + ' enumeration value, expected one of [' + valid.toString() + '].');
+            throw new Error('The value "' + value + '" is not a valid ' + enumName + " enumeration value, expected one of [" + valid.toString() + "].");
         },
 
         /**
@@ -109,10 +109,10 @@ var pathoschild = pathoschild || {};
          * @param {string} css The CSS text to add.
          */
         AddStyles: function(css) {
-            $(document.createElement('style'))
-                .attr({ rel: 'stylesheet', type: 'text/css' })
+            $(document.createElement("style"))
+                .attr({ rel: "stylesheet", type: "text/css" })
                 .text(css)
-                .appendTo('head:first');
+                .appendTo("head:first");
         },
 
         /**
@@ -169,10 +169,10 @@ var pathoschild = pathoschild || {};
              */
             AddPortlet: function(id, name) {
                 // copy the portlet structure for the current skin
-                var $sidebar = $('#p-tb').clone().attr('id', id);
-                $sidebar.find('h1, h2, h3, h4, h5').first().text(name);
-                $sidebar.find('ul').empty();
-                $('#p-tb').parent().append($sidebar);
+                var $sidebar = $("#p-tb").clone().attr("id", id);
+                $sidebar.find("h1, h2, h3, h4, h5").first().text(name);
+                $sidebar.find("ul").empty();
+                $("#p-tb").parent().append($sidebar);
 
                 return $sidebar;
             },
@@ -190,8 +190,8 @@ var pathoschild = pathoschild || {};
             AddPortletLink: function(portletID, text, id, tooltip, accessKey, target) {
                 // create link
                 var isCallback = $.isFunction(target);
-                var uri = isCallback ? '#' : target;
-                var $link = $(mw.util.addPortletLink(portletID, uri, text, id, tooltip || ''));
+                var uri = isCallback ? "#" : target;
+                var $link = $(mw.util.addPortletLink(portletID, uri, text, id, tooltip || ""));
                 if (isCallback)
                     $link.click(function(e) { e.preventDefault(); target(e); });
 
@@ -200,12 +200,12 @@ var pathoschild = pathoschild || {};
                     // steal access key if needed
                     var previousTarget = $('[accesskey="' + accessKey.replace('"', '\\"') + '"]')
                     if (previousTarget.length) {
-                        pathoschild.util.Log('pathoschild.util::AddPortletLink: overwrote access key [' + accessKey + '] previously assigned to "' + previousTarget.text() + '".');
-                        previousTarget.removeAttr('accesskey');
+                        pathoschild.util.Log("pathoschild.util::AddPortletLink: overwrote access key [" + accessKey + '] previously assigned to "' + previousTarget.text() + '".');
+                        previousTarget.removeAttr("accesskey");
                     }
 
                     // set key
-                    $link.find('a:first').attr('accesskey', accessKey);
+                    $link.find("a:first").attr("accesskey", accessKey);
                 }
 
                 return $link;
@@ -223,12 +223,12 @@ var pathoschild = pathoschild || {};
         RunTests: function(tests) {
             // load scripts
             $.when(
-                $.ajax('//tools-static.wmflabs.org/cdnjs/ajax/libs/mocha/2.2.1/mocha.min.js', { dataType: 'script', cache: true }),
-                $.ajax('//tools-static.wmflabs.org/cdnjs/ajax/libs/chai/2.2.0/chai.min.js', { dataType: 'script', cache: true }),
-                $.ajax('//tools-static.wmflabs.org/meta/scripts/dependencies/WebConsole.js', { dataType: 'script', cache: true })
+                $.ajax("//tools-static.wmflabs.org/cdnjs/ajax/libs/mocha/2.2.1/mocha.min.js", { dataType: "script", cache: true }),
+                $.ajax("//tools-static.wmflabs.org/cdnjs/ajax/libs/chai/2.2.0/chai.min.js", { dataType: "script", cache: true }),
+                $.ajax("//tools-static.wmflabs.org/meta/scripts/dependencies/WebConsole.js", { dataType: "script", cache: true })
             ).done(function() {
                 // configure
-                mocha.setup({ ui: 'bdd', reporter: WebConsole });
+                mocha.setup({ ui: "bdd", reporter: WebConsole });
                 chai.config.includeStack = false;
 
                 // run tests

@@ -10,7 +10,7 @@ For more information, see <https://github.com/Pathoschild/Wikimedia-contrib#read
 /* jshint eqeqeq: true, latedef: true, nocomma: true, undef: true */
 window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader compatibility
 (function() {
-    'use strict';
+    "use strict";
 
     if (pathoschild.TemplateScript)
         return; // already initialised, don't overwrite
@@ -28,14 +28,14 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         /*********
         ** Fields
         *********/
-        self.version = '2.5';
+        self.version = "2.5";
         self.strings = {
-            defaultHeaderText: 'TemplateScript', // the sidebar header text label for the default group
-            regexEditor: 'Regex editor' // the default 'regex editor' script
+            defaultHeaderText: "TemplateScript", // the sidebar header text label for the default group
+            regexEditor: "Regex editor" // the default 'regex editor' script
         };
         var state = {
             // user configuration
-            config: mw.config.get('userjs-templatescript') || {},
+            config: mw.config.get("userjs-templatescript") || {},
 
             // bootstrapping
             dependencies: [], // internal lookup used to manage asynchronous script dependencies
@@ -91,19 +91,19 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             name: null,
             enabled: true,
             category: null,
-            forActions: 'edit',
-            forNamespaces: '*',
+            forActions: "edit",
+            forNamespaces: "*",
             accessKey: null,
             tooltip: null,
-            renderer: 'sidebar',
+            renderer: "sidebar",
 
             /* template options */
             template: null,
-            position: 'cursor',
+            position: "cursor",
             editSummary: null,
-            editSummaryPosition: 'after',
+            editSummaryPosition: "after",
             headline: null,
-            headlinePosition: 'after',
+            headlinePosition: "after",
             isMinorEdit: false,
 
             /* script options */
@@ -124,10 +124,10 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          * @property {string} replace Replace the current text entirely.
          */
         self.Position = {
-            before: 'before',
-            after: 'after',
-            cursor: 'cursor',
-            replace: 'replace'
+            before: "before",
+            after: "after",
+            cursor: "cursor",
+            replace: "replace"
         };
 
         /**
@@ -169,19 +169,19 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             *********/
             var context = {
                 action: (function() {
-                    var action = mw.config.get('wgAction');
-                    var specialPage = mw.config.get('wgCanonicalSpecialPageName');
+                    var action = mw.config.get("wgAction");
+                    var specialPage = mw.config.get("wgCanonicalSpecialPageName");
                     switch (action) {
-                        case 'submit':
-                            return 'edit';
+                        case "submit":
+                            return "edit";
 
-                        case 'view':
-                            if ($('#movepage').length)
-                                return 'move';
-                            if (specialPage === 'Block')
-                                return 'block';
-                            if (specialPage === 'Emailuser')
-                                return 'emailuser';
+                        case "view":
+                            if ($("#movepage").length)
+                                return "move";
+                            if (specialPage === "Block")
+                                return "block";
+                            if (specialPage === "Emailuser")
+                                return "emailuser";
 
                         default:
                             return action;
@@ -197,8 +197,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
              * Get the CodeEditor instance for the page (if any).
              */
             var _getCodeEditor = function() {
-                if (context.action === 'edit') {
-                    var ace = $('.ace_editor:first').get(0);
+                if (context.action === "edit") {
+                    var ace = $(".ace_editor:first").get(0);
                     if (ace)
                         return ace.env.editor;
                 }
@@ -305,7 +305,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                     var box = field.get(0);
 
                     // most browsers
-                    if (box.selectionStart || box.selectionStart === false || box.selectionStart === '0' || box.selectionStart === 0)
+                    if (box.selectionStart || box.selectionStart === false || box.selectionStart === "0" || box.selectionStart === 0)
                         return box.selectionStart !== box.selectionEnd;
 
                     // older browsers
@@ -335,7 +335,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                     }
 
                     // most browsers
-                    if (box.selectionStart || box.selectionStart === false || box.selectionStart === '0' || box.selectionStart === 0) {
+                    if (box.selectionStart || box.selectionStart === false || box.selectionStart === "0" || box.selectionStart === 0) {
                         var startPos = box.selectionStart;
                         var endPos = box.selectionEnd;
                         var scrollTop = box.scrollTop;
@@ -358,8 +358,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
                     // unknown implementation
                     else {
-                        _warn('can\'t figure out the browser\'s cursor selection implementation, appending instead.');
-                        box.value += text('');
+                        _warn("can't figure out the browser's cursor selection implementation, appending instead.");
+                        box.value += text("");
                         return;
                     }
                     return wrapper;
@@ -456,10 +456,10 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             context.escape = function(search) {
                 var text = context.get();
 
-                var tokenFormat = '~' + (new Date()).getTime() + '.$1~';
+                var tokenFormat = "~" + (new Date()).getTime() + ".$1~";
                 var i = 0;
                 text = text.replace(search, function(match) {
-                    var token = tokenFormat.replace('$1', i++);
+                    var token = tokenFormat.replace("$1", i++);
                     state.escaped[token] = match;
                     return token;
                 });
@@ -522,18 +522,18 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             context.options = function(values) {
                 // validate
                 if (!$.isPlainObject(values))
-                    return _warn('options(...) ignored because no valid argument was given');
+                    return _warn("options(...) ignored because no valid argument was given");
 
                 // set values
                 $.each(values, function(id, value) {
                     // map aliases
-                    id = { minor: 'wpMinoredit', watch: 'wpWatchthis' }[id] || id;
+                    id = { minor: "wpMinoredit", watch: "wpWatchthis" }[id] || id;
 
                     // set element
-                    var element = $('#' + id);
+                    var element = $("#" + id);
                     if (!element.is('input[type="checkbox"]'))
-                        return _warn('options({' + id + ': ' + value + '}) ignored because there\'s no valid checkbox with that ID');
-                    element.prop('checked', value);
+                        return _warn("options({" + id + ": " + value + "}) ignored because there's no valid checkbox with that ID");
+                    element.prop("checked", value);
                 });
 
                 return context;
@@ -549,12 +549,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
              */
             context.appendEditSummary = function(summary) {
                 var editor = context.forField(state.$editSummary);
-                var text = editor.get().replace(/\s+$/, ''); // get text without trailing whitespace
+                var text = editor.get().replace(/\s+$/, ""); // get text without trailing whitespace
 
                 if (text.match(/\*\/$/))
-                    editor.set(text + ' ' + summary); // "/* section */ reason"
+                    editor.set(text + " " + summary); // "/* section */ reason"
                 else if (text.length)
-                    editor.set(text + ', ' + summary); // old summary, new summary
+                    editor.set(text + ", " + summary); // old summary, new summary
                 else
                     editor.set(summary); // new summary
 
@@ -575,14 +575,14 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
              * Click the 'show changes' button if editing a page.
              */
             context.clickDiff = function() {
-                $('#wpDiff').click();
+                $("#wpDiff").click();
             };
 
             /**
              * Click the 'show preview' button if editing a page.
              */
             context.clickPreview = function() {
-                $('#wpPreview').click();
+                $("#wpPreview").click();
             };
 
             return context;
@@ -610,15 +610,15 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
              */
             var _addPortlet = function(id, name) {
                 // copy the portlet structure for the current skin
-                var sidebar = $('#p-tb').clone();
+                var sidebar = $("#p-tb").clone();
 
                 // adjust content
-                sidebar.attr({ id: id, 'aria-labelledby': id + '-label' });
-                sidebar.find('#p-tb-label, h1, h2, h3, h4, h5').first().text(name).attr({ id: id + '-label' });
-                sidebar.find('ul').empty();
+                sidebar.attr({ id: id, 'aria-labelledby': id + "-label" });
+                sidebar.find("#p-tb-label, h1, h2, h3, h4, h5").first().text(name).attr({ id: id + "-label" });
+                sidebar.find("ul").empty();
 
                 // add to DOM
-                $('#p-tb').parent().append(sidebar);
+                $("#p-tb").parent().append(sidebar);
                 return sidebar;
             };
 
@@ -635,8 +635,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             var _addPortletLink = function(portletID, text, id, tooltip, accessKey, target) {
                 // create link
                 var isCallback = $.isFunction(target);
-                var uri = isCallback ? '#' : target;
-                var link = $(mw.util.addPortletLink(portletID, uri, text, id, tooltip || ''));
+                var uri = isCallback ? "#" : target;
+                var link = $(mw.util.addPortletLink(portletID, uri, text, id, tooltip || ""));
                 if (isCallback)
                     link.click(function(e) { e.preventDefault(); target(e); });
 
@@ -645,12 +645,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                     // steal access key if needed
                     var previousTarget = $('[accesskey="' + accessKey.replace('"', '\\"') + '"]');
                     if (previousTarget.length) {
-                        _warn('overwrote access key [' + accessKey + '] previously assigned to "' + previousTarget.text() + '".');
-                        previousTarget.removeAttr('accesskey');
+                        _warn("overwrote access key [" + accessKey + '] previously assigned to "' + previousTarget.text() + '".');
+                        previousTarget.removeAttr("accesskey");
                     }
 
                     // set key
-                    link.find('a:first').attr('accesskey', accessKey);
+                    link.find("a:first").attr("accesskey", accessKey);
                 }
 
                 return link;
@@ -662,15 +662,15 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
              */
             var _addLibrarySettingsLink = function(portletID) {
                 // get sidebar
-                var sidebar = $('#' + portletID);
-                if (sidebar.hasClass('ts-library-portlet'))
+                var sidebar = $("#" + portletID);
+                if (sidebar.hasClass("ts-library-portlet"))
                     return;
 
                 // add link
-                sidebar.addClass('ts-library-portlet');
-                sidebar.find('h1, h2, h3, h4, h5').first().append([
-                    ' ',
-                    $('<a></a>', { href: '/wiki/Special:TemplateScript', html: '&#9965;', target: '_blank' })
+                sidebar.addClass("ts-library-portlet");
+                sidebar.find("h1, h2, h3, h4, h5").first().append([
+                    " ",
+                    $("<a></a>", { href: "/wiki/Special:TemplateScript", html: "&#9965;", target: "_blank" })
                 ]);
             };
 
@@ -688,18 +688,18 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 // build the sidebar
                 var category = template.category;
                 if (!(category in state.sidebars)) {
-                    var id = state.sidebars[category] = 'p-templatescript-' + state.sidebarCount;
+                    var id = state.sidebars[category] = "p-templatescript-" + state.sidebarCount;
                     _addPortlet(id, category);
                     ++state.sidebarCount;
                 }
                 var sidebarID = state.sidebars[category];
 
                 // add link
-                var $item = _addPortletLink(sidebarID, template.name, 'ts-link-' + template.id, template.tooltip, template.accessKey, function() { instance.apply(template.id); });
+                var $item = _addPortletLink(sidebarID, template.name, "ts-link-" + template.id, template.tooltip, template.accessKey, function() { instance.apply(template.id); });
                 if (template.accessKey) {
                     $item.append(
-                        $('<small>')
-                            .addClass('ts-shortcut')
+                        $("<small>")
+                            .addClass("ts-shortcut")
                             .append(template.accessKey)
                     );
                 }
@@ -724,15 +724,15 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
             // init context
             state.isInited = true;
-            state.$target = $('#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason').first();
-            state.$editSummary = $('#wpSummary:first');
+            state.$target = $("#wpTextbox1, #wpReason, #wpComment, #mwProtect-reason, #mw-bi-reason").first();
+            state.$editSummary = $("#wpSummary:first");
 
             // init plugins
-            self.addRenderer('sidebar', _getSidebarRenderer());
+            self.addRenderer("sidebar", _getSidebarRenderer());
 
             // init UI
-            mw.util.addCSS('.ts-shortcut { margin-left:.5em; color:#CCC; }');
-            _loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js').then(function() {
+            mw.util.addCSS(".ts-shortcut { margin-left:.5em; color:#CCC; }");
+            _loadDependency("//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js").then(function() {
                 state.isReady = true;
                 for (var i = 0; i < state.queue.length; i++)
                     self.add(state.queue[i]);
@@ -740,7 +740,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
             // initialise settings UI
             _updateSettingsView();
-            $('a.new').filter('[title^="' + mw.config.get('wgFormattedNamespaces')[-1] + ':TemplateScript"]').removeClass('new'); // unredlink [[Special:TemplateScript]]
+            $("a.new").filter('[title^="' + mw.config.get("wgFormattedNamespaces")[-1] + ':TemplateScript"]').removeClass("new"); // unredlink [[Special:TemplateScript]]
         };
 
         /**
@@ -750,7 +750,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          */
         var _loadDependency = function(url) {
             if (!state.dependencies[url])
-                state.dependencies[url] = $.ajax(url, { cache: true, dataType: 'script' });
+                state.dependencies[url] = $.ajax(url, { cache: true, dataType: "script" });
             return state.dependencies[url];
         };
 
@@ -760,7 +760,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          */
         var _warn = function(message) {
             if (console && console.log)
-                console.log('[TemplateScript] ' + message);
+                console.log("[TemplateScript] " + message);
         };
 
         /**
@@ -799,21 +799,21 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         var _normalise = function(opts) {
             // validate required fields
             if (!opts.name)
-                throw 'must have a name';
+                throw "must have a name";
             if (opts.script && !$.isFunction(opts.script))
-                throw 'script must be a function';
+                throw "script must be a function";
             if (!opts.template && !opts.script)
-                throw 'must have either a template or a script';
+                throw "must have either a template or a script";
 
             // normalise schema
-            opts = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript::add(name:' + (opts.name || 'unnamed') + ')', opts, self.Template);
-            opts.position = pathoschild.util.ApplyEnumeration('Position', opts.position, self.Position);
-            opts.editSummaryPosition = pathoschild.util.ApplyEnumeration('Position', opts.editSummaryPosition, self.Position);
-            opts.headlinePosition = pathoschild.util.ApplyEnumeration('Position', opts.headlinePosition, self.Position);
+            opts = pathoschild.util.ApplyArgumentSchema("pathoschild.TemplateScript::add(name:" + (opts.name || "unnamed") + ")", opts, self.Template);
+            opts.position = pathoschild.util.ApplyEnumeration("Position", opts.position, self.Position);
+            opts.editSummaryPosition = pathoschild.util.ApplyEnumeration("Position", opts.editSummaryPosition, self.Position);
+            opts.headlinePosition = pathoschild.util.ApplyEnumeration("Position", opts.headlinePosition, self.Position);
 
             // normalise script URL
             if (opts.scriptUrl && !opts.scriptUrl.match(/^(?:http:|https:)?\/\//))
-                opts.scriptUrl = mw.config.get('wgServer') + mw.config.get('wgScriptPath') + '/index.php?title=' + encodeURIComponent(opts.scriptUrl) + '&action=raw&ctype=text/javascript';
+                opts.scriptUrl = mw.config.get("wgServer") + mw.config.get("wgScriptPath") + "/index.php?title=" + encodeURIComponent(opts.scriptUrl) + "&action=raw&ctype=text/javascript";
 
             // normalise actions
             if (opts.forActions) {
@@ -825,7 +825,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 opts.forActions = $.map(opts.forActions, function(value) { return value.toLowerCase(); });
             }
             else
-                opts.forActions = ['*'];
+                opts.forActions = ["*"];
 
             // normalise namespaces
             if (opts.forNamespaces) {
@@ -836,8 +836,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 // normalise values
                 opts.forNamespaces = $.map(opts.forNamespaces, function(value) {
                     // *
-                    if (value === '*')
-                        return '*';
+                    if (value === "*")
+                        return "*";
 
                     // parse numeric value
                     var numeric = parseInt(value, 10);
@@ -845,8 +845,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                         return numeric;
 
                     // convert namespace names
-                    var key = value.toLowerCase().replace(/ /g, '_');
-                    numeric = mw.config.get('wgNamespaceIds')[key];
+                    var key = value.toLowerCase().replace(/ /g, "_");
+                    numeric = mw.config.get("wgNamespaceIds")[key];
                     if (numeric || numeric === 0)
                         return numeric;
 
@@ -856,14 +856,14 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 });
             }
             else
-                opts.forNamespaces = ['*'];
+                opts.forNamespaces = ["*"];
 
             // normalise defaults
             opts.category = opts.category || self.strings.defaultHeaderText;
-            opts.position = opts.position || (self.Context.action === 'edit' ? 'cursor' : 'replace');
-            opts.editSummaryPosition = opts.editSummaryPosition || 'replace';
-            opts.headlinePosition = opts.headlinePosition || 'replace';
-            opts.renderer = opts.renderer || 'sidebar';
+            opts.position = opts.position || (self.Context.action === "edit" ? "cursor" : "replace");
+            opts.editSummaryPosition = opts.editSummaryPosition || "replace";
+            opts.headlinePosition = opts.headlinePosition || "replace";
+            opts.renderer = opts.renderer || "sidebar";
         };
 
         /**
@@ -901,35 +901,35 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          * Load or reload the TemplateScript library settings view if the current page is [[Special:TemplateScript]]. This replaces the current page content.
          */
         var _updateSettingsView = function() {
-            if (mw.config.get('wgCanonicalNamespace') !== 'Special' || mw.config.get('wgTitle').toLowerCase() !== 'templatescript')
+            if (mw.config.get("wgCanonicalNamespace") !== "Special" || mw.config.get("wgTitle").toLowerCase() !== "templatescript")
                 return;
 
             // initialise UI
-            $('title:first, #firstHeading').text('TemplateScript settings');
-            $('#mw-content-text').html('↻ loading...');
+            $("title:first, #firstHeading").text("TemplateScript settings");
+            $("#mw-content-text").html("↻ loading...");
 
             // fetch dependencies
             $.when(
-                mw.loader.using(['mediawiki.api.options']),
-                _loadDependency('//tools-static.wmflabs.org/cdnjs/ajax/libs/handlebars.js/4.0.2/handlebars.js')
+                mw.loader.using(["mediawiki.api.options"]),
+                _loadDependency("//tools-static.wmflabs.org/cdnjs/ajax/libs/handlebars.js/4.0.2/handlebars.js")
             )
 
                 // render template
                 .then(function() {
-                    return $.ajax('//tools-static.wmflabs.org/meta/scripts/templates/pathoschild.templatescript.settings.htm', { dataType: 'html' });
+                    return $.ajax("//tools-static.wmflabs.org/meta/scripts/templates/pathoschild.templatescript.settings.htm", { dataType: "html" });
                 })
                 .then(function(template) {
                     // fetch settings
                     var settings = self.library.getSettings();
 
                     // generate view
-                    Handlebars.registerHelper('optional', function(condition, str) { return condition ? str : ''; });
-                    Handlebars.registerHelper('counter', function(index, startFrom) { return startFrom + index; });
+                    Handlebars.registerHelper("optional", function(condition, str) { return condition ? str : ""; });
+                    Handlebars.registerHelper("counter", function(index, startFrom) { return startFrom + index; });
                     template = Handlebars.compile(template);
-                    var html = template({ username: mw.config.get('wgUserName'), libraries: state.libraries });
+                    var html = template({ username: mw.config.get("wgUserName"), libraries: state.libraries });
 
                     // load view
-                    $('#mw-content-text').html(html);
+                    $("#mw-content-text").html(html);
 
                     // save settings on change
                     $('#mw-content-text input[type="checkbox"]').click(function() {
@@ -981,7 +981,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 _normalise(opts);
             }
             catch (error) {
-                _warn('template "' + (opts && opts.name || 'unnamed') + '" couldn\'t be normalised: ' + error);
+                _warn('template "' + (opts && opts.name || "unnamed") + '" couldn\'t be normalised: ' + error);
                 return; // invalid template
             }
 
@@ -1008,15 +1008,15 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
              * @param {Library} library The library configuration.
              */
             define: function(library) {
-                _loadDependency('//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js').then(function() {
+                _loadDependency("//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js").then(function() {
                     // validate library
-                    library = pathoschild.util.ApplyArgumentSchema('pathoschild.TemplateScript.library::define(key:' + (library.key || 'no key') + ')', library, self.Library);
+                    library = pathoschild.util.ApplyArgumentSchema("pathoschild.TemplateScript.library::define(key:" + (library.key || "no key") + ")", library, self.Library);
                     if (!library.key)
-                        return _warn('can\'t add library: it doesn\'t define a key');
+                        return _warn("can't add library: it doesn't define a key");
                     if (!library.name)
-                        return _warn('can\'t add library \'' + library.key + '\': it doesn\'t define a name');
+                        return _warn("can't add library '" + library.key + "': it doesn't define a name");
                     if (!library.categories || !library.categories.length)
-                        return _warn('can\'t add library \'' + library.key + '\': it doesn\'t contain any scripts');
+                        return _warn("can't add library '" + library.key + "': it doesn't contain any scripts");
 
                     // preprocess scripts
                     var settings = self.library.getSettings();
@@ -1024,14 +1024,14 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                     $.each(library.categories, function(c, category) {
                         // validate
                         if (!category.scripts)
-                            return _warn('can\'t add category \'' + category + '\' from library \'' + library.key + '\': there are no scripts defined');
+                            return _warn("can't add category '" + category + "' from library '" + library.key + "': there are no scripts defined");
 
                         $.each(category.scripts, function(s, script) {
-                            var key = library.key + '\\' + script.key;
+                            var key = library.key + "\\" + script.key;
 
                             // validate
                             if (!script.key)
-                                return _warn('can\'t add script \'' + script.name + '\' from library \'' + library.key + '\': it doesn\t define a key');
+                                return _warn("can't add script '" + script.name + "' from library '" + library.key + "': it doesn\t define a key");
 
                             // apply overrides
                             script = $.extend({}, script, state.customLibrarySettings[key]);
@@ -1060,7 +1060,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
              */
             getSettings: function() {
                 try {
-                    var options = mw.user.options.get('userjs-ts-libraries') || '{}';
+                    var options = mw.user.options.get("userjs-ts-libraries") || "{}";
                     return JSON.parse(options);
                 }
                 catch (err) {
@@ -1084,7 +1084,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
              * @param {Template} settings The settings to apply. This should match the normal Template fields, with each field overwriting the corresponding field of the imported script.
              */
             override: function(library, key, settings) {
-                state.customLibrarySettings[library + '\\' + key] = settings;
+                state.customLibrarySettings[library + "\\" + key] = settings;
             }
         };
 
@@ -1108,16 +1108,16 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         self.apply = function(id) {
             // validate
             if (!(id in state.templates))
-                return _warn('can\'t apply template #' + id + ' because there\'s no template with that ID; there\'s something wrong with TemplateScript\'s internal state');
+                return _warn("can't apply template #" + id + " because there's no template with that ID; there's something wrong with TemplateScript's internal state");
             if (!state.$target.length)
-                return _warn('can\'t apply template because the current page has no recognisable form.');
+                return _warn("can't apply template because the current page has no recognisable form.");
 
             // get template data
             var editor = self.Context;
             var opts = state.templates[id];
 
             // apply template
-            var isSectionNew = editor.action === 'edit' && $('#wpTextbox1, #wpSummary').first().attr('id') === 'wpSummary'; // if #wpSummary is first, it's not the edit summary (MediaWiki reuses the ID)
+            var isSectionNew = editor.action === "edit" && $("#wpTextbox1, #wpSummary").first().attr("id") === "wpSummary"; // if #wpSummary is first, it's not the edit summary (MediaWiki reuses the ID)
             if (opts.template)
                 _insert(editor, opts.template, opts.position);
             if (opts.editSummary && !isSectionNew)
@@ -1140,14 +1140,14 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          */
         self.isEnabled = function(template) {
             /* check enabled flag */
-            if ('enabled' in template && template.enabled !== null && !template.enabled)
+            if ("enabled" in template && template.enabled !== null && !template.enabled)
                 return false;
 
             /* match context values */
             var context = self.Context;
-            if ($.inArray('*', template.forNamespaces) === -1 && !_isEqualOrIn(mw.config.get('wgNamespaceNumber'), template.forNamespaces))
+            if ($.inArray("*", template.forNamespaces) === -1 && !_isEqualOrIn(mw.config.get("wgNamespaceNumber"), template.forNamespaces))
                 return false;
-            if ($.inArray('*', template.forActions) === -1 && !_isEqualOrIn(context.action, template.forActions))
+            if ($.inArray("*", template.forActions) === -1 && !_isEqualOrIn(context.action, template.forActions))
                 return false;
 
             return true;
@@ -1165,7 +1165,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         if (state.config.regexEditor !== false) {
             self.add({
                 name: self.strings.regexEditor,
-                scriptUrl: '//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js',
+                scriptUrl: "//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js",
                 script: function(editor) {
                     var regexEditor = new pathoschild.RegexEditor();
                     regexEditor.create(state.$target, editor);

@@ -12,7 +12,7 @@ will be shown in rows that don't contain a link, like headings.
 var pathoschild = pathoschild || {};
 
 $(function() {
-    'use strict';
+    "use strict";
 
     if (pathoschild.ajaxTransclusionTables)
         return; // already initialised, don't overwrite
@@ -30,7 +30,7 @@ $(function() {
         /*********
         ** Fields
         *********/
-        self.version = '0.2';
+        self.version = "0.2";
 
 
         /*********
@@ -44,25 +44,25 @@ $(function() {
             // toggle transclusion
             if (data.expanded) {
                 $(data.container).remove();
-                toggle.text('[show] ').data({ expanded: false, container: null });
+                toggle.text("[show] ").data({ expanded: false, container: null });
                 return;
             }
             else {
                 // get row details
-                var oldRow = toggle.closest('tr');
-                var rowID = 'att-' + (new Date()).getTime();
-                var colspan = oldRow.find('> td').length;
+                var oldRow = toggle.closest("tr");
+                var rowID = "att-" + (new Date()).getTime();
+                var colspan = oldRow.find("> td").length;
 
                 // update UI
-                toggle.text('[hide] ').data({ expanded: true, container: '#' + rowID });
+                toggle.text("[hide] ").data({ expanded: true, container: "#" + rowID });
                 var newDiv = $('<div class="att-container">').appendTo(
-                    $('<td>').attr('colspan', colspan).appendTo(
-                        $('<tr>').attr('id', rowID).insertAfter(oldRow)
+                    $("<td>").attr("colspan", colspan).appendTo(
+                        $("<tr>").attr("id", rowID).insertAfter(oldRow)
                     )
                 );
-                newDiv.append($('<img>').attr('src', '//upload.wikimedia.org/wikipedia/commons/d/d2/Spinning_wheel_throbber.gif'));
+                newDiv.append($("<img>").attr("src", "//upload.wikimedia.org/wikipedia/commons/d/d2/Spinning_wheel_throbber.gif"));
 
-                $.ajax(mw.config.get('wgServer') + '/wiki/' + data.title + '?action=render').then(function(data) {
+                $.ajax(mw.config.get("wgServer") + "/wiki/" + data.title + "?action=render").then(function(data) {
                     newDiv.html(data);
                 });
             }
@@ -77,25 +77,25 @@ $(function() {
          */
         self.initialise = function() {
             // find cells to inject
-            var rows = $('table.attable tr');
+            var rows = $("table.attable tr");
             if (!rows.length)
                 return;
 
             // add styles
             mw.util.addCSS(
-                '.att-container { margin:0.5em; padding:0.5em; border:2px solid gray; }'
-                + '.att-toggle { font-size:0.9em; cursor:pointer; }'
+                ".att-container { margin:0.5em; padding:0.5em; border:2px solid gray; }"
+                + ".att-toggle { font-size:0.9em; cursor:pointer; }"
             );
 
             // inject links
-            var toggle = $('<a>').addClass('att-toggle').text('[show] ');
+            var toggle = $("<a>").addClass("att-toggle").text("[show] ");
             rows.each(function(i, row) {
                 // get title to transclude
                 row = $(row);
-                var cell = row.find('td:first');
-                var link = cell.find('a:first');
-                var title = link.attr('title');
-                if (!link.length || !link.attr('href').match(/^\/wiki/) || !title)
+                var cell = row.find("td:first");
+                var link = cell.find("a:first");
+                var title = link.attr("title");
+                if (!link.length || !link.attr("href").match(/^\/wiki/) || !title)
                     return;
 
                 // inject toggle
