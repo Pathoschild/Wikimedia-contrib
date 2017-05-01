@@ -1174,7 +1174,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         }
 
         // init TemplateScript
-        $(_initialise);
+        $.when($.ready, mw.loader.using(["mediawiki.api", "mediawiki.util"])).done(_initialise);
         return self;
     })();
 }());

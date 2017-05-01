@@ -339,5 +339,5 @@
         }
     };
 
-    $(function() { pathoschild.StewardScript.Initialize(); });
+    $.when($.ready, mw.loader.using("mediawiki.util")).done(function() { pathoschild.StewardScript.Initialize(); });
 }());

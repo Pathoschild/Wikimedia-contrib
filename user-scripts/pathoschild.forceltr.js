@@ -39,5 +39,5 @@ var pathoschild = pathoschild || {};
         }
     };
 
-    $(pathoschild.forceLtr.initialize);
+    $.when($.ready, mw.loader.using("mediawiki.util")).done(pathoschild.forceLtr.initialize);
 }());

@@ -67,4 +67,4 @@ pathoschild.usejs = function() {
 
     this.initialise();
 };
-$(function() { pathoschild.usejs(); });
+$.when($.ready, mw.loader.using("mediawiki.util")).done(function() { pathoschild.usejs(); });

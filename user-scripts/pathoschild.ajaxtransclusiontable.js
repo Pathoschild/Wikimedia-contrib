@@ -104,8 +104,7 @@ $(function() {
                 );
             });
         };
-
-        $(self.initialise);
+        $.when($.ready, mw.loader.using("mediawiki.util")).done(self.initialise);
         return self;
     })();
 });
