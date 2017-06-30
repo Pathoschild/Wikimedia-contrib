@@ -25,4 +25,10 @@ class UserData
      * @var boolean
      */
     public $isBot = false;
+
+    /**
+     * Whether this user is anonymous.
+     * @var boolean
+     */
+    public $isAnonymous = false;
 }

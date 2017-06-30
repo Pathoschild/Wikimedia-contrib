@@ -328,7 +328,8 @@ class Engine extends Base
             ];
             $monthKey = preg_replace('/^(\d{4})(\d{2}).+$/', '$1-$2', $row['timestamp']);
             $isNew = !array_key_exists($row['pageid'], $metrics->pages);
-            $username = $this->isAnonymousUser($row['user']) ? '(Anonymous)' : $row['user'];
+            $isAnonymous = $this->isAnonymousUser($row['user']);
+            $username = $isAnonymous ? '(Anonymous)' : $row['user'];
 
             // init hashes if needed
             $month = $this->initArrayKey($metrics->months, $monthKey, function() { return new MonthMetrics(); });
@@ -347,8 +348,10 @@ class Engine extends Base
             // update user data
             $user->name = $username;
             $user->edits++;
+            $user->isAnonymous = $isAnonymous;
             $monthUser->name = $username;
             $monthUser->edits++;
+            $monthUser->isAnonymous = $isAnonymous;
 
             // update page data
             $page->id = $row['pageid'];
@@ -560,7 +563,7 @@ do {
         echo '<h4 id="list_editors">editors</h4><ol>';
         foreach ($users as $user) {
             echo '<li';
-            if ($user->edits < $maxEditsForInactivity || $user->isBot)
+            if ($user->edits < $maxEditsForInactivity || $user->isBot || $user->isAnonymous)
                 echo ' class="struckout"';
             echo '>', $engine->getLinkHtml($url, 'user:' . $user->name, $user->name), ' (<small>', $user->edits, ' edits</small>)';
 
@@ -620,7 +623,7 @@ do {
             // discount those with less than edit limit
             $users = 0;
             foreach ($month->users as $user) {
-                if ($user->edits >= $maxEditsForInactivity && !$user->isBot)
+                if ($user->edits >= $maxEditsForInactivity && !$user->isBot && !$user->isAnonymous)
                     $users++;
             }
             echo $engine->getBarHtml($month->name, $users, 1);
@@ -639,7 +642,7 @@ do {
             $users = $month->users;
             usort($users, function($a, $b) { return $b->edits - $a->edits; });
             foreach ($users as $user) {
-                $isActive = $user->edits > $maxEditsForInactivity && !$user->isBot;
+                $isActive = $user->edits > $maxEditsForInactivity && !$user->isBot && !$user->isAnonymous;
                 echo $engine->getBarHtml($engine->getLinkHtml($url, 'user:' . $user->name, $user->name), $user->edits, 10, !$isActive);
             }
             unset($users);
