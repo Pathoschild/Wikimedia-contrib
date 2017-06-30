@@ -1,9 +1,17 @@
 <?php
+set_time_limit(120); // set timout to two minutes
+require_once('../backend/modules/Base.php');
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/Form.php');
 $backend = Backend::create('Catanalysis', 'Analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix). This is primarily intended for test project analysis by the Wikimedia Foundation <a href="//meta.wikimedia.org/wiki/Language_committee" title="language committee">language committee</a>.')
     ->link('/catanalysis/stylesheet.css')
     ->header();
+spl_autoload_register(function ($className) {
+    foreach (["models/$className.php"] as $path) {
+        if (file_exists($path))
+            include($path);
+    }
+});
 
 ##########
 ## Configuration
@@ -76,26 +84,13 @@ $db = $backend->getDatabase();
     </form>
 <?php
 
-do {
+/**
+ * The tool engine.
+ */
+class Engine extends Base
+{
     ##########
-    ## Validation
-    ##########
-    // missing data (break)
-    if (!$title)
-        break;
-
-    // category mode (warn)
-    if ($cat) {
-        echo '<p class="neutral" style="border-color:#C66;">You have selected category mode, which can be skewed by incorrect categorization. Please review the list of pages generated below.</p>';
-        $listpages = true;
-    }
-    if ($namespace) {
-        echo '<p class="neutral" style="border-color:#C66;">You have specified the "', $backend->formatText($namespace), '" namespace in the prefix. The details below only reflect edits in that namespace.</p>';
-    }
-
-
-    ##########
-    ## Methods
+    ## Public methods
     ##########
     /**
      * Get the HTML for a bar to show in a bar graph.
@@ -105,7 +100,7 @@ do {
      * @param bool $strike Whether to format the label as struck out.
      * @return string
      */
-    function getBarHtml($label, $total, $barvalue, $strike = false)
+    public function getBarHtml($label, $total, $barvalue, $strike = false)
     {
         $bars = floor($total / $barvalue);
         $out = '';
@@ -127,47 +122,111 @@ do {
 
     /**
      * Get the HTML for a link.
+     * @param string $url The base wiki URL.
      * @param string $target The link URL.
      * @param string $text The link text.
      * @return string
      */
-    function getLinkHtml($target, $text = null)
+    public function getLinkHtml($url, $target, $text = null)
     {
-        global $url;
-        if (!$text)
-            $text = $target;
+        $text = $this->formatText($text ? $text : $target);
+        $target = $this->formatValue($target);
         return "<a href='$url/wiki/$target' title='$target'>$text</a>";
     }
 
+    /**
+     * Get the namespace name given the namespace ID.
+     * @param int $id The namespace ID.
+     * @return string
+     */
+    public function getNamespaceName($id)
+    {
+        switch ($id) {
+            // built-in namespaces (https://www.mediawiki.org/wiki/Manual:Namespace#Built-in_namespaces)
+            case 0:
+                return '';
+            case 1:
+                return 'Talk';
+            case 2:
+                return 'User';
+            case 3:
+                return 'User talk';
+            case 4:
+                return 'Project';
+            case 5:
+                return 'Project talk';
+            case 6:
+                return 'Image';
+            case 7:
+                return 'Image talk';
+            case 8:
+                return 'MediaWiki';
+            case 9:
+                return 'MediaWiki talk';
+            case 10:
+                return 'Template';
+            case 11:
+                return 'Template talk';
+            case 12:
+                return 'Help';
+            case 13:
+                return 'Help talk';
+            case 14:
+                return 'Category';
+            case 15:
+                return 'Category talk';
 
-    ##########
-    ## Query database
-    ##########
-    $db->connect($database);
-    $revisionQuery = [
-        'sql' => 'SELECT page.page_namespace, page.page_title, page.page_is_redirect, page.page_is_new, revision.rev_minor_edit, revision.rev_user_text, revision.rev_timestamp, revision.rev_len, revision.rev_page FROM revision LEFT JOIN page ON page.page_id = revision.rev_page ',
-        'values' => []
-    ];
-
-    /* prefix mode */
-    if (!$cat) {
-        /* handle namespace */
-        if ($namespace) {
-            $revisionQuery['sql'] .= 'JOIN toolserver.namespace ON page.page_namespace = toolserver.namespace.ns_id WHERE toolserver.namespace.ns_name = ? AND ';
-            $revisionQuery['values'][] = $namespace;
-        } else {
-            $revisionQuery['sql'] .= 'WHERE ';
+            // fallback
+            default:
+                return '{{ns:' . $id . '}}';
         }
+    }
 
-        $revisionQuery['sql'] .= ' (CONVERT(page_title USING binary)=CONVERT(? USING BINARY) OR CONVERT(page_title USING BINARY) LIKE CONVERT(? USING BINARY)) ORDER BY revision.rev_timestamp';
-        $revisionQuery['values'][] = str_replace(' ', '_', $title);
-        $revisionQuery['values'][] = str_replace(' ', '_', $title . '%');
-    } /* category mode */
-    else {
+    /**
+     * Get a SQL query that fetches all the edits to pages with a common prefix.
+     * @param Database $db The connected database instance.
+     * @param string $namespace The namespace to search.
+     * @param string $title The page prefix to search.
+     * @return Database The Database instance to chain query methods.
+     */
+    public function getEditsByPrefix($db, $namespace, $title)
+    {
+        /* build initial query */
+        $sql = 'SELECT page.page_namespace, page.page_title, page.page_is_redirect, page.page_is_new, revision.rev_minor_edit, revision.rev_user_text, revision.rev_timestamp, revision.rev_len, revision.rev_page FROM revision LEFT JOIN page ON page.page_id = revision.rev_page ';
+        $values = [];
+
+        /* add namespace */
+        if ($namespace) {
+            $sql .= 'JOIN toolserver.namespace ON page.page_namespace = toolserver.namespace.ns_id WHERE toolserver.namespace.ns_name = ? AND ';
+            $values[] = $namespace;
+        }
+        else
+            $sql .= 'WHERE ';
+
+        /* add prefix */
+        $sql .= ' (CONVERT(page_title USING binary)=CONVERT(? USING BINARY) OR CONVERT(page_title USING BINARY) LIKE CONVERT(? USING BINARY)) ORDER BY revision.rev_timestamp';
+        $values[] = str_replace(' ', '_', $title);
+        $values[] = str_replace(' ', '_', $title . '%');
+
+        /* build query */
+        return $db->query($sql, $values);
+    }
+
+    /**
+     * Get a SQL query that fetches all the edits to pages in a category or its subcategories.
+     * @param Database $db The connected database instance.
+     * @param string $title The category title to search.
+     * @return Database The Database instance to chain query methods.
+     */
+    public function getEditsByCategory($db, $title)
+    {
+        /* build initial query */
+        $sql = 'SELECT page.page_namespace, page.page_title, page.page_is_redirect, page.page_is_new, revision.rev_minor_edit, revision.rev_user_text, revision.rev_timestamp, revision.rev_len, revision.rev_page FROM revision LEFT JOIN page ON page.page_id = revision.rev_page ';
+        $values = [];
+
         /* fetch list of subcategories */
         $cats = [];
         $queue = [$title];
-        $backend->profiler->start('fetch subcategories');
         while (count($queue)) {
             /* fetch subcategories of currently-known categories */
             $dbCatQuery = 'SELECT page_title FROM page JOIN categorylinks ON page_id=cl_from WHERE page_namespace=14 AND CONVERT(cl_to USING BINARY) IN (';
@@ -190,40 +249,216 @@ do {
                 $queue[] = $subcat['page_title'];
             }
         }
-        $backend->profiler->stop('fetch subcategories');
 
         /* add to query */
-        $revisionQuery['sql'] .= 'JOIN categorylinks on page_id=cl_from WHERE CONVERT(cl_to USING BINARY) IN (';
+        $sql .= 'JOIN categorylinks on page_id=cl_from WHERE CONVERT(cl_to USING BINARY) IN (';
         foreach ($cats as $cat) {
-            $revisionQuery['sql'] .= 'CONVERT(? USING BINARY),';
-            $revisionQuery['values'][] = str_replace(' ', '_', $cat);
+            $sql .= 'CONVERT(? USING BINARY),';
+            $values[] = str_replace(' ', '_', $cat);
         }
-        $revisionQuery['sql'] = rtrim($revisionQuery['sql'], ', ') . ') ORDER BY revision.rev_timestamp';
+        $sql = rtrim($sql, ', ') . ') ORDER BY revision.rev_timestamp';
+
+        /* build query */
+        return $db->query($sql, $values);
     }
 
-    /* finalise */
-    $backend->profiler->start('fetch revisions');
-    $revisions = $db->query($revisionQuery['sql'], $revisionQuery['values'])->fetchAllAssoc();
-    $backend->profiler->stop('fetch revisions');
+    /**
+     * Get whether the given username matches an anonymous user.
+     * @param string $name The username.
+     * @return boolean
+     */
+    public function isAnonymousUser($name)
+    {
+        return preg_match('/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/', $name);
+    }
+
+    /**
+     * Get metadata about matching revisions.
+     * @param Database $db The connected database instance.
+     * @param Database The revision query.
+     * @return Metrics The revision metrics.
+     */
+    public function getEditMetrics($db, $revisionQuery) {
+        $metrics = new Metrics();
+
+        // get data
+        while ($revision = $revisionQuery->fetchAssoc()) {
+            // read row
+            $row = [
+                'namespace' => $revision['page_namespace'],
+                'title' => $revision['page_title'],
+                'user' => $revision['rev_user_text'],
+                'timestamp' => $revision['rev_timestamp'],
+                'isRedirect' => $revision['page_is_redirect'],
+                'isMinor' => $revision['rev_minor_edit'],
+                'pageid' => $revision['rev_page'],
+                'size' => $revision['rev_len']
+            ];
+            $monthKey = preg_replace('/^(\d{4})(\d{2}).+$/', '$1-$2', $row['timestamp']);
+            $isNew = !array_key_exists($row['pageid'], $metrics->pages);
+            $username = $this->isAnonymousUser($row['user']) ? '(Anonymous)' : $row['user'];
+
+            // init hashes if needed
+            $month = $this->initArrayKey($metrics->months, $monthKey, function() { return new MonthMetrics(); });
+            $user = $this->initArrayKey($metrics->users, $username, function() { return new UserData(); });
+            $page = $this->initArrayKey($metrics->pages, $row['pageid'], function() { return new PageData(); });
+            $monthUser = $this->initArrayKey($month->users, $username, function() { return new UserData(); });
+
+            // update metrics
+            $metrics->edits++;
+            $month->name = $monthKey;
+            $month->edits++;
+            $month->bytesAdded += $row['size'] - $page->size;
+            if ($isNew)
+                $month->newPages++;
+
+            // update user data
+            $user->name = $username;
+            $user->edits++;
+            $monthUser->name = $username;
+            $monthUser->edits++;
+
+            // update page data
+            $page->id = $row['pageid'];
+            $page->namespace = $row['namespace'];
+            if (!$page->name) {
+                $page->name = str_replace('_', ' ', $row['title']);
+                $namespaceName = $this->getNamespaceName($page->namespace);
+                if($namespaceName)
+                    $page->name = $namespaceName . ':' . $page->name;
+            }
+            $page->edits++;
+            $page->size = $row['size'];
+            $page->isRedirect = $row['isRedirect'];
+        }
+        unset($bytesAdded, $month, $monthKey, $prevSize, $query, $revision, $row);
+
+        // collapse lookups into arrays & sort
+        $metrics->months = array_values($metrics->months);
+        $metrics->pages = array_values($metrics->pages);
+        $metrics->users = array_values($metrics->users);
+
+        usort($metrics->months, function($a, $b) { return strcmp($a->name, $b->name); });
+        usort($metrics->pages, function($a, $b) { return strcmp($a->name, $b->name); });
+        usort($metrics->users, function($a, $b) { return strcmp($a->name, $b->name); });
+
+        foreach($metrics->months as &$month) {
+            $month->users = array_values($month->users);
+            usort($month->users, function($a, $b) { return strcmp($a->name, $b->name); });
+        }
+
+        return $metrics;
+    }
+
+    /**
+     * Fetch bot flags and update the given metrics.
+     * @param Database $db The connected database instance.
+     * @param Metrics $metrics The revision metrics.
+     * @return Metrics The revision metrics.
+     */
+    public function flagBots($db, &$metrics)
+    {
+        // get list of usernames
+        $users = array_map(function($user) { return $user->name; }, $metrics->users);
+
+        // get flags
+        $bots = [];
+        $query = $db->query('SELECT user_name FROM user INNER JOIN user_groups ON user_id = ug_user WHERE user_name IN (' . rtrim(str_repeat('?,', count($users)), ',') . ') AND ug_group = "bot"', $users);
+        while ($user = $query->fetchValue())
+            $bots[$user] = true;
+        unset($user, $query);
+
+        // flag bots in overall metrics
+        foreach ($metrics->users as &$user)
+            $user->isBot = array_key_exists($user->name, $bots) ? 1 : 0;
+        unset($user);
+
+        // flag bots in monthly metrics
+        foreach ($metrics->months as &$month)
+        {
+            foreach ($month->users as &$user)
+                $user->isBot = array_key_exists($user->name, $bots) ? 1 : 0;
+        }
+        unset($month, $user);
+
+        // count non-bot edits
+        foreach ($metrics->months as &$month) {
+            foreach ($month->users as &$user) {
+                if (!$user->isBot) {
+                    $metrics->editsExcludingBots += $user->edits;
+                    $month->editsExcludingBots += $user->edits;
+                }
+            }
+        }
+        unset($month, $user);
+
+        return $metrics;
+    }
+
+    ##########
+    ## Private methods
+    ##########
+    /**
+     * Initialise an array key with the given default value if it isn't defined yet.
+     * @param mixed[] $array The array whose key to set.
+     * @param mixed $key The array key to set.
+     * @param mixed $default The default value to set if the key isn't defined.
+     * @return mixed Returns the value at that key.
+     */
+    private function initArrayKey(&$array, $key, $default)
+    {
+        if (!array_key_exists($key, $array)) {
+            if (is_callable($default))
+                $array[$key] = $default();
+            else
+                $array[$key] = $default;
+        }
+        return $array[$key];
+    }
+}
+
+do {
+    ##########
+    ## Validate
+    ##########
+    // missing data (break)
+    if (!$title)
+        break;
+
+    // category mode (warn)
+    if ($cat) {
+        echo '<p class="neutral" style="border-color:#C66;">You have selected category mode, which can be skewed by incorrect categorization. Please review the list of pages generated below.</p>';
+        $listpages = true;
+    }
+    if ($namespace) {
+        echo '<p class="neutral" style="border-color:#C66;">You have specified the "', $backend->formatText($namespace), '" namespace in the prefix. The details below only reflect edits in that namespace.</p>';
+    }
 
 
     ##########
-    ## Fetch bot flags
+    ## Collect revision metrics
     ##########
-    $backend->profiler->start('fetch user groups');
+    $db->connect($database);
+    $engine = new Engine();
 
-    // get unique users
-    $users = [];
-    foreach ($revisions as $revision)
-        $users[$revision['rev_user_text']] = false;
+    // build query
+    $backend->profiler->start('build revisions query');
+    $query = $cat
+        ? $engine->getEditsByCategory($db, $title)
+        : $engine->getEditsByPrefix($db, $namespace, $title);
+    $backend->profiler->stop('build revisions query');
 
-    // fetch bot flags
-    $bots = [];
-    $query = $db->query('SELECT user_name FROM user INNER JOIN user_groups ON user_id = ug_user WHERE user_name IN (' . rtrim(str_repeat('?,', count($users)), ',') . ') AND ug_group = "bot"', array_keys($users));
-    while ($user = $query->fetchValue())
-        $bots[$user] = true;
-    unset($users);
-    $backend->profiler->stop('fetch user groups');
+    // get metrics
+    $backend->profiler->start('fetch revision metadata');
+    $metrics = $engine->getEditMetrics($db, $query);
+    $backend->profiler->stop('fetch revision metadata');
+
+    // mark bots
+    $backend->profiler->start('flag bots');
+    $engine->flagBots($db, $metrics);
+    $backend->profiler->stop('flag bots');
+
+    unset($query);
 
 
     ##########
@@ -237,240 +472,11 @@ do {
 
 
     ##########
-    ## Collate data
-    ##########
-    $backend->profiler->start('analyze data');
-    $data = [
-        'totals' => ['edits' => 0, 'minor' => 0, 'newpages' => 0],
-        'months' => [],
-        'pages' => [],
-        'redirects' => [],
-        'users' => [],
-        'userstats' => [],
-        'monthstats' => [],
-        'counts' => ['revisions' => count($revisions)],
-        'editsbyuser' => [],
-        'revsizes' => ['totals' => []]
-    ];
-    if (!$data['counts']['revisions']) {
-        echo '<p class="fail">No pages found.</p>';
-        break;
-    }
-
-    $lastmonth = null;
-    foreach ($revisions as $revision) {
-        ##########
-        ## Extract data
-        ##########
-        $row = [
-            'namespace' => $revision['page_namespace'],
-            'title' => $revision['page_title'],
-            'user' => $revision['rev_user_text'],
-            'timestamp' => $revision['rev_timestamp'],
-            'isRedirect' => $revision['page_is_redirect'],
-            'isNew' => $revision['page_is_new'],
-            'isMinor' => $revision['rev_minor_edit'],
-            'pageid' => $revision['rev_page'],
-            'revsize' => $revision['rev_len']
-        ];
-
-        // get month
-        preg_match('/^\d{6}/', $row['timestamp'], $row['month']);
-        $row['month'] = strval($row['month'][0]);
-
-        // adjust title for namespace and discard namespace
-        switch ($row['namespace']) {
-            case 0:
-                break;
-            case 1:
-                $row['title'] = 'Talk:' . $row['title'];
-                break;
-            case 2:
-                $row['title'] = 'User:' . $row['title'];
-                break;
-            case 3:
-                $row['title'] = 'User talk:' . $row['title'];
-                break;
-            case 4:
-                $row['title'] = 'Project:' . $row['title'];
-                break;
-            case 5:
-                $row['title'] = 'Project talk:' . $row['title'];
-                break;
-            case 6:
-                $row['title'] = 'Image:' . $row['title'];
-                break;
-            case 7:
-                $row['title'] = 'Image talk:' . $row['title'];
-                break;
-            case 8:
-                $row['title'] = 'MediaWiki:' . $row['title'];
-                break;
-            case 9:
-                $row['title'] = 'MediaWiki talk:' . $row['title'];
-                break;
-            case 10:
-                $row['title'] = 'Template:' . $row['title'];
-                break;
-            case 11:
-                $row['title'] = 'Template talk:' . $row['title'];
-                break;
-            case 12:
-                $row['title'] = 'Help:' . $row['title'];
-                break;
-            case 13:
-                $row['title'] = 'Help talk:' . $row['title'];
-                break;
-            case 14:
-                $row['title'] = 'Category:' . $row['title'];
-                break;
-            case 15:
-                $row['title'] = 'Category talk:' . $row['title'];
-                break;
-            default:
-                $row['title'] = '{{ns:$namespace}}:' . $row['title'];
-        }
-
-        // merge anonymous users
-        if (preg_match('/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/', $row['user']))
-            $row['user'] = 'Anonymous';
-
-
-        ##########
-        ## Store data
-        ##########
-        // pages
-        if (!in_array($row['title'], $data['pages']) && !$row['isRedirect'])
-            $data['pages'][] = $row['title'];
-
-        // redirects
-        if ($row['isRedirect'] && !in_array($row['title'], $data['redirects']))
-            $data['redirects'][] = $row['title'];
-        else if (!$row['isRedirect'] && in_array($row['title'], $data['redirects']))
-            array_splice($data['redirects'], array_search($row['title'], $data['redirects']), 1);
-
-        // store months
-        if (!in_array($row['month'], $data['months']))
-            $data['months'][] = $row['month'];
-
-        /* store users */
-        if (!in_array($row['user'], $data['users']))
-            $data['users'][] = $row['user'];
-
-
-        ##########
-        ## Store statistics
-        ##########
-        // prepare arrays
-        $user = $row['user'];
-        $month = $row['month'];
-
-        if (!array_key_exists($user, $data['userstats']))
-            $data['userstats'][$user] = ['totals' => ['edits' => 0, 'minor' => 0, 'newpages' => 0]];
-
-        if (!array_key_exists($row['month'], $data['userstats'][$user]))
-            $data['userstats'][$user][$month] = ['edits' => 0, 'minor' => 0, 'newpages' => 0];
-
-        if (!array_key_exists($row['month'], $data['monthstats']))
-            $data['monthstats'][$month] = ['edits' => 0, 'minor' => 0, 'newpages' => 0, 'users' => []];
-
-        // edits
-        $data['totals']['edits']++;
-        $data['monthstats'][$month]['edits']++;
-        $data['userstats'][$user]['totals']['edits']++;
-        $data['userstats'][$user][$month]['edits']++;
-
-        // new pages
-        if ($row['isNew']) {
-            $data['totals']['newpages']++;
-            $data['monthstats'][$month]['newpages']++;
-            $data['userstats'][$user]['totals']['newpages']++;
-            $data['userstats'][$user][$month]['newpages']++;
-        }
-
-        //  minor edits
-        if ($row['isMinor']) {
-            $data['totals']['minor']++;
-            $data['monthstats'][$month]['minor']++;
-            $data['userstats'][$user]['totals']['minor']++;
-            $data['userstats'][$user][$month]['minor']++;
-        }
-
-        // edit percentages (month)
-        $userEdits = $data['userstats'][$user][$month]['edits'];
-        $monthEdits = $data['monthstats'][$month]['edits'];
-        $percentage = round((($userEdits / $monthEdits) * 100), 2); // calculate and round
-        $percentage = sprintf("%05.2f", $percentage); // zero-padding
-        $data['userstats'][$user][$month]['percent'] = $percentage;
-
-        // edit percentage (total)
-        $userEdits = $data['userstats'][$user]['totals']['edits'];
-        $allEdits = $data['totals']['edits'];
-        $percentage = round((($userEdits / $allEdits) * 100), 2); // calculate and round
-        $percentage = sprintf("%05.2f", $percentage); // zero-padding
-        $data['userstats'][$user]['totals']['percent'] = $percentage;
-
-        // users per month
-        if (!in_array($user, $data['monthstats'][$month]['users'])) {
-            $data['monthstats'][$month]['users'][] = $user;
-        }
-
-        // reference edits by user
-        $data['editsbyuser']['total'][$user] = &$data['userstats'][$user]['totals']['edits'];
-        $data['editsbyuser'][$month][$user] = &$data['userstats'][$user][$month]['edits'];
-
-        // page size (add last month's calculated size to totals)
-        if ($lastmonth && $lastmonth != $month) {
-            $sum = 0;
-            foreach ($data['revsizes'][$lastmonth] as $pageid => $size)
-                $sum += $size;
-            $data['revsizes']['totals'][$lastmonth] = $sum;
-        }
-
-        // initiate array if new month
-        if (!in_array($month, $data['revsizes'])) {
-            if (count($data['revsizes']) == 1)    // first month
-                $data['revsizes'][$month] = [];
-            else    // every other month (copy last month's array)
-                $data['revsizes'][$month] = $data['revsizes'][$lastmonth];
-            $lastmonth = $month;    // store current month so we can copy it later
-        }
-
-        // store sizes for month
-        $data['revsizes'][$month][$row['pageid']] = $row['revsize'];
-    }
-
-    unset($user, $month);
-    unset($userEdits, $monthEdits, $allEdits, $percentage);
-    unset($lastmonth, $sum);
-
-
-    ##########
-    ## Sort
-    ##########
-    sort($data['pages']);
-    sort($data['users']);
-    ksort($data['userstats']);
-    foreach ($data['editsbyuser'] as &$x)
-        arsort($x);
-
-
-    ##########
-    ## Count
-    ##########
-    $data['counts']['months'] = count($data['months']);
-    $data['counts']['pages'] = count($data['pages']);
-    $data['counts']['redirects'] = count($data['redirects']);
-    $data['counts']['users'] = count($data['users']);
-
-    $backend->profiler->stop('analyze data');
-
-    ##########
     ## Output table of contents
     ##########
     $backend->profiler->start('generate output');
     echo '<h2 id="Generated_statistics">Generated statistics</h2>';
-    if ($data) {
+    if ($metrics) {
         ?>
         <div id="toc">
             <b>Table of contents</b>
@@ -491,15 +497,18 @@ do {
                 </li>
                 <li><a href="#Overview">Overview</a>
                     <ol>
-                        <li><a href="#overview_edits">edits per month</a></li>
-                        <li><a href="#overview_editors">editors per month</a></li>
+                        <li><a href="#edits_per_month">edits per month</a></li>
+                        <li><a href="#new_pages_per_month">new pages per month</a></li>
+                        <li><a href="#bytes_added_per_month">bytes added per month</a></li>
+                        <li><a href="#editors_per_month">editors per month</a></li>
                     </ol>
                 </li>
-                <li><a href="#Distribution">Edit distribution per month</a>
+                <li><a href="#distribution">Edit distribution per month</a>
                     <ol>
                         <?php
-                        foreach ($data['months'] as $month)
-                            echo '<li><a href="#distribution_', $month, '">', $month, '</a></li>';
+                        foreach ($metrics->months as $month)
+                            echo '<li><a href="#distribution_', $month->name, '">', $month->name, '</a></li>';
+                        unset($month);
                         ?>
                     </ol>
                 </li>
@@ -510,119 +519,99 @@ do {
         ##########
         ## Output lists
         ##########
-        echo "<p>Users with less than $maxEditsForInactivity edits are discounted or struck out.</p>";
-
+        echo "<p>Bots, and users with less than $maxEditsForInactivity edits, are struck out or discounted.</p>";
         echo '<h3 id="Lists">Lists</h3>';
 
         /* user list */
+        $users = $metrics->users;
+        usort($users, function($a, $b) { return $b->edits - $a->edits; });
         echo '<h4 id="list_editors">editors</h4><ol>';
-        foreach ($data['editsbyuser']['total'] as $user => $edits) {
+        foreach ($users as $user) {
             echo '<li';
-            if ($edits < $maxEditsForInactivity || array_key_exists($user, $bots))
+            if ($user->edits < $maxEditsForInactivity || $user->isBot)
                 echo ' class="struckout"';
-            echo '>', getLinkHtml('user:' . $user, $user), ' (<small>', $edits, ' edits</small>)';
+            echo '>', $engine->getLinkHtml($url, 'user:' . $user->name, $user->name), ' (<small>', $user->edits, ' edits</small>)';
 
-            if (array_key_exists($user, $bots))
+            if ($user->isBot)
                 echo ' <small>[bot]</small>';
             echo '</li>';
         }
         echo '</ol>';
+        unset($users);
 
         if ($listpages) {
             /* page list */
             echo '<h4 id="list_pages">pages</h4><ol>';
-            foreach ($data['pages'] as $page)
-                echo '<li>', getLinkHtml($page), '</li>';
-            echo '</ol>';
-
-            /* redirect list */
-            echo '<h4 id="list_redirects">redirects</h4><ol>';
-            foreach ($data['redirects'] as $page)
-                echo '<li>', getLinkHtml($page), '</li>';
+            foreach ($metrics->pages as $page)
+                echo '<li', ($page->isRedirect ? ' class="redirect"' : ''), '>', $engine->getLinkHtml($url, $page->name), '</li>';
             echo '</ol>';
         }
-
 
         ##########
         ## Output overall statistics
         ##########
-        echo "
-            <h3 id='Overview'>Overview</h3>
+        echo '
+            <h3 id="Overview">Overview</h3>
             There are:
             <ul>
-                <li>{$data['counts']['pages']} articles, categories, templates, and talk pages;</li>
-                <li>{$data['counts']['redirects']} redirects;</li>
-                <li>{$data['counts']['users']} editors (including any with at least one edit);</li>
-                <li>{$data['totals']['edits']} revisions (including {$data['totals']['minor']} minor edits).</li>
+                <li>', count($metrics->pages), ' pages (including categories, templates, talk pages, and redirects);</li>
+                <li>', count($metrics->users), ' editors;</li>
+                <li>', $metrics->edits, ' edits.</li>
             </ul>
-            ";
+            ';
 
         /* edits per month */
-        echo "
-            <h4 id='overview_edits'>edits per month</h4>
-            <table>
-                <tr>
-                    <th colspan='3'>Overall</th>
-                </tr>
-            ";
-        foreach ($data['months'] as $month)
-            echo getBarHtml($month, $data['monthstats'][$month]['edits'], 10);
-        unset($month, $edits);
+        echo "<h4 id='edits_per_month'>edits per month</h4><table>";
+        foreach ($metrics->months as $month)
+            echo $engine->getBarHtml($month->name, $month->edits, 10);
+        echo "</table>";
+        unset($month);
 
         /* new pages per month */
-        echo "<tr><th colspan='3'>New pages</th></tr>";
-        foreach ($data['months'] as $month)
-            echo getBarHtml($month, $data['monthstats'][$month]['newpages'], 10);
+        echo "<h4 id='new_pages_per_month'>New pages per month</h4><table>";
+        foreach ($metrics->months as $month)
+            echo $engine->getBarHtml($month->name, $month->newPages, 10);
+        echo "</table>";
+        unset($month);
 
         /* content added per month */
-        echo "<tr><th colspan='3'>Bytes added</th></tr>";
-        if ($data['months'][0] < 200706) {
-            echo "<tr><td colspan='3' style='color:gray;'>(No data before 200706.)</td></tr>";
-        }
-
-        foreach ($data['revsizes']['totals'] as $month => $size) {
-            // skip months before data available
-            if ($month >= 200706) {
-                $size = $data['revsizes']['totals'][$month];
-                if (isset($lastmonth) && array_key_exists($lastmonth, $data['revsizes']['totals']))
-                    $size -= $data['revsizes']['totals'][$lastmonth];
-                $lastmonth = $month; // update for next month
-
-                // output
-                echo getBarHtml($month, $size, 5000);
-            }
-            $i++;
-        }
+        echo "<h4 id='bytes_added_per_month'>Bytes added per month</h4><table>";
+        foreach ($metrics->months as $month)
+            echo $engine->getBarHtml($month->name, $month->bytesAdded, 5000);
         echo '</table>';
+        unset($month);
 
         /* editors per month */
-        echo '<h4 id="overview_editors">editors per month</h4>',
+        echo '<h4 id="editors_per_month">editors per month</h4>',
         '<table>';
-        foreach ($data['months'] as $month) {
-            // discount those with less than editlimit
+        foreach ($metrics->months as $month) {
+            // discount those with less than edit limit
             $users = 0;
-            foreach ($data['editsbyuser'][$month] as $user => $edits) {
-                if ($edits >= $maxEditsForInactivity && !array_key_exists($user, $bots))
+            foreach ($month->users as $user) {
+                if ($user->edits >= $maxEditsForInactivity && !$user->isBot)
                     $users++;
             }
-            echo getBarHtml($month, $users, 1);
+            echo $engine->getBarHtml($month->name, $users, 1);
         }
         echo '</table>';
 
         ##########
         ## Edit distribution per month
         ##########
-        echo '<h3 id="Distribution">Edit distribution per month</h3>';
+        echo '<h3 id="distribution">Edit distribution per month</h3>';
 
-        foreach ($data['months'] as $month) {
-            echo '<h4 id="distribution_', $month, '">', $month, '</h4>',
+        foreach ($metrics->months as $month) {
+            echo '<h4 id="distribution_', $month->name, '">', $month->name, '</h4>',
             '<table>';
 
-            foreach ($data['editsbyuser'][$month] as $user => $edits) {
-                $isActive = $edits > $maxEditsForInactivity && !array_key_exists($user, $bots);
-
-                echo getBarHtml(getLinkHtml('user:' . $user, $user), $edits, 10, !$isActive);
+            $users = $month->users;
+            usort($users, function($a, $b) { return $b->edits - $a->edits; });
+            foreach ($users as $user) {
+                $isActive = $user->edits > $maxEditsForInactivity && !$user->isBot;
+                echo $engine->getBarHtml($engine->getLinkHtml($url, 'user:' . $user->name, $user->name), $user->edits, 10, !$isActive);
             }
+            unset($users);
+
             echo '</table>';
         }
     }

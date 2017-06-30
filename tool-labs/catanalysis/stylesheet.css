@@ -26,3 +26,8 @@ h3 {
     text-decoration: line-through;
     color: gray;
 }
+
+.redirect {
+    color: gray;
+    font-style: italic;
+}
