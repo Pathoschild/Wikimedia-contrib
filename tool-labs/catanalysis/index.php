@@ -176,6 +176,36 @@ class Engine extends Base
             case 15:
                 return 'Category talk';
 
+            // Wikisource
+            case 104:
+                return 'Page';
+            case 105:
+                return 'Page talk';
+            case 106:
+                return 'Index';
+            case 107:
+                return 'Index talk';
+            case 108:
+                return 'Author';
+            case 109:
+                return 'Author talk';
+
+            // special
+            case 828:
+                return 'Module';
+            case 829:
+                return 'Module talk';
+            case 2300:
+                return 'Gadget';
+            case 2301:
+                return 'Gadget talk';
+            case 2302:
+                return 'Gadget definition';
+            case 2303:
+                return 'Gadget definition talk';
+            case 2600:
+                return 'Topic';
+
             // fallback
             default:
                 return '{{ns:' . $id . '}}';
