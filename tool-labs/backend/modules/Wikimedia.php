@@ -15,6 +15,12 @@ class Wikimedia
      */
     private $wikis = null;
 
+    /**
+     * The database names that should be ignored.
+     * @var string[]
+     */
+    private $ignoreDbNames;
+
 
     ##########
     ## Public methods
@@ -24,9 +30,11 @@ class Wikimedia
      * @param Database $db The database with which to connect to the database.
      * @param Cacher $cache The cache with which to read and write cached data.
      * @param Profiler $profiler Provides basic performance profiling.
+     * @param string[] $ignoreDbNames The database names that should be ignored.
      */
-    public function __construct($db, $cache, $profiler)
+    public function __construct($db, $cache, $profiler, $ignoreDbNames)
     {
+        $this->ignoreDbNames = $ignoreDbNames;
         $this->wikis = $cache->get('wikimedia-wikis');
         if (!$this->wikis) {
             $profiler->start('DB: fetch wiki metadata');
@@ -34,9 +42,8 @@ class Wikimedia
             $this->wikis = [];
             $db->connect('metawiki.labsdb', 'metawiki_p');
             foreach ($db->query('SELECT dbname, lang, family, url, size, is_closed, slice FROM meta_p.wiki WHERE url IS NOT NULL')->fetchAllAssoc() as $row) {
-                if ($row['dbname'] == 'votewiki')
-                    continue; // DB schema is broken
-                $this->wikis[$row['dbname']] = new Wiki($row['dbname'], $row['lang'], $row['family'], $row['url'], $row['size'], $row['is_closed'], $row['slice']);
+                if(!in_array($row['dbname'], $ignoreDbNames))
+                    $this->wikis[$row['dbname']] = new Wiki($row['dbname'], $row['lang'], $row['family'], $row['url'], $row['size'], $row['is_closed'], $row['slice']);
             }
 
             // cache result

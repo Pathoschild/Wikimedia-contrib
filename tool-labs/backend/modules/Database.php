@@ -478,6 +478,15 @@ class Toolserver extends Database
      */
     private $wikis;
 
+    /**
+     * The database names that should be ignored.
+     * @var string[]
+     */
+    private $ignoreDbNames = [
+        "votewiki", // not a wiki
+        "ukwikimedia" // broken
+    ];
+
 
     ##########
     ## Public methods
@@ -496,7 +505,7 @@ class Toolserver extends Database
         parent::__construct($profiler, $logger, $options, $default_username, $default_password);
 
         /* fetch toolserver data */
-        $this->wikis = new Wikimedia($this, $cache, $profiler);
+        $this->wikis = new Wikimedia($this, $cache, $profiler, $this->ignoreDbNames);
 
         /* select random DB slice (every slice has every DB, but picking a random one reduces our dependence on any given one) */
         $slices = Array();
@@ -650,8 +659,10 @@ class Toolserver extends Database
             $this->connectPrevious();
 
             $wikis = Array();
-            foreach ($query as $row)
-                $wikis[] = $row['lu_wiki'];
+            foreach ($query as $row) {
+                if(!in_array($row['lu_wiki'], $this->ignoreDbNames))
+                    $wikis[] = $row['lu_wiki'];
+            }
 
             return $wikis;
         } catch (PDOException $exc) {
