@@ -507,7 +507,7 @@ if ($script->isValid() && $ip->ip->isValid()) {
     echo "
         <div>
             Related toys:
-            <a href='http://www.sixxs.net/tools/whois/?handle=", urlencode($ip->ip->getFriendly()), "' title='whois query'>whois</a>,
+            <a href='https://www.whois.com/whois/", $ip->ip->getFriendly(), "' title='whois query'>whois</a>,
             <a href='//meta.wikimedia.org/wiki/Special:GlobalBlock?wpAddress={$script->targetWikiUrl}' title='Special:GlobalBlock'>global block</a>.
         </div>
         ";
