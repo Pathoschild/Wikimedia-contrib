@@ -235,7 +235,7 @@ class Engine extends Base
             $sql .= 'WHERE ';
 
         /* add prefix */
-        $sql .= ' (CONVERT(page_title USING binary)=CONVERT(? USING BINARY) OR CONVERT(page_title USING BINARY) LIKE CONVERT(? USING BINARY)) ORDER BY revision.rev_timestamp';
+        $sql .= ' (page_title=? OR page_title LIKE ?) ORDER BY revision.rev_timestamp';
         $values[] = str_replace(' ', '_', $title);
         $values[] = str_replace(' ', '_', $title . '%');
 
@@ -260,11 +260,11 @@ class Engine extends Base
         $queue = [$title];
         while (count($queue)) {
             /* fetch subcategories of currently-known categories */
-            $dbCatQuery = 'SELECT page_title FROM page JOIN categorylinks ON page_id=cl_from WHERE page_namespace=14 AND CONVERT(cl_to USING BINARY) IN (';
+            $dbCatQuery = 'SELECT page_title FROM page JOIN categorylinks ON page_id=cl_from WHERE page_namespace=14 AND cl_to IN (';
             $dbCatValues = [];
             while (count($queue)) {
                 if (!in_array($queue[0], $cats)) {
-                    $dbCatQuery .= 'CONVERT(? USING BINARY),';
+                    $dbCatQuery .= '?,';
                     $dbCatValues[] = str_replace(' ', '_', $queue[0]);
                     $cats[] = array_shift($queue);
                 } else
@@ -282,9 +282,9 @@ class Engine extends Base
         }
 
         /* add to query */
-        $sql .= 'JOIN categorylinks on page_id=cl_from WHERE CONVERT(cl_to USING BINARY) IN (';
+        $sql .= 'JOIN categorylinks on page_id=cl_from WHERE cl_to IN (';
         foreach ($cats as $cat) {
-            $sql .= 'CONVERT(? USING BINARY),';
+            $sql .= '?,';
             $values[] = str_replace(' ', '_', $cat);
         }
         $sql = rtrim($sql, ', ') . ') ORDER BY revision.rev_timestamp';
