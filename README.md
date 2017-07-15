@@ -1,8 +1,8 @@
-**Wikimedia-contrib** is a collection of user scripts and Tool Labs tools intended for users of Wikimedia Foundation wikis.
+**Wikimedia-contrib** is a collection of user scripts and Toolforge tools intended for users of Wikimedia Foundation wikis.
 
-## Tool Labs
+## Tools
 
-The [Tool Labs](https://tools.wmflabs.org/) is a cloud infrastructure hosted by the Wikimedia Foundation for community-developed tools and bots. These tools provide analysis and data to support wiki editors and functionaries.
+[Toolforge](https://tools.wmflabs.org/) is part of the Wikimedia Cloud infrastructure hosted by the Wikimedia Foundation for community-developed tools and bots. These tools provide analysis and data to support wiki editors and functionaries.
 
 * **[Account Eligibility](https://tools.wmflabs.org/meta/accounteligibility/)** analyzes a user account to determine whether it's eligible to vote in the specified event.
 * **[Category Analysis](https://tools.wmflabs.org/meta/catanalysis/)** analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix). This is primarily intended for test project analysis by the Wikimedia Foundation [language committee](https://meta.wikimedia.org/wiki/Language_committee).

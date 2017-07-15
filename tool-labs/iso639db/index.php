@@ -201,7 +201,7 @@ echo "
 ####################
 ## Disabled
 ####################
-echo "<div class='error'>This tool didn't survive the transition to Tool Labs. It's temporarily offline until it's reimplemented. Sorry!</div>";
+echo "<div class='error'>This tool didn't survive the transition to Wikimedia Toolforge. It's temporarily offline until it's reimplemented. Sorry!</div>";
 $backend->footer();
 die();
 

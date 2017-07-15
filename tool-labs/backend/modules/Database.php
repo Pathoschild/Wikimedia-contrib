@@ -238,7 +238,7 @@ class Database
      */
     public function connect($host, $database = null, $username = null, $password = null)
     {
-        /* normalize database name for Tools Labs */
+        /* normalize database name for Toolforge */
         if (isset($database) && substr($database, -2) != '_p')
             $database .= '_p';
         if (FORCE_DB_HOST)
@@ -457,8 +457,8 @@ class Database
 }
 
 /**
- * Extends the database with methods and optimizations for the Wikimedia Tools Labs. On
- * construction,the class fetches wiki and database data from the Tools Labs DB. When connecting to
+ * Extends the database with methods and optimizations for Wikimedia Toolforge. On
+ * construction,the class fetches wiki and database data from the Toolforge DB. When connecting to
  * a database name, it aliases it to its server host to minimize the number of server connections.
  */
 class Toolserver extends Database

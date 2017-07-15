@@ -31,8 +31,8 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         *********/
         /**
          * The regex editor is primarily meant as a TemplateScript script, but it can be run
-         * directly on Tool Labs as a standalone script. This object replicates the TemplateScript
-         * interface for the Tool Labs page, so the regex tool has a consistent interface to code
+         * directly on Toolforge as a standalone script. This object replicates the TemplateScript
+         * interface for the Toolforge page, so the regex tool has a consistent interface to code
          * against.
          */
         var TemplateScriptShim = function($target) {
