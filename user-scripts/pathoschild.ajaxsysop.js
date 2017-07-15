@@ -72,7 +72,10 @@ pathoschild.ajax_mw = {
                     $(document.createElement("a"))
                         .text("ajax")
                         .attr("href", "#")
-                        .bind("click", function() { pathoschild.ajax_mw.OnPatrolClick(rcid); })
+                        .bind("click", function(e) {
+                            e.preventDefault();
+                            pathoschild.ajax_mw.OnPatrolClick(rcid);
+                        })
                     ).append(
                     $(document.createElement("span"))
                     )
@@ -113,7 +116,10 @@ pathoschild.ajax_mw = {
                     $(document.createElement("a"))
                         .text("ajax")
                         .attr("href", "#")
-                        .bind("click", function() { pathoschild.ajax_mw.OnRollbackClick(id, title, user); })
+                        .bind("click", function(e) {
+                            e.preventDefault();
+                            pathoschild.ajax_mw.OnRollbackClick(id, title, user);
+                        })
                     ).append(
                     $(document.createElement("span"))
                     )
