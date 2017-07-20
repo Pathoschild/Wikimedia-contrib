@@ -10,7 +10,7 @@ $backend = Backend::create('GlobalGroups', 'A review of extra permissions assign
 // taken from MediaWiki localization files
 // TODO: rethink how this is done
 $flagBlurbs = [
-    // MediaWiki core: https://github.com/wikimedia/mediawiki/blob/REL1_28/languages/i18n/en.json
+    // MediaWiki core: https://github.com/wikimedia/mediawiki/blob/REL1_29/languages/i18n/en.json
     "right-read" => "Read pages",
     "right-edit" => "Edit pages",
     "right-createpage" => "Create pages (which are not discussion pages)",
@@ -56,7 +56,6 @@ $flagBlurbs = [
     "right-editsemiprotected" => "Edit pages protected as \"{{int:protect-level-autoconfirmed}}\"",
     "right-editcontentmodel" => "Edit the content model of a page",
     "right-editinterface" => "Edit the user interface",
-    "right-editusercssjs" => "Edit other users' CSS and JavaScript files",
     "right-editusercss" => "Edit other users' CSS files",
     "right-edituserjs" => "Edit other users' JavaScript files",
     "right-editmyusercss" => "Edit your own user CSS files",
@@ -81,11 +80,10 @@ $flagBlurbs = [
     "right-siteadmin" => "Lock and unlock the database",
     "right-override-export-depth" => "Export pages including linked pages up to a depth of 5",
     "right-sendemail" => "Send email to other users",
-    "right-passwordreset" => "View password reset emails",
     "right-managechangetags" => "Create and (de)activate [[Special:Tags|tags]]",
     "right-applychangetags" => "Apply [[Special:Tags|tags]] along with one's changes",
     "right-changetags" => "Add and remove arbitrary [[Special:Tags|tags]] on individual revisions and log entries",
-    "right-deletechangetags" => "DELETE [[Special:Tags|tags]] FROM the DATABASE",
+    "right-deletechangetags" => "Delete [[Special:Tags|tags]] from the database",
 
     // AbuseFilter extension: https://github.com/wikimedia/mediawiki-extensions-AbuseFilter/blob/REL1_28/i18n/en.json
     "right-abusefilter-modify" => "Modify abuse filters",
