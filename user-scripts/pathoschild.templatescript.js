@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         /*********
         ** Fields
         *********/
-        self.version = "2.5";
+        self.version = "2.5.1";
         self.strings = {
             defaultHeaderText: "TemplateScript", // the sidebar header text label for the default group
             regexEditor: "Regex editor" // the default 'regex editor' script
@@ -341,7 +341,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                         var scrollTop = box.scrollTop;
 
                         var newText = text(box.value.substring(startPos, endPos));
-                        box.value = box.value.substring(0, startPos) + newText + box.value.substring(endPos - 1 + text.length, box.value.length);
+                        box.value = box.value.substring(0, startPos) + newText + box.value.substring(endPos, box.value.length);
                         box.focus();
 
                         box.selectionStart = startPos + text.length;
