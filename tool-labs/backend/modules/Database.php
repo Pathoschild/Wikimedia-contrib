@@ -483,8 +483,12 @@ class Toolserver extends Database
      * @var string[]
      */
     private $ignoreDbNames = [
-        "votewiki", // not a wiki
-        "ukwikimedia" // broken
+        "alswikibooks", // deleted
+        "alswikiquote", // deleted
+        "alswiktionary", // deleted
+        "mowiktionary", // deleted
+        "ukwikimedia", // broken
+        "votewiki" // not a wiki
     ];
 
 
