@@ -26,12 +26,12 @@ class EventFactory
         ## 2018: steward elections
         ##########
         // voters
-        yield (new Event(38, 2018, 'steward elections', '//meta.wikimedia.org/wiki/Stewards/Elections_2018'))
+        yield (new Event(46, 2018, 'steward elections', '//meta.wikimedia.org/wiki/Stewards/Elections_2018'))
             ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
             ->addRule(new EditCountRule(600, null, '<201711', EditCountRule::ACCUMULATE))// 600 edits before 01 November 2017
             ->addRule(new EditCountRule(50, '201708', '<201802', EditCountRule::ACCUMULATE));// 50 edits between 01 August 2017 and 31 January 2018
         // candidates
-        yield (new Event(37, 2018, 'steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/Elections_2018'))
+        yield (new Event(45, 2018, 'steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/Elections_2018'))
             ->addRule(new DateRegisteredRule('<20170808'), Workflow::ON_ANY_WIKI)// registered for six months
             ->addRule(new HasGroupDurationRule('sysop', 90, '<20180208'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
