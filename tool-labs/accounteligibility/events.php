@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 42;
+        return 46;
     }
 
     /**
@@ -22,6 +22,27 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2018: steward elections
+        ##########
+        // voters
+        yield (new Event(46, 2018, 'steward elections', '//meta.wikimedia.org/wiki/Stewards/Elections_2018'))
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(600, null, '<201711', EditCountRule::ACCUMULATE))// 600 edits before 01 November 2017
+            ->addRule(new EditCountRule(50, '201708', '<201802', EditCountRule::ACCUMULATE));// 50 edits between 01 August 2017 and 31 January 2018
+
+        // candidates
+        yield (new Event(45, 2018, 'steward elections (candidates)', '//meta.wikimedia.org/wiki/Stewards/Elections_2018'))
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(600, null, '<201711', EditCountRule::ACCUMULATE))// 600 edits before 01 November 2017
+            ->addRule(new EditCountRule(50, '201708', '<201802', EditCountRule::ACCUMULATE));// 50 edits between 01 August 2017 and 31 January 2018
+            ->addRule(new HasGroupDurationRule('sysop', 90, '<201802081400'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
+            ->withAction('<strong>be a candidate</strong>')
+            ->withExtraRequirements([
+                'You must be 18 years old, and at the age of majority in your country.',
+                'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
+                'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_information_policy" title="Access to nonpublic information policy">sign the confidentiality agreement</a>.'
+            ]);
 
         ##########
         ## 2017: Wikimedia Foundation elections
