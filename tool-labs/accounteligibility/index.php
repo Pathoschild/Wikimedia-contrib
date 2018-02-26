@@ -363,10 +363,10 @@ $backend->profiler->stop('init engine');
 ############################
 echo '
 <form action="', $backend->url('/accounteligibility'), '" method="get">
-	<label for="user">User:</label>
-	<input type="text" name="user" id="user" value="', $backend->formatValue($script->user->name), '" /> at 
-	<select name="wiki" id="wiki">
-		<option value="">auto-select wiki</option>', "\n";
+    <label for="user">User:</label>
+    <input type="text" name="user" id="user" value="', $backend->formatValue($script->user->name), '" /> at 
+    <select name="wiki" id="wiki">
+        <option value="">auto-select wiki</option>', "\n";
 
 foreach ($script->db->getDomains() as $dbname => $domain) {
     if (!$script->db->getLocked($dbname)) {
@@ -375,10 +375,10 @@ foreach ($script->db->getDomains() as $dbname => $domain) {
     }
 }
 echo '
-	</select>
-	<br />
-	<label for="event">Event:</label>
-	<select name="event" id="event">', "\n";
+    </select>
+    <br />
+    <label for="event">Event:</label>
+    <select name="event" id="event">', "\n";
 
 foreach ($script->events as $id => $event) {
     echo "

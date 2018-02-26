@@ -112,17 +112,17 @@ do {
      * Get data and Output
      ***************/
     echo '<table class="pretty sortable" id="activity-table">
-		<thead>
-			<tr>
-				<th>family</th>
-				<th>wiki</th>
-				<th>last edit</th>
-				<th>last log <small>(bureaucrat)</small></th>
-				<th>last log <small>(sysop)</small></th>
-				<th>Local groups</th>
-			</tr>
-		</thead>
-		<tbody>';
+        <thead>
+            <tr>
+                <th>family</th>
+                <th>wiki</th>
+                <th>last edit</th>
+                <th>last log <small>(bureaucrat)</small></th>
+                <th>last log <small>(sysop)</small></th>
+                <th>Local groups</th>
+            </tr>
+        </thead>
+        <tbody>';
 
     foreach ($wikis as $wiki) {
         $dbname = $wiki->dbName;

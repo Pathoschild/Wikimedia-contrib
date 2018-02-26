@@ -96,23 +96,23 @@ class HasGroupDurationRule implements Rule
         // SQL to determine the current groups after each log entry
         // (depending on how it was stored on that particular day)
         $sql = '
-			SELECT
-				log_title,
-				log_timestamp,
-				log_params,
-				log_comment'/*,
-				CASE
-					WHEN log_params <> "" THEN
-						CASE WHEN INSTR("\n", log_params) >= 0
-							THEN SUBSTR(log_params, INSTR(log_params, "\n") + 1)
-							ELSE log_params
-						END
-					ELSE log_comment
-				END AS "log_resulting_groups"*/ . '
-			FROM logging_logindex
-			WHERE
-				log_type = "rights"
-				AND log_title';
+            SELECT
+                log_title,
+                log_timestamp,
+                log_params,
+                log_comment'/*,
+                CASE
+                    WHEN log_params <> "" THEN
+                        CASE WHEN INSTR("\n", log_params) >= 0
+                            THEN SUBSTR(log_params, INSTR(log_params, "\n") + 1)
+                            ELSE log_params
+                        END
+                    ELSE log_comment
+                END AS "log_resulting_groups"*/ . '
+            FROM logging_logindex
+            WHERE
+                log_type = "rights"
+                AND log_title';
         $logName = str_replace(' ', '_', $user->name);
 
         // fetch local logs
