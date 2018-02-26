@@ -132,18 +132,19 @@ $flagBlurbs = [
     "right-validate" => "Mark revisions as being \"quality\"",
     "right-unreviewedpages" => "View the [[Special:UnreviewedPages|list of unreviewed pages]]",
 
-    // StructuredDiscussions (Flow) extension: https://github.com/wikimedia/mediawiki-extensions-Flow/blob/master/i18n/en.json
-    "right-flow-create-board" => "Create Structured Discussions boards in any location",
-    "right-flow-hide" => "Hide Structured Discussions topics and posts",
-    "right-flow-lock" => "Mark Structured Discussions topics as resolved",
-    "right-flow-delete" => "Delete Structured Discussions topics and posts",
-    "right-flow-edit-post" => "Edit Structured Discussions posts by other users",
-    "right-flow-suppress" => "Suppress Structured Discussions revisions",
-
     // GlobalBlocking extension: https://github.com/wikimedia/mediawiki-extensions-GlobalBlocking/blob/master/i18n/en.json
     "right-globalblock" => "Make and remove global blocks",
     "right-globalblock-whitelist" => "Disable global blocks locally",
     "right-globalblock-exempt" => "Bypass global blocks",
+
+    // MassMessage extension: https://github.com/wikimedia/mediawiki-extensions-MassMessage/blob/master/i18n/en.json
+    "right-massmessage" => "Send a message to multiple users at once",
+
+    // Newsletter extension: https://github.com/wikimedia/mediawiki-extensions-Newsletter/blob/master/i18n/en.json
+    "right-newsletter-create" => "Create newsletters",
+    "right-newsletter-delete" => "Delete newsletters",
+    "right-newsletter-manage" => "Add or remove publishers or subscribers from newsletters",
+    "right-newsletter-restore" => "Restore a newsletter",
 
     // Nuke extension: https://github.com/wikimedia/mediawiki-extensions-Nuke/blob/master/i18n/en.json
     "right-nuke" => "Mass delete pages",
@@ -166,6 +167,14 @@ $flagBlurbs = [
 
     // SpamBlacklist extension: https://github.com/wikimedia/mediawiki-extensions-SpamBlacklist/blob/master/i18n/en.json
     "right-spamblacklistlog" => "View the spam blacklist log",
+
+    // StructuredDiscussions (Flow) extension: https://github.com/wikimedia/mediawiki-extensions-Flow/blob/master/i18n/en.json
+    "right-flow-create-board" => "Create Structured Discussions boards in any location",
+    "right-flow-hide" => "Hide Structured Discussions topics and posts",
+    "right-flow-lock" => "Mark Structured Discussions topics as resolved",
+    "right-flow-delete" => "Delete Structured Discussions topics and posts",
+    "right-flow-edit-post" => "Edit Structured Discussions posts by other users",
+    "right-flow-suppress" => "Suppress Structured Discussions revisions",
 
     // TimedMediaHandler extension: https://github.com/wikimedia/mediawiki-extensions-TimedMediaHandler/blob/master/i18n/en.json
     "right-transcode-reset" => "Reset failed or transcoded videos so they are inserted into the job queue again",
@@ -196,16 +205,7 @@ $flagBlurbs = [
     "right-extendedconfirmed" => "Edit restricted pages",
     "right-superprotect" => "Change super protection levels",
     "right-templateeditor" => "Edit protected templates",
-    "right-viewdeletedfile" => "View files and pages in the {{ns:file}} and {{ns:file_talk}} namespaces that are deleted",
-
-    // MassMessage extension: https://github.com/wikimedia/mediawiki-extensions-MassMessage/blob/master/i18n/en.json
-    "right-massmessage" => "Send a message to multiple users at once",
-
-    // Newsletter extension: https://github.com/wikimedia/mediawiki-extensions-Newsletter/blob/master/i18n/en.json
-    "right-newsletter-create" => "Create newsletters",
-    "right-newsletter-delete" => "Delete newsletters",
-    "right-newsletter-manage" => "Add or remove publishers or subscribers from newsletters",
-    "right-newsletter-restore" => "Restore a newsletter"
+    "right-viewdeletedfile" => "View files and pages in the {{ns:file}} and {{ns:file_talk}} namespaces that are deleted"
 ];
 
 
