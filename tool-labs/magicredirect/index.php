@@ -5,10 +5,10 @@ $backend = Backend::create('A template\'s magic redirect', 'Redirects to an arbi
     ->link('/content/jquery.collapse/jquery.collapse.js')
     ->link('/content/jquery.collapse/jquery.cookie.js')
     ->addScript('
-		$(document).ready(function() {
-			$("#token-documentation").collapse({head:"span", group:"ul"});
-		});
-	');
+        $(document).ready(function() {
+            $("#token-documentation").collapse({head:"span", group:"ul"});
+        });
+    ');
 
 $tokens = [
     'wiki' => [

@@ -293,7 +293,7 @@ class Backend extends Base
                 </div>
                 <div id='profiling'>
                     Page generated in $resultSeconds seconds.
-		    ";
+            ";
 
         if (count($timerResults)) {
             echo '<span>[+]</span><ul>';
