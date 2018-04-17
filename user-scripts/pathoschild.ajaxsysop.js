@@ -96,7 +96,7 @@ pathoschild.ajax_mw = {
             var title = href.match(/title=([^&]+)/)[1];
             var user = href.match(/from=([^&]+)/)[1];
             title = decodeURIComponent(title);
-            user = decodeURIComponent(user).replace("+", " ");
+            user = decodeURIComponent(user).replace(/\+/g, ' ');
 
             var id = (new Date()).getTime();
 
@@ -531,7 +531,7 @@ pathoschild.ajax_mw = {
                 var link_text = parts[2] || link_title;
 
                 /* build link */
-                var link = "<a" + ' href="' + this.BuildLocalUrl(link_title) + '"' + ' title="' + link_title.replace('"', '\\"') + '"' + ">" + link_text.replace(/^User:/, "") + "</a>";
+                var link = "<a" + ' href="' + this.BuildLocalUrl(link_title) + '"' + ' title="' + link_title.replace(/"/g, '\\"') + '"' + ">" + link_text.replace(/^User:/, "") + "</a>";
 
                 /* replace link */
                 text = this.LiteralReplace(text, links[i], link);
