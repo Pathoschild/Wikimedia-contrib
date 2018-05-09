@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         /*********
         ** Fields
         *********/
-        self.version = "2.5.1";
+        self.version = "2.5.2";
         self.strings = {
             defaultHeaderText: "TemplateScript", // the sidebar header text label for the default group
             regexEditor: "Regex editor" // the default 'regex editor' script
@@ -172,6 +172,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                     var action = mw.config.get("wgAction");
                     var specialPage = mw.config.get("wgCanonicalSpecialPageName");
                     switch (action) {
+                        case "parsermigration-edit":
                         case "submit":
                             return "edit";
 
