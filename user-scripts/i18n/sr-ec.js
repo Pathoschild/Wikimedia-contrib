@@ -10,13 +10,13 @@ pathoschild.i18n = {
         regexEditor: "Едитор регуларних израза."  // the default 'regex editor' script
     },
     regexeditor: {
-        header: "Едитор регуларних израза",   // the header text shown in the form
+        header: "Уређивач регуларних израза",   // the header text shown in the form
         search: "Претражи",                           // the search input label
         replace: "Замени",                         // the replace input label
         nameSession: "Унеси име за ову сесију",  // the prompt shown when saving the session
         loadSession: "Учитај сесију «{name}»",  // tooltip shown for a saved session, where {name} is replaced with the session name
         deleteSession: "Уклони сесију «{name}»",  // tooltip shown for the delete icon on a saved session, where {name} is replaced with the session name
-        closeEditor: "Затвори едитор",           // tooltip shown for the close-editor icon
+        closeEditor: "Затвори уређивач",           // tooltip shown for the close-editor icon
         addPatterns: "Додај шаблоне",            // button text
         addPatternsTooltip: "Додај поље за претрагу и замену", // button tooltip
         apply: "Примени",                        // button text
