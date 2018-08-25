@@ -7,7 +7,7 @@ var pathoschild = pathoschild || {};
 pathoschild.i18n = {
     templatescript: {
         defaultHeaderText: "TemplateScript", // the sidebar header text label for the default group
-        regexEditor: "Едитор регуларних израза."  // the default 'regex editor' script
+        regexEditor: "Уређивач регуларних израза."  // the default 'regex editor' script
     },
     regexeditor: {
         header: "Уређивач регуларних израза",   // the header text shown in the form
@@ -21,7 +21,7 @@ pathoschild.i18n = {
         addPatternsTooltip: "Додај поље за претрагу и замену", // button tooltip
         apply: "Примени",                        // button text
         applyTooltip: "Изведите горње шаблоне",  // button tooltip
-        undo: "поништи претходну измену",        // button text
+        undo: "Поништи претходну измену",        // button text
         undoTooltip: "Поништи претходну измену", // button tooltip
         save: "Сачувај",                         // button text
         saveTooltip: "Сачувај ову сесију за касније коришћење", // button tooltip
