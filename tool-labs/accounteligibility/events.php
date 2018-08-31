@@ -115,7 +115,7 @@ class EventFactory
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be 18 years old, and at least the age of majority in your country before the final day of voting.',
-                'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
+                'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_information_policy" title="Access to nonpublic information policy">sign the confidentiality agreement</a>.'
             ]);
 
@@ -144,7 +144,7 @@ class EventFactory
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be 18 years old, and at the age of majority in your country.',
-                'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
+                'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_information_policy" title="Access to nonpublic information policy">sign the confidentiality agreement</a>.'
             ]);
 
@@ -183,7 +183,7 @@ class EventFactory
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be 18 years old, and at the age of majority in your country.',
-                'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
+                'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2015.'
             ]);
 
@@ -220,7 +220,7 @@ class EventFactory
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be 18 years old, and at the age of majority in your country.',
-                'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
+                'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2014.'
             ]);
 
@@ -241,7 +241,7 @@ class EventFactory
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be 18 years old, and at the age of majority in your country.',
-                'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//wikimediafoundation.org/wiki/privacy_policy" title="privacy policy">privacy</a>.',
+                'You must agree to abide by the policies governing <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="//meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="//meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="//foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2013.'
             ]);
 
@@ -271,7 +271,7 @@ class EventFactory
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be in good standing and not subject to active blocks or site-bans.',
-                'You must meet the Wikimedia Foundation\'s <a href="//wikimediafoundation.org/w/index.php?title=Access_to_nonpublic_data_policy&oldid=47490" title="Access to nonpublic data policy">criteria for access to non-public data</a> and must identify with the Foundation if elected.',
+                'You must meet the Wikimedia Foundation\'s <a href="//foundation.wikimedia.org/wiki/Access_to_nonpublic_data_policy" title="Access to nonpublic data policy">criteria for access to non-public data</a> and must identify with the Foundation if elected.',
                 'You must have disclosed any alternate accounts in your election statement (legitimate accounts which have been declared to the Arbitration Committee before the close of nominations need not be publicly disclosed).'
             ]);
 
@@ -300,7 +300,7 @@ class EventFactory
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be 18 years old, and at the age of majority in your country.',
-                'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
+                'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//foundation.wikimedia.org/wiki/Template:Policy-board" title="Wikimedia Foundation policies">Foundation policies</a>.',
                 'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2012.'
             ]);
 
@@ -343,7 +343,7 @@ class EventFactory
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be 18 years old, and at the age of majority in your country.',
-                'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
+                'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//foundation.wikimedia.org/wiki/Template:Policy-board" title="Wikimedia Foundation policies">Foundation policies</a>.',
                 'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 07 February 2011.'
             ]);
 
@@ -396,7 +396,7 @@ class EventFactory
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be 18 years old, and at the age of majority in your country.',
-                'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
+                'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//foundation.wikimedia.org/wiki/Template:Policy-board" title="Wikimedia Foundation policies">Foundation policies</a>.',
                 'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 07 February 2011.'
             ]);
 
@@ -424,7 +424,7 @@ class EventFactory
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be 18 years old, and at the age of majority in your country.',
-                'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//wikimediafoundation.org/wiki/Template:Policy" title="Wikimedia Foundation policies">Foundation policies</a>.',
+                'You must agree to abide by the <a href="//meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="//foundation.wikimedia.org/wiki/Template:Policy-board" title="Wikimedia Foundation policies">Foundation policies</a>.',
                 'You must <a href="//meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 01 February 2010.'
             ]);
 
