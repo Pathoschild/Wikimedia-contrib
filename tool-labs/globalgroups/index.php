@@ -137,10 +137,10 @@ $flagBlurbs = [
     "right-stablesettings" => "Configure how the stable version is selected and displayed",
     "right-validate" => "Mark revisions as being \"quality\"",
     "right-unreviewedpages" => "View the [[Special:UnreviewedPages|list of unreviewed pages]]",
-    
+
     // Gadgets extension: https://github.com/wikimedia/mediawiki-extensions-Gadgets/blob/master/i18n/en.json
-    "right-gadgets-edit": "Edit gadget JavaScript and CSS pages",
-    "right-gadgets-definition-edit": "Edit gadget definitions",
+    "right-gadgets-edit" => "Edit gadget JavaScript and CSS pages",
+    "right-gadgets-definition-edit" => "Edit gadget definitions",
 
     // GlobalBlocking extension: https://github.com/wikimedia/mediawiki-extensions-GlobalBlocking/blob/master/i18n/en.json
     "right-globalblock" => "Make and remove global blocks",
