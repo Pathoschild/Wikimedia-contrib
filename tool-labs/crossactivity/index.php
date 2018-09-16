@@ -1,5 +1,6 @@
 <?php
 require_once('../backend/modules/Backend.php');
+require_once('framework/Engine.php');
 $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.')
     ->link('/content/dataTables/jquery.dataTables.min.js')
     ->link('/content/dataTables/jquery.dataTables.plain.css')
@@ -17,6 +18,7 @@ $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bur
 ##########
 ## Get data
 ##########
+$engine = new Engine();
 $user = $backend->get('user', $backend->getRouteValue());
 if ($user != null)
     $user = $backend->formatUsername($user);
@@ -44,54 +46,6 @@ if (!empty($user)) {
             <a href='{$backend->url('/userpages/' . urlencode($user))}' title='User pages'>user pages</a>,
             <a href='//meta.wikimedia.org/?title=Special:CentralAuth/", urlencode($user), "' title='Special:CentralAuth'>Special:CentralAuth</a>.
         ";
-
-    ##########
-    ## Methods
-    ##########
-    /**
-     * Get HTML for a table cell containing a formatted date colored-coded by age.
-     * @param string $date The date to format.
-     * @return string
-     */
-    function getColoredCellHtml($date)
-    {
-        if (!$date)
-            $color = "CCC";
-        else {
-            $dateValue = substr(str_replace('-', '', $date), 0, 8);
-            if ($dateValue >= date('Ymd', strtotime('-1 week')))
-                $color = "CFC";
-            else if ($dateValue >= date('Ymd', strtotime('-3 week')))
-                $color = "FFC";
-            else
-                $color = "FCC";
-        }
-
-        return "<td style='background-color:#$color;'>$date</td>";
-    }
-
-    /**
-     * Get HTML for a table cell containing a list of groups.
-     * @param string $groups The comma-separated groups to show.
-     * @return string
-     */
-    function getGroupCellHtml($groups)
-    {
-        return empty($groups)
-            ? "<td style='background-color:#CCC;'>&nbsp;</td>"
-            : "<td>$groups</td>";
-    }
-
-    /**
-     * Get an HTML wiki link.
-     * @param string $domain The wiki domain.
-     * @param string $page The page title.
-     * @return string
-     */
-    function getLinkHtml($domain, $page)
-    {
-        return "<a href='//{$domain}?title=" . urlencode($page) . "' title='" . htmlspecialchars($page) . "'>$domain</a>";
-    }
 }
 
 /***************
@@ -149,11 +103,11 @@ do {
                 echo "
                     <tr>
                         <td>$family</td>
-                        <td>", getLinkHtml($domain, 'User:' . $user), "</td>",
-                        getColoredCellHtml($lastEdit),
-                        getColoredCellHtml($lastBureaucratLog),
-                        getColoredCellHtml($lastAdminLog),
-                        getGroupCellHtml($groups), "
+                        <td>", $engine->getLinkHtml($domain, 'User:' . $user), "</td>",
+                        $engine->getColoredCellHtml($lastEdit),
+                        $engine->getColoredCellHtml($lastBureaucratLog),
+                        $engine->getColoredCellHtml($lastAdminLog),
+                        $engine->getGroupCellHtml($groups), "
                     </tr>
                     ";
             }

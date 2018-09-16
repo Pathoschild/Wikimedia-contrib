@@ -1,5 +1,6 @@
 <?php
 require_once('../backend/modules/Backend.php');
+require_once('framework/Engine.php');
 $backend = Backend::create('GlobalGroups', 'A review of extra permissions assigned to <a href="//meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets" title="global groups">global groups</a> on Wikimedia Foundation wikis.')
     ->link('/globalgroups/stylesheet.css')
     ->header();
@@ -222,6 +223,7 @@ $flagBlurbs = [
 ##########
 ## Query group details
 ##########
+$engine = new Engine();
 $db = $backend->getDatabase();
 $db->connect('metawiki');
 
@@ -270,41 +272,7 @@ foreach ($db->query('SELECT DISTINCT ggp_group FROM centralauth_p.global_group_p
 ## Sort
 ##########
 $sort = $backend->get('sort', 'name');
-
-/**
- * Compare two groups for sorting based on the $sort value.
- * @param array $a The left group.
- * @param array $b The right group.
- * @return int
- */
-function groupSort($a, $b)
-{
-    global $sort;
-    switch ($sort) {
-        case 'members':
-            $countA = $a['members'];
-            $countB = $b['members'];
-            if ($countA == $countB)
-                return 0;
-            if ($countA < $countB)
-                return 1;
-            return -1;
-
-        case 'permissions':
-            $countA = count($a['rights']);
-            $countB = count($b['rights']);
-            if ($countA == $countB)
-                return 0;
-            if ($countA < $countB)
-                return 1;
-            return -1;
-
-        default:
-            return strcasecmp($a['name'], $b['name']);
-    }
-}
-
-uasort($groups, 'groupSort');
+uasort($groups, array($engine, 'groupSort'));
 
 
 #########
