@@ -6,10 +6,16 @@
 ## Paths
 ##########
 /**
+ * The name of the current user running this script.
+ * @var string
+ */
+DEFINE('SCRIPT_USER', substr($_SERVER['USER'], 0, 6) == 'tools.' ? substr($_SERVER['USER'], 6) : $_SERVER['USER']);
+
+/**
  * The directory to which to write non-public data like logs and cache files.
  * @var string
  */
-DEFINE('DATA_PATH', '/data/project/meta/');
+DEFINE('DATA_PATH', '/data/project/' . SCRIPT_USER . '/');
 
 /**
  * The directory to which to write log files.
@@ -61,7 +67,9 @@ $settings['debug'] = false;
 #############################
 ## URLs and navigation
 #############################
-$settings['root_url']  = '//tools.wmflabs.org/meta';
+$settings['root_url']  = SCRIPT_USER == 'pathoschild-contrib'
+    ? ('//tools.wmflabs.org/' . SCRIPT_USER . '/tools-edge')
+    : ('//tools.wmflabs.org/' . SCRIPT_USER);
 
 $settings['tools'] = [
     'Wikimedia' => [
