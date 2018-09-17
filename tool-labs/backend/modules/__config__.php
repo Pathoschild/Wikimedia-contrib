@@ -9,7 +9,7 @@
  * The name of the current user running this script.
  * @var string
  */
-DEFINE('SCRIPT_USER', substr($_SERVER['USER'], 0, 6) == 'tools.' ? substr($_SERVER['USER'], 6) : $_SERVER['USER']);
+DEFINE('SCRIPT_USER', preg_replace('/^\/data\/project\/([^\/]+).*$/', '$1', $_SERVER['DOCUMENT_ROOT']));
 
 /**
  * The directory to which to write non-public data like logs and cache files.
