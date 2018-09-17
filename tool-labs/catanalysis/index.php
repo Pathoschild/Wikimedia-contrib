@@ -3,7 +3,7 @@ set_time_limit(120); // set timout to two minutes
 require_once('../backend/modules/Base.php');
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/Form.php');
-require_once('../backend/modules/IP.php');
+require_once('../backend/modules/IPAddress.php');
 $backend = Backend::create('Catanalysis', 'Analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix). This is primarily intended for test project analysis by the Wikimedia Foundation <a href="//meta.wikimedia.org/wiki/Language_committee" title="language committee">language committee</a>.')
     ->link('/catanalysis/stylesheet.css')
     ->header();

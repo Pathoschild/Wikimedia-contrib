@@ -26,6 +26,12 @@ class StewardryEngine extends Base
     public $dbname = null;
 
     /**
+     * The current wiki.
+     * @var Wiki[]
+     */
+    public $wiki = null;
+
+    /**
      * The selected groups.
      * @var string
      */

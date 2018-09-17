@@ -260,20 +260,9 @@ class AccountEligibilityEngine extends Base
             }
             $this->profiler->stop('init wiki queue: fetch edit counts');
 
-            /**
-             * Get whether an edit count meets the minimum edit count needed.
-             * @param int $count The edit count to check.
-             * @return bool
-             */
-            function filter($count)
-            {
-                global $minEdits;
-                return $count >= $minEdits;
-            }
-
             /* initialize queue */
             asort($this->queue);
-            $this->queue = array_filter($this->queue, 'filter');
+            $this->queue = array_filter($this->queue, function($count) use($minEdits) { return $count >= $minEdits; });
             $this->queue = array_keys($this->queue);
             $this->nextQueueIndex = count($this->queue) - 1;
             $this->unified = true;
