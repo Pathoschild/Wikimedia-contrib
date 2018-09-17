@@ -2,7 +2,7 @@
 /**
  * Provides account eligibility methods and event data.
  */
-class Engine extends Base
+class AccountEligibilityEngine extends Base
 {
     ##########
     ## Configuration

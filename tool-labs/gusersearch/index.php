@@ -1,7 +1,7 @@
 <?php
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/Form.php');
-require_once('framework/Engine.php');
+require_once('framework/GUserSearchEngine.php');
 $backend = Backend::create('gUser search', 'Provides searching and filtering of global users on Wikimedia wikis.')
     ->link('/gusersearch/stylesheet.css')
     ->link('/gusersearch/javascript.js')
@@ -10,7 +10,7 @@ $backend = Backend::create('gUser search', 'Provides searching and filtering of 
 #############################
 ## Instantiate script engine
 #############################
-$engine = new Engine($backend);
+$engine = new GUserSearchEngine($backend);
 $engine->minDate = $backend->get('date');
 $backend->profiler->start('initialize');
 
@@ -24,29 +24,29 @@ $caseInsensitive = (bool)$backend->get('icase');
 /* add user name filter */
 if ($name != null) {
     $engine->name = $name;
-    $operator = ($useRegex ? Engine::OP_REGEXP : Engine::OP_LIKE);
+    $operator = ($useRegex ? GUserSearchEngine::OP_REGEXP : GUserSearchEngine::OP_LIKE);
 
     if ($caseInsensitive) {
-        $engine->filter(Engine::T_GLOBALUSER, 'UPPER(CONVERT(gu_name USING utf8))', $operator, strtoupper($name));
-        $engine->filter(Engine::T_LOCALWIKIS, 'UPPER(CONVERT(lu_name USING utf8))', $operator, strtoupper($name));
+        $engine->filter(GUserSearchEngine::T_GLOBALUSER, 'UPPER(CONVERT(gu_name USING utf8))', $operator, strtoupper($name));
+        $engine->filter(GUserSearchEngine::T_LOCALWIKIS, 'UPPER(CONVERT(lu_name USING utf8))', $operator, strtoupper($name));
         $engine->describeFilter("username {$operator} {$name}");
     } else {
-        $engine->filter(Engine::T_GLOBALUSER, 'gu_name', $operator, $name);
-        $engine->filter(Engine::T_LOCALWIKIS, 'lu_name', $operator, $name);
+        $engine->filter(GUserSearchEngine::T_GLOBALUSER, 'gu_name', $operator, $name);
+        $engine->filter(GUserSearchEngine::T_LOCALWIKIS, 'lu_name', $operator, $name);
         $engine->describeFilter("username {$operator} {$name}");
     }
 }
 
 /* add lock status filter */
 if (!$showLocked) {
-    $engine->filter(Engine::T_GLOBALUSER, 'gu_locked', Engine::OP_NOT_EQUAL, '1');
+    $engine->filter(GUserSearchEngine::T_GLOBALUSER, 'gu_locked', GUserSearchEngine::OP_NOT_EQUAL, '1');
     $engine->describeFilter("NOT locked");
 }
 
 /* add hide status filter */
 if (!$showHidden) {
-    $engine->filter(Engine::T_GLOBALUSER, 'gu_hidden', Engine::OP_NOT_EQUAL, 'lists');
-    $engine->filter(Engine::T_GLOBALUSER, '`gu_hidden`', Engine::OP_NOT_EQUAL, 'suppressed');
+    $engine->filter(GUserSearchEngine::T_GLOBALUSER, 'gu_hidden', GUserSearchEngine::OP_NOT_EQUAL, 'lists');
+    $engine->filter(GUserSearchEngine::T_GLOBALUSER, '`gu_hidden`', GUserSearchEngine::OP_NOT_EQUAL, 'suppressed');
     $engine->describeFilter("NOT hidden");
 }
 
@@ -77,7 +77,7 @@ $formUser = $backend->formatValue(isset($name) ? $name : '');
 echo "
     <form action='{$backend->url('/gusersearch')}' method='get'>
         <input type='text' name='name' value='{$formUser}' />
-        ", (($limit != Engine::DEFAULT_LIMIT) ? "<input type='hidden' name='limit' value='{$limit}' />" : ""), "
+        ", (($limit != GUserSearchEngine::DEFAULT_LIMIT) ? "<input type='hidden' name='limit' value='{$limit}' />" : ""), "
 
         <input type='submit' value='Search »' /><br />
         <div style='padding-left:0.5em; border:1px solid gray; color:gray;'>

@@ -1,6 +1,6 @@
 <?php
 require_once('../backend/modules/Backend.php');
-require_once('framework/Engine.php');
+require_once('framework/CrossactivityEngine.php');
 $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.')
     ->link('/content/dataTables/jquery.dataTables.min.js')
     ->link('/content/dataTables/jquery.dataTables.plain.css')
@@ -18,7 +18,7 @@ $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bur
 ##########
 ## Get data
 ##########
-$engine = new Engine();
+$engine = new CrossactivityEngine();
 $user = $backend->get('user', $backend->getRouteValue());
 if ($user != null)
     $user = $backend->formatUsername($user);

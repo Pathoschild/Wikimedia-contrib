@@ -107,7 +107,7 @@ do {
     ## Collect revision metrics
     ##########
     $db->connect($database);
-    $engine = new Engine();
+    $engine = new CatanalysisEngine();
 
     // build query
     $backend->profiler->start('build revisions query');

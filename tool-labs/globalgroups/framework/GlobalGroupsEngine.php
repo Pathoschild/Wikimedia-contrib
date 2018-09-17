@@ -3,7 +3,7 @@
 /**
  * The tool engine.
  */
-class Engine extends Base
+class GlobalGroupsEngine extends Base
 {
     ##########
     ## Public methods

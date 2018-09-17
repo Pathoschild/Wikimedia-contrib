@@ -2,7 +2,7 @@
 /**
  * Encapsulates searching the code database.
  */
-class Engine extends Base
+class Iso639dbEngine extends Base
 {
     ##########
     ## Properties
@@ -113,7 +113,7 @@ class Engine extends Base
         $sql = 'SELECT * FROM `codes`';
         if (count($conditions))
             $sql .= ' WHERE ' . implode(' AND ', $conditions);
-        $sql .= ' ORDER BY `list`, `code` LIMIT ' . Engine::MAX_LIMIT . ' OFFSET ' . $this->offset;
+        $sql .= ' ORDER BY `list`, `code` LIMIT ' . Iso639dbEngine::MAX_LIMIT . ' OFFSET ' . $this->offset;
 
         // fetch results database
         $db = $this->backend->getDatabase();

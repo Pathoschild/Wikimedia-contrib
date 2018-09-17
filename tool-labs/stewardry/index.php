@@ -1,6 +1,6 @@
 <?php
 require_once('../backend/modules/Backend.php');
-require_once('framework/Engine.php');
+require_once('framework/StewardryEngine.php');
 $backend = Backend::Create('Stewardry', 'Estimates which users in a group are available based on their last edit or action.')
     ->link('/content/jquery.tablesorter.js', true)
     ->link('/stewardry/scripts.js', true)
@@ -9,7 +9,7 @@ $backend = Backend::Create('Stewardry', 'Estimates which users in a group are av
 ##########
 ## Initialise
 ##########
-$engine = new Engine($backend);
+$engine = new StewardryEngine($backend);
 $data = [];
 
 

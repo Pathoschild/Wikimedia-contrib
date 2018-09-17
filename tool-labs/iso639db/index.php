@@ -1,7 +1,7 @@
 <?php
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/Database.php');
-require_once('framework/Engine.php');
+require_once('framework/Iso639dbEngine.php');
 $backend = Backend::create('ISO 639 database', 'A searchable database of languages and ISO 639 codes augmented by native language names from Wikipedia.')
     ->link('/iso639db/stylesheet.css')
     ->link('/content/jquery.collapse/jquery.collapse.js')
@@ -14,7 +14,7 @@ $backend = Backend::create('ISO 639 database', 'A searchable database of languag
 ####################
 ## Output form
 ####################
-$engine = new Engine($backend);
+$engine = new Iso639dbEngine($backend);
 
 echo "
     <div class='search'>
@@ -100,8 +100,8 @@ else {
         </table>
         ";
 
-    if (count($rows) == Engine::MAX_LIMIT)
-        echo "<div class='neutral'>Only the first ", Engine::MAX_LIMIT, " matching languages are shown.</div>";
+    if (count($rows) == Iso639dbEngine::MAX_LIMIT)
+        echo "<div class='neutral'>Only the first ", Iso639dbEngine::MAX_LIMIT, " matching languages are shown.</div>";
 }
 
 $backend->footer();

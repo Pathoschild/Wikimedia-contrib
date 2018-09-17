@@ -2,7 +2,7 @@
 /**
  * Provides methods for stewardry.
  */
-class Engine extends Base
+class StewardryEngine extends Base
 {
     ##########
     ## Properties

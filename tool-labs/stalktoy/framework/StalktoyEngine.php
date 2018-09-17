@@ -2,7 +2,7 @@
 /**
  * Implements logic for the Stalktoy tool.
  */
-class Engine extends Base
+class StalktoyEngine extends Base
 {
     ##########
     ## Properties

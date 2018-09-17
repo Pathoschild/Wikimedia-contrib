@@ -37,7 +37,7 @@ if ($target == null) {
 }
 
 # initialise
-$engine = new Engine($backend, $target);
+$engine = new StalktoyEngine($backend, $target);
 $engine->showAllWikis = $backend->get('show_all_wikis', false);
 $engine->showGroupsPerWiki = $backend->get('global_groups_per_wiki', false);
 $deletedGlobalGroups = ['Cabal'];

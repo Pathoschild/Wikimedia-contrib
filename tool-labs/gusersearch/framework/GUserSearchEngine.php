@@ -2,7 +2,7 @@
 /**
  * Provides global user search methods.
  */
-class Engine extends Base
+class GUserSearchEngine extends Base
 {
     ##########
     ## Properties
@@ -135,9 +135,9 @@ class Engine extends Base
 
     /**
      * Add an SQL filter to apply to the results.
-     * @param string $table The SQL table to filter (one of {@see Engine::T_GLOBALUSER}, {@see Engine::T_GLOBALGROUPS}, or {@see Engine::T_LOCALWIKIS}).
+     * @param string $table The SQL table to filter (one of {@see GUserSearchGUserSearchEngine::T_GLOBALUSER}, {@see GUserSearchEngine::T_GLOBALGROUPS}, or {@see GUserSearchEngine::T_LOCALWIKIS}).
      * @param string $field The SQL field to filter.
-     * @param string $operator The SQL comparison operator (one of {@see Engine::OP_REGEXP}, {@see Engine::OP_LIKE}, {@see Engine::OP_EQUAL}, or {@see Engine::OP_NOT_EQUAL}).
+     * @param string $operator The SQL comparison operator (one of {@see GUserSearchEngine::OP_REGEXP}, {@see GUserSearchEngine::OP_LIKE}, {@see GUserSearchEngine::OP_EQUAL}, or {@see GUserSearchEngine::OP_NOT_EQUAL}).
      * @param string $value The value to compare against.
      */
     public function filter($table, $field, $operator, $value)
@@ -156,7 +156,7 @@ class Engine extends Base
 
     /**
      * Set the maximum number of records to return.
-     * @param int $limit The maximum number of records to return. This should be a value between {@see Engine::MIN_LIMIT} and {@see Engine::MAX_LIMIT}.
+     * @param int $limit The maximum number of records to return. This should be a value between {@see GUserSearchEngine::MIN_LIMIT} and {@see GUserSearchEngine::MAX_LIMIT}.
      */
     public function setLimit($limit)
     {
@@ -217,7 +217,7 @@ class Engine extends Base
 
     /**
      * Generate the HTML for a pagination link.
-     * @param int $limit The maximum number of records to return. This should be a value between {@see Engine::MIN_LIMIT} and {@see Engine::MAX_LIMIT}.
+     * @param int $limit The maximum number of records to return. This should be a value between {@see GUserSearchEngine::MIN_LIMIT} and {@see GUserSearchEngine::MAX_LIMIT}.
      * @param int $offset The number of records to skip.
      * @param string $label The link text.
      * @return string
@@ -282,7 +282,7 @@ class Engine extends Base
 
             $minID = $db->query('SELECT gu_id FROM centralauth_p.globaluser WHERE gu_registration < ? ORDER BY gu_id DESC LIMIT 1', $this->minDate)->fetchValue();
             if ($minID) {
-                $this->filter(Engine::T_GLOBALUSER, 'gu_registration', '>', $minID);
+                $this->filter(GUserSearchEngine::T_GLOBALUSER, 'gu_registration', '>', $minID);
             }
 
             $profiler->stop('calculate range for date filter');

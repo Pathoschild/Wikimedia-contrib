@@ -1,6 +1,6 @@
 <?php
 require_once('../backend/modules/Backend.php');
-require_once('framework/Engine.php');
+require_once('framework/GlobalGroupsEngine.php');
 $backend = Backend::create('GlobalGroups', 'A review of extra permissions assigned to <a href="//meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets" title="global groups">global groups</a> on Wikimedia Foundation wikis.')
     ->link('/globalgroups/stylesheet.css')
     ->header();
@@ -223,7 +223,7 @@ $flagBlurbs = [
 ##########
 ## Query group details
 ##########
-$engine = new Engine();
+$engine = new GlobalGroupsEngine();
 $db = $backend->getDatabase();
 $db->connect('metawiki');
 

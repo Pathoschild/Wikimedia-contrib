@@ -3,7 +3,7 @@
 /**
  * The tool engine.
  */
-class Engine extends Base
+class CrossactivityEngine extends Base
 {
     ##########
     ## Public methods

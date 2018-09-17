@@ -21,7 +21,7 @@ $event = $backend->get('event') ?: $backend->getRouteValue();
 $user = $backend->get('user') ?: $backend->getRouteValue(2) ?: '';
 $wiki = $backend->get('wiki', null);
 $backend->profiler->start('init engine');
-$engine = new Engine($backend, $user, $event, $wiki);
+$engine = new AccountEligibilityEngine($backend, $user, $event, $wiki);
 $backend->profiler->stop('init engine');
 
 ############################

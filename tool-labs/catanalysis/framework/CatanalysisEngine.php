@@ -2,7 +2,7 @@
 /**
  * The tool engine.
  */
-class Engine extends Base
+class CatanalysisEngine extends Base
 {
     ##########
     ## Public methods
