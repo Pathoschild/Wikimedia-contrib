@@ -5,6 +5,7 @@ require_once('external/KLogger.php');
 require_once('Logger.php');
 require_once('Cacher.php');
 require_once('Database.php');
+require_once('Toolserver.php');
 require_once('Wikimedia.php');
 
 /**
