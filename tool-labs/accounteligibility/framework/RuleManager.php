@@ -32,7 +32,7 @@ class RuleManager
     ##########
     /**
      * Add a new eligibility rule to the manager.
-     * @param RuleEntry[] $rule The eligibility rules to check.
+     * @param RuleEntry[] $rules The eligibility rules to check.
      */
     public function __construct($rules)
     {

@@ -27,13 +27,13 @@ class StewardryEngine extends Base
 
     /**
      * The current wiki.
-     * @var Wiki[]
+     * @var Wiki
      */
     public $wiki = null;
 
     /**
-     * The selected groups.
-     * @var string
+     * Maps the selected group names (like 'sysop') to the relevant log types.
+     * @var array<string, string[]>
      */
     public $groups = [];
 

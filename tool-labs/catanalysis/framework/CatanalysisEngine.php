@@ -221,7 +221,7 @@ class CatanalysisEngine extends Base
     /**
      * Get metadata about matching revisions.
      * @param Database $db The connected database instance.
-     * @param Database The revision query.
+     * @param Database $revisionQuery The revision query.
      * @return Metrics The revision metrics.
      */
     public function getEditMetrics($db, $revisionQuery) {
@@ -319,14 +319,14 @@ class CatanalysisEngine extends Base
 
         // flag bots in overall metrics
         foreach ($metrics->users as &$user)
-            $user->isBot = array_key_exists($user->name, $bots) ? 1 : 0;
+            $user->isBot = array_key_exists($user->name, $bots);
         unset($user);
 
         // flag bots in monthly metrics
         foreach ($metrics->months as &$month)
         {
             foreach ($month->users as &$user)
-                $user->isBot = array_key_exists($user->name, $bots) ? 1 : 0;
+                $user->isBot = array_key_exists($user->name, $bots);
         }
         unset($month, $user);
 

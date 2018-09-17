@@ -49,7 +49,7 @@ class StalktoyEngine extends Base
 
     /**
      * The selected wiki.
-     * @var Wiki
+     * @var Wiki|null
      */
     public $wiki;
 
@@ -111,11 +111,11 @@ class StalktoyEngine extends Base
 
     /**
      * Set the current wiki to analyze.
-     * @param {string} $wiki The database name of the wiki to analyze.
+     * @param string $wiki The database name of the wiki to analyze.
      */
     public function setWiki($wiki)
     {
-        $this->wiki = $wiki;
+        $this->wiki = null;
         $this->db->connect($wiki);
         $this->local = [];
     }

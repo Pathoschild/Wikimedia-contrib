@@ -338,6 +338,6 @@ class GUserSearchEngine extends Base
      */
     public function __destruct()
     {
-        $this->db = null;
+        unset($this->db);
     }
 }

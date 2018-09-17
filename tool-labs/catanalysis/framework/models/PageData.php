@@ -36,11 +36,11 @@ class PageData
      * The current page size.
      * @var int
      */
-    public $size = false;
+    public $size = 0;
 
     /**
      * Whether the current page is a redirect.
-     * @var int
+     * @var bool
      */
     public $isRedirect = false;
 }

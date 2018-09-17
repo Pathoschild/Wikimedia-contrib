@@ -89,8 +89,8 @@ class Backend extends Base
 
         /* handle options */
         $this->filename = basename($_SERVER['SCRIPT_NAME']);
-        $this->title = isset($title) ? $title : $this->filename;
-        $this->blurb = isset($blurb) ? $blurb : null;
+        $this->title = $title ? $title : $this->filename;
+        $this->blurb = $blurb ? $blurb : null;
         $this->license = $settings['license'];
 
         /* start logger */

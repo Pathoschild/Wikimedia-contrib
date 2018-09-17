@@ -137,7 +137,7 @@ class Database
 
     /**
      * The last prepared query.
-     * @var PDOStatement
+     * @var PDOStatement|null
      */
     protected $query = null;
 
@@ -307,7 +307,7 @@ class Database
         $sql .= " /*{$this->logger->key}*/";
 
         if ($this->borked)
-            return null;
+            return false;
         try {
             if ($this->db == null)
                 throw new Exception('Not connected to a database.');
@@ -337,7 +337,7 @@ class Database
     public function fetchAssoc()
     {
         if ($this->borked)
-            return null;
+            return false;
         try {
             return $this->query->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $exc) {
@@ -347,7 +347,7 @@ class Database
 
     /**
      * Fetch a single value from the next row, and advance the internal pointer.
-     * @param $columnNumber int The numeric index of the column to retrieve.
+     * @param int $columnNumber The numeric index of the column to retrieve.
      * @return string|false The value of the retrieved field, or false if the query failed.
      */
     public function fetchColumn($columnNumber = 0)
@@ -357,13 +357,13 @@ class Database
 
     /**
      * Fetch a single value from the next row, and advance the internal pointer.
-     * @param $columnNumber int The numeric index of the column to retrieve.
+     * @param int $columnNumber The numeric index of the column to retrieve.
      * @return string|false The value of the retrieved field, or false if the query failed.
      */
     public function fetchValue($columnNumber = 0)
     {
         if ($this->borked)
-            return null;
+            return false;
         try {
             return $this->query->fetchColumn($columnNumber);
         } catch (PDOException $exc) {
@@ -378,7 +378,7 @@ class Database
     public function fetchAllAssoc()
     {
         if ($this->borked)
-            return null;
+            return false;
         try {
             return $this->query->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $exc) {
@@ -428,10 +428,9 @@ class Database
         return false;
     }
 
-
     /**
      * Get a human-readable data dump about the current query.
-     * @return string
+     * @return string|null
      */
     protected function getQueryDebugData()
     {
@@ -441,7 +440,6 @@ class Database
         $this->query->debugDumpParams();
         return ob_get_clean();
     }
-
 
     /**
      * Log a trace message.

@@ -35,7 +35,7 @@ class DateWrapper
     public function __construct($date)
     {
         $date = $this->getDate($date);
-        $this->mediawiki = $date->format("YmdHis");
+        $this->mediawiki = intval($date->format("YmdHis"));
         $this->readable = $date->format("d F Y");
     }
 
@@ -45,7 +45,7 @@ class DateWrapper
     ##########
     /**
      * Get a full date from a date number.
-     * @param string $date The date to wrap in a format accepted by {@see DateWrapper::__construct}.
+     * @param string $input The date to wrap in a format accepted by {@see DateWrapper::__construct}.
      * @return DateTime
      * @throws InvalidArgumentException The specified date is empty or not in a valid format.
      */

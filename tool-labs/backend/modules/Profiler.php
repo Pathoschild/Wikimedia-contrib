@@ -10,13 +10,13 @@ class Profiler
     ##########
     /**
      * The benchmarking time results, each being an array of millisecond times in the form (startTime, endTime).
-     * @var array
+     * @var array<string, array<float|null>>
      */
     private $times = [];
 
     /**
-     * The millisecond time at which the {@see Profiler} instance was constructed.
-     * @var int
+     * The second time at which the {@see Profiler} instance was constructed.
+     * @var float
      */
     private $timeStart = null;
 
@@ -38,7 +38,7 @@ class Profiler
      */
     public function start($key)
     {
-        $this->times[$key] = Array($this->getCurrentTime(), null);
+        $this->times[$key] = [$this->getCurrentTime(), null];
     }
 
     /**
@@ -57,8 +57,8 @@ class Profiler
     }
 
     /**
-     * Get the total time elapsed since the script started running.
-     * @return int The total time elapsed in milliseconds.
+     * Get the total time elapsed since the script started running in seconds (with millisecond precision).
+     * @return float The total time elapsed in seconds.
      * @throws Exception The script start time wasn't initialised.
      */
     public function getElapsedSinceStart()
@@ -71,7 +71,7 @@ class Profiler
     /**
      * Get a benchmarking timer's elapsed time in decimal seconds.
      * @param string $key The unique name of the timer.
-     * @return int The total time in milliseconds that elapsed between starting and stopping the named timer.
+     * @return float The total time in milliseconds that elapsed between starting and stopping the named timer.
      */
     public function getElapsed($key)
     {
@@ -91,7 +91,7 @@ class Profiler
 
     /**
      * Get all benchmarking timer keys.
-     * @return array An array of available benchmarking keys.
+     * @return string[] An array of available benchmarking keys.
      */
     public function getKeys()
     {
@@ -99,12 +99,11 @@ class Profiler
     }
 
     /**
-     * Get the current microtime in milliseconds.
-     * @return integer The current microtime in milliseconds.
+     * Get the current time in seconds (with millisecond precision).
+     * @return float The current time in seconds.
      */
     private function getCurrentTime()
     {
-        $time = explode(' ', microtime());
-        return $time[0] + $time[1];
+        return microtime(true);
     }
 }

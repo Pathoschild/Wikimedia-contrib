@@ -9,7 +9,7 @@ class AccountEligibilityEngine extends Base
     ##########
     /**
      * The event data.
-     * @var Event[]
+     * @var array<int, Event>
      */
     public $events = [];
 
@@ -65,7 +65,7 @@ class AccountEligibilityEngine extends Base
 
     /**
      * The selected event.
-     * @var array
+     * @var Event
      */
     public $event;
 
@@ -131,10 +131,9 @@ class AccountEligibilityEngine extends Base
         /* load events */
         $this->profiler->start("init events");
         $eventFactory = new EventFactory();
-        $events = $eventFactory->getEvents();
-        foreach ($events as $event)
+        foreach ($eventFactory->getEvents() as $event)
             $this->events[$event->id] = $event;
-        $this->eventID = isset($eventID) ? $eventID : $eventFactory->getDefaultEventID();
+        $this->eventID = $eventID != null ? $eventID : $eventFactory->getDefaultEventID();
         $this->event = $this->events[$this->eventID];
         $this->profiler->stop("init events");
 
