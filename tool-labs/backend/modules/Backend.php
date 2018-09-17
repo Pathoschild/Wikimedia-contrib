@@ -5,6 +5,7 @@ require_once('external/KLogger.php');
 require_once('Logger.php');
 require_once('Cacher.php');
 require_once('Database.php');
+require_once('Toolserver.php');
 require_once('Wikimedia.php');
 
 /**
@@ -89,8 +90,8 @@ class Backend extends Base
 
         /* handle options */
         $this->filename = basename($_SERVER['SCRIPT_NAME']);
-        $this->title = isset($title) ? $title : $this->filename;
-        $this->blurb = isset($blurb) ? $blurb : null;
+        $this->title = $title ? $title : $this->filename;
+        $this->blurb = $blurb ? $blurb : null;
         $this->license = $settings['license'];
 
         /* start logger */

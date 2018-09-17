@@ -123,7 +123,7 @@ class IPAddress
     /**
      * Get the encoded representation of the IP address.
      * @param int $end Which end of the IP address range to get (one of {@see IPAddress::START} or {@see IPAddress::END}).
-     * @return string
+     * @return string|null
      */
     public function getEncoded($end = IPAddress::START)
     {
@@ -135,7 +135,7 @@ class IPAddress
     /**
      * Get the human-readable representation of the IP address.
      * @param int $end Which end of the IP address range to get (one of {@see IPAddress::START} or {@see IPAddress::END}).
-     * @return string
+     * @return string|null
      */
     public function getFriendly($end = IPAddress::START)
     {

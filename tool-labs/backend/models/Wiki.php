@@ -58,13 +58,13 @@ class Wiki
 
     /**
      * The name of the server on which the wiki's replicated database is located.
-     * @var int
+     * @var string
      */
     public $serverName = null;
 
     /**
      * The host name of the server on which the wiki's replicated database is located.
-     * @var bool
+     * @var string
      */
     public $host = null;
 

@@ -10,7 +10,7 @@ class NotBlockedRule implements Rule
     ##########
     /**
      * The maximum number of current blocks allowed. (A value > 1 only makes sense when accumulating blocks crosswiki.)
-     * @var string
+     * @var int
      */
     private $maxBlocks;
 

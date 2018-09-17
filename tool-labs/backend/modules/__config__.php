@@ -6,10 +6,16 @@
 ## Paths
 ##########
 /**
+ * The name of the current user running this script.
+ * @var string
+ */
+DEFINE('SCRIPT_USER', preg_replace('/^\/data\/project\/([^\/]+).*$/', '$1', $_SERVER['DOCUMENT_ROOT']));
+
+/**
  * The directory to which to write non-public data like logs and cache files.
  * @var string
  */
-DEFINE('DATA_PATH', '/data/project/meta/');
+DEFINE('DATA_PATH', '/data/project/' . SCRIPT_USER . '/');
 
 /**
  * The directory to which to write log files.
@@ -61,7 +67,9 @@ $settings['debug'] = false;
 #############################
 ## URLs and navigation
 #############################
-$settings['root_url']  = '//tools.wmflabs.org/meta';
+$settings['root_url']  = SCRIPT_USER == 'pathoschild-contrib'
+    ? ('//tools.wmflabs.org/' . SCRIPT_USER . '/tools-edge')
+    : ('//tools.wmflabs.org/' . SCRIPT_USER);
 
 $settings['tools'] = [
     'Wikimedia' => [
@@ -76,7 +84,6 @@ $settings['tools'] = [
         ['/userpages', 'find your user pages on all wikis.', 'User pages']
     ],
     'generic' => [
-        ['/regextoy', 'perform regex search and replace', 'Regex toy'],
         ['/iso639db', 'search ISO 639 codes.', 'ISO-639 database'],
         ['/pgkbot', 'IRC-based wiki monitoring bot', 'pgkbot']
     ]

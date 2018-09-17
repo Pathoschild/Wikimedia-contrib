@@ -71,7 +71,7 @@ class Wikimedia
     /**
      * Get the data for a wiki.
      * @param string $dbname The wiki's unique database name.
-     * @return Wiki
+     * @return Wiki|null
      */
     public function getWiki($dbname)
     {
