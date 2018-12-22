@@ -161,8 +161,9 @@ $flagBlurbs = [
     "right-nuke" => "Mass delete pages",
 
     // OATHAuth extension: https://github.com/wikimedia/mediawiki-extensions-OATHAuth/blob/master/i18n/en.json
-    "right-oathauth-enable" => "Enable two-factor authentication",
     "right-oathauth-api-all" => "Query and validate OATH information for self and others",
+    "right-oathauth-disable-for-user" => "Disable two-factor authentication for a user",
+    "right-oathauth-enable" => "Enable two-factor authentication",
 
     // OAuth extension: https://github.com/wikimedia/mediawiki-extensions-OAuth/blob/master/i18n/en.json
     "right-mwoauthmanageconsumer" => "Manage OAuth consumers",
