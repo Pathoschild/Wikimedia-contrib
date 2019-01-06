@@ -12,8 +12,9 @@ class StewardryEngine extends Base
      * @var array
      */
     public $presetGroups = [
-        'sysop' => ['abusefilter', 'block', 'delete', 'protect'],
-        'bureaucrat' => ['makebot', 'renameuser', 'rights'],
+        'sysop' => ['abusefilter', 'block', 'delete', 'protect', 'rights'],
+        'bureaucrat' => ['rights'],
+        'interface-admin' => [],
         'checkuser' => [],
         'oversight' => [],
         'bot' => []
