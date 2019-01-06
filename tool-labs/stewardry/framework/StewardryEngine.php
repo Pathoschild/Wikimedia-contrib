@@ -85,10 +85,10 @@ class StewardryEngine extends Base
         $outerSelects = [];
         $innerSelects = [];
         foreach ($names as $group) {
-            $outerSelects[] = "user_has_$group";
+            $outerSelects[] = "`user_has_$group`";
             if ($rights[$group])
-                $outerSelects[] = "CASE WHEN user_has_$group<>0 THEN (SELECT log_timestamp FROM logging_userindex WHERE log_user=user_id AND log_type IN ('" . implode("','", $rights[$group]) . "') ORDER BY log_id DESC LIMIT 1) END AS last_$group";
-            $innerSelects[] = "COUNT(CASE WHEN ug_group='$group' THEN 1 END) AS user_has_$group";
+                $outerSelects[] = "CASE WHEN `user_has_$group`<>0 THEN (SELECT log_timestamp FROM logging_userindex WHERE log_user=user_id AND log_type IN ('" . implode("','", $rights[$group]) . "') ORDER BY log_id DESC LIMIT 1) END AS `last_$group`";
+            $innerSelects[] = "COUNT(CASE WHEN ug_group='$group' THEN 1 END) AS `user_has_$group`";
         }
 
         // execute SQL
