@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 49;
+        return 50;
     }
 
     /**
@@ -22,6 +22,13 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2019: Commons Picture of the Year for 2018
+        ##########
+        yield (new Event(50, 2019, 'Commons Picture of the Year for 2018', '//commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2018'))
+            ->addRule(new DateRegisteredRule('<201901'), Workflow::ON_ANY_WIKI)// registered before 01 January 2019
+            ->addRule(new EditCountRule(75, null, '<201901'), Workflow::ON_ANY_WIKI);// 75 edits before 01 January 2019
+
         ##########
         ## 2019: steward elections
         ##########
@@ -110,7 +117,7 @@ class EventFactory
                 'You are a current staff member or contractor employed by an approved Wikimedia Chapter, Thematic Organization or User Group as of 1 April 2017.',
                 'You are a current or former member of the Wikimedia Board of Trustees, Advisory Board or Funds Dissemination Committee.'
             ]);
-        
+
         ##########
         ## 2017: Commons Picture of the Year for 2016
         ##########
