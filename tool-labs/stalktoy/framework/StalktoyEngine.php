@@ -115,7 +115,7 @@ class StalktoyEngine extends Base
      */
     public function setWiki($wiki)
     {
-        $this->wiki = null;
+        $this->wiki = $wiki;
         $this->db->connect($wiki);
         $this->local = [];
     }
@@ -129,7 +129,22 @@ class StalktoyEngine extends Base
     {
         // fetch details
         $row = $this->db->query(
-            'SELECT gu_id, gu_name, DATE_FORMAT(gu_registration, "%Y-%m-%d %H:%i") AS gu_timestamp, gu_locked, gu_hidden, GROUP_CONCAT(gug_group SEPARATOR ",") AS gu_groups, lu_wiki FROM centralauth_p.globaluser LEFT JOIN centralauth_p.global_user_groups ON gu_id = gug_user LEFT JOIN centralauth_p.localuser ON lu_name = ? AND lu_attached_method IN ("primary", "new") WHERE gu_name = ? LIMIT 1',
+            '
+                SELECT
+                    gu_id,
+                    gu_name,
+                    DATE_FORMAT(gu_registration, "%Y-%m-%d %H:%i") AS gu_timestamp,
+                    gu_locked,
+                    gu_hidden,
+                    GROUP_CONCAT(gug_group SEPARATOR ",") AS gu_groups,
+                    lu_wiki
+                FROM
+                    centralauth_p.globaluser
+                    LEFT JOIN centralauth_p.global_user_groups ON gu_id = gug_user
+                    LEFT JOIN centralauth_p.localuser ON lu_name = ? AND lu_attached_method IN ("primary", "new")
+                WHERE gu_name = ?
+                LIMIT 1
+            ',
             [$target, $target]
         )->fetchAssoc();
 
@@ -160,7 +175,17 @@ class StalktoyEngine extends Base
     {
         // fetch details
         $rows = $this->db->query(
-            'SELECT gug_group, ws_type, ws_wikis FROM centralauth_p.global_user_groups LEFT JOIN centralauth_p.global_group_restrictions ON gug_group = ggr_group LEFT JOIN centralauth_p.wikiset ON ggr_set = ws_id WHERE gug_user = ?',
+            '
+                SELECT
+                    gug_group,
+                    ws_type,
+                    ws_wikis
+                FROM
+                    centralauth_p.global_user_groups
+                    LEFT JOIN centralauth_p.global_group_restrictions ON gug_group = ggr_group
+                    LEFT JOIN centralauth_p.wikiset ON ggr_set = ws_id
+                WHERE gug_user = ?
+            ',
             [$id]
         )->fetchAllAssoc();
 
@@ -226,7 +251,21 @@ class StalktoyEngine extends Base
         $start = $ip->ip->getEncoded(IPAddress::START);
         $end = $ip->ip->getEncoded(IPAddress::END);
         $query = $this->db->query(
-            'SELECT gb_address, gb_by, gb_reason, DATE_FORMAT(gb_timestamp, "%Y-%b-%d") AS timestamp, gb_anon_only, DATE_FORMAT(gb_expiry, "%Y-%b-%d") AS expiry FROM centralauth_p.globalblocks WHERE (gb_range_start <= ? AND gb_range_end >= ?) OR (gb_range_start >= ? AND gb_range_end <= ?) ORDER BY gb_timestamp',
+            '
+                SELECT
+                    gb_address,
+                    gb_by,
+                    gb_reason,
+                    DATE_FORMAT(gb_timestamp, "%Y-%b-%d") AS timestamp,
+                    gb_anon_only,
+                    DATE_FORMAT(gb_expiry, "%Y-%b-%d") AS expiry
+                FROM
+                    centralauth_p.globalblocks
+                WHERE
+                    (gb_range_start <= ? AND gb_range_end >= ?)
+                    OR (gb_range_start >= ? AND gb_range_end <= ?)
+                ORDER BY gb_timestamp
+            ',
             [$start, $end, $start, $end]
         )->fetchAllAssoc();
 
@@ -257,7 +296,25 @@ class StalktoyEngine extends Base
     {
         // fetch details
         $row = $db->query(
-            'SELECT user_id, user_registration, DATE_FORMAT(user_registration, "%Y-%m-%d %H:%i") AS registration, user_editcount, GROUP_CONCAT(ug_group SEPARATOR ", ") AS user_groups, ipb_by_text, ipb_reason, DATE_FORMAT(ipb_timestamp, "%Y-%m-%d %H:%i") AS ipb_timestamp, ipb_deleted, COALESCE(DATE_FORMAT(ipb_expiry, "%Y-%m-%d %H:%i"), ipb_expiry) AS ipb_expiry FROM user LEFT JOIN user_groups ON user_id = ug_user LEFT JOIN ipblocks ON user_id = ipb_user WHERE user_name = ? LIMIT 1',
+            '
+                SELECT
+                    user_id,
+                    user_registration,
+                    DATE_FORMAT(user_registration, "%Y-%m-%d %H:%i") AS registration,
+                    user_editcount,
+                    GROUP_CONCAT(ug_group SEPARATOR ", ") AS user_groups,
+                    ipb_by_text,
+                    ipb_reason,
+                    DATE_FORMAT(ipb_timestamp, "%Y-%m-%d %H:%i") AS ipb_timestamp,
+                    ipb_deleted,
+                    COALESCE(DATE_FORMAT(ipb_expiry, "%Y-%m-%d %H:%i"), ipb_expiry) AS ipb_expiry
+                FROM
+                    user
+                    LEFT JOIN user_groups ON user_id = ug_user
+                    LEFT JOIN ipblocks ON user_id = ipb_user
+                WHERE user_name = ?
+                LIMIT 1
+            ',
             [$userName]
         )->fetchAssoc();
 
@@ -329,7 +386,20 @@ class StalktoyEngine extends Base
         $start = $ip->ip->getEncoded(IPAddress::START);
         $end = $ip->ip->getEncoded(IPAddress::END);
         $query = $this->db->query(
-            'SELECT ipb_by_text, ipb_address, ipb_reason, DATE_FORMAT(ipb_timestamp, "%Y-%b-%d") AS timestamp, DATE_FORMAT(ipb_expiry, "%Y-%b-%d") AS expiry, ipb_anon_only FROM ipblocks WHERE (ipb_range_start <= ? AND ipb_range_end >= ?) OR (ipb_range_start >= ? AND ipb_range_end <= ?)',
+            '
+                SELECT
+                    ipb_by_text,
+                    ipb_address,
+                    ipb_reason,
+                    DATE_FORMAT(ipb_timestamp, "%Y-%b-%d") AS timestamp,
+                    DATE_FORMAT(ipb_expiry, "%Y-%b-%d") AS expiry,
+                    ipb_anon_only
+                FROM
+                    ipblocks
+                WHERE
+                    (ipb_range_start <= ? AND ipb_range_end >= ?)
+                    OR (ipb_range_start >= ? AND ipb_range_end <= ?)
+            ',
             [$start, $end, $start, $end]
         )->fetchAllAssoc();
 
