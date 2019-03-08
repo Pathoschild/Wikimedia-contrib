@@ -100,7 +100,7 @@ class HasGroupDurationRule implements Rule
                 log_title,
                 log_timestamp,
                 log_params,
-                comment_text AS log_comment'/*,
+                log_comment'/*,
                 CASE
                     WHEN log_params <> "" THEN
                         CASE WHEN INSTR("\n", log_params) >= 0
@@ -109,9 +109,7 @@ class HasGroupDurationRule implements Rule
                         END
                     ELSE log_comment
                 END AS "log_resulting_groups"*/ . '
-            FROM
-                logging_logindex
-                LEFT JOIN comment ON log_comment_id = comment_id
+            FROM logging_logindex
             WHERE
                 log_type = "rights"
                 AND log_title';
