@@ -100,15 +100,7 @@ class HasGroupDurationRule implements Rule
                 log_title,
                 log_timestamp,
                 log_params,
-                log_comment'/*,
-                CASE
-                    WHEN log_params <> "" THEN
-                        CASE WHEN INSTR("\n", log_params) >= 0
-                            THEN SUBSTR(log_params, INSTR(log_params, "\n") + 1)
-                            ELSE log_params
-                        END
-                    ELSE log_comment
-                END AS "log_resulting_groups"*/ . '
+                \'\' AS log_comment -- TODO: migrate to new comment schema
             FROM logging_logindex
             WHERE
                 log_type = "rights"

@@ -255,7 +255,7 @@ class StalktoyEngine extends Base
                 SELECT
                     gb_address,
                     gb_by,
-                    gb_reason,
+                    \'\' AS gb_reason, -- TODO: migrate to new comment schema
                     DATE_FORMAT(gb_timestamp, "%Y-%b-%d") AS timestamp,
                     gb_anon_only,
                     DATE_FORMAT(gb_expiry, "%Y-%b-%d") AS expiry
@@ -304,7 +304,7 @@ class StalktoyEngine extends Base
                     user_editcount,
                     GROUP_CONCAT(ug_group SEPARATOR ", ") AS user_groups,
                     ipb_by_text,
-                    ipb_reason,
+                    \'\' AS ipb_reason, -- TODO: migrate to new comment schema
                     DATE_FORMAT(ipb_timestamp, "%Y-%m-%d %H:%i") AS ipb_timestamp,
                     ipb_deleted,
                     COALESCE(DATE_FORMAT(ipb_expiry, "%Y-%m-%d %H:%i"), ipb_expiry) AS ipb_expiry
@@ -390,7 +390,7 @@ class StalktoyEngine extends Base
                 SELECT
                     ipb_by_text,
                     ipb_address,
-                    ipb_reason,
+                    \'\' AS ipb_reason, -- TODO: migrate to new comment schema
                     DATE_FORMAT(ipb_timestamp, "%Y-%b-%d") AS timestamp,
                     DATE_FORMAT(ipb_expiry, "%Y-%b-%d") AS expiry,
                     ipb_anon_only
