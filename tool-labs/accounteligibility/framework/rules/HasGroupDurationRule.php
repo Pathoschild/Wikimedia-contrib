@@ -100,8 +100,10 @@ class HasGroupDurationRule implements Rule
                 log_title,
                 log_timestamp,
                 log_params,
-                \'\' AS log_comment -- TODO: migrate to new comment schema
-            FROM logging_logindex
+                comment_text AS log_comment -- TODO: migrate to new comment schema
+            FROM
+                logging_logindex
+                LEFT JOIN comment ON log_comment_id = comment_id
             WHERE
                 log_type = "rights"
                 AND log_title';
