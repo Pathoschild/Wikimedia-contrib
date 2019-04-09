@@ -62,7 +62,7 @@ do {
     // disallowed queries
     if ($engine->dbname == 'enwiki' && $engine->groups['sysop'])
         die('<div class="fail">Sysop statistics are disabled for en.wikipedia.org because the result set is too large to process.</div>');
-    if ($engine->dbname == 'enwiki' && ($engine->groups['bureaucrat'] + $engine->groups['checkuser'] + $engine->groups['oversight'] + $engine->groups['bot']) > 1)
+    if ($engine->dbname == 'enwiki' && count($engine->groups) > 1)
         die('<div class="fail">Only one group (except sysop) can be selected for en.wikipedia.org because the result set is too large to process.</div>');
 
     ##########
