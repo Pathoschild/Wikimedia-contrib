@@ -86,9 +86,12 @@ do {
 
     // sections
     foreach ($engine->groups as $group => $v) {
-        // filter users
+        // filter & sort users
         $matching = array_filter($data, function ($r) use ($group) {
             return !!$r["user_has_$group"];
+        });
+        usort($matching, function($a, $b) {
+            return max($b['last_edit'], $b["last_$group"]) <=> max($a['last_edit'], $a["last_$group"]);
         });
 
         // print header

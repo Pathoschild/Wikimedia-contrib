@@ -78,23 +78,44 @@ class StewardryEngine extends Base
      */
     public function fetchMetrics()
     {
-        $names = array_keys($this->groups);
+        $this->db->Connect($this->wiki->name);
+
+        $groupNames = array_keys($this->groups);
         $rights = $this->groups;
 
-        // build SQL fragments
-        $outerSelects = [];
-        $innerSelects = [];
-        foreach ($names as $group) {
-            $outerSelects[] = "`user_has_$group`";
-            if ($rights[$group])
-                $outerSelects[] = "CASE WHEN `user_has_$group`<>0 THEN (SELECT log_timestamp FROM logging_userindex WHERE log_user=user_id AND log_type IN ('" . implode("','", $rights[$group]) . "') ORDER BY log_id DESC LIMIT 1) END AS `last_$group`";
-            $innerSelects[] = "COUNT(CASE WHEN ug_group='$group' THEN 1 END) AS `user_has_$group`";
+        // fetch users
+        $users = $this->db->query('
+            SELECT
+                user_id,
+                user_name,
+                GROUP_CONCAT(ug_group SEPARATOR ",") AS user_groups
+            FROM
+                user
+                INNER JOIN user_groups ON user_id = ug_user AND ug_group IN(\'' . implode('\',\'', $groupNames) . '\')
+            GROUP BY user_name
+        ')->fetchAllAssoc();
+
+        // fetch user info
+        foreach ($users as &$user)
+        {
+            // actor ID/name
+            $user['actor_id'] = $this->db->query('SELECT actor_id FROM actor WHERE actor_user = ? LIMIT 1', [$user['user_id']])->fetchValue();
+
+            // last edit
+            $user['last_edit'] = $this->db->query('SELECT rev_timestamp FROM revision_userindex WHERE rev_actor = ? ORDER BY rev_id DESC LIMIT 1', [$user['actor_id']])->fetchValue();
+
+            // last group action
+            $userGroups = explode(',', $user['user_groups']);
+            foreach ($userGroups as $groupName)
+            {
+                $user["user_has_$groupName"] = true;
+
+                if ($rights[$groupName])
+                    $user["last_$groupName"] = $this->db->query('SELECT log_timestamp FROM logging_userindex WHERE log_actor = ? AND log_type IN (\'' . implode('\',\'', $rights[$groupName]) . '\') ORDER BY log_id DESC LIMIT 1', [$user['actor_id']])->fetchValue();
+            }
         }
 
-        // execute SQL
-        $this->db->Connect($this->wiki->name);
-        $sql = "SELECT * FROM (SELECT user_name,(SELECT rev_timestamp FROM revision_userindex WHERE rev_user=user_id ORDER BY rev_timestamp DESC LIMIT 1) AS last_edit," . implode(",", $outerSelects) . " FROM (SELECT user_id,user_name," . implode(",", $innerSelects) . " FROM user INNER JOIN user_groups ON user_id = ug_user AND ug_group IN('" . implode("','", $names) . "') GROUP BY ug_user) AS t_users) AS t_metrics ORDER BY last_edit DESC";
-        return $this->db->query($sql)->fetchAllAssoc();
+        return $users;
     }
 
     /**
