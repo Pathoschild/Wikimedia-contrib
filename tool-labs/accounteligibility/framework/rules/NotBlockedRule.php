@@ -91,7 +91,7 @@ class NotBlockedRule implements Rule
      */
     private function isBlocked($db, $user)
     {
-        $db->query('SELECT COUNT(ipb_expiry) FROM ipblocks WHERE ipb_user=? LIMIT 1', [$user->id]);
+        $db->query('SELECT COUNT(ipb_expiry) FROM ipblocks_ipindex WHERE ipb_user=? LIMIT 1', [$user->id]);
         return (bool)$db->fetchColumn();
     }
 }

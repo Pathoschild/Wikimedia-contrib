@@ -311,7 +311,7 @@ class StalktoyEngine extends Base
                 FROM
                     user
                     LEFT JOIN user_groups ON user_id = ug_user
-                    LEFT JOIN ipblocks ON user_id = ipb_user
+                    LEFT JOIN ipblocks_ipindex ON user_id = ipb_user
                 WHERE user_name = ?
                 LIMIT 1
             ',
@@ -395,7 +395,7 @@ class StalktoyEngine extends Base
                     DATE_FORMAT(ipb_expiry, "%Y-%b-%d") AS expiry,
                     ipb_anon_only
                 FROM
-                    ipblocks
+                    ipblocks_ipindex
                 WHERE
                     (ipb_range_start <= ? AND ipb_range_end >= ?)
                     OR (ipb_range_start >= ? AND ipb_range_end <= ?)
