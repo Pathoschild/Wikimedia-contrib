@@ -259,13 +259,18 @@ class CatanalysisEngine extends Base
     public function getEditMetrics($db, $revisionQuery) {
         $metrics = new Metrics();
 
-        // get data
-        $actorNames = [];
+        // fetch revisions
         $revisions = $revisionQuery->fetchAllAssoc();
+
+        // fetch actor names
+        $actorNames = [];
+        foreach ($revisions as $row)
+            $actorNames[$row['rev_actor']] = null;
+        foreach ($db->query('SELECT actor_id, actor_name FROM actor WHERE actor_id IN (' . implode(',', array_keys($actorNames)) .')')->fetchAllAssoc() as $actor)
+            $actorNames[$actor['actor_id']] = $actor['actor_name'];
+
+        // process data
         foreach ($revisions as $row) {
-            // fetch actor name
-            if (!array_key_exists($row['rev_actor'], $actorNames))
-                $actorNames[$row['rev_actor']] = $db->query('SELECT actor_name FROM actor WHERE actor_id = ? LIMIT 1', [$row['rev_actor']])->fetchValue();
             $row['actor_name'] = $actorNames[$row['rev_actor']];
 
             $monthKey = preg_replace('/^(\d{4})(\d{2}).+$/', '$1-$2', $row['rev_timestamp']);
