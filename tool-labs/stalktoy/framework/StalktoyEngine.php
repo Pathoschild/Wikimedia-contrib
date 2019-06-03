@@ -255,7 +255,7 @@ class StalktoyEngine extends Base
                 SELECT
                     gb_address,
                     gb_by,
-                    \'\' AS gb_reason, -- TODO: migrate to new comment schema
+                    gb_reason,
                     DATE_FORMAT(gb_timestamp, "%Y-%b-%d") AS timestamp,
                     gb_anon_only,
                     DATE_FORMAT(gb_expiry, "%Y-%b-%d") AS expiry
@@ -304,7 +304,7 @@ class StalktoyEngine extends Base
                     user_editcount,
                     GROUP_CONCAT(ug_group SEPARATOR ", ") AS user_groups,
                     ipb_by_text,
-                    \'\' AS ipb_reason, -- TODO: migrate to new comment schema
+                    ipb_reason_id,
                     DATE_FORMAT(ipb_timestamp, "%Y-%m-%d %H:%i") AS ipb_timestamp,
                     ipb_deleted,
                     COALESCE(DATE_FORMAT(ipb_expiry, "%Y-%m-%d %H:%i"), ipb_expiry) AS ipb_expiry
@@ -317,6 +317,10 @@ class StalktoyEngine extends Base
             ',
             [$userName]
         )->fetchAssoc();
+
+        // fetch block reason if needed
+        if ($row['ipb_reason_id'])
+            $row['ipb_reason'] = $db->query('SELECT comment_text FROM comment WHERE comment_id = ? LIMIT 1', [$row['ipb_reason_id']])->fetchValue();
 
         // build model
         $account = new Stalktoy\LocalAccount();
@@ -390,12 +394,11 @@ class StalktoyEngine extends Base
                 SELECT
                     ipb_by_text,
                     ipb_address,
-                    \'\' AS ipb_reason, -- TODO: migrate to new comment schema
+                    ipb_reason_id,
                     DATE_FORMAT(ipb_timestamp, "%Y-%b-%d") AS timestamp,
                     DATE_FORMAT(ipb_expiry, "%Y-%b-%d") AS expiry,
                     ipb_anon_only
-                FROM
-                    ipblocks_ipindex
+                FROM ipblocks_ipindex
                 WHERE
                     (ipb_range_start <= ? AND ipb_range_end >= ?)
                     OR (ipb_range_start >= ? AND ipb_range_end <= ?)
@@ -409,11 +412,14 @@ class StalktoyEngine extends Base
             $block = new Stalktoy\Block();
             $block->by = $row['ipb_by_text'];
             $block->target = $row['ipb_address'];
-            $block->reason = $row['ipb_reason'];
             $block->timestamp = $row['timestamp'];
             $block->expiry = $row['expiry'];
             $block->anonOnly = $row['ipb_anon_only'];
             $block->isHidden = false;
+
+            if ($row['ipb_reason_id'])
+                $block->reason = $this->db->query("SELECT comment_text FROM comment WHERE comment_id = ? LIMIT 1", [$row['ipb_reason_id']])->fetchValue();
+
             $blocks[] = $block;
         }
 
