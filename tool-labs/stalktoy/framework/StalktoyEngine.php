@@ -303,7 +303,7 @@ class StalktoyEngine extends Base
                     DATE_FORMAT(user_registration, "%Y-%m-%d %H:%i") AS registration,
                     user_editcount,
                     GROUP_CONCAT(ug_group SEPARATOR ", ") AS user_groups,
-                    ipb_by_text,
+                    ipb_by_actor,
                     ipb_reason_id,
                     DATE_FORMAT(ipb_timestamp, "%Y-%m-%d %H:%i") AS ipb_timestamp,
                     ipb_deleted,
@@ -318,9 +318,16 @@ class StalktoyEngine extends Base
             [$userName]
         )->fetchAssoc();
 
+        // fetch actor ID if needed
+        if ($row['user_id'])
+            $row['actor_id'] = $db->query('SELECT actor_id FROM actor WHERE actor_user = ? LIMIT 1', [$row['user_id']])->fetchValue();
+
         // fetch block reason if needed
         if ($row['ipb_reason_id'])
+        {
+            $row['ipb_by_text'] = $db->query('SELECT actor_name FROM actor WHERE actor_id = ? LIMIT 1', [$row['ipb_by_actor']])->fetchValue();
             $row['ipb_reason'] = $db->query('SELECT comment_text FROM comment WHERE comment_id = ? LIMIT 1', [$row['ipb_reason_id']])->fetchValue();
+        }
 
         // build model
         $account = new Stalktoy\LocalAccount();
@@ -329,6 +336,7 @@ class StalktoyEngine extends Base
         if ($account->exists) {
             // account details
             $account->id = $row['user_id'];
+            $account->actorID = $row['actor_id'];
             $account->registered = $row['registration'];
             $account->registeredRaw = $row['user_registration'];
             $account->editCount = $row['user_editcount'];
@@ -337,7 +345,7 @@ class StalktoyEngine extends Base
 
             // handle edge cases with older accounts
             if (!$account->registeredRaw) {
-                $date = $db->getRegistrationDate($account->id);
+                $date = $db->getRegistrationDate($account->id, $account->actorID);
                 $account->registered = $date['formatted'];
                 $account->registeredRaw = $date['raw'];
             }
