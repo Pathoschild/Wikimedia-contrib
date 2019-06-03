@@ -137,12 +137,30 @@ class CatanalysisEngine extends Base
     public function getEditsByPrefix($db, $namespace, $title)
     {
         /* build initial query */
-        $sql = 'SELECT page.page_namespace, page.page_title, page.page_is_redirect, page.page_is_new, revision.rev_minor_edit, revision.rev_user_text, revision.rev_timestamp, revision.rev_len, revision.rev_page FROM revision LEFT JOIN page ON page.page_id = revision.rev_page ';
+        $sql = '
+            SELECT
+                page.page_namespace,
+                page.page_title,
+                page.page_is_redirect,
+                page.page_is_new,
+                revision.rev_minor_edit,
+                revision.rev_actor,
+                revision.rev_timestamp,
+                revision.rev_len,
+                revision.rev_page
+            FROM
+                revision
+                LEFT JOIN page ON page.page_id = revision.rev_page
+        ';
         $values = [];
 
         /* add namespace */
         if ($namespace) {
-            $sql .= 'JOIN toolserver.namespace ON page.page_namespace = toolserver.namespace.ns_id WHERE toolserver.namespace.ns_name = ? AND ';
+            $sql .= '
+                    JOIN toolserver.namespace ON page.page_namespace = toolserver.namespace.ns_id
+                WHERE
+                    toolserver.namespace.ns_name = ?
+                    AND ';
             $values[] = $namespace;
         }
         else
@@ -166,7 +184,21 @@ class CatanalysisEngine extends Base
     public function getEditsByCategory($db, $title)
     {
         /* build initial query */
-        $sql = 'SELECT page.page_namespace, page.page_title, page.page_is_redirect, page.page_is_new, revision.rev_minor_edit, revision.rev_user_text, revision.rev_timestamp, revision.rev_len, revision.rev_page FROM revision LEFT JOIN page ON page.page_id = revision.rev_page ';
+        $sql = '
+            SELECT
+                page.page_namespace,
+                page.page_title,
+                page.page_is_redirect,
+                page.page_is_new,
+                revision.rev_minor_edit,
+                revision.rev_actor,
+                revision.rev_timestamp,
+                revision.rev_len,
+                revision.rev_page
+            FROM
+                revision
+                LEFT JOIN page ON page.page_id = revision.rev_page
+        ';
         $values = [];
 
         /* fetch list of subcategories */
@@ -228,34 +260,30 @@ class CatanalysisEngine extends Base
         $metrics = new Metrics();
 
         // get data
-        while ($revision = $revisionQuery->fetchAssoc()) {
-            // read row
-            $row = [
-                'namespace' => $revision['page_namespace'],
-                'title' => $revision['page_title'],
-                'user' => $revision['rev_user_text'],
-                'timestamp' => $revision['rev_timestamp'],
-                'isRedirect' => $revision['page_is_redirect'],
-                'isMinor' => $revision['rev_minor_edit'],
-                'pageid' => $revision['rev_page'],
-                'size' => $revision['rev_len']
-            ];
-            $monthKey = preg_replace('/^(\d{4})(\d{2}).+$/', '$1-$2', $row['timestamp']);
-            $isNew = !array_key_exists($row['pageid'], $metrics->pages);
-            $isAnonymous = $this->isAnonymousUser($row['user']);
-            $username = $isAnonymous ? '(Anonymous)' : $row['user'];
+        $actorNames = [];
+        $revisions = $revisionQuery->fetchAllAssoc();
+        foreach ($revisions as $row) {
+            // fetch actor name
+            if (!array_key_exists($row['rev_actor'], $actorNames))
+                $actorNames[$row['rev_actor']] = $db->query('SELECT actor_name FROM actor WHERE actor_id = ? LIMIT 1', [$row['rev_actor']])->fetchValue();
+            $row['actor_name'] = $actorNames[$row['rev_actor']];
+
+            $monthKey = preg_replace('/^(\d{4})(\d{2}).+$/', '$1-$2', $row['rev_timestamp']);
+            $isNew = !array_key_exists($row['rev_page'], $metrics->pages);
+            $isAnonymous = $this->isAnonymousUser($row['actor_name']);
+            $username = $isAnonymous ? '(Anonymous)' : $row['actor_name'];
 
             // init hashes if needed
             $month = $this->initArrayKey($metrics->months, $monthKey, function() { return new MonthMetrics(); });
             $user = $this->initArrayKey($metrics->users, $username, function() { return new UserData(); });
-            $page = $this->initArrayKey($metrics->pages, $row['pageid'], function() { return new PageData(); });
+            $page = $this->initArrayKey($metrics->pages, $row['rev_page'], function() { return new PageData(); });
             $monthUser = $this->initArrayKey($month->users, $username, function() { return new UserData(); });
 
             // update metrics
             $metrics->edits++;
             $month->name = $monthKey;
             $month->edits++;
-            $month->bytesAdded += $row['size'] - $page->size;
+            $month->bytesAdded += $row['rev_len'] - $page->size;
             if ($isNew)
                 $month->newPages++;
 
@@ -268,19 +296,19 @@ class CatanalysisEngine extends Base
             $monthUser->isAnonymous = $isAnonymous;
 
             // update page data
-            $page->id = $row['pageid'];
-            $page->namespace = $row['namespace'];
+            $page->id = $row['rev_page'];
+            $page->namespace = $row['page_namespace'];
             if (!$page->name) {
-                $page->name = str_replace('_', ' ', $row['title']);
+                $page->name = str_replace('_', ' ', $row['page_title']);
                 $namespaceName = $this->getNamespaceName($page->namespace);
                 if($namespaceName)
                     $page->name = $namespaceName . ':' . $page->name;
             }
             $page->edits++;
-            $page->size = $row['size'];
-            $page->isRedirect = $row['isRedirect'];
+            $page->size = $row['rev_len'];
+            $page->isRedirect = $row['page_is_redirect'];
         }
-        unset($bytesAdded, $month, $monthKey, $prevSize, $query, $revision, $row);
+        unset($bytesAdded, $month, $monthKey, $prevSize, $query, $row);
 
         // collapse lookups into arrays & sort
         $metrics->months = array_values($metrics->months);
