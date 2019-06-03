@@ -46,6 +46,7 @@ class NotBlockedRule implements Rule
     public function onWiki($wiki)
     {
         $this->onlyForWiki = $wiki;
+        return $this;
     }
 
     /**

@@ -61,6 +61,9 @@ class RuleEntry
      */
     public function __construct($rule, $workflow)
     {
+        if (!$rule)
+            throw new Exception('Can\'t create a rule entry with a null rule.');
+
         $this->rule = $rule;
         $this->shouldSkipOnFail = (bool)($workflow & Workflow::SKIP_ON_FAIL);
         $this->shouldFailHard = (bool)($workflow & Workflow::HARD_FAIL);

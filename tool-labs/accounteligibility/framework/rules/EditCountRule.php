@@ -89,6 +89,7 @@ class EditCountRule implements Rule
     public function inNamespace($namespace)
     {
         $this->namespace = $namespace;
+        return $this;
     }
 
     /**
@@ -168,18 +169,19 @@ class EditCountRule implements Rule
         }
 
         // filtered by namespace
-        // SQL derived from query written by [[en:user:Cobi]] at toolserver.org/~sql/sqlbot.txt
         else {
             $ns = $this->namespace;
-            $values = [$user->id];
-            $sql =
-                "SELECT data.count FROM ("
-                . "SELECT IFNULL(page_namespace, 0) AS page_namespace, IFNULL(SUM(rev.count), 0) AS count FROM page, ("
-                . "SELECT rev_page, COUNT(*) AS count FROM revision_userindex WHERE rev_user=? AND "
-                . $this->getDateFilterSql('rev_timestamp', $this->minDate, $this->maxDate, $values)
-                . " GROUP BY rev_page"
-                . ") AS rev WHERE rev.rev_page=page_id AND page_namespace=$ns"
-                . ") AS data, toolserver.namespace AS toolserver WHERE ns_id=page_namespace AND dbname='{$wiki->dbName}'";
+            $values = [$user->id, $this->namespace];
+            $sql = '
+                SELECT COUNT(*)
+                FROM
+                    revision_userindex
+                    INNER JOIN page ON rev_page = page_id
+                WHERE
+                    rev_user = ?
+                    AND page_namespace = ?
+                    AND ' . $this->getDateFilterSql('rev_timestamp', $this->minDate, $this->maxDate, $values) . '
+            ';
 
             $db->query($sql, $values);
             $count += $db->fetchColumn();
