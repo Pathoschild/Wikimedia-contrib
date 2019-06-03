@@ -160,9 +160,9 @@ class EditCountRule implements Rule
         ##########
         // not filtered by namespace
         if ($this->namespace === null) {
-            $values = [$user->id];
+            $values = [$user->actorID];
             $sql =
-                'SELECT COUNT(rev_id) FROM revision_userindex WHERE rev_user=? AND '
+                'SELECT COUNT(rev_id) FROM revision_userindex WHERE rev_actor=? AND '
                 . $this->getDateFilterSql('rev_timestamp', $this->minDate, $this->maxDate, $values);
             $db->query($sql, $values);
             $count += $db->fetchColumn();
@@ -171,14 +171,14 @@ class EditCountRule implements Rule
         // filtered by namespace
         else {
             $ns = $this->namespace;
-            $values = [$user->id, $this->namespace];
+            $values = [$user->actorID, $this->namespace];
             $sql = '
                 SELECT COUNT(*)
                 FROM
                     revision_userindex
                     INNER JOIN page ON rev_page = page_id
                 WHERE
-                    rev_user = ?
+                    rev_actor = ?
                     AND page_namespace = ?
                     AND ' . $this->getDateFilterSql('rev_timestamp', $this->minDate, $this->maxDate, $values) . '
             ';
@@ -191,9 +191,9 @@ class EditCountRule implements Rule
         ## Deleted edits
         ##########
         if ($this->countDeleted) {
-            $values = [$user->id];
+            $values = [$user->actorID];
             $sql =
-                'SELECT COUNT(ar_id) FROM archive_userindex WHERE ar_user=? AND '
+                'SELECT COUNT(ar_id) FROM archive_userindex WHERE ar_actor=? AND '
                 . $this->getDateFilterSql('ar_timestamp', $this->minDate, $this->maxDate, $values);
             if ($this->namespace) {
                 $sql .= 'AND ar_namespace = ?';

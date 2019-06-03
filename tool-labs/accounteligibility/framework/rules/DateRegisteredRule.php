@@ -39,7 +39,7 @@ class DateRegisteredRule implements Rule
         // accumulate
         $registered = $user->registered;
         if (!$user->registered)
-            $registered = $db->getRegistrationDate($user->id, "d F Y", true)[0];
+            $registered = $db->getRegistrationDate($user->id, $user->actorID, "d F Y", true)[0];
         $isMet = !$registered/*before 2005*/ || $registered <= $this->maxDate->mediawiki;
 
         // get result

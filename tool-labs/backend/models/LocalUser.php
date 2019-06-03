@@ -38,6 +38,12 @@ class LocalUser
      */
     public $edits;
 
+    /**
+     * The user's unique actor ID.
+     * @var int
+     */
+    public $actorID;
+
 
     ##########
     ## Public methods
@@ -49,13 +55,15 @@ class LocalUser
      * @param int $registered When the local account was registered.
      * @param string $registeredStr When the local account was registered, as a formatted human-readable string.
      * @param int $edits The total number of edits by this local account.
+     * @param int $actorID The user's unique actor ID.
      */
-    public function __construct($id, $name, $registered, $registeredStr, $edits)
+    public function __construct($id, $name, $registered, $registeredStr, $edits, $actorID)
     {
         $this->id = $id;
         $this->name = $name;
         $this->registered = $registered;
         $this->registeredStr = $registeredStr;
         $this->edits = $edits;
+        $this->actorID = $actorID;
     }
 }

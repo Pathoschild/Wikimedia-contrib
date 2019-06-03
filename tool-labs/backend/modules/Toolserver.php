@@ -58,7 +58,7 @@ class Toolserver extends Database
         $this->wikis = new Wikimedia($this, $cache, $profiler, $this->ignoreDbNames);
 
         /* select random DB slice (every slice has every DB, but picking a random one reduces our dependence on any given one) */
-        $slices = Array();
+        $slices = [];
         foreach ($this->wikis->getWikis() as $wiki)
             $slices[$wiki->host] = True;
         $slices = array_keys($slices);
@@ -180,8 +180,15 @@ class Toolserver extends Database
         try {
             $this->connect('metawiki');
 
-            $query = $this->db->prepare('SELECT lu_wiki FROM centralauth_p.localuser WHERE lu_name=? AND lu_attached_method IN ("primary", "new") LIMIT 1');
-            $query->execute(Array($user));
+            $query = $this->db->prepare('
+                SELECT lu_wiki
+                FROM centralauth_p.localuser
+                WHERE
+                    lu_name=?
+                    AND lu_attached_method IN ("primary", "new")
+                LIMIT 1
+            ');
+            $query->execute([$user]);
 
             $this->connectPrevious();
 
@@ -203,12 +210,16 @@ class Toolserver extends Database
         try {
             $this->connect('metawiki');
 
-            $query = $this->db->prepare('SELECT lu_wiki FROM centralauth_p.localuser WHERE lu_name=?');
-            $query->execute(Array($user));
+            $query = $this->db->prepare('
+                SELECT lu_wiki
+                FROM centralauth_p.localuser
+                WHERE lu_name=?
+            ');
+            $query->execute([$user]);
 
             $this->connectPrevious();
 
-            $wikis = Array();
+            $wikis = [];
             foreach ($query as $row) {
                 if(!in_array($row['lu_wiki'], $this->ignoreDbNames))
                     $wikis[] = $row['lu_wiki'];
@@ -231,10 +242,33 @@ class Toolserver extends Database
     public function getUserDetails($wiki, $username, $dateFormat = '%Y-%b-%d %H:%i')
     {
         try {
-            $query = $this->db->prepare('SELECT user_id AS id, user_name AS name, user_registration AS registration_raw, DATE_FORMAT(user_registration, "' . $dateFormat . '") as registration, user_editcount AS edits FROM user WHERE user_name = ? LIMIT 1');
-            $query->execute(array($username));
+            // fetch basic user info
+            $query = $this->db->prepare('
+                SELECT
+                    user_id AS id,
+                    user_name AS name,
+                    user_registration AS registration_raw,
+                    DATE_FORMAT(user_registration, "' . $dateFormat . '") as registration,
+                    user_editcount AS edits
+                FROM user
+                WHERE user_name = ?
+                LIMIT 1
+            ');
+            $query->execute([$username]);
             $user = $query->fetch(PDO::FETCH_ASSOC);
-            return new LocalUser($user['id'], $user['name'], $user['registration_raw'], $user['registration'], $user['edits']);
+
+            // fetch actor ID
+            $query = $this->db->prepare('
+                SELECT actor_id
+                FROM actor
+                WHERE actor_user = ?
+                LIMIT 1
+            ');
+            $query->execute([$user['id']]);
+            $actor = $query->fetch(PDO::FETCH_ASSOC);
+
+            // return model
+            return new LocalUser($user['id'], $user['name'], $user['registration_raw'], $user['registration'], $user['edits'], $actor['actor_id']);
         } catch (PDOException $exc) {
             $this->handleException($exc, 'Could not retrieve local account details for user "' . htmlentities($username) . '" at wiki "' . htmlentities($wiki) . '".');
             return null;
@@ -244,18 +278,26 @@ class Toolserver extends Database
     /**
      * Get a local account's registration date as an array containing the raw and formatted value.
      * @param int $userID The user ID.
+     * @param int $actorID The user's actor ID.
      * @param string $format The date format.
      * @param bool $skipUserTable Whether to ignore the user table (e.g. because you already checked there).
      * @return array|null
      */
-    public function getRegistrationDate($userID, $format = '%Y-%m-%d %H:%i', $skipUserTable = false)
+    public function getRegistrationDate($userID, $actorID, $format = '%Y-%m-%d %H:%i', $skipUserTable = false)
     {
         if ($this->borked)
             return null;
         try {
             /* try date field in user table */
             if (!$skipUserTable) {
-                $query = $this->db->prepare('SELECT user_registration AS raw, DATE_FORMAT(user_registration, "' . $format . '") AS formatted from user WHERE user_id=? LIMIT 1');
+                $query = $this->db->prepare('
+                    SELECT
+                        user_registration AS raw,
+                        DATE_FORMAT(user_registration, "' . $format . '") AS formatted
+                    from user
+                    WHERE user_id=?
+                    LIMIT 1
+                ');
                 $query->execute([$userID]);
                 $date = $query->fetch(PDO::FETCH_ASSOC);
                 if (isset($date['raw']))
@@ -264,14 +306,23 @@ class Toolserver extends Database
 
             /* try extracting from logs */
             $query = null;
-            $query = $this->db->prepare('SELECT log_timestamp AS raw, DATE_FORMAT(log_timestamp, "' . $format . '") AS formatted FROM logging WHERE log_user = ? AND log_type = "newusers" AND log_title = "Userlogin" LIMIT 1');
-            $query->execute(array($userID));
+            $query = $this->db->prepare('
+                SELECT
+                    log_timestamp AS raw,
+                    DATE_FORMAT(log_timestamp, "' . $format . '") AS formatted
+                FROM logging_userindex
+                WHERE
+                    log_actor = ?
+                    AND log_type = "newusers"
+                    AND log_title = "Userlogin"
+                LIMIT 1');
+            $query->execute([$actorID]);
             $date = $query->fetch(PDO::FETCH_ASSOC);
             if (isset($date['raw']))
                 return $date;
 
             /* failed */
-            return Array('raw' => null, 'formatted' => 'in 2005 or earlier');
+            return ['raw' => null, 'formatted' => 'in 2005 or earlier'];
         } catch (PDOException $exc) {
             $this->handleException($exc, 'Could not retrieve registration date for user id "' . htmlentities($userID) . '".');
             return null;

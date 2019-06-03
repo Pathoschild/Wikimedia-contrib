@@ -178,7 +178,7 @@ class AccountEligibilityEngine extends Base
     public function connect($dbname)
     {
         /* reset variables */
-        $this->user = new LocalUser(null, $this->backend->formatUsername($this->username), null, null, null);
+        $this->user = new LocalUser(null, $this->backend->formatUsername($this->username), null, null, null, null);
 
         /* connect & fetch user details */
         if ($dbname) {
