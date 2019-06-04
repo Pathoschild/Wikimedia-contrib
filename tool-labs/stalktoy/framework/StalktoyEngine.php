@@ -400,7 +400,7 @@ class StalktoyEngine extends Base
         $query = $this->db->query(
             '
                 SELECT
-                    ipb_by_text,
+                    ipb_by_actor,
                     ipb_address,
                     ipb_reason_id,
                     DATE_FORMAT(ipb_timestamp, "%Y-%b-%d") AS timestamp,
@@ -418,13 +418,13 @@ class StalktoyEngine extends Base
         $blocks = [];
         foreach ($query as $row) {
             $block = new Stalktoy\Block();
-            $block->by = $row['ipb_by_text'];
             $block->target = $row['ipb_address'];
             $block->timestamp = $row['timestamp'];
             $block->expiry = $row['expiry'];
             $block->anonOnly = $row['ipb_anon_only'];
             $block->isHidden = false;
 
+            $block->by = $this->db->query("SELECT actor_name FROM actor WHERE actor_id = ? LIMIT 1", [$row['ipb_by_actor']])->fetchValue();
             if ($row['ipb_reason_id'])
                 $block->reason = $this->db->query("SELECT comment_text FROM comment WHERE comment_id = ? LIMIT 1", [$row['ipb_reason_id']])->fetchValue();
 
