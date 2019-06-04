@@ -71,8 +71,7 @@ do {
                 <th>family</th>
                 <th>wiki</th>
                 <th>last edit</th>
-                <th>last log <small>(bureaucrat)</small></th>
-                <th>last log <small>(sysop)</small></th>
+                <th>last log action</th>
                 <th>Local groups</th>
             </tr>
         </thead>
@@ -85,28 +84,22 @@ do {
 
         /* get data */
         $db->connect($dbname);
-        $id = $db->query('SELECT user_id FROM user WHERE user_name=? LIMIT 1', [$user])->fetchValue();
+        $actor = $db->query('SELECT actor_id, actor_user FROM actor WHERE actor_name = ? LIMIT 1', [$user])->fetchAssoc();
+        if ($actor['actor_user']) {
+            $actorID = $actor['actor_id'];
+            $userID = $actor['actor_user'];
 
-        if ($id) {
-            // groups
-            $groups = $db->query('SELECT GROUP_CONCAT(ug_group SEPARATOR ", ") FROM user_groups WHERE ug_user=?', [$id])->fetchValue();
+            $groups = $db->query('SELECT GROUP_CONCAT(ug_group SEPARATOR ", ") FROM user_groups WHERE ug_user = ?', [$userID])->fetchValue();
+            $lastEdit = $db->query('SELECT DATE_FORMAT(MAX(rev_timestamp), "%Y-%m-%d %H:%i") FROM revision_userindex WHERE rev_actor = ?', [$actorID])->fetchValue();
+            $lastLogAction = $db->query('SELECT DATE_FORMAT(MAX(log_timestamp), "%Y-%m-%d %H:%i") FROM logging_userindex WHERE log_actor = ?', [$actorID])->fetchValue();
 
-            // edits
-            $lastEdit = $db->query('SELECT DATE_FORMAT(rev_timestamp, "%Y-%m-%d %H:%i") FROM revision_userindex WHERE rev_user=? ORDER BY rev_timestamp DESC LIMIT 1', [$id])->fetchValue();
-
-            // log actions
-            $lastBureaucratLog = $db->query('SELECT DATE_FORMAT(log_timestamp, "%Y-%m-%d %H:%i") FROM logging_userindex WHERE log_user=? AND log_type IN ("makebot", "renameuser", "rights") ORDER BY log_timestamp DESC LIMIT 1', [$id])->fetchValue();
-            $lastAdminLog = $db->query('SELECT DATE_FORMAT(log_timestamp, "%Y-%m-%d %H:%i") FROM logging_userindex WHERE log_user=? AND log_type IN ("block", "delete", "protect") ORDER BY log_timestamp DESC LIMIT 1', [$id])->fetchValue();
-
-            // output
-            if ($showAll || !empty($lastEdit) || !empty($lastBureaucratLog) || !empty($lastAdminLog)) {
+            if ($showAll || !empty($lastEdit) || !empty($lastLogAction)) {
                 echo "
                     <tr>
                         <td>$family</td>
                         <td>", $engine->getLinkHtml($domain, 'User:' . $user), "</td>",
                         $engine->getColoredCellHtml($lastEdit),
-                        $engine->getColoredCellHtml($lastBureaucratLog),
-                        $engine->getColoredCellHtml($lastAdminLog),
+                        $engine->getColoredCellHtml($lastLogAction),
                         $engine->getGroupCellHtml($groups), "
                     </tr>
                     ";
