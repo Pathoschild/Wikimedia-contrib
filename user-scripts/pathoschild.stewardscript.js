@@ -145,6 +145,12 @@
                                 .text("crossactivity")
                                 .attr({ href: "//tools.wmflabs.org/meta/crossactivity/" + encodeURIComponent(user), title: "Pathoschild's CrossActivity (measures a user's latest edit, bureaucrat, or sysop activity on all wikis)" })
                             )
+                            .append(", ")
+                            .append(this
+                                .Make("a")
+                                .text("global user rights")
+                                .attr({ href: "//meta.wikimedia.org/wiki/Special:GlobalUserRights" + encodeURIComponent(user), title: "Global User Rights" })
+                            )
                         );
 
                     /*****************
