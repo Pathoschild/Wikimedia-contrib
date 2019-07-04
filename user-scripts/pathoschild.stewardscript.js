@@ -149,7 +149,7 @@
                             .append(this
                                 .Make("a")
                                 .text("global user rights")
-                                .attr({ href: "//meta.wikimedia.org/wiki/Special:GlobalUserRights" + encodeURIComponent(user), title: "Global User Rights" })
+                                .attr({ href: "//meta.wikimedia.org/wiki/Special:GlobalUserRights/" + encodeURIComponent(user), title: "Global User Rights" })
                             )
                         );
 
