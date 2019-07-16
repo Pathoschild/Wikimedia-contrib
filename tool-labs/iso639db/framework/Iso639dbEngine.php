@@ -63,7 +63,7 @@ class Iso639dbEngine extends Base
         $this->backend = $backend;
         $this->name = $backend->get('name');
         $this->code = $backend->get('code');
-        $this->filters = $backend->get('filters');
+        $this->filters = $backend->get('filters') ?? [];
 
         $this->offset = $backend->get('offset', 0);
         if ($this->offset < 0 || !is_int($this->offset))
