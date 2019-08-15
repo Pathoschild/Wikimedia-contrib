@@ -39,7 +39,7 @@ class CrossactivityEngine extends Base
     {
         return empty($groups)
             ? "<td style='background-color:#CCC;'>&nbsp;</td>"
-            : "<td>$groups</td>";
+            : "<td>$this->formatText($groups)</td>";
     }
 
     /**

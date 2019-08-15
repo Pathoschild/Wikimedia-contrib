@@ -113,7 +113,7 @@ do {
             $domain = $engine->wiki->domain;
 
             echo "<tr>",
-            "<td><a href='//$domain/wiki/User:$urlName' title='$urlName&#39;s user page'>$name</a> <small>[<a href='", $backend->url('/crossactivity/' . $urlName), "' title='scan this user&#39;s activity on all wikis'>all wikis</a>]</small></td>",
+            "<td><a href='//$domain/wiki/User:$urlName' title='$urlName&#39;s user page'>{$backend->formatText($name)}</a> <small>[<a href='", $backend->url('/crossactivity/' . $urlName), "' title='scan this user&#39;s activity on all wikis'>all wikis</a>]</small></td>",
             $engine->getDateCellHtml($lastEdit),
             ($showLog ? $engine->getDateCellHtml($lastLog) : ''),
             "</tr>";

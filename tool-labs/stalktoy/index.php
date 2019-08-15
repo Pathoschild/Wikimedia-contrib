@@ -162,7 +162,7 @@ if ($engine->isValid() && $ip->ip->isValid()) {
         if ($localBlocks[$wiki]) {
             foreach ($localBlocks[$wiki] as $block) {
                 $reason = $engine->formatReason($block->reason, $domain);
-                echo "<span class='is-block-start'>{$block->timestamp}</span> &mdash; <span class='is-block-end'>{$block->expiry}</span>: <b>{$block->target}</b> blocked by <span class='is-block-admin'>{$block->by}</span> (<span class='is-block-reason'>{$reason}</span>)<br />";
+                echo "<span class='is-block-start'>{$block->timestamp}</span> &mdash; <span class='is-block-end'>{$block->expiry}</span>: <b>{$engine->formatValue($block->target)}</b> blocked by <span class='is-block-admin'>{$engine->formatValue($block->by)}</span> (<span class='is-block-reason'>{$engine->formatValue($reason)}</span>)<br />";
             }
         }
         echo "
@@ -417,7 +417,7 @@ else if ($engine->isValid() && $engine->target) {
 
                 if ($user->isBlocked) {
                     $reason = $engine->formatReason($user->block->reason, $wiki->domain);
-                    $blockSummary = "<span class='is-block-start'>{$user->block->timestamp}</span> &mdash; <span class='is-block-end'>{$user->block->expiry}</span>: blocked by <span class='is-block-admin'>{$user->block->by}</span> (<span class='is-block-reason'>{$reason}</span>)";
+                    $blockSummary = "<span class='is-block-start'>{$user->block->timestamp}</span> &mdash; <span class='is-block-end'>{$user->block->expiry}</span>: blocked by <span class='is-block-admin'>{$engine->formatText($user->block->by)}</span> (<span class='is-block-reason'>{$engine->formatText($reason)}</span>)";
                 } else
                     $blockSummary = '&nbsp;';
             } /* user doesn't exist */
@@ -459,8 +459,8 @@ else if ($engine->isValid() && $engine->target) {
                     <td class='wiki'>$linkWiki</td>
                     <td class='edit-count'>$linkEdits</td>
                     <td class='timestamp'>{$user->registered}</td>
-                    <td class='groups'>{$user->groups}</td>
-                    ", ($engine->showGroupsPerWiki && $globalGroupsByWiki ? "<td class='global-groups'>$globalGroups</td>" : ''), "
+                    <td class='groups'>{$engine->formatText($user->groups)}</td>
+                    ", ($engine->showGroupsPerWiki && $globalGroupsByWiki ? "<td class='global-groups'>{$engine->formatText($globalGroups)}</td>" : ''), "
                     <td class='unification'>$labelUnified</td>
                     <td class='blocks'>$blockSummary</td>
                 </tr>
