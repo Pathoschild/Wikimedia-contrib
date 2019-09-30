@@ -73,15 +73,15 @@ $settings['root_url']  = SCRIPT_USER == 'pathoschild-contrib'
 
 $settings['tools'] = [
     'Wikimedia' => [
-        ['/accounteligibility', 'analyze an account to determine whether it is eligible to vote in a given event.', 'Account eligibility'],
-        ['/catanalysis', 'analyze edits to pages in a category tree or with a prefix over time.', 'Category analysis'],
+        ['/meta/accounteligibility', 'analyze an account to determine whether it is eligible to vote in a given event.', 'Account eligibility'],
+        ['/meta/catanalysis', 'analyze edits to pages in a category tree or with a prefix over time.', 'Category analysis'],
         ['/crossactivity', 'measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.', 'Crosswiki activity'],
-        ['/globalgroups', 'lists rights with descriptions for each global group.', 'Global groups'],
-        ['/gusersearch', 'searches and filters global account creations', 'Global user search'],
-        ['/magicredirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.', 'Magic redirect'],
-        ['/stalktoy', 'provides comprehensive global information about the given user, IP address, or CIDR range.', 'Stalk toy'],
-        ['/stewardry', 'analyze user activity by group on a Wikimedia wiki.', 'Stewardry'],
-        ['/userpages', 'find your user pages on all wikis.', 'User pages']
+        ['/meta/globalgroups', 'lists rights with descriptions for each global group.', 'Global groups'],
+        ['/meta/gusersearch', 'searches and filters global account creations', 'Global user search'],
+        ['/meta/magicredirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.', 'Magic redirect'],
+        ['/meta/stalktoy', 'provides comprehensive global information about the given user, IP address, or CIDR range.', 'Stalk toy'],
+        ['/meta/stewardry', 'analyze user activity by group on a Wikimedia wiki.', 'Stewardry'],
+        ['/meta/userpages', 'find your user pages on all wikis.', 'User pages']
     ],
     'generic' => [
         ['/iso639db', 'search ISO 639 codes.', 'ISO-639 database'],

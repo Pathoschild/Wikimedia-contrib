@@ -1,6 +1,7 @@
 **Wikimedia-contrib** is a collection of user scripts and Toolforge tools intended for users of Wikimedia Foundation wikis.
 
-## Tools
+## For users
+### Tools
 
 [Toolforge](https://tools.wmflabs.org/) is part of the Wikimedia Cloud infrastructure hosted by the Wikimedia Foundation for community-developed tools and bots. These tools provide analysis and data to support wiki editors and functionaries.
 
@@ -16,7 +17,7 @@
 * **[Synchbot](https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/Synchbot)** synchronises user pages across Wikimedia projects in every language. This allows users to create user pages on every wiki, or to have global JavaScript and CSS. (Due to the potential for misuse, this bot is not open-source.)
 * **[User Pages](https://tools.wmflabs.org/meta/userpages/)** finds your user pages on all wikis (or finds wikis where you don't have user pages).
 
-## User scripts
+### User scripts
 
 These user scripts extend the wiki interface seen by a user, and they're sometimes available to all users as gadgets (particularly TemplateScript). See _[Gadget kitchen](https://www.mediawiki.org/wiki/Gadget_kitchen)_ for an introduction to user scripts & gadgets.
 
@@ -24,3 +25,77 @@ These user scripts extend the wiki interface seen by a user, and they're sometim
 * **[StewardScript](https://meta.wikimedia.org/wiki/StewardScript)** extends the user interface for [Wikimedia stewards](https://meta.wikimedia.org/wiki/Stewards)' convenience. It extends the sidebar (with links to steward pages), [Special:Block](https://meta.wikimedia.org/wiki/Special:Block) (with links to [stalktoy](https://toolserver.org/~pathoschild/stalktoy/) and [Special:CentralAuth](https://meta.wikimedia.org/wiki/Special:CentralAuth) if preloaded with a target), [Special:CentralAuth](https://meta.wikimedia.org/wiki/Special:CentralAuth) (with links to external tools, one-click status selection, a preselected template reason, and convenient links in the 'local accounts' list), global renaming and [Special:UserRights](https://meta.wikimedia.org/wiki/Special:UserRights) (with template summaries).
 * **[TemplateScript](https://meta.wikimedia.org/wiki/TemplateScript)** adds a menu of configurable templates and scripts to the sidebar. It automatically handles templates for various forms (from editing to protection), edit summaries, auto-submission, and filtering which templates are shown based on namespace, form, or arbitrary conditions. Templates can be inserted at the cursor position or at a preconfigured position, and scripts can be invoked when a sidebar link is activated. TemplateScript is also used as a framework for other scripts, and includes a [fully-featured regex editor](https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/TemplateScript#Regex_editor).
 * **[UseJS](https://meta.wikimedia.org/wiki/UseJS)** imports JavaScript for the current page when the URL contains a parameter like `&usejs=MediaWiki:Common.js`. It only accepts scripts in the protected `MediaWiki:` namespace.
+
+## For maintainers
+### Deploy one tool to Toolforge
+Ideally each tool should be deployed to Toolforge as a separate tool account, both to avoid hitting connection limits and to minimise impact on other tools when an expensive tool is overloaded.
+
+To deploy a tool:
+
+1. [Create a Toolforge tool account](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts). Make sure the name matches the tool directory in the `tool-forge` folder (or edit the tool's `tool.lighttpd.conf` file to specify the account name).
+2. Connect to the account via SSH.
+3. Run these commands to set up the tool files (replace `$TOOLNAME` with the tool name being deployed):
+
+   ```sh
+   git clone https://github.com/Pathoschild/Wikimedia-contrib.git git
+   mkdir cache
+   mkdir public_html
+   ln -s git/tool-labs/.lighttpd.conf
+   ln -s git/tool-labs/$TOOLNAME/.lighttpd.tool.conf
+
+   cd public_html
+   ln -s ../git/tool-labs/backend
+   ln -s ../git/tool-labs/content
+   ln -s ../git/tool-labs/$TOOLNAME
+   ```
+
+4. Change the tool navlinks in `public_html/backend/modules/__config.php` if different from the default.
+5. Launch the server:
+   ```sh
+   webservice --backend=kubernetes php7.2 start
+   ```
+
+That's it! The new tool should now be running at https://tools.wmflabs.org/$TOOLNAME.
+
+### Deploy all tools to one Toolforge account
+All tools can be deployed as part of the same Toolforge account, though this isn't recommended since they'll share the same usage quotas.
+
+To deploy all tools to the same account:
+
+1. [Create a Toolforge tool account](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts).
+2. Connect to the account via SSH.
+3. Run these commands to set up the tool files:
+
+   ```sh
+   git clone https://github.com/Pathoschild/Wikimedia-contrib.git git
+   mkdir cache
+   mkdir public_html
+   ln -s git/tool-labs/.lighttpd.meta.conf .lighttpd.conf
+
+   cd public_html
+
+   ln -s ../git/tool-labs/backend
+   ln -s ../git/tool-labs/content
+   ln -s ../git/tool-labs/scripts
+   ln -s ../git/tool-labs/toolinfo.json
+
+   ln -s ../git/tool-labs/accounteligibility
+   ln -s ../git/tool-labs/catanalysis
+   ln -s ../git/tool-labs/globalgroups
+   ln -s ../git/tool-labs/gusersearch
+   ln -s ../git/tool-labs/iso639db
+   ln -s ../git/tool-labs/magicredirect
+   ln -s ../git/tool-labs/pgkbot
+   ln -s ../git/tool-labs/regextoy
+   ln -s ../git/tool-labs/stalktoy
+   ln -s ../git/tool-labs/stewardry
+   ln -s ../git/tool-labs/userpages
+   ```
+
+4. Change the tool navlinks in `public_html/backend/modules/__config.php` if different from the default.
+5. Launch the server:
+   ```sh
+   webservice --backend=kubernetes php7.2 start
+   ```
+
+That's it! The new tools should now be running at https://tools.wmflabs.org/$ACCOUNTNAME.

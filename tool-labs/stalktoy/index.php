@@ -32,8 +32,8 @@ $targetForm = '';
 $target = $backend->get('target');
 if ($target == null) {
     $target = $backend->getRouteValue();
-    if ($target != null && $backend->getRouteValue(2) != null)
-        $target .= '/' . $backend->getRouteValue(2);
+    if ($target != null && $backend->getRouteValue(1) != null)
+        $target .= '/' . $backend->getRouteValue(1);
 }
 
 # initialise

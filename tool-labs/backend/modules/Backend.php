@@ -144,9 +144,21 @@ class Backend extends Base
      * @param int $index The index of the placeholder to get.
      * @return mixed|null The expected value (if available).
      */
-    public function getRouteValue($index = 1)
+    public function getRouteValue($index = 0)
     {
-        return $this->get('@' . $index);
+        // check path argument
+        $path = $this->get("@path");
+        if ($path)
+        {
+            $path = substr($path, 1); // ignore initial / in path
+            $parts = explode('/', $path);
+            return count($parts) > $index
+                ? $parts[$index]
+                : null;
+        }
+
+        // legacy arguments
+        return $this->get('@' . ($index + 1));
     }
 
     /**
@@ -240,7 +252,7 @@ class Backend extends Base
                 $title = isset($link[2]) ? $link[2] : $link[0];
                 $desc = isset($link[1]) ? $link[1] : '';
                 $desc = str_replace('\'', '&#38;', $desc);
-                $url = $this->url($link[0]);
+                $url = $link[0];
 
                 echo "<li><a href='$url' title='$desc'>$title</a></li>";
             }
