@@ -25,6 +25,6 @@ pathoschild.i18n = {
         undoTooltip: "Annuler la dernière application",  // button tooltip
         save: "sauvegarder",                             // button text
         saveTooltip: "Enregistrer cette session pour une utilisation ultérieure", // button tooltip
-        instructions: "Entrez un nombre quelconque d'expressions régulières à exécuter. Le motif de recherche peut être « {code|text=texte simple} » ou un motif regex tel que « {code|text=/motif/modificateurs} », et le remplacement peut contenir des groupes de référence tel que « {code|text=$1} » (voir {helplink|text=un tutoriel (en anglais)|title=tutoriel de regex JavaScript|url=http://www.regular-expressions.info/javascript.html})."
+        instructions: "Entrez un nombre quelconque d'expressions régulières à exécuter. Le motif de recherche peut être « {code|text=texte simple} » ou un motif regex tel que « {code|text=/motif/modificateurs} », et le remplacement peut contenir des groupes de référence tel que « {code|text=$1} » (voir {helplink|text=un tutoriel (en anglais)|title=tutoriel de regex JavaScript|url=https://www.regular-expressions.info/javascript.html})."
     }
 };

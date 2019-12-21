@@ -25,7 +25,7 @@ pathoschild.ParseIso639Codes = {
     //
     /**
      * Parse the ISO 639-1 and ISO 639-2 codes.
-     * This should be run on <http://www.loc.gov/standards/iso639-2/php/English_list.php>.
+     * This should be run on <https://www.loc.gov/standards/iso639-2/php/English_list.php>.
      */
     ParseCodes_Iso6392: function () {
         var _this = this;
@@ -55,7 +55,7 @@ pathoschild.ParseIso639Codes = {
 
     /**
      * Parse the ISO 639-3 codes.
-     * This should be run on the dataset downloaded from <http://www.sil.org/iso639-3/download.asp>.
+     * This should be run on the dataset downloaded from <https://iso639-3.sil.org/code_tables/download_tables>.
      */
     ParseCodes_Iso6393: function () {
         var text = $(document.body).text();
@@ -125,9 +125,9 @@ pathoschild.ParseIso639Codes = {
 
     /**
      * Parse the ISO 639 native language names and write SQL statements to the console.
-     * This should be run on <http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>,
-     * <http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes>, or
-     * <http://en.wikipedia.org/wiki/Special:ExpandTemplates?input={{:ISO_639:a}}{{:ISO_639:b}}{{:ISO_639:c}}{{:ISO_639:d}}{{:ISO_639:e}}{{:ISO_639:f}}{{:ISO_639:g}}{{:ISO_639:h}}{{:ISO_639:i}}{{:ISO_639:j}}{{:ISO_639:k}}{{:ISO_639:l}}{{:ISO_639:m}}{{:ISO_639:n}}{{:ISO_639:o}}{{:ISO_639:p}}{{:ISO_639:q}}{{:ISO_639:r}}{{:ISO_639:s}}{{:ISO_639:t}}{{:ISO_639:u}}{{:ISO_639:v}}{{:ISO_639:w}}{{:ISO_639:x}}{{:ISO_639:y}}{{:ISO_639:z}}&removecomments=1>.
+     * This should be run on <https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>,
+     * <https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes>, or
+     * <https://en.wikipedia.org/wiki/Special:ExpandTemplates?input={{:ISO_639:a}}{{:ISO_639:b}}{{:ISO_639:c}}{{:ISO_639:d}}{{:ISO_639:e}}{{:ISO_639:f}}{{:ISO_639:g}}{{:ISO_639:h}}{{:ISO_639:i}}{{:ISO_639:j}}{{:ISO_639:k}}{{:ISO_639:l}}{{:ISO_639:m}}{{:ISO_639:n}}{{:ISO_639:o}}{{:ISO_639:p}}{{:ISO_639:q}}{{:ISO_639:r}}{{:ISO_639:s}}{{:ISO_639:t}}{{:ISO_639:u}}{{:ISO_639:v}}{{:ISO_639:w}}{{:ISO_639:x}}{{:ISO_639:y}}{{:ISO_639:z}}&removecomments=1>.
      *
      * @param {int} code The ISO 639 article format to parse (1, 2, or 3).
      */

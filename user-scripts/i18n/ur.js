@@ -25,6 +25,6 @@ pathoschild.i18n = {
         undoTooltip: "آخری تنفیذ کا استرجع کریں",           // button tooltip
         save: "محفوظ کریں",                                 // button text
         saveTooltip: "آئندہ استعمال کے لیے اس نشست کو محفوظ کریں", // button tooltip
-        instructions: 'تنفیذ کے لیے ریگیولر ایکسپریشنز درج کریں۔ تلاش کا پیٹرن اس طرح ہوگا "{code|text=search pattern}" یا "{code|text=/pattern/modifiers}"، اور تبدیلی پیٹرن میں ریفرینس گروپس بھی شامل کیے جا سکتے ہیں مثلاً "{code|text=$1}" ({helplink|text=tutorial|title=JavaScript regex یہ ٹیوٹوریل|url=http://www.regular-expressions.info/javascript.html} ملاحظہ فرمائیں)۔'
+        instructions: 'تنفیذ کے لیے ریگیولر ایکسپریشنز درج کریں۔ تلاش کا پیٹرن اس طرح ہوگا "{code|text=search pattern}" یا "{code|text=/pattern/modifiers}"، اور تبدیلی پیٹرن میں ریفرینس گروپس بھی شامل کیے جا سکتے ہیں مثلاً "{code|text=$1}" ({helplink|text=tutorial|title=JavaScript regex یہ ٹیوٹوریل|url=https://www.regular-expressions.info/javascript.html} ملاحظہ فرمائیں)۔'
     }
 };

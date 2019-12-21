@@ -121,7 +121,7 @@ var pathoschild = pathoschild || {};
         storage: {
             /**
              * Get whether the browser supports HTML local storage.
-             * See http://caniuse.com/json and http://caniuse.com/localstorage
+             * See https://caniuse.com/json and https://caniuse.com/localstorage
              */
             IsAvailable: function() {
                 return window.localStorage && window.JSON;
@@ -216,7 +216,7 @@ var pathoschild = pathoschild || {};
          * Run JavaScript unit tests using Mocha and Chai, and print the results to the console. This
          * enables unit tests with zero framework code, but you can do more if needed by using Mocha and
          * Chai directly instead. To use this method, just pass a callback containing your Mocha/Chai unit
-         * tests as described at http://chaijs.com/guide/styles/.
+         * tests as described at https://www.chaijs.com/guide/styles/.
          *
          * @param {function} tests A callback to invoke when Mocha and Chai are ready.
          */

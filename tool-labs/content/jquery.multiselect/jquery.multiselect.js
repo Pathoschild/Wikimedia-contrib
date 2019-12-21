@@ -4,10 +4,10 @@
 // Version 1.2.2 beta
 //
 // Cory S.N. LaViska
-// A Beautiful Site (http://abeautifulsite.net/)
+// A Beautiful Site (https://abeautifulsite.net/)
 // 09 September 2009
 //
-// Visit http://abeautifulsite.net/notebook/62 for more information
+// Visit https://abeautifulsite.net/notebook/62 for more information
 //
 // (Amended by Andy Richmond, Letters & Science Deans' Office, University of California, Davis)
 //
@@ -22,7 +22,7 @@
 //           optGroupSelectable - whether or not optgroups are selectable if you use them; true/false, default = false
 //           listHeight         - the max height of the droptdown options
 //
-// Dependencies:  jQuery 1.2.6 or higher (http://jquery.com/)
+// Dependencies:  jQuery 1.2.6 or higher (https://jquery.com/)
 //
 // Change Log:
 //
@@ -32,7 +32,7 @@
 //		1.0.2	- Fixed issue where dropdown doesn't scroll up/down with keyboard shortcuts
 //				- Changed '$' in setTimeout to use 'jQuery' to support jQuery.noConflict
 //				- Renamed from jqueryMultiSelect.* to jquery.multiSelect.* per the standard recommended at
-//				  http://docs.jquery.com/Plugins/Authoring (does not affect API methods)
+//				  https://docs.jquery.com/Plugins/Authoring (does not affect API methods)
 //
 //		1.0.3	- Now uses the bgiframe plugin (if it exists) to fix the IE6 layering bug.
 //              - Forces IE6 to use a min-height of 200px (this needs to be added to the options)

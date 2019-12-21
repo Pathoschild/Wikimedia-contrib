@@ -4,7 +4,7 @@
 /*#############################################
 ### Ajax Sysop
 ###     by [[user:Pathoschild]] (Jesse Plamondon-Willard)
-###     see http://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/Ajax_sysop#Installation
+###     see https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/Ajax_sysop#Installation
 ##############################################*/
 mw.loader.load("https://tools-static.wmflabs.org/meta/scripts/pathoschild.ajaxsysop.css", "text/css");
 

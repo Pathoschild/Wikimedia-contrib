@@ -1,6 +1,6 @@
 /*
  * Collapse plugin for jQuery
- * http://github.com/danielstocks/jQuery-Collapse/
+ * https://github.com/danielstocks/jQuery-Collapse/
  *
  * @author Daniel Stocks (http://webcloud.se)
  * Copyright 2010, Daniel Stocks

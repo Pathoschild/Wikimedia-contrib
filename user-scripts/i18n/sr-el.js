@@ -25,6 +25,6 @@ pathoschild.i18n = {
         undoTooltip: "Poništi prethodnu izmenu", // button tooltip
         save: "Sačuvaj",                         // button text
         saveTooltip: "Sačuvaj ovu sesiju za kasnije korišćenje", // button tooltip
-        instructions: "Unesite bilo koji broj regularnih izraza za izvršavanje. Šema za pretragu može biti poput «{code|text=pretraga uzorka}», bilo kao «{code|text=/šablon/zastava}», i zamenski šablon može sadržavati referentne grupe kao što su «{code|text=$1}» (vidi {helplink|text=tutorial|title=Tutorijal|url=http://www.regular-expressions.info/javascript.html}).'"
+        instructions: "Unesite bilo koji broj regularnih izraza za izvršavanje. Šema za pretragu može biti poput «{code|text=pretraga uzorka}», bilo kao «{code|text=/šablon/zastava}», i zamenski šablon može sadržavati referentne grupe kao što su «{code|text=$1}» (vidi {helplink|text=tutorial|title=Tutorijal|url=https://www.regular-expressions.info/javascript.html}).'"
     }
 };

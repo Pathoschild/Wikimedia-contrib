@@ -25,6 +25,6 @@ pathoschild.i18n = {
         undoTooltip: "Deshacer lo último",        // button tooltip
         save: "guardar",                          // button text
         saveTooltip: "Guardar esta sesión para uso posterior", // button tooltip
-        instructions: 'Introduce cualquier número de expresiones regulares a ejecutar. El patrón de búsqueda puede ser tipo "{code|text=patrón de búsqueda}" o "{code|text=/patrón/modificadores}", y el patrón de reemplazos puede contener referencias a grupos como "{code|text=$1}" (ver {helplink|text=tutorial|title=Tutorial JavaScript regex|url=http://www.regular-expressions.info/javascript.html}).'
+        instructions: 'Introduce cualquier número de expresiones regulares a ejecutar. El patrón de búsqueda puede ser tipo "{code|text=patrón de búsqueda}" o "{code|text=/patrón/modificadores}", y el patrón de reemplazos puede contener referencias a grupos como "{code|text=$1}" (ver {helplink|text=tutorial|title=Tutorial JavaScript regex|url=https://www.regular-expressions.info/javascript.html}).'
     }
 };

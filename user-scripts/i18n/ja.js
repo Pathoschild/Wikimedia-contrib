@@ -25,6 +25,6 @@ pathoschild.i18n = {
         undoTooltip: "最後の適用を取り消す",                // button tooltip
         save: "保存する",                                   // button text
         saveTooltip: "後で使うためにセッションを保存する",  // button tooltip
-        instructions: '任意の数の正規表現を入力できます。検索パターンは"{code|text=検索パターン}"または"{code|text=/パターン/修飾子}"のように指定します。置換パターンには"{code|text=$1}"のように参照グループを含めることができます（{helplink|text=チュートリアル|title=JavaScript regex tutorial|url=http://www.regular-expressions.info/javascript.html}を参照してください）。'
+        instructions: '任意の数の正規表現を入力できます。検索パターンは"{code|text=検索パターン}"または"{code|text=/パターン/修飾子}"のように指定します。置換パターンには"{code|text=$1}"のように参照グループを含めることができます（{helplink|text=チュートリアル|title=JavaScript regex tutorial|url=https://www.regular-expressions.info/javascript.html}を参照してください）。'
     }
 };

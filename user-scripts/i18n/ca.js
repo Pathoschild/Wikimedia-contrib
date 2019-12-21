@@ -25,6 +25,6 @@ pathoschild.i18n = {
         undoTooltip: "Desfà el darrer canvi",         // button tooltip
         save: "Desa canvis",                          // button text
         saveTooltip: "Desa aquesta sessió per usar-la més endavant", // button tooltip        
-        instructions: 'Introdueixi les expressions regulars a executar. El patró de cerca pot ser de com "{code|text=patró de cerca}" o "{code|text=/patró/modificadors}" i el patró de reemplaçament pot contenir grups de referència com "{code|text=$1}" (vegeu {helplink|text=tutorial|title=JavaScript regex tutorial|url=http://www.regular-expressions.info/javascript.html}).'
+        instructions: 'Introdueixi les expressions regulars a executar. El patró de cerca pot ser de com "{code|text=patró de cerca}" o "{code|text=/patró/modificadors}" i el patró de reemplaçament pot contenir grups de referència com "{code|text=$1}" (vegeu {helplink|text=tutorial|title=JavaScript regex tutorial|url=https://www.regular-expressions.info/javascript.html}).'
     }
 };

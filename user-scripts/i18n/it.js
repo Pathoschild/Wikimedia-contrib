@@ -24,6 +24,6 @@ pathoschild.i18n = {
         undoTooltip: "Annulla l'ultimo applica",               // button tooltip
         save: "salva",                                          // button text
         saveTooltip: "Salva questa sessione per utilizzarla più tardi", // button tooltip
-        instructions: 'Inserisci qualsiasi numero di espressioni regolari da eseguire. Il modello può essere ad esempio "{code|text=modello di cerca}" o "{code|text=/pattern/modifiers}", e il modello sostituito può contenere riferimenti a gruppi, ad esempio "{code|text=$1}" (vedi il {helplink|text=tutorial|title=JavaScript regex tutorial|url=http://www.regular-expressions.info/javascript.html}).'
+        instructions: 'Inserisci qualsiasi numero di espressioni regolari da eseguire. Il modello può essere ad esempio "{code|text=modello di cerca}" o "{code|text=/pattern/modifiers}", e il modello sostituito può contenere riferimenti a gruppi, ad esempio "{code|text=$1}" (vedi il {helplink|text=tutorial|title=JavaScript regex tutorial|url=https://www.regular-expressions.info/javascript.html}).'
     }
 };

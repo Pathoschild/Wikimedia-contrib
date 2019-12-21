@@ -35,7 +35,7 @@ echo "
                     $engine->getFilterOptionHtml('3', 'ISO 639-3'), "
                 </optgroup>
                 <optgroup label='of scope:'>
-                    <!--<a href='http://www.sil.org/iso639-3/scope.asp' title='about scopes'>scope</a>-->",
+                    <!--<a href='https://iso639-3.sil.org/about/scope' title='about scopes'>scope</a>-->",
                     $engine->getFilterOptionHtml('individual'),
                     $engine->getFilterOptionHtml('dialect'),
                     $engine->getFilterOptionHtml('macrolanguage'),

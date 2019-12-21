@@ -25,6 +25,6 @@ pathoschild.i18n = {
         undoTooltip: "Letzte Ersetzung rückgängig machen", // button tooltip
         save: "Speichern",                              // button text
         saveTooltip: "Diese Sitzung zur erneuten Verwendung speichern", // button tooltip
-        instructions: 'Gib einen Regulären Ausdruck ein, der angewendet werden soll. Das Suchmuster kann eine einfache Folge sein wie "{code|text=Suchmuster}" oder ein Ausdruck "{code|text=/Muster/Modifikatoren}" und das Ersetzungsmuster kann Referenzgruppen enthalten wie "{code|text=$1}" (siehe {helplink|text=englisches Tutorial|title=JavaScript-Regex-Tutorial|url=http://www.regular-expressions.info/javascript.html}).'
+        instructions: 'Gib einen Regulären Ausdruck ein, der angewendet werden soll. Das Suchmuster kann eine einfache Folge sein wie "{code|text=Suchmuster}" oder ein Ausdruck "{code|text=/Muster/Modifikatoren}" und das Ersetzungsmuster kann Referenzgruppen enthalten wie "{code|text=$1}" (siehe {helplink|text=englisches Tutorial|title=JavaScript-Regex-Tutorial|url=https://www.regular-expressions.info/javascript.html}).'
     }
 };

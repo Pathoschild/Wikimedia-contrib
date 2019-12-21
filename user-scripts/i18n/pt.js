@@ -25,6 +25,6 @@ pathoschild.i18n = {
         undoTooltip: "Desfazer a última aplicação",              // button tooltip
         save: "salvar",                                          // button text
         saveTooltip: "Salvar esta sessão para uso posterior",    // button tooltip
-        instructions: 'Insira qualquer número de expressõres regulares a serem executadas. O padrão de busca pode ser como "{code|text=padrão de busca}" ou "{code|text=/padrão/modificadores}", e o padrão de substituição pode conter grupos de referência como "{code|text=$1}" (ver {helplink|text=um tutorial|title=Tutorial sobre expressões regulares em JavaScript|url=http://www.regular-expressions.info/javascript.html}).'
+        instructions: 'Insira qualquer número de expressõres regulares a serem executadas. O padrão de busca pode ser como "{code|text=padrão de busca}" ou "{code|text=/padrão/modificadores}", e o padrão de substituição pode conter grupos de referência como "{code|text=$1}" (ver {helplink|text=um tutorial|title=Tutorial sobre expressões regulares em JavaScript|url=https://www.regular-expressions.info/javascript.html}).'
     }
 };

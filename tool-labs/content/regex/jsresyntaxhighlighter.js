@@ -3,7 +3,7 @@
 // MIT license
 
 // Based on RegexPal 0.1.4
-// (c) 2007 Steven Levithan <http://regexpal.com>
+// (c) 2007 Steven Levithan <https://regexpal.com>
 // GNU LGPL 3.0 license
 
 // This relies on the following CSS for highlighting:

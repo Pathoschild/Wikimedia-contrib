@@ -33,6 +33,6 @@ pathoschild.i18n = {
         undoTooltip: "Undo the last apply",           // button tooltip
         save: "save",                                 // button text
         saveTooltip: "Save this session for later use", // button tooltip
-        instructions: 'Enter any number of regular expressions to execute. The search pattern can be like "{code|text=search pattern}" or "{code|text=/pattern/modifiers}", and the replace pattern can contain reference groups like "{code|text=$1}" (see {helplink|text=tutorial|title=JavaScript regex tutorial|url=http://www.regular-expressions.info/javascript.html}).'
+        instructions: 'Enter any number of regular expressions to execute. The search pattern can be like "{code|text=search pattern}" or "{code|text=/pattern/modifiers}", and the replace pattern can contain reference groups like "{code|text=$1}" (see {helplink|text=tutorial|title=JavaScript regex tutorial|url=https://www.regular-expressions.info/javascript.html}).'
     }
 };
