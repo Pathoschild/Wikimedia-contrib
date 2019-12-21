@@ -117,13 +117,13 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 $.extend(self.strings, pathoschild.i18n.regexeditor);
 
             // add CSS
-            mw.loader.load("//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.css", "text/css");
-            mw.loader.load("//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.css", "text/css");
+            mw.loader.load("https://tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.css", "text/css");
+            mw.loader.load("https://tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.css", "text/css");
 
             // load dependencies
             return state.initialisation = $.when(
-                $.ajax("//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js", { dataType: "script", crossDomain: true, cached: true }),
-                $.ajax("//tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.js", { dataType: "script", crossDomain: true, cached: true })
+                $.ajax("https://tools-static.wmflabs.org/meta/scripts/pathoschild.util.js", { dataType: "script", crossDomain: true, cached: true }),
+                $.ajax("https://tools-static.wmflabs.org/meta/scripts/dependencies/regex-colorizer.js", { dataType: "script", crossDomain: true, cached: true })
             );
         };
 

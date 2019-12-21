@@ -312,6 +312,6 @@ class AccountEligibilityEngine extends Base
     {
         $name = $this->user->name;
         $domain = $this->wiki->domain;
-        $this->msg("On <a href='//$domain/wiki/User:$name' title='$name&apos;s user page on $domain'>$domain</a>:", 'is-wiki');
+        $this->msg("On <a href='https://$domain/wiki/User:$name' title='$name&apos;s user page on $domain'>$domain</a>:", 'is-wiki');
     }
 }

@@ -1,7 +1,7 @@
 <?php
 require_once('../backend/modules/Backend.php');
 require_once('framework/GlobalGroupsEngine.php');
-$backend = Backend::create('GlobalGroups', 'A review of extra permissions assigned to <a href="//meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets" title="global groups">global groups</a> on Wikimedia Foundation wikis.')
+$backend = Backend::create('GlobalGroups', 'A review of extra permissions assigned to <a href="https://meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets" title="global groups">global groups</a> on Wikimedia Foundation wikis.')
     ->link('/globalgroups/stylesheet.css')
     ->header();
 
@@ -305,9 +305,9 @@ foreach ($groups as $group) {
     echo "
         <h3 id='{$group['anchor']}'>{$backend->formatText($group['name'])}</h3>
         <div class='group'>
-            <a href='//meta.wikimedia.org/wiki/Special:GlobalUsers?group=", urlencode($group['key']), "' title='list of users in this group'>{$group['members']} account", ($group['members'] != 1 ? 's' : ''), "</a> on ";
+            <a href='https://meta.wikimedia.org/wiki/Special:GlobalUsers?group=", urlencode($group['key']), "' title='list of users in this group'>{$group['members']} account", ($group['members'] != 1 ? 's' : ''), "</a> on ";
     if ($group['wikiset']) {
-        echo '<a href="//meta.wikimedia.org/wiki/Special:WikiSets/', $group['wikiset']['id'], '">';
+        echo '<a href="https://meta.wikimedia.org/wiki/Special:WikiSets/', $group['wikiset']['id'], '">';
         if ($group['wikiset']['type'] == 'optout')
             echo 'all except ';
         echo $group['wikiset']['count'], ' wiki', ($group['wikiset']['count'] != 1 ? 's' : ''), '</a>';

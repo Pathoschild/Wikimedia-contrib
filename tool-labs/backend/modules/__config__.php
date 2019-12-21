@@ -68,8 +68,8 @@ $settings['debug'] = false;
 ## URLs and navigation
 #############################
 $settings['root_url']  = SCRIPT_USER == 'pathoschild-contrib'
-    ? ('//tools.wmflabs.org/' . SCRIPT_USER . '/tools-edge')
-    : ('//tools.wmflabs.org/' . SCRIPT_USER);
+    ? ('https://tools.wmflabs.org/' . SCRIPT_USER . '/tools-edge')
+    : ('https://tools.wmflabs.org/' . SCRIPT_USER);
 
 $settings['tools'] = [
     'Wikimedia' => [
@@ -93,7 +93,7 @@ $settings['tools'] = [
 ## Footer
 #############################
 /* default licensing */
-$settings['license'] = 'This tool is open-source and released under the <a href="https://github.com/Pathoschild/Wikimedia-contrib/blob/master/LICENSE.txt" title="MIT license">MIT license</a> (except the <a href="//commons.wikimedia.org/wiki/File:Gear_3.svg" title="gear_3">gear logo</a>).';
+$settings['license'] = 'This tool is open-source and released under the <a href="https://github.com/Pathoschild/Wikimedia-contrib/blob/master/LICENSE.txt" title="MIT license">MIT license</a> (except the <a href="https://commons.wikimedia.org/wiki/File:Gear_3.svg" title="gear_3">gear logo</a>).';
 
 /* benchmark precision */
 $settings['profile_time_precision'] = 3;

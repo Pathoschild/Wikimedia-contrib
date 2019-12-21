@@ -60,7 +60,7 @@ $(function() {
                         $("<tr>").attr("id", rowID).insertAfter(oldRow)
                     )
                 );
-                newDiv.append($("<img>").attr("src", "//upload.wikimedia.org/wikipedia/commons/d/d2/Spinning_wheel_throbber.gif"));
+                newDiv.append($("<img>").attr("src", "https://upload.wikimedia.org/wikipedia/commons/d/d2/Spinning_wheel_throbber.gif"));
 
                 $.ajax(mw.config.get("wgServer") + "/wiki/" + data.title + "?action=render").then(function(data) {
                     newDiv.html(data);

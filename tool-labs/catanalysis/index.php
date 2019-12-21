@@ -4,7 +4,7 @@ require_once('../backend/modules/Base.php');
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/Form.php');
 require_once('../backend/modules/IPAddress.php');
-$backend = Backend::create('Catanalysis', 'Analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix). This is primarily intended for test project analysis by the Wikimedia Foundation <a href="//meta.wikimedia.org/wiki/Language_committee" title="language committee">language committee</a>.')
+$backend = Backend::create('Catanalysis', 'Analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix). This is primarily intended for test project analysis by the Wikimedia Foundation <a href="https://meta.wikimedia.org/wiki/Language_committee" title="language committee">language committee</a>.')
     ->link('/catanalysis/stylesheet.css')
     ->header();
 spl_autoload_register(function ($className) {

@@ -109,7 +109,7 @@ if ($engine->isValid() && $ip->ip->isValid()) {
         foreach ($global['ip']->globalBlocks as $block) {
             $byUrl = urlencode($block->by);
             $reason = $engine->formatReason($block->reason, 'meta.wikimedia.org');
-            echo "<li>{$block->timestamp} &mdash; {$block->expiry}: <b>{$block->target}</b> globally blocked by <a href=\"//meta.wikimedia.org/wiki/user:$byUrl\">{$block->by}</a> (<small>$reason</small>)</li>";
+            echo "<li>{$block->timestamp} &mdash; {$block->expiry}: <b>{$block->target}</b> globally blocked by <a href=\"https://meta.wikimedia.org/wiki/user:$byUrl\">{$block->by}</a> (<small>$reason</small>)</li>";
         }
         echo '
                 </ul>
@@ -126,7 +126,7 @@ if ($engine->isValid() && $ip->ip->isValid()) {
         <div>
             Related toys:
             <a href='https://www.whois.com/whois/", $ip->ip->getFriendly(), "' title='whois query'>whois</a>,
-            <a href='//meta.wikimedia.org/wiki/Special:GlobalBlock?wpAddress={$engine->targetWikiUrl}' title='Special:GlobalBlock'>global block</a>.
+            <a href='https://meta.wikimedia.org/wiki/Special:GlobalBlock?wpAddress={$engine->targetWikiUrl}' title='Special:GlobalBlock'>global block</a>.
         </div>
         ";
 
@@ -314,9 +314,9 @@ else if ($engine->isValid() && $engine->target) {
                 <td>Home:</td>
             ";
         if ($account->homeWiki)
-            echo "<td><a href='//{$engine->wikis[$account->homeWiki]->domain}/wiki/user:{$engine->targetWikiUrl}' title='home wiki'>{$engine->wikis[$account->homeWiki]->domain}</a></td>";
+            echo "<td><a href='https://{$engine->wikis[$account->homeWiki]->domain}/wiki/user:{$engine->targetWikiUrl}' title='home wiki'>{$engine->wikis[$account->homeWiki]->domain}</a></td>";
         else
-            echo "<td><b>unknown</b> <small>(it might be <a href='//meta.wikimedia.org/wiki/Oversight' title='about hiding user names'>hidden</a> or renamed, or the data might not be replicated yet)</small></td>";
+            echo "<td><b>unknown</b> <small>(it might be <a href='https://meta.wikimedia.org/wiki/Oversight' title='about hiding user names'>hidden</a> or renamed, or the data might not be replicated yet)</small></td>";
         echo "
             </tr>
             <tr>
@@ -345,10 +345,10 @@ else if ($engine->isValid() && $engine->target) {
                 <td style='vertical-align:top;'>Statistics:</td>
                 <td>
                     {$stats['edit_count']} edits on {$stats['wikis']} wikis.<br />
-                    Most edits on <a href='//{$stats['most_edits_domain']}/wiki/Special:Contributions/{$engine->targetWikiUrl}'>{$stats['most_edits_domain']}</a> ({$stats['most_edits']}).<br />
+                    Most edits on <a href='https://{$stats['most_edits_domain']}/wiki/Special:Contributions/{$engine->targetWikiUrl}'>{$stats['most_edits_domain']}</a> ({$stats['most_edits']}).<br />
         ";
         if ($stats['oldest']) {
-            echo "Oldest account on <a href='//{$stats['oldest_domain']}/wiki/user:{$engine->targetWikiUrl}'>{$stats['oldest_domain']}</a> (", ($stats['oldest'] ? $stats['oldest'] : '2005 or earlier, so probably inaccurate; registration date was not stored until late 2005'), ").";
+            echo "Oldest account on <a href='https://{$stats['oldest_domain']}/wiki/user:{$engine->targetWikiUrl}'>{$stats['oldest_domain']}</a> (", ($stats['oldest'] ? $stats['oldest'] : '2005 or earlier, so probably inaccurate; registration date was not stored until late 2005'), ").";
         }
         echo "
                         <div id='account-visualizations'><br clear='all' /></div>
@@ -358,10 +358,10 @@ else if ($engine->isValid() && $engine->target) {
             See also
             <a href='{$backend->url("/crossactivity/{$engine->targetUrl}")}' title='recent activity'>recent activity</a>,
             <a href='{$backend->url("/userpages/{$engine->targetUrl}")}' title='user pages'>user pages</a>,
-            <a href='//meta.wikimedia.org/wiki/Special:CentralAuth/{$engine->targetWikiUrl}' title='Special:CentralAuth'>global user manager</a>.
+            <a href='https://meta.wikimedia.org/wiki/Special:CentralAuth/{$engine->targetWikiUrl}' title='Special:CentralAuth'>global user manager</a>.
             ";
     } else
-        echo '<div class="neutral">There is no global account with this name, or it has been <a href="//meta.wikimedia.org/wiki/Oversight" title="about hiding user names">globally hidden</a>.</div>';
+        echo '<div class="neutral">There is no global account with this name, or it has been <a href="https://meta.wikimedia.org/wiki/Oversight" title="about hiding user names">globally hidden</a>.</div>';
     echo '</div>';
 
 
@@ -384,7 +384,7 @@ else if ($engine->isValid() && $engine->target) {
                         <th>registered</th>
                         <th>groups</th>
                         ", ($engine->showGroupsPerWiki && $globalGroupsByWiki ? '<th>global groups</th>' : ''), "
-                        <th><a href='//meta.wikimedia.org/wiki/Help:Unified_login' title='about unified login'>unified login</a></th>
+                        <th><a href='https://meta.wikimedia.org/wiki/Help:Unified_login' title='about unified login'>unified login</a></th>
                         <th>block</th>
                     </tr>
                 </thead>

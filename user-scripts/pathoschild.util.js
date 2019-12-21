@@ -223,9 +223,9 @@ var pathoschild = pathoschild || {};
         RunTests: function(tests) {
             // load scripts
             $.when(
-                $.ajax("//tools-static.wmflabs.org/cdnjs/ajax/libs/mocha/2.2.1/mocha.min.js", { dataType: "script", cache: true }),
-                $.ajax("//tools-static.wmflabs.org/cdnjs/ajax/libs/chai/2.2.0/chai.min.js", { dataType: "script", cache: true }),
-                $.ajax("//tools-static.wmflabs.org/meta/scripts/dependencies/WebConsole.js", { dataType: "script", cache: true })
+                $.ajax("https://tools-static.wmflabs.org/cdnjs/ajax/libs/mocha/2.2.1/mocha.min.js", { dataType: "script", cache: true }),
+                $.ajax("https://tools-static.wmflabs.org/cdnjs/ajax/libs/chai/2.2.0/chai.min.js", { dataType: "script", cache: true }),
+                $.ajax("https://tools-static.wmflabs.org/meta/scripts/dependencies/WebConsole.js", { dataType: "script", cache: true })
             ).done(function() {
                 // configure
                 mocha.setup({ ui: "bdd", reporter: WebConsole });

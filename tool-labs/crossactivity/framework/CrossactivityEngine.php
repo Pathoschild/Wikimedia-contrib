@@ -50,6 +50,6 @@ class CrossactivityEngine extends Base
      */
     function getLinkHtml($domain, $page)
     {
-        return "<a href='//{$domain}?title=" . urlencode($page) . "' title='" . htmlspecialchars($page) . "'>$domain</a>";
+        return "<a href='https://{$domain}?title=" . urlencode($page) . "' title='" . htmlspecialchars($page) . "'>$domain</a>";
     }
 }

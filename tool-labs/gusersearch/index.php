@@ -181,7 +181,7 @@ if ($count) {
                 <td class='registration'>{$row['gu_registration']}</td>
                 <td class='status'>{$statusLabel}</td>
                 <td class='groups'>{$row['gu_groups']}</td>
-                <td class='linkies'>", ($isNameHidden ? "&mdash;" : "<a href='//meta.wikimedia.org/wiki/Special:CentralAuth?target={$linkTarget}' title='CentralAuth'>CentralAuth</a>"), "</td>
+                <td class='linkies'>", ($isNameHidden ? "&mdash;" : "<a href='https://meta.wikimedia.org/wiki/Special:CentralAuth?target={$linkTarget}' title='CentralAuth'>CentralAuth</a>"), "</td>
             </tr>";
     }
     echo "</table>";

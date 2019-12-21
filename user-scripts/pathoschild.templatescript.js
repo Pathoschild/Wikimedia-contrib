@@ -733,7 +733,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
             // init UI
             mw.util.addCSS(".ts-shortcut { margin-left:.5em; color:#CCC; }");
-            _loadDependency("//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js").then(function() {
+            _loadDependency("https://tools-static.wmflabs.org/meta/scripts/pathoschild.util.js").then(function() {
                 state.isReady = true;
                 for (var i = 0; i < state.queue.length; i++)
                     self.add(state.queue[i]);
@@ -912,12 +912,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             // fetch dependencies
             $.when(
                 mw.loader.using(["mediawiki.api.options"]),
-                _loadDependency("//tools-static.wmflabs.org/cdnjs/ajax/libs/handlebars.js/4.0.2/handlebars.js")
+                _loadDependency("https://tools-static.wmflabs.org/cdnjs/ajax/libs/handlebars.js/4.0.2/handlebars.js")
             )
 
                 // render template
                 .then(function() {
-                    return $.ajax("//tools-static.wmflabs.org/meta/scripts/templates/pathoschild.templatescript.settings.htm", { dataType: "html" });
+                    return $.ajax("https://tools-static.wmflabs.org/meta/scripts/templates/pathoschild.templatescript.settings.htm", { dataType: "html" });
                 })
                 .then(function(template) {
                     // fetch settings
@@ -1009,7 +1009,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
              * @param {Library} library The library configuration.
              */
             define: function(library) {
-                _loadDependency("//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js").then(function() {
+                _loadDependency("https://tools-static.wmflabs.org/meta/scripts/pathoschild.util.js").then(function() {
                     // validate library
                     library = pathoschild.util.ApplyArgumentSchema("pathoschild.TemplateScript.library::define(key:" + (library.key || "no key") + ")", library, self.Library);
                     if (!library.key)
@@ -1166,7 +1166,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         if (state.config.regexEditor !== false) {
             self.add({
                 name: self.strings.regexEditor,
-                scriptUrl: "//tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js",
+                scriptUrl: "https://tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js",
                 script: function(editor) {
                     var regexEditor = new pathoschild.RegexEditor();
                     regexEditor.create(state.$target, editor);

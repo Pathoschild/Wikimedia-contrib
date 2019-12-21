@@ -73,7 +73,7 @@ class HasGroupDurationRule implements Rule
             $result->addWarning("{$user->name}'s account on this wiki might predate the rights log. If they're not eligible due to this rule, you may need to verify manually.");
 
         // add note
-        $result->addNote("See <a href='//{$wiki->domain}/wiki/Special:Log/rights?page=User:{$user->name}' title='local rights log'>local</a> and <a href='//meta.wikimedia.org/wiki/Special:Log/rights?page=User:{$user->name}@{$wiki->dbName}' title='crosswiki rights log'>crosswiki</a> rights logs.");
+        $result->addNote("See <a href='https://{$wiki->domain}/wiki/Special:Log/rights?page=User:{$user->name}' title='local rights log'>local</a> and <a href='https://meta.wikimedia.org/wiki/Special:Log/rights?page=User:{$user->name}@{$wiki->dbName}' title='crosswiki rights log'>crosswiki</a> rights logs.");
 
         // get result
         return $result;

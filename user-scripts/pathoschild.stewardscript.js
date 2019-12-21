@@ -91,7 +91,7 @@
                         .append(this
                             .Make("a")
                             .text("Stalktoy")
-                            .attr({ href: "//tools.wmflabs.org/meta/stalktoy/" + encodeURIComponent(target), title: "View details about the global user or IP address on all Wikimedia wikis." })
+                            .attr({ href: "https://tools.wmflabs.org/meta/stalktoy/" + encodeURIComponent(target), title: "View details about the global user or IP address on all Wikimedia wikis." })
                         );
 
                     // link to central auth (if not an IP)
@@ -131,25 +131,25 @@
                             .append(this
                                 .Make("a")
                                 .text("stalktoy")
-                                .attr({ href: "//tools.wmflabs.org/meta/stalktoy/" + encodeURIComponent(user), title: "Pathoschild's Stalktoy (comprehensive information about the given user on all Wikimedia wikis)" })
+                                .attr({ href: "https://tools.wmflabs.org/meta/stalktoy/" + encodeURIComponent(user), title: "Pathoschild's Stalktoy (comprehensive information about the given user on all Wikimedia wikis)" })
                             )
                             .append(", ")
                             .append(this
                                 .Make("a")
                                 .text("crosswiki edits")
-                                .attr({ href: "//tools.wmflabs.org/guc?blocks=true&user=" + encodeURIComponent(user), title: "Luxo's User Contributions (lists edits across all Wikimedia wikis)" })
+                                .attr({ href: "https://tools.wmflabs.org/guc?blocks=true&user=" + encodeURIComponent(user), title: "Luxo's User Contributions (lists edits across all Wikimedia wikis)" })
                             )
                             .append(", ")
                             .append(this
                                 .Make("a")
                                 .text("crossactivity")
-                                .attr({ href: "//tools.wmflabs.org/meta/crossactivity/" + encodeURIComponent(user), title: "Pathoschild's CrossActivity (measures a user's latest edit, bureaucrat, or sysop activity on all wikis)" })
+                                .attr({ href: "https://tools.wmflabs.org/meta/crossactivity/" + encodeURIComponent(user), title: "Pathoschild's CrossActivity (measures a user's latest edit, bureaucrat, or sysop activity on all wikis)" })
                             )
                             .append(", ")
                             .append(this
                                 .Make("a")
                                 .text("global user rights")
-                                .attr({ href: "//meta.wikimedia.org/wiki/Special:GlobalUserRights/" + encodeURIComponent(user), title: "Global User Rights" })
+                                .attr({ href: "https://meta.wikimedia.org/wiki/Special:GlobalUserRights/" + encodeURIComponent(user), title: "Global User Rights" })
                             )
                         );
 
@@ -225,7 +225,7 @@
                             .append(this
                                 .Make("a")
                                 .text("block")
-                                .attr({ href: "//" + domain + "/wiki/Special:BlockIP/" + encodeURIComponent(user) + "?wpExpiry=indefinite" })
+                                .attr({ href: "https://" + domain + "/wiki/Special:BlockIP/" + encodeURIComponent(user) + "?wpExpiry=indefinite" })
                             )
                         );
                     });
@@ -251,7 +251,7 @@
                             .after(_this
                                 .Make("a")
                                 .text("Stalktoy")
-                                .attr({ href: "//tools.wmflabs.org/pathoschild-contrib/stalktoy/" + encodeURIComponent(user) })
+                                .attr({ href: "https://tools.wmflabs.org/pathoschild-contrib/stalktoy/" + encodeURIComponent(user) })
                             )
                             .after(" · ");
                     });

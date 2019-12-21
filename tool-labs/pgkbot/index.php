@@ -1,11 +1,11 @@
 <?php
 require_once('../backend/modules/Backend.php');
-$backend = Backend::create('pgkbot', 'A python bot by <a href="//en.wikipedia.org/wiki/user:pgk" title="pgk\'s Wikipedia userpage">pgk</a> that processes and filters IRC change feeds for wiki installations (see the <a href="//meta.wikimedia.org/wiki/CVN/Bots" title="online documentation">onwiki documentation</a>).')
+$backend = Backend::create('pgkbot', 'A python bot by <a href="https://en.wikipedia.org/wiki/user:pgk" title="pgk\'s Wikipedia userpage">pgk</a> that processes and filters IRC change feeds for wiki installations (see the <a href="https://meta.wikimedia.org/wiki/CVN/Bots" title="online documentation">onwiki documentation</a>).')
     ->link('/pgkbot/stylesheet.css')
     ->header();
 
 echo "
-    <p class='neutral'>The <a href='//meta.wikimedia.org/wiki/Pgkbot' title='pgkbot package'>pgkbot package</a> is obsolete and no longer actively maintained. This mirror is maintained for historical interest.</p>
+    <p class='neutral'>The <a href='https://meta.wikimedia.org/wiki/Pgkbot' title='pgkbot package'>pgkbot package</a> is obsolete and no longer actively maintained. This mirror is maintained for historical interest.</p>
     <h3>Download</h3>
     <ul>
         <li><a href='pgkbot_1.7.zip' title='pgkbot archive'>pgkbot 1.7</a> (2007-03-11, 381kB)</li>

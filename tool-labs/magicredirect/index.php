@@ -1,6 +1,6 @@
 <?php
 require_once('../backend/modules/Backend.php');
-$backend = Backend::create('A template\'s magic redirect', 'Redirects to an arbitrary URL with tokens based on user and wiki filled in. This is primarily intended for Wikimedia templates such as {{<a href="//meta.wikimedia.org/wiki/Template:sr-request" title="template:sr-request on Meta">sr-request</a>}} (see <a href="?url=//{wiki.domain}/wiki/Special:UserRights/{user.name}@{wiki.name}&wiki=metawiki&user=Pathoschild" title="reload with example values">example</a>).')
+$backend = Backend::create('A template\'s magic redirect', 'Redirects to an arbitrary URL with tokens based on user and wiki filled in. This is primarily intended for Wikimedia templates such as {{<a href="https://meta.wikimedia.org/wiki/Template:sr-request" title="template:sr-request on Meta">sr-request</a>}} (see <a href="?url=//{wiki.domain}/wiki/Special:UserRights/{user.name}@{wiki.name}&wiki=metawiki&user=Pathoschild" title="reload with example values">example</a>).')
     ->link('/magicredirect/stylesheet.css')
     ->link('/content/jquery.collapse/jquery.collapse.js')
     ->link('/content/jquery.collapse/jquery.cookie.js')
@@ -26,8 +26,8 @@ $tokens = [
         'id' => 'The user\'s global identifier number.',
         'name' => 'The unique name of the user.',
         'registration' => 'The date on which the global account was registered.',
-        'locked' => 'Whether the global account has been <a href="//meta.wikimedia.org/wiki/Steward_handbook#Managing_global_accounts" title="about account locking">locked</a>.',
-        'hidden' => 'Whether the global account has been <a href="//meta.wikimedia.org/wiki/Steward_handbook#Managing_global_accounts" title="about account hiding">hidden</a>.'
+        'locked' => 'Whether the global account has been <a href="https://meta.wikimedia.org/wiki/Steward_handbook#Managing_global_accounts" title="about account locking">locked</a>.',
+        'hidden' => 'Whether the global account has been <a href="https://meta.wikimedia.org/wiki/Steward_handbook#Managing_global_accounts" title="about account hiding">hidden</a>.'
     ]
 ];
 

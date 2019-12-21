@@ -34,7 +34,7 @@ if ($user) {
             See also
             <a href='", $backend->url('/stalktoy/' . urlencode($user)), "' title='Global account details'>global account details</a>, 
             <a href='", $backend->url('/crossactivity/' . urlencode($user)), "' title='Crosswiki activity'>recent activity</a>,
-            <a href='//meta.wikimedia.org/?title=Special:CentralAuth/", urlencode($user), "' title='Special:CentralAuth'>Special:CentralAuth</a>.
+            <a href='https://meta.wikimedia.org/?title=Special:CentralAuth/", urlencode($user), "' title='Special:CentralAuth'>Special:CentralAuth</a>.
             <hr />
             Filters: page is
             <a href='#' class='selected filter' data-filter-key='misc' data-filters='.type-misc'>text</a>  
@@ -108,7 +108,7 @@ do {
                 $type = 'css';
 
             // output
-            echo "<li class='type-$type' data-redirect='$isRedirect' data-is-subpage='$isSubpage' data-type='$type' data-size='$size' data-ns='$namespaceNumber' data-title='", $backend->formatValue($page['page_title']), "'><a href='//$domain/wiki/", $backend->formatValue($title), "'>", $backend->formatValue($title), "</a> <small>(<span class='page-size'>$size bytes</span>, <span class='page-edited'>last <a href='https://www.mediawiki.org/wiki/Manual:Page_table#page_touched'>touched</a> $touched</span>)</small></li>";
+            echo "<li class='type-$type' data-redirect='$isRedirect' data-is-subpage='$isSubpage' data-type='$type' data-size='$size' data-ns='$namespaceNumber' data-title='", $backend->formatValue($page['page_title']), "'><a href='https://$domain/wiki/", $backend->formatValue($title), "'>", $backend->formatValue($title), "</a> <small>(<span class='page-size'>$size bytes</span>, <span class='page-edited'>last <a href='https://www.mediawiki.org/wiki/Manual:Page_table#page_touched'>touched</a> $touched</span>)</small></li>";
         }
         echo '</ul>';
     }

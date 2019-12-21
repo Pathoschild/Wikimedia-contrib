@@ -6,7 +6,7 @@
 ###     by [[user:Pathoschild]] (Jesse Plamondon-Willard)
 ###     see http://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/Ajax_sysop#Installation
 ##############################################*/
-mw.loader.load("//tools-static.wmflabs.org/meta/scripts/pathoschild.ajaxsysop.css", "text/css");
+mw.loader.load("https://tools-static.wmflabs.org/meta/scripts/pathoschild.ajaxsysop.css", "text/css");
 
 var pathoschild = pathoschild || {};
 pathoschild.ajax_mw = {
@@ -906,7 +906,7 @@ pathoschild.ajax_mw = {
 };
 
 $(function() {
-    $.ajax("//tools-static.wmflabs.org/meta/scripts/pathoschild.util.js", { dataType: "script", crossDomain: true, cached: true }).then(function() {
+    $.ajax("https://tools-static.wmflabs.org/meta/scripts/pathoschild.util.js", { dataType: "script", crossDomain: true, cached: true }).then(function() {
         pathoschild.ajax_mw.Initialize();
     });
 });

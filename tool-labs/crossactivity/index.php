@@ -44,7 +44,7 @@ if (!empty($user)) {
             See also
             <a href='{$backend->url('/stalktoy/' . urlencode($user))}' title='Global account details'>global account details</a>, 
             <a href='{$backend->url('/userpages/' . urlencode($user))}' title='User pages'>user pages</a>,
-            <a href='//meta.wikimedia.org/?title=Special:CentralAuth/", urlencode($user), "' title='Special:CentralAuth'>Special:CentralAuth</a>.
+            <a href='https://meta.wikimedia.org/?title=Special:CentralAuth/", urlencode($user), "' title='Special:CentralAuth'>Special:CentralAuth</a>.
         ";
 }
 

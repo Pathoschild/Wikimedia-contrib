@@ -449,7 +449,7 @@ class StalktoyEngine extends Base
         if (!$domain)
             return $text;
         else
-            return "<a href='//{$domain}/wiki/$title' title='$title'>$text</a>";
+            return "<a href='https://{$domain}/wiki/$title' title='$title'>$text</a>";
     }
 
     /**
@@ -468,7 +468,7 @@ class StalktoyEngine extends Base
             $linkTarget = $pieces[0];
             $linkText = isset($pieces[1]) ? $pieces[1] : $linkTarget;
 
-            $text = str_replace($links[0][$i], "<a href='//{$domain}/wiki/{$linkTarget}' title='{$linkText}'>{$linkText}</a>", $text);
+            $text = str_replace($links[0][$i], "<a href='https://{$domain}/wiki/{$linkTarget}' title='{$linkText}'>{$linkText}</a>", $text);
         }
 
         return $text;
