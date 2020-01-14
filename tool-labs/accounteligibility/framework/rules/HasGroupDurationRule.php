@@ -91,7 +91,7 @@ class HasGroupDurationRule implements Rule
      * @param Wiki $wiki The current wiki.
      * @return float The number of days flagged.
      */
-    public function getLongestRoleDuration($db, $user, $group, $wiki)
+    private function getLongestRoleDuration($db, $user, $group, $wiki)
     {
         // SQL to determine the current groups after each log entry
         // (depending on how it was stored on that particular day)
@@ -126,7 +126,7 @@ class HasGroupDurationRule implements Rule
         // parse log entries
         $logs = [];
         foreach ($local as $row) {
-            // alias fields
+            // read values
             $title = $row['log_title'];
             $date = $row['log_timestamp'];
             $params = $row['log_params'];
@@ -138,41 +138,17 @@ class HasGroupDurationRule implements Rule
             if ($date > $this->maxDate)
                 continue;
 
-            // parse format (changed over the years)
-            if (($i = strpos($params, "\n")) !== false) // params: old\nnew
-                $groups = substr($params, $i + 1);
-            else if ($params != '')                     // ...or params: new
-                $groups = $params;
-            else                                       // ...or comment: +new +new OR =
-                $groups = $comment;
-
-            // append to timeline
-            $logs[$date] = $groups;
+            // add metadata to timeline
+            $parsed = $this->parseLogParams($params, $group);
+            if ($parsed != null)
+                $logs[$date] = $parsed;
         }
         if (count($logs) == 0)
             return 0;
         ksort($logs);
 
-        // parse ranges
-        $ranges = [];
-        $i = -1;
-        $wasInRole = $nowInRole = false;
-        foreach ($logs as $timestamp => $roles) {
-            $nowInRole = (strpos($roles, $group) !== false);
-
-            // start range
-            if (!$wasInRole && $nowInRole) {
-                ++$i;
-                $ranges[$i] = [$timestamp, $this->maxDate->mediawiki];
-            }
-
-            // end range
-            if ($wasInRole && !$nowInRole)
-                $ranges[$i][1] = $timestamp;
-
-            // update trackers
-            $wasInRole = $nowInRole;
-        }
+        // extract active ranges
+        $ranges = $this->getRanges($logs);
         if (count($ranges) == 0)
             return 0;
 
@@ -190,5 +166,90 @@ class HasGroupDurationRule implements Rule
         $end = DateTime::createFromFormat('YmdHis', $ranges[$i][1]);
         $diff = $start->diff($end);
         return $diff->days;
+    }
+
+    /**
+     * Extract the timestamp ranges when the user had the group.
+     * @param array $logs The sorted log entries, in the format returned by parseLogParams.
+     * @return array An array of tuples representing timestamp ranges.
+     */
+    private function getRanges($logs)
+    {
+        $ranges = [];
+        $i = -1;
+        $wasInRole = false;
+        $wasExpiry = null;
+        foreach ($logs as $timestamp => $data) {
+            $nowInRole = $data['new_group'];
+
+            // last range expired
+            if ($wasInRole && $wasExpiry != null && $wasExpiry < $timestamp)
+            {
+                $ranges[$i][1] = $wasExpiry;
+                $wasInRole = false;
+            }
+
+            // handle change
+            if ($wasInRole != $nowInRole)
+            {
+                // removed, end last range
+                if (!$nowInRole)
+                    $ranges[$i][1] = $timestamp;
+
+                // added, start new range
+                else {
+                    ++$i;
+                    $ranges[$i] = [$timestamp, $this->maxDate->mediawiki];
+                }
+            }
+
+            // update tracking
+            $wasInRole = $nowInRole;
+            $wasExpiry = $nowInRole ? $data['expiry'] : null;
+        }
+
+        if ($wasInRole && $wasExpiry != null && $wasExpiry < $this->maxDate->mediawiki)
+            $ranges[$i][1] = $wasExpiry;
+
+        return $ranges;
+    }
+
+    /**
+     * Parse the log_params field for a log entry.
+     * @param string $params The log_parse value.
+     * @param string $group The group key to find.
+     * @return array A representation of the log metadata for the given log entry, with three keys: old_group (whether the user had the group before the log entry), new_group (whether the user had it after the log entry), and expiry (the date when the permission will auto-expire, if applicable).
+     */
+    private function parseLogParams($params, $group)
+    {
+        if (empty(trim($params)))
+            return null;
+
+        // 2005 to 2012 (comma-separated values on two lines, old then new)
+        if (($i = strpos($params, "\n")) !== false) {
+            return [
+                'old_group' => in_array($group, explode(', ', substr($params, 0, $i))),
+                'new_group' => in_array($group, explode(', ', substr($params, $i + 1))),
+                'expiry' => null
+            ];
+        }
+
+        // 2012 onwards (serialized structure)
+        $data = unserialize($params);
+        $oldGroups = $data['4::oldgroups'];
+        $newGroups = $data['5::newgroups'];
+        $metadata = $data['newmetadata'];
+
+        $newGroupIndex = array_search($group, $newGroups);
+        $hasGroup = $newGroupIndex !== false;
+        $hasExpiryField = $hasGroup && $metadata != null && array_key_exists($newGroupIndex, $metadata) && array_key_exists('expiry', $metadata[$newGroupIndex]);
+
+        return [
+            'old_group' => in_array($group, $oldGroups),
+            'new_group' => $hasGroup,
+            'expiry' => $hasExpiryField
+                ? $metadata[$newGroupIndex]['expiry']
+                : null
+        ];
     }
 }
