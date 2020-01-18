@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 52;
+        return 53;
     }
 
     /**
@@ -22,6 +22,13 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2020: Commons Picture of the Year for 2019
+        ##########
+        yield (new Event(53, 2020, 'Commons Picture of the Year for 2019', 'https://commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2019'))
+            ->addRule(new DateRegisteredRule('<202001'), Workflow::ON_ANY_WIKI)// registered before 01 January 2020
+            ->addRule(new EditCountRule(75, null, '<202001'), Workflow::ON_ANY_WIKI);// 75 edits before 01 January 2020
+
         ##########
         ## 2020: steward elections
         ##########
