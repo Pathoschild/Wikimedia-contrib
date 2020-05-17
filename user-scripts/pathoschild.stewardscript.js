@@ -251,7 +251,7 @@
                             .after(_this
                                 .Make("a")
                                 .text("Stalktoy")
-                                .attr({ href: "https://tools.wmflabs.org/pathoschild-contrib/stalktoy/" + encodeURIComponent(user) })
+                                .attr({ href: "https://tools.wmflabs.org/meta/stalktoy/" + encodeURIComponent(user) })
                             )
                             .after(" · ");
                     });
