@@ -14,8 +14,8 @@ pathoschild.i18n = {
         search: "Localizar",                                     // the search input label
         replace: "Substituir",                                   // the replace input label
         nameSession: "Forneça um nome para esta sessão",         // the prompt shown when saving the session
-        loadSession: 'Carregar esta sessão "{name}"',            // tooltip shown for a saved session, where {name} is replaced with the session name
-        deleteSession: 'Apagar sessão "{name}"',                 // tooltip shown for the delete icon on a saved session, where {name} is replaced with the session name
+        loadSession: 'Carregar a sessão "{name}"',            // tooltip shown for a saved session, where {name} is replaced with the session name
+        deleteSession: 'Apagar a sessão "{name}"',                 // tooltip shown for the delete icon on a saved session, where {name} is replaced with the session name
         closeEditor: "Fechar o editor de expressões regulares",  // tooltip shown for the close-editor icon
         addPatterns: "incluir padrões",                          // button text
         addPatternsTooltip: "Incluir caixas de localizar e substituir", // button tooltip
