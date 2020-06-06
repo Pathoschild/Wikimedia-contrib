@@ -41,7 +41,7 @@ To deploy a tool:
    mkdir cache
    mkdir public_html
 
-   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf
+   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.single.conf .lighttpd.conf
    ln -s git/wikimedia-contrib/tool-labs/$TOOLNAME/.lighttpd.tool.conf
 
    cd public_html
