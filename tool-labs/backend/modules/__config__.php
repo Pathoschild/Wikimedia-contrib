@@ -67,10 +67,7 @@ $settings['debug'] = false;
 #############################
 ## URLs and navigation
 #############################
-$settings['root_url']  = SCRIPT_USER == 'pathoschild-contrib'
-    ? ('https://tools.wmflabs.org/' . SCRIPT_USER . '/tools-edge')
-    : ('https://tools.wmflabs.org/' . SCRIPT_USER);
-
+$settings['root_url']  = 'https://tools.wmflabs.org/' . SCRIPT_USER;
 $settings['tools'] = [
     'Wikimedia' => [
         ['/meta/accounteligibility', 'analyze an account to determine whether it is eligible to vote in a given event.', 'Account eligibility'],
