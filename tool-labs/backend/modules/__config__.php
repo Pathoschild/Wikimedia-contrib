@@ -67,22 +67,22 @@ $settings['debug'] = false;
 #############################
 ## URLs and navigation
 #############################
-$settings['root_url']  = 'https://tools.wmflabs.org/' . SCRIPT_USER;
+$settings['root_url']  = 'https://' . SCRIPT_USER . '.toolforge.org';
 $settings['tools'] = [
     'Wikimedia' => [
-        ['/meta/accounteligibility', 'analyze an account to determine whether it is eligible to vote in a given event.', 'Account eligibility'],
-        ['/meta/catanalysis', 'analyze edits to pages in a category tree or with a prefix over time.', 'Category analysis'],
-        ['/crossactivity', 'measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.', 'Crosswiki activity'],
-        ['/meta/globalgroups', 'lists rights with descriptions for each global group.', 'Global groups'],
-        ['/meta/gusersearch', 'searches and filters global account creations', 'Global user search'],
-        ['/meta/magicredirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.', 'Magic redirect'],
-        ['/meta/stalktoy', 'provides comprehensive global information about the given user, IP address, or CIDR range.', 'Stalk toy'],
-        ['/meta/stewardry', 'analyze user activity by group on a Wikimedia wiki.', 'Stewardry'],
-        ['/meta/userpages', 'find your user pages on all wikis.', 'User pages']
+        ['https://meta.toolforge.org/accounteligibility', 'analyze an account to determine whether it is eligible to vote in a given event.', 'Account eligibility'],
+        ['https://meta.toolforge.org/catanalysis', 'analyze edits to pages in a category tree or with a prefix over time.', 'Category analysis'],
+        ['https://crossactivity.toolforge.org', 'measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.', 'Crosswiki activity'],
+        ['https://meta.toolforge.org/globalgroups', 'lists rights with descriptions for each global group.', 'Global groups'],
+        ['https://meta.toolforge.org/gusersearch', 'searches and filters global account creations', 'Global user search'],
+        ['https://meta.toolforge.org/magicredirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.', 'Magic redirect'],
+        ['https://meta.toolforge.org/stalktoy', 'provides comprehensive global information about the given user, IP address, or CIDR range.', 'Stalk toy'],
+        ['https://meta.toolforge.org/stewardry', 'analyze user activity by group on a Wikimedia wiki.', 'Stewardry'],
+        ['https://meta.toolforge.org/userpages', 'find your user pages on all wikis.', 'User pages']
     ],
     'generic' => [
-        ['/iso639db', 'search ISO 639 codes.', 'ISO-639 database'],
-        ['/pgkbot', 'IRC-based wiki monitoring bot', 'pgkbot']
+        ['https://meta.toolforge.org/iso639db', 'search ISO 639 codes.', 'ISO-639 database'],
+        ['https://meta.toolforge.org/pgkbot', 'IRC-based wiki monitoring bot', 'pgkbot']
     ]
 ];
 

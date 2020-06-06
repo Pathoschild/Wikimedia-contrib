@@ -91,7 +91,7 @@
                         .append(this
                             .Make("a")
                             .text("Stalktoy")
-                            .attr({ href: "https://tools.wmflabs.org/meta/stalktoy/" + encodeURIComponent(target), title: "View details about the global user or IP address on all Wikimedia wikis." })
+                            .attr({ href: "https://meta.toolforge.org/stalktoy/" + encodeURIComponent(target), title: "View details about the global user or IP address on all Wikimedia wikis." })
                         );
 
                     // link to central auth (if not an IP)
@@ -131,19 +131,19 @@
                             .append(this
                                 .Make("a")
                                 .text("stalktoy")
-                                .attr({ href: "https://tools.wmflabs.org/meta/stalktoy/" + encodeURIComponent(user), title: "Pathoschild's Stalktoy (comprehensive information about the given user on all Wikimedia wikis)" })
+                                .attr({ href: "https://meta.toolforge.org/stalktoy/" + encodeURIComponent(user), title: "Pathoschild's Stalktoy (comprehensive information about the given user on all Wikimedia wikis)" })
                             )
                             .append(", ")
                             .append(this
                                 .Make("a")
                                 .text("crosswiki edits")
-                                .attr({ href: "https://tools.wmflabs.org/guc?blocks=true&user=" + encodeURIComponent(user), title: "Luxo's User Contributions (lists edits across all Wikimedia wikis)" })
+                                .attr({ href: "https://guc.toolforge.org?blocks=true&user=" + encodeURIComponent(user), title: "Luxo's User Contributions (lists edits across all Wikimedia wikis)" })
                             )
                             .append(", ")
                             .append(this
                                 .Make("a")
                                 .text("crossactivity")
-                                .attr({ href: "https://tools.wmflabs.org/meta/crossactivity/" + encodeURIComponent(user), title: "Pathoschild's CrossActivity (measures a user's latest edit, bureaucrat, or sysop activity on all wikis)" })
+                                .attr({ href: "https://meta.toolforge.org/crossactivity/" + encodeURIComponent(user), title: "Pathoschild's CrossActivity (measures a user's latest edit, bureaucrat, or sysop activity on all wikis)" })
                             )
                             .append(", ")
                             .append(this
@@ -251,7 +251,7 @@
                             .after(_this
                                 .Make("a")
                                 .text("Stalktoy")
-                                .attr({ href: "https://tools.wmflabs.org/meta/stalktoy/" + encodeURIComponent(user) })
+                                .attr({ href: "https://meta.toolforge.org/stalktoy/" + encodeURIComponent(user) })
                             )
                             .after(" · ");
                     });

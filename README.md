@@ -3,19 +3,19 @@
 ## For users
 ### Tools
 
-[Toolforge](https://tools.wmflabs.org/) is part of the Wikimedia Cloud infrastructure hosted by the Wikimedia Foundation for community-developed tools and bots. These tools provide analysis and data to support wiki editors and functionaries.
+[Toolforge](https://toolforge.org/) is part of the Wikimedia Cloud infrastructure hosted by the Wikimedia Foundation for community-developed tools and bots. These tools provide analysis and data to support wiki editors and functionaries.
 
-* **[Account Eligibility](https://tools.wmflabs.org/meta/accounteligibility/)** analyzes a user account to determine whether it's eligible to vote in the specified event.
-* **[Category Analysis](https://tools.wmflabs.org/meta/catanalysis/)** analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix). This is primarily intended for test project analysis by the Wikimedia Foundation [language committee](https://meta.wikimedia.org/wiki/Language_committee).
-* **[Crosswiki Activity](https://tools.wmflabs.org/meta/crossactivity/)** measures a user's latest edit, bureaucrat, or sysop activity on all wikis.
-* **[Global Groups](https://tools.wmflabs.org/meta/globalgroups/)** shows a live review of extra permissions assigned to [global groups](https://meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets) on Wikimedia Foundation wikis.
-* **[Global User Search](https://tools.wmflabs.org/meta/gusersearch/)** provides searching and filtering of global users on Wikimedia wikis.
-* **[ISO 639 Database](https://tools.wmflabs.org/meta/iso639db/)** is a searchable database of languages and ISO 639 codes augmented by native language names from Wikipedia.
-* **[Magic Redirect](https://tools.wmflabs.org/meta/magicredirect/)** redirects to an arbitrary URL with tokens based on user and wiki filled in. This is primarily intended for Wikimedia templates ([see example](https://tools.wmflabs.org/meta/magicredirect/?url=//{wiki.domain}/wiki/Special:UserRights/{user.name}@{wiki.name}&wiki=metawiki&user=Pathoschild)).
-* **[Stalktoy](https://tools.wmflabs.org/meta/stalktoy/)** shows global details about a user across all Wikimedia wikis. You can provide an account name (like `Pathoschild`), an IPv4 address (like `127.0.0.1`), an IPv6 address (like `2001:db8:1234::`), or a CIDR block (like `212.75.0.1/16` or `2600:3C00::/48`).
-* **[Stewardry](https://tools.wmflabs.org/meta/stewardry/)** estimates which users in a group are available based on their last edit or action.
-* **[Synchbot](https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/Synchbot)** synchronises user pages across Wikimedia projects in every language. This allows users to create user pages on every wiki, or to have global JavaScript and CSS. (Due to the potential for misuse, this bot is not open-source.)
-* **[User Pages](https://tools.wmflabs.org/meta/userpages/)** finds your user pages on all wikis (or finds wikis where you don't have user pages).
+* **[Account Eligibility](https://meta.toolforge.org/accounteligibility/)** analyzes a user account to determine whether it's eligible to vote in the specified event.
+* **[Category Analysis](https://meta.toolforge.org/catanalysis/)** analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix). This is primarily intended for test project analysis by the Wikimedia Foundation [language committee](https://meta.wikimedia.org/wiki/Language_committee).
+* **[Crosswiki Activity](https://meta.toolforge.org/crossactivity/)** measures a user's latest edit, bureaucrat, or sysop activity on all wikis.
+* **[Global Groups](https://meta.toolforge.org/globalgroups/)** shows a live review of extra permissions assigned to [global groups](https://meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets) on Wikimedia Foundation wikis.
+* **[Global User Search](https://meta.toolforge.org/gusersearch/)** provides searching and filtering of global users on Wikimedia wikis.
+* **[ISO 639 Database](https://meta.toolforge.org/iso639db/)** is a searchable database of languages and ISO 639 codes augmented by native language names from Wikipedia.
+* **[Magic Redirect](https://meta.toolforge.org/magicredirect/)** redirects to an arbitrary URL with tokens based on user and wiki filled in. This is primarily intended for Wikimedia templates ([see example](https://tmeta.toolforge.org/magicredirect/?url=//{wiki.domain}/wiki/Special:UserRights/{user.name}@{wiki.name}&wiki=metawiki&user=Pathoschild)).
+* **[Stalktoy](https://meta.toolforge.org/stalktoy/)** shows global details about a user across all Wikimedia wikis. You can provide an account name (like `Pathoschild`), an IPv4 address (like `127.0.0.1`), an IPv6 address (like `2001:db8:1234::`), or a CIDR block (like `212.75.0.1/16` or `2600:3C00::/48`).
+* **[Stewardry](https://meta.toolforge.org/stewardry/)** estimates which users in a group are available based on their last edit or action.
+* **[Synchbot](https://meta.wikimedia.org/wiki/Synchbot)** synchronises user pages across Wikimedia projects in every language. This allows users to create user pages on every wiki, or to have global JavaScript and CSS. (Due to the potential for misuse, this bot is not open-source.)
+* **[User Pages](https://meta.toolforge.org/userpages/)** finds your user pages on all wikis (or finds wikis where you don't have user pages).
 
 ### User scripts
 
@@ -57,7 +57,7 @@ To deploy a tool:
    webservice --backend=kubernetes start
    ```
 
-That's it! The new tool should now be running at https://tools.wmflabs.org/$TOOLNAME.
+That's it! The new tool should now be running at https://$TOOLNAME.toolforge.org.
 
 ### Deploy all tools to one Toolforge account
 All tools can be deployed as part of the same Toolforge account, though keep in mind they'll share
@@ -77,7 +77,7 @@ To deploy all tools to the same account:
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta.conf .lighttpd.conf
 
    cd public_html
-   for TARGET in backend content script 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect pgkbot regextoy stalktoy stewardry userpages
+   for TARGET in backend content scripts 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect pgkbot regextoy stalktoy stewardry userpages
    do
       ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
    done
@@ -90,4 +90,4 @@ To deploy all tools to the same account:
    webservice --backend=kubernetes start
    ```
 
-That's it! The new tools should now be running at https://tools.wmflabs.org/$ACCOUNTNAME.
+That's it! The new tools should now be running at https://$ACCOUNTNAME.toolforge.org.
