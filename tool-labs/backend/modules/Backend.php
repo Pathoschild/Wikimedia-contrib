@@ -266,7 +266,7 @@ class Backend extends Base
                 <div id='content'>";
         include(BACKEND_PATH . "/../notice.php");
         echo "
-            <h1>{$this->title}<sup>beta</sup></h1>
+            <h1>{$this->title}</h1>
             <p id='blurb'>{$this->blurb}</p>
 
             <!-- end generated header -->
