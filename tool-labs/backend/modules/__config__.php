@@ -93,7 +93,7 @@ $settings['tools'] = [
 ## Footer
 #############################
 /* default licensing */
-$settings['license'] = 'This tool is open-source and released under the <a href="https://github.com/Pathoschild/Wikimedia-contrib/blob/master/LICENSE.txt" title="MIT license">MIT license</a> (except the <a href="https://commons.wikimedia.org/wiki/File:Gear_3.svg" title="gear_3">gear logo</a>).';
+$settings['license'] = 'This tool is open-source and released under the <a href="https://github.com/Pathoschild/Wikimedia-contrib/blob/master/LICENSE.txt" title="MIT license">MIT license</a> (except the <a href="https://commons.wikimedia.org/wiki/File:Gear_3.svg" title="gear_3">gear image</a>).';
 
 /* benchmark precision */
 $settings['profile_time_precision'] = 3;

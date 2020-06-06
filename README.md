@@ -34,68 +34,60 @@ To deploy a tool:
 
 1. [Create a Toolforge tool account](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts). Make sure the name matches the tool directory in the `tool-forge` folder (or edit the tool's `tool.lighttpd.conf` file to specify the account name).
 2. Connect to the account via SSH.
-3. Run these commands to set up the tool files (replace `$TOOLNAME` with the tool name being deployed):
+3. Run these commands from the home directory to set up the tool files (replace `$TOOLNAME` with the tool name being deployed):
 
    ```sh
-   git clone https://github.com/Pathoschild/Wikimedia-contrib.git git
+   git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
    mkdir cache
    mkdir public_html
-   ln -s git/tool-labs/.lighttpd.conf
-   ln -s git/tool-labs/$TOOLNAME/.lighttpd.tool.conf
+
+   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf
+   ln -s git/wikimedia-contrib/tool-labs/$TOOLNAME/.lighttpd.tool.conf
 
    cd public_html
-   ln -s ../git/tool-labs/backend
-   ln -s ../git/tool-labs/content
-   ln -s ../git/tool-labs/$TOOLNAME
+   for TARGET in backend content $TOOLNAME
+   do
+      ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
+   done
    ```
 
-4. Change the tool navlinks in `public_html/backend/modules/__config.php` if different from the default.
+4. Change the URLs in `public_html/backend/modules/__config.php` if different from the default.
 5. Launch the server:
    ```sh
-   webservice --backend=kubernetes php7.2 start
+   webservice --backend=kubernetes start
    ```
 
 That's it! The new tool should now be running at https://tools.wmflabs.org/$TOOLNAME.
 
 ### Deploy all tools to one Toolforge account
-All tools can be deployed as part of the same Toolforge account, though this isn't recommended since they'll share the same usage quotas.
+All tools can be deployed as part of the same Toolforge account, though keep in mind they'll share
+the same usage quotas.
 
 To deploy all tools to the same account:
 
 1. [Create a Toolforge tool account](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts).
 2. Connect to the account via SSH.
-3. Run these commands to set up the tool files:
+3. Run these commands from the home directory to set up the tool files:
 
    ```sh
-   git clone https://github.com/Pathoschild/Wikimedia-contrib.git git
+   git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
    mkdir cache
    mkdir public_html
-   ln -s git/tool-labs/.lighttpd.meta.conf .lighttpd.conf
+
+   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta.conf .lighttpd.conf
 
    cd public_html
-
-   ln -s ../git/tool-labs/backend
-   ln -s ../git/tool-labs/content
-   ln -s ../git/tool-labs/scripts
-   ln -s ../git/tool-labs/toolinfo.json
-
-   ln -s ../git/tool-labs/accounteligibility
-   ln -s ../git/tool-labs/catanalysis
-   ln -s ../git/tool-labs/globalgroups
-   ln -s ../git/tool-labs/gusersearch
-   ln -s ../git/tool-labs/iso639db
-   ln -s ../git/tool-labs/magicredirect
-   ln -s ../git/tool-labs/pgkbot
-   ln -s ../git/tool-labs/regextoy
-   ln -s ../git/tool-labs/stalktoy
-   ln -s ../git/tool-labs/stewardry
-   ln -s ../git/tool-labs/userpages
+   for TARGET in backend content script 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect pgkbot regextoy stalktoy stewardry userpages
+   do
+      ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
+   done
    ```
 
-4. Change the tool navlinks in `public_html/backend/modules/__config.php` if different from the default.
+4. Change the URLs in `public_html/backend/modules/__config.php` and `.lighttpd.conf` if different
+   from the default.
 5. Launch the server:
    ```sh
-   webservice --backend=kubernetes php7.2 start
+   webservice --backend=kubernetes start
    ```
 
 That's it! The new tools should now be running at https://tools.wmflabs.org/$ACCOUNTNAME.
