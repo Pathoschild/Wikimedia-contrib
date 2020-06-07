@@ -5,7 +5,6 @@ require_once('framework/Iso639dbEngine.php');
 $backend = Backend::create('ISO 639 database', 'A searchable database of languages and ISO 639 codes augmented by native language names from Wikipedia.')
     ->link('/iso639db/stylesheet.css')
     ->link('/content/jquery.collapse/jquery.collapse.js')
-    ->link('/content/jquery.collapse/jquery.cookie.js')
     ->link('/content/jquery.multiselect/jquery.multiselect.js')
     ->link('/content/jquery.multiselect/jquery.multiselect.css')
     ->link('scripts.js')

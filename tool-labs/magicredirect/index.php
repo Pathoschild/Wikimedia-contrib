@@ -3,7 +3,6 @@ require_once('../backend/modules/Backend.php');
 $backend = Backend::create('A template\'s magic redirect', 'Redirects to an arbitrary URL with tokens based on user and wiki filled in. This is primarily intended for Wikimedia templates such as {{<a href="https://meta.wikimedia.org/wiki/Template:sr-request" title="template:sr-request on Meta">sr-request</a>}} (see <a href="?url=//{wiki.domain}/wiki/Special:UserRights/{user.name}@{wiki.name}&wiki=metawiki&user=Pathoschild" title="reload with example values">example</a>).')
     ->link('/magicredirect/stylesheet.css')
     ->link('/content/jquery.collapse/jquery.collapse.js')
-    ->link('/content/jquery.collapse/jquery.cookie.js')
     ->addScript('
         $(document).ready(function() {
             $("#token-documentation").collapse({head:"span", group:"ul"});
