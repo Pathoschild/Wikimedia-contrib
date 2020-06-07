@@ -72,7 +72,7 @@ $settings['tools'] = [
     'Wikimedia' => [
         ['https://meta.toolforge.org/accounteligibility', 'analyze an account to determine whether it is eligible to vote in a given event.', 'Account eligibility'],
         ['https://meta.toolforge.org/catanalysis', 'analyze edits to pages in a category tree or with a prefix over time.', 'Category analysis'],
-        ['https://crossactivity.toolforge.org', 'measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.', 'Crosswiki activity'],
+        ['https://meta2.toolforge.org/crossactivity', 'measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.', 'Crosswiki activity'],
         ['https://meta.toolforge.org/globalgroups', 'lists rights with descriptions for each global group.', 'Global groups'],
         ['https://meta.toolforge.org/gusersearch', 'searches and filters global account creations', 'Global user search'],
         ['https://meta.toolforge.org/magicredirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.', 'Magic redirect'],

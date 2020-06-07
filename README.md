@@ -27,67 +27,57 @@ These user scripts extend the wiki interface seen by a user, and they're sometim
 * **[UseJS](https://meta.wikimedia.org/wiki/UseJS)** imports JavaScript for the current page when the URL contains a parameter like `&usejs=MediaWiki:Common.js`. It only accepts scripts in the protected `MediaWiki:` namespace.
 
 ## For maintainers
-### Deploy one tool to Toolforge
-Ideally each tool should be deployed to Toolforge as a separate tool account, both to avoid hitting connection limits and to minimise impact on other tools when an expensive tool is overloaded.
+### Deploy to Toolforge
+This repo uses two Toolforge accounts by default: `meta` (all tools except crossactivity) and
+`meta2` (crossactivity only). They redirect as needed, so all tools can be accessed through either
+hostname. To use different accounts, edit the `tool-labs/backend/modules/__config__.php` and
+`tool-labs/.lighttpd*` files accordingly.
 
-To deploy a tool:
+To deploy from scratch:
 
-1. [Create a Toolforge tool account](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts). Make sure the name matches the tool directory in the `tool-forge` folder (or edit the tool's `tool.lighttpd.conf` file to specify the account name).
-2. Connect to the account via SSH.
-3. Run these commands from the home directory to set up the tool files (replace `$TOOLNAME` with the tool name being deployed):
-
+1. [Connect to Toolforge via SSH](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts).
+2. Run this script:
    ```sh
+   # switch to the meta project
+   become meta
+
+   ## set up files
    git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
    mkdir cache
    mkdir public_html
-
-   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.single.conf .lighttpd.conf
-   ln -s git/wikimedia-contrib/tool-labs/$TOOLNAME/.lighttpd.tool.conf
-
-   cd public_html
-   for TARGET in backend content $TOOLNAME
-   do
-      ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
-   done
-   ```
-
-4. Change the URLs in `public_html/backend/modules/__config.php` if different from the default.
-5. Launch the server:
-   ```sh
-   webservice --backend=kubernetes start
-   ```
-
-That's it! The new tool should now be running at https://$TOOLNAME.toolforge.org.
-
-### Deploy all tools to one Toolforge account
-All tools can be deployed as part of the same Toolforge account, though keep in mind they'll share
-the same usage quotas.
-
-To deploy all tools to the same account:
-
-1. [Create a Toolforge tool account](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts).
-2. Connect to the account via SSH.
-3. Run these commands from the home directory to set up the tool files:
-
-   ```sh
-   git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
-   mkdir cache
-   mkdir public_html
-
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta.conf .lighttpd.conf
-
    cd public_html
    for TARGET in backend content scripts 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect pgkbot regextoy stalktoy stewardry userpages
    do
       ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
    done
-   ```
 
-4. Change the URLs in `public_html/backend/modules/__config.php` and `.lighttpd.conf` if different
-   from the default.
-5. Launch the server:
-   ```sh
+   ## launch server
+   webservice --backend=kubernetes start
+
+   ## switch to the meta2 project
+   exit
+   become meta2
+
+   ## set up files
+   git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
+   mkdir cache
+   mkdir public_html
+   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta2.conf .lighttpd.conf
+   cd public_html
+   for TARGET in backend content crossactivity
+   do
+      ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
+   done
+
+   ## launch server
    webservice --backend=kubernetes start
    ```
 
-That's it! The new tools should now be running at https://$ACCOUNTNAME.toolforge.org.
+That's it! The new tools should now be running at https://meta.toolforge.org. To update an account
+later, just login and run these commands:
+
+```sh
+git -C git/wikimedia-contrib pull
+webservice restart
+```
