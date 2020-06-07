@@ -146,7 +146,6 @@ class Backend extends Base
      */
     public function getRouteValue($index = 0)
     {
-        // check path argument
         $path = $this->get("@path");
         if ($path)
         {
@@ -156,9 +155,7 @@ class Backend extends Base
                 ? $parts[$index]
                 : null;
         }
-
-        // legacy arguments
-        return $this->get('@' . ($index + 1));
+        return null;
     }
 
     /**
