@@ -41,16 +41,22 @@ To deploy from scratch:
    # switch to the meta project
    become meta
 
-   ## set up files
+   ## set up tool files
    git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
    mkdir cache
    mkdir public_html
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta.conf .lighttpd.conf
    cd public_html
-   for TARGET in backend content scripts 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect pgkbot regextoy stalktoy stewardry userpages
+   for TARGET in backend content 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect pgkbot regextoy stalktoy stewardry userpages
    do
       ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
    done
+
+   # set up script CDN (accessed via https://tools-static.wmflabs.org/meta/scripts/*.js).
+   mkdir ~/www
+   mkdir ~/www/static
+   cd ~/www/static
+   ln -s ~/git/wikimedia-contrib/user-scripts scripts
 
    ## launch server
    webservice --backend=kubernetes start
