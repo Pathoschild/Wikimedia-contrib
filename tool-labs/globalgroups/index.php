@@ -117,7 +117,7 @@ $flagBlurbs = [
     "right-centralauth-lock" => "Lock or unlock global account",
     "right-centralauth-merge" => "Merge their account",
     "right-centralauth-oversight" => "Suppress or hide global account",
-    "right-centralauth-rename" : "Rename global accounts",
+    "right-centralauth-rename" => "Rename global accounts",
     "right-centralauth-unmerge" => "Unmerge global account",
     "right-centralauth-usermerge" => "Globally merge multiple users",
     "right-globalgroupmembership" => "Edit membership to global groups",
