@@ -225,7 +225,7 @@ $flagBlurbs = [
 
     // WikimediaMessages extension: https://github.com/wikimedia/mediawiki-extensions-WikimediaMessages/blob/master/i18n/wikimedia/en.json
     "right-banner-protect" => "Protect translatable messages handled by the Translate extension and included in CentralNotice banners",
-    "right-docseditor" => "Edit documentation"
+    "right-docseditor" => "Edit documentation",
     "right-editautopatrolprotected" => "Edit pages protected as \"Allow only autopatrollers\"",
     "right-editautoreviewprotected" => "Edit pages protected as \"Allow only autoreviewers\"",
     "right-editeditorprotected" => "Edit pages protected as \"Allow only editors\"",
