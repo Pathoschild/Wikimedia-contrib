@@ -13,7 +13,7 @@ $backend = Backend::create('GlobalGroups', 'A review of extra permissions assign
 $flagBlurbs = [
     // MediaWiki core: https://github.com/wikimedia/mediawiki/blob/master/languages/i18n/en.json
     "right-apihighlimits" => "Use higher limits in API queries",
-    "right-applychangetags" => "Apply [[Special:Tags|tags]] along with one's changes",
+    "right-applychangetags" => "Apply tags along with one's changes",
     "right-autoconfirmed" => "Not be affected by IP-based rate limits",
     "right-autocreateaccount" => "Automatically log in with an external user account",
     "right-autopatrol" => "Have one's own edits automatically marked as patrolled",
@@ -22,12 +22,13 @@ $flagBlurbs = [
     "right-blockemail" => "Block a user from sending email",
     "right-bot" => "Be treated as an automated process",
     "right-browsearchive" => "Search deleted pages",
-    "right-changetags" => "Add and remove arbitrary [[Special:Tags|tags]] on individual revisions and log entries",
+    "right-changetags" => "Add and remove arbitrary tags on individual revisions and log entries",
     "right-createaccount" => "Create new user accounts",
     "right-createpage" => "Create pages (which are not discussion pages)",
     "right-createtalk" => "Create discussion pages",
     "right-delete" => "Delete pages",
-    "right-deletechangetags" => "Delete [[Special:Tags|tags]] from the database",
+    "right-delete-redirect" => "Delete single revision redirects",
+    "right-deletechangetags" => "Delete tags from the database",
     "right-deletedhistory" => "View deleted history entries, without their associated text",
     "right-deletedtext" => "View deleted text and changes between deleted revisions",
     "right-deletelogentry" => "Delete and undelete specific log entries",
@@ -40,9 +41,10 @@ $flagBlurbs = [
     "right-editmyusercss" => "Edit your own user CSS files",
     "right-editmyuserjs" => "Edit your own user JavaScript files",
     "right-editmyuserjson" => "Edit your own user JSON files",
+    "right-editmyuserjsredirect" => "Edit your own user JavaScript files that are redirects",
     "right-editmywatchlist" => "Edit your own watchlist. Note some actions will still add pages even without this right.",
-    "right-editprotected" => "Edit pages protected as \"{{int:protect-level-sysop}}\"",
-    "right-editsemiprotected" => "Edit pages protected as \"{{int:protect-level-autoconfirmed}}\"",
+    "right-editprotected" => "Edit pages protected as \"Allow only administrators\"",
+    "right-editsemiprotected" => "Edit pages protected as \"Allow only autoconfirmed users\"",
     "right-editsitecss" => "Edit sitewide CSS",
     "right-editsitejs" => "Edit sitewide JavaScript",
     "right-editsitejson" => "Edit sitewide JSON",
@@ -53,7 +55,7 @@ $flagBlurbs = [
     "right-import" => "Import pages from other wikis",
     "right-importupload" => "Import pages from a file upload",
     "right-ipblock-exempt" => "Bypass IP blocks, auto-blocks and range blocks",
-    "right-managechangetags" => "Create and (de)activate [[Special:Tags|tags]]",
+    "right-managechangetags" => "Create and (de)activate tags",
     "right-markbotedits" => "Mark rolled-back edits as bot edits",
     "right-mergehistory" => "Merge the history of pages",
     "right-minoredit" => "Mark edits as minor",
@@ -69,7 +71,7 @@ $flagBlurbs = [
     "right-patrol" => "Mark others' edits as patrolled",
     "right-patrolmarks" => "View recent changes patrol marks",
     "right-protect" => "Change protection levels and edit cascade-protected pages",
-    "right-purge" => "Purge the site cache for a page without confirmation",
+    "right-purge" => "Purge the cache for a page",
     "right-read" => "Read pages",
     "right-reupload" => "Overwrite existing files",
     "right-reupload-own" => "Overwrite existing files uploaded by oneself",
@@ -93,24 +95,25 @@ $flagBlurbs = [
     "right-writeapi" => "Use of the write API",
 
     // AbuseFilter extension: https://github.com/wikimedia/mediawiki-extensions-AbuseFilter/blob/master/i18n/en.json
-    "right-abusefilter-modify" => "Modify abuse filters",
-    "right-abusefilter-view" => "View abuse filters",
+    "right-abusefilter-hidden-log" => "View hidden abuse log entries",
+    "right-abusefilter-hide-log" => "Hide entries in the abuse log",
     "right-abusefilter-log" => "View the abuse log",
     "right-abusefilter-log-detail" => "View detailed abuse log entries",
-    "right-abusefilter-private" => "View private data in the abuse log",
-    "right-abusefilter-private-log" => "View the AbuseFilter private details access log",
-    "right-abusefilter-modify-restricted" => "Modify abuse filters with restricted actions",
-    "right-abusefilter-revert" => "Revert all changes by a given abuse filter",
-    "right-abusefilter-view-private" => "View abuse filters marked as private",
     "right-abusefilter-log-private" => "View log entries of abuse filters marked as private",
-    "right-abusefilter-hide-log" => "Hide entries in the abuse log",
-    "right-abusefilter-hidden-log" => "View hidden abuse log entries",
+    "right-abusefilter-modify" => "Create or modify abuse filters",
     "right-abusefilter-modify-global" => "Create or modify global abuse filters",
+    "right-abusefilter-modify-restricted" => "Modify abuse filters with restricted actions",
+    "right-abusefilter-privatedetails" => "View private data in the abuse log",
+    "right-abusefilter-privatedetails-log" => "View the AbuseFilter private details access log",
+    "right-abusefilter-revert" => "Revert all changes by a given abuse filter",
+    "right-abusefilter-view" => "View abuse filters",
+    "right-abusefilter-view-private" => "View abuse filters marked as private",
 
     // AntiSpoof extension: https://github.com/wikimedia/mediawiki-extensions-AntiSpoof/blob/master/i18n/en.json
     "right-override-antispoof" => "Override the spoofing checks",
 
     // CentralAuth extension: https://github.com/wikimedia/mediawiki-extensions-CentralAuth/blob/master/i18n/en.json
+    "right-centralauth-createlocal" => "Forcibly create a local account for a global account",
     "right-centralauth-lock" => "Lock or unlock global account",
     "right-centralauth-merge" => "Merge their account",
     "right-centralauth-oversight" => "Suppress or hide global account",
@@ -137,7 +140,7 @@ $flagBlurbs = [
     "right-review" => "Mark revisions as being \"checked\"",
     "right-stablesettings" => "Configure how the stable version is selected and displayed",
     "right-validate" => "Mark revisions as being \"quality\"",
-    "right-unreviewedpages" => "View the [[Special:UnreviewedPages|list of unreviewed pages]]",
+    "right-unreviewedpages" => "View the list of unreviewed pages",
 
     // Gadgets extension: https://github.com/wikimedia/mediawiki-extensions-Gadgets/blob/master/i18n/en.json
     "right-gadgets-edit" => "Edit gadget JavaScript and CSS pages",
@@ -147,6 +150,13 @@ $flagBlurbs = [
     "right-globalblock" => "Make and remove global blocks",
     "right-globalblock-whitelist" => "Disable global blocks locally",
     "right-globalblock-exempt" => "Bypass global blocks",
+    
+    // GrowthExperiments extension: https://github.com/wikimedia/mediawiki-extensions-GrowthExperiments/blob/master/i18n
+    // Various directories containing i18n keys
+    "right-setmentor" => "Set user's mentor",
+    
+    // GWToolset extension: https://github.com/wikimedia/mediawiki-extensions-GWToolset/blob/master/i18n/en.json
+    "right-gwtoolset" => "Use GWToolset",
 
     // MassMessage extension: https://github.com/wikimedia/mediawiki-extensions-MassMessage/blob/master/i18n/en.json
     "right-massmessage" => "Send a message to multiple users at once",
@@ -164,6 +174,8 @@ $flagBlurbs = [
     "right-oathauth-api-all" => "Query and validate OATH information for self and others",
     "right-oathauth-disable-for-user" => "Disable two-factor authentication for a user",
     "right-oathauth-enable" => "Enable two-factor authentication",
+    "right-oathauth-verify-user" => "Verify whether a user has two-factor authentication enabled",
+    "right-oathauth-view-log" => "Access to log of two-factor authentication changes",
 
     // OAuth extension: https://github.com/wikimedia/mediawiki-extensions-OAuth/blob/master/i18n/en.json
     "right-mwoauthmanageconsumer" => "Manage OAuth consumers",
@@ -190,7 +202,7 @@ $flagBlurbs = [
 
     // TimedMediaHandler extension: https://github.com/wikimedia/mediawiki-extensions-TimedMediaHandler/blob/master/i18n/en.json
     "right-transcode-reset" => "Reset failed or transcoded videos so they are inserted into the job queue again",
-    "right-transcode-status" => "View [[Special:TimedMediaHandler|information about the current transcode activity]]",
+    "right-transcode-status" => "View information about the current transcode activity",
 
     // TitleBlacklist extension: https://github.com/wikimedia/mediawiki-extensions-TitleBlacklist/blob/master/i18n/en.json
     "right-tboverride" => "Override the title or username blacklist",
@@ -212,12 +224,16 @@ $flagBlurbs = [
     "right-translate-sandboxmanage" => "Manage sandboxed users",
 
     // WikimediaMessages extension: https://github.com/wikimedia/mediawiki-extensions-WikimediaMessages/blob/master/i18n/wikimedia/en.json
-    "right-editeditorprotected" => "Edit pages protected as \"{{int:protect-level-editeditorprotected}}\"",
-    "right-editextendedsemiprotected" => "Edit pages protected as \"{{int:protect-level-editextendedsemiprotected}}\"",
+    "right-banner-protect" => "Protect translatable messages handled by the Translate extension and included in CentralNotice banners",
+    "right-docseditor" => "Edit documentation",
+    "right-editautopatrolprotected" => "Edit pages protected as \"Allow only autopatrollers\"",
+    "right-editautoreviewprotected" => "Edit pages protected as \"Allow only autoreviewers\"",
+    "right-editeditorprotected" => "Edit pages protected as \"Allow only editors\"",
+    "right-editextendedsemiprotected" => "Edit pages protected as \"Allow only autopatrollers\"",
     "right-extendedconfirmed" => "Edit restricted pages",
     "right-superprotect" => "Change super protection levels",
     "right-templateeditor" => "Edit protected templates",
-    "right-viewdeletedfile" => "View files and pages in the {{ns:file}} and {{ns:file_talk}} namespaces that are deleted"
+    "right-viewdeletedfile" => "View files and pages in the \"File\" and \"File talk\" namespaces that are deleted",
 ];
 
 
