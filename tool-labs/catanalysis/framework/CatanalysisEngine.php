@@ -171,7 +171,7 @@ class CatanalysisEngine extends Base
         $values[] = str_replace(' ', '_', $title);
         $values[] = str_replace(' ', '_', $title . '%');
 
-        /* build query */
+        /* fetch results */
         return $db->query($sql, $values);
     }
 
@@ -183,24 +183,6 @@ class CatanalysisEngine extends Base
      */
     public function getEditsByCategory($db, $title)
     {
-        /* build initial query */
-        $sql = '
-            SELECT
-                page.page_namespace,
-                page.page_title,
-                page.page_is_redirect,
-                page.page_is_new,
-                revision.rev_minor_edit,
-                revision.rev_actor,
-                revision.rev_timestamp,
-                revision.rev_len,
-                revision.rev_page
-            FROM
-                revision
-                LEFT JOIN page ON page.page_id = revision.rev_page
-        ';
-        $values = [];
-
         /* fetch list of subcategories */
         $cats = [];
         $queue = [$title];
@@ -227,15 +209,43 @@ class CatanalysisEngine extends Base
             }
         }
 
-        /* add to query */
-        $sql .= 'JOIN categorylinks on page_id=cl_from WHERE cl_to IN (';
+        /* build initial SQL query */
+        $sql = '
+            SELECT
+                page.page_namespace,
+                page.page_title,
+                page.page_is_redirect,
+                page.page_is_new,
+                revision.rev_minor_edit,
+                revision.rev_actor,
+                revision.rev_timestamp,
+                revision.rev_len,
+                revision.rev_page
+            FROM
+                revision
+                INNER JOIN page ON page.page_id = revision.rev_page
+                INNER JOIN (
+                    SELECT DISTINCT cl_from
+                    FROM categorylinks
+                    WHERE cl_to IN (
+        ';
+
+        /* add category values */
+        $values = [];
         foreach ($cats as $cat) {
             $sql .= '?,';
             $values[] = str_replace(' ', '_', $cat);
         }
-        $sql = rtrim($sql, ', ') . ') ORDER BY revision.rev_timestamp';
+        $sql = rtrim($sql, ', ');
+        
+        /* finish query */
+        $sql .= '
+                    )
+                ) AS catlink ON page.page_id = catlink.cl_from
+            ORDER BY revision.rev_timestamp
+        ';
 
-        /* build query */
+        /* fetch results */
         return $db->query($sql, $values);
     }
 
