@@ -57,16 +57,9 @@ class Toolserver extends Database
         /* fetch toolserver data */
         $this->wikis = new Wikimedia($this, $cache, $profiler, $this->ignoreDbNames);
 
-        /* select random DB slice (every slice has every DB, but picking a random one reduces our dependence on any given one) */
-        $slices = [];
-        foreach ($this->wikis->getWikis() as $wiki)
-            $slices[$wiki->host] = True;
-        $slices = array_keys($slices);
-        $slice = $slices[array_rand($slices)];
-
         /* set DB host lookup */
         foreach ($this->wikis->getWikis() as $wiki)
-            $this->dbnHosts[$wiki->dbName] = $slice;//$wiki->host;
+            $this->dbnHosts[$wiki->dbName] = $wiki->host;
     }
 
     /**

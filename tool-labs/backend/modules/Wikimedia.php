@@ -40,13 +40,13 @@ class Wikimedia
             $profiler->start('DB: fetch wiki metadata');
             // build wiki list
             $this->wikis = [];
-            $db->connect('metawiki.web.db.svc.eqiad.wmflabs', 'metawiki_p');
+            $db->connect('metawiki.web.db.svc.wikimedia.cloud', 'metawiki_p');
             foreach ($db->query('SELECT dbname, lang, family, url, size, is_closed, slice FROM meta_p.wiki WHERE url IS NOT NULL')->fetchAllAssoc() as $row)
             {
                 if(!in_array($row['dbname'], $ignoreDbNames))
                 {
                     $shard = preg_replace('/^(s\d+).*$/', '$1', $row['slice']); // e.g. s2.labsdb => s2
-                    $host = $shard . '.web.db.svc.eqiad.wmflabs';
+                    $host = $shard . '.web.db.svc.wikimedia.cloud';
                     $this->wikis[$row['dbname']] = new Wiki($row['dbname'], $row['lang'], $row['family'], $row['url'], $row['size'], $row['is_closed'], $host);
                 }
             }
