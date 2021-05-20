@@ -32,9 +32,9 @@ pathoschild.ParseIso639Codes = {
         $("table:eq(1) tr:not(:eq(0))").each(function (i, row) {
             // parse
             var $row = $(row);
-            var names = $.trim($row.find("td:eq(1)").text());
-            var code_1 = $.trim($row.find("td:eq(4)").text());
-            var code_2 = $.trim($row.find("td:eq(3)").text());
+            var names = $row.find("td:eq(1)").text().trim();
+            var code_1 = $row.find("td:eq(4)").text().trim();
+            var code_2 = $row.find("td:eq(3)").text().trim();
             var code_2b = "";
             if (code_2.indexOf("/") != -1) {
                 var codes = code_2.split("/");
@@ -138,9 +138,9 @@ pathoschild.ParseIso639Codes = {
                 $("table.wikitable tr:not(:eq(0))").each(function (i, row) {
                     // extract values
                     var $row = $(row);
-                    var code = $.trim($row.find("td:eq(4)").text());
-                    var nativeName = $.trim($row.find("td:eq(3)").text());
-                    var nativeNameHtml = $.trim($row.find("td:eq(3)").html());
+                    var code = $row.find("td:eq(4)").text().trim();
+                    var nativeName = $row.find("td:eq(3)").text().trim();
+                    var nativeNameHtml = $row.find("td:eq(3)").html().trim();
 
                     // skip if no native name
                     if (!nativeName)
@@ -155,9 +155,9 @@ pathoschild.ParseIso639Codes = {
                 $("table.wikitable tr:not(:eq(0))").each(function (i, row) {
                     // extract values
                     var $row = $(row);
-                    var code = $.trim($row.find("td:eq(0)").text());
-                    var nativeName = $.trim($row.find("td:eq(3)").text());
-                    var nativeNameHtml = $.trim($row.find("td:eq(3)").html());
+                    var code = $row.find("td:eq(0)").text().trim();
+                    var nativeName = $row.find("td:eq(3)").text().trim();
+                    var nativeNameHtml = $row.find("td:eq(3)").html().trim();
 
                     // skip if no native name
                     if (!nativeName)
@@ -172,9 +172,9 @@ pathoschild.ParseIso639Codes = {
                 $("table.wikitable tr:not(:eq(0))").each(function (i, row) {
                     // extract values
                     var $row = $(row);
-                    var code = $.trim($row.find("th:eq(0)").text());
-                    var nativeName = $.trim($row.find("td:eq(4)").text());
-                    var nativeNameHtml = $.trim($row.find("td:eq(4)").html());
+                    var code = $row.find("th:eq(0)").text().trim();
+                    var nativeName = $row.find("td:eq(4)").text().trim();
+                    var nativeNameHtml = $row.find("td:eq(4)").html().trim();
 
                     // skip if no native name
                     if (!nativeName) $

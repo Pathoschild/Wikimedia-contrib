@@ -330,7 +330,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                     box.focus();
 
                     // standardise input
-                    if (!$.isFunction(text)) {
+                    if (typeof text !== 'function') {
                         var _t = text;
                         text = function() { return _t; };
                     }
@@ -504,7 +504,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 // code editor
                 var codeEditor = _getCodeEditor();
                 if (codeEditor) {
-                    var selected = $.isFunction(text)
+                    var selected = typeof text === 'function'
                         ? text(codeEditor.getSelectedText())
                         : text;
                     codeEditor.insert(selected); // overwrites selected text
@@ -635,7 +635,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
              */
             var _addPortletLink = function(portletID, text, id, tooltip, accessKey, target) {
                 // create link
-                var isCallback = $.isFunction(target);
+                var isCallback = typeof target === 'function';
                 var uri = isCallback ? "#" : target;
                 var link = $(mw.util.addPortletLink(portletID, uri, text, id, tooltip || ""));
                 if (isCallback)
@@ -788,7 +788,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          * @returns {boolean} Returns whether the value is equal to or in the haystack.
          */
         var _isEqualOrIn = function(value, haystack) {
-            if ($.isArray(haystack))
+            if (Array.isArray(haystack))
                 return $.inArray(value, haystack) !== -1;
             return value === haystack;
         };
@@ -801,7 +801,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             // validate required fields
             if (!opts.name)
                 throw "must have a name";
-            if (opts.script && !$.isFunction(opts.script))
+            if (opts.script && typeof opts.script !== 'function')
                 throw "script must be a function";
             if (!opts.template && !opts.script)
                 throw "must have either a template or a script";
@@ -819,7 +819,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             // normalise actions
             if (opts.forActions) {
                 // cast to array
-                if (!$.isArray(opts.forActions))
+                if (!Array.isArray(opts.forActions))
                     opts.forActions = [opts.forActions];
 
                 // normalise values
@@ -831,7 +831,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             // normalise namespaces
             if (opts.forNamespaces) {
                 // cast to array
-                if (!$.isArray(opts.forNamespaces))
+                if (!Array.isArray(opts.forNamespaces))
                     opts.forNamespaces = [opts.forNamespaces];
 
                 // normalise values
@@ -961,7 +961,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
          */
         self.add = function(opts, common) {
             // handle multiple templates
-            if ($.isArray(opts)) {
+            if (Array.isArray(opts)) {
                 for (var t = 0; t < opts.length; t++)
                     self.add(opts[t], common);
                 return;

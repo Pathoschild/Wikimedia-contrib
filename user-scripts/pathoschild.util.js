@@ -73,7 +73,7 @@ var pathoschild = pathoschild || {};
                 return enumObj[value];
 
             // ...or value is an enumeration value
-            if ($.isArray(enumObj)) {
+            if (Array.isArray(enumObj)) {
                 if ($.inArray(value, enumObj))
                     return value;
             }
@@ -189,7 +189,7 @@ var pathoschild = pathoschild || {};
              */
             AddPortletLink: function(portletID, text, id, tooltip, accessKey, target) {
                 // create link
-                var isCallback = $.isFunction(target);
+                var isCallback = typeof target === 'function';
                 var uri = isCallback ? "#" : target;
                 var $link = $(mw.util.addPortletLink(portletID, uri, text, id, tooltip || ""));
                 if (isCallback)
