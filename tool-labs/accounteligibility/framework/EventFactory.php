@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 55;
+        return 56;
     }
 
     /**
@@ -22,6 +22,19 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2021: Wikimedia Foundation elections
+        ##########
+        yield (new Event(56, 2021, 'Wikimedia Foundation elections', 'https://meta.wikimedia.org/wiki/Wikimedia_Foundation_elections/2021'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20210705', EditCountRule::ACCUMULATE))// 300 edits before 05 July 2021
+            ->addRule(new EditCountRule(20, '20210105', '<20210705', EditCountRule::ACCUMULATE))// 20 edits between 05 January 2021 and 05 July 2021
+            ->withExtraRequirements(['Your account must not be used by a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Wikimedia_Foundation_elections/2021#Voting_information">official voting information</a> for specific exceptions which cover developers; Wikimedia server administrators; current staff or contractors for the Wikimedia Foundation or a movement affiliate; and current or former members of the Wikimedia Foundation Board of Trustees, Wikimedia Foundation Advisory Board, or Funds Dissemination Committee.'
+            ]);
+
         ##########
         ## 2021: steward elections
         ##########

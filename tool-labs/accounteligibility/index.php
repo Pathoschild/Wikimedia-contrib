@@ -181,7 +181,7 @@ while ($engine->user->name) {
             echo '</ul></div>';
         } elseif (!$engine->eligible) {
             if (!empty($engine->event->exceptions)) {
-                echo '<div class="neutral"><strong>This account might be eligible if it fits rule exceptions that cannot be checked by this script:<ul style="margin:0;">';
+                echo '<div class="neutral"><strong>This account might still be eligible if it meets criteria which can\'t be checked by this script:</strong><ul style="margin:0;">';
                 foreach ($engine->event->exceptions as $exc)
                     echo '<li>', $exc, '</li>';
                 echo '</ul></div>';
