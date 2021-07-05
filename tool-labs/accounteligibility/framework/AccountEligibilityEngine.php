@@ -210,7 +210,7 @@ class AccountEligibilityEngine extends Base
 
     /**
      * Load the queue of wikis to analyse.
-     * @param string|null $default The default wiki.
+     * @param string|string[]|null $default The default wiki.
      * @param int $minEdits The minimum number of edits.
      * @return bool Whether at least one wiki was successfully loaded.
      */
@@ -224,6 +224,12 @@ class AccountEligibilityEngine extends Base
             $this->nextQueueIndex = 0;
             $this->msg("Selected {$this->wiki->domain}.", 'is-metadata');
         }
+
+		elseif (is_array($default)) {
+			$this->queue = array_values($default);
+			$this->nextQueueIndex = 0;
+			$this->msg('Selected ' . implode(', ', $default) . '.', 'is-metadata');
+		}
 
         ########
         ## Set single wiki
