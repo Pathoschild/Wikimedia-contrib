@@ -87,14 +87,20 @@ while ($engine->user->name) {
     echo '<h3>Analysis', ($engine->user->name == 'Shanel' ? '♥' : ''), ' </h3>';
 
     /* validate selected wiki */
-    if ($engine->wiki && $engine->event->onlyDB && $engine->wiki->dbName != $engine->event->onlyDB) {
-        echo '<div class="error">Account must be on ', $engine->wikis[$engine->event->onlyDB]->domain, '. Choose "auto-select wiki" above to select the correct wiki.</div>';
+    if ($engine->wiki && !$engine->event->allowsDatabase($engine->wiki->dbName)) {
+        $allowedDomains = array_map(function($dbName) { global $engine; return $engine->wikis[$dbName]->domain; }, $engine->event->onlyDatabaseNames);
+
+        echo
+            '<div class="error">Account must be on ',
+            count($allowedDomains) > 1 ? 'one of ' : '',
+            implode(', ', $allowedDomains),
+            '. Choose "auto-select wiki" above to select the correct wiki.</div>';
         break;
     }
 
     /* initialize wiki queue */
     $engine->profiler->start('init wiki queue');
-    if (!$engine->initWikiQueue($engine->event->onlyDB, $engine->event->minEditsForAutoselect)) {
+    if (!$engine->initWikiQueue($engine->event->onlyDatabaseNames, $engine->event->minEditsForAutoselect)) {
         if (!$engine->selectManually)
             $engine->msg('Selection failed, aborted.');
         break;

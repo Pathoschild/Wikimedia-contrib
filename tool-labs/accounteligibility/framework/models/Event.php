@@ -57,10 +57,10 @@ class Event
     public $minEditsForAutoselect = 1;
 
     /**
-     * The only database name to analyse (or null to allow any wiki).
-     * @var string|string[]|null
+     * The only database names to analyse (or null to allow any wiki).
+     * @var string[]|null
      */
-    public $onlyDB;
+    public $onlyDatabaseNames;
 
     /**
      * Whether the event is obsolete.
@@ -151,13 +151,26 @@ class Event
     }
 
     /**
-     * Set the only database name to analyse.
+     * Set the only database names to analyse.
      * @param string|string[] $value
      * @return $this;
      */
-    public function withOnlyDB($value)
+    public function withOnlyDatabaseNames($value)
     {
-        $this->onlyDB = $value;
+        $this->onlyDatabaseNames = is_array($value)
+            ? array_values($value)
+            : [$value];
         return $this;
+    }
+
+    /**
+     * Get whether a database name is allowed based on the 'onlyDatabaseNames' field.
+     * @return bool
+     */
+    public function allowsDatabase($dbName)
+    {
+        return
+            $this->onlyDatabaseNames == null
+            || in_array($dbName, $this->onlyDatabaseNames);
     }
 }

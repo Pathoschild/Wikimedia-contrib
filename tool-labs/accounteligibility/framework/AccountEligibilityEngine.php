@@ -210,11 +210,11 @@ class AccountEligibilityEngine extends Base
 
     /**
      * Load the queue of wikis to analyse.
-     * @param string|string[]|null $default The default wiki.
+     * @param string[]|null $defaultDbNames The default database names to use if the user didn't specify one.
      * @param int $minEdits The minimum number of edits.
      * @return bool Whether at least one wiki was successfully loaded.
      */
-    public function initWikiQueue($default = null, $minEdits = 1)
+    public function initWikiQueue($defaultDbNames = null, $minEdits = 1)
     {
         ########
         ## Set selected wiki
@@ -225,19 +225,13 @@ class AccountEligibilityEngine extends Base
             $this->msg("Selected {$this->wiki->domain}.", 'is-metadata');
         }
 
-		elseif (is_array($default)) {
-			$this->queue = array_values($default);
-			$this->nextQueueIndex = 0;
-			$this->msg('Selected ' . implode(', ', $default) . '.', 'is-metadata');
-		}
-
         ########
-        ## Set single wiki
+        ## Set default wikis
         ########
-        elseif ($default) {
-            $this->queue = [$default];
+        elseif ($defaultDbNames) {
+            $this->queue = $defaultDbNames;
             $this->nextQueueIndex = 0;
-            $this->msg("Auto-selected $default.", 'is-metadata');
+            $this->msg('Auto-selected ' . implode(', ', $defaultDbNames) . '.', 'is-metadata');
         }
 
         ########

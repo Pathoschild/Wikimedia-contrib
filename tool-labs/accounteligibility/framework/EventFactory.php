@@ -30,17 +30,17 @@ class EventFactory
             ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
             ->addRule(new DateRegisteredRule('<20210619'), Workflow::ON_ANY_WIKI)// registered before 19 June 2021 (30 days before survey start)
             ->addRule(new EditCountRule(50, null, '<20210719'))// 50 edits before the day the survey started
-			->withOnlyDB([
-				'commonswiki',
-				'dewiki',
-				'dewikibooks',
-				'dewikinews',
-				'dewikiquote',
-				'dewikisource',
-				'dewikiversity',
-				'dewikivoyage',
-				'dewiktionary',
-			]);
+            ->withOnlyDatabaseNames([
+                'commonswiki',
+                'dewiki',
+                'dewikibooks',
+                'dewikinews',
+                'dewikiquote',
+                'dewikisource',
+                'dewikiversity',
+                'dewikivoyage',
+                'dewiktionary',
+            ]);
 
         ##########
         ## 2021: Wikimedia Foundation elections
@@ -374,13 +374,13 @@ class EventFactory
         yield (new Event(26, 2012, 'enwiki arbcom elections (voters)', 'https://en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2012'))
             ->addRule(new NotBlockedRule())
             ->addRule((new EditCountRule(150, null, '<20121102'))->inNamespace(0))// 150 main-namespace edits before 02 Nov 2012
-            ->withOnlyDB('enwiki');
+            ->withOnlyDatabaseNames('enwiki');
 
         // candidates
         yield (new Event(25, 2012, 'enwiki arbcom elections (candidates)', 'https://en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2012'))
             ->addRule(new NotBlockedRule())
             ->addRule((new EditCountRule(500, null, '<20121102'))->inNamespace(0))// 500 main-namespace edits before 02 November 2012
-            ->withOnlyDB('enwiki')
+            ->withOnlyDatabaseNames('enwiki')
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be in good standing and not subject to active blocks or site-bans.',
@@ -425,13 +425,13 @@ class EventFactory
         yield (new Event(21, 2011, 'enwiki arbcom elections', 'https://en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2011'))
             ->addRule(new NotBlockedRule())
             ->addRule((new EditCountRule(150, null, '<201111'))->inNamespace(0))// 150 main-namespace edits before 01 November 2011
-            ->withOnlyDB('enwiki');
+            ->withOnlyDatabaseNames('enwiki');
 
         // candidates
         yield (new Event(20, 2011, 'enwiki arbcom elections (candidates)', 'https://en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2011'))
             ->addRule(new NotBlockedRule())
             ->addRule((new EditCountRule(150, null, '<201111'))->inNamespace(0))// 150 main-namespace edits before 01 November 2011
-            ->withOnlyDB('enwiki')
+            ->withOnlyDatabaseNames('enwiki')
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must be in good standing and not subject to active blocks or site-bans.',
@@ -520,7 +520,7 @@ class EventFactory
         yield (new Event(12, 2010, 'enwiki arbcom elections', 'https://en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2010'))
             ->addRule(new NotBlockedRule())
             ->addRule((new EditCountRule(150, null, '<20101102'))->inNamespace(0))// 150 main-namespace edits by 01 November 2010
-            ->withOnlyDB('enwiki');
+            ->withOnlyDatabaseNames('enwiki');
 
 
         ##########
@@ -584,7 +584,7 @@ class EventFactory
         ##########
         yield (new Event(5, 2009, 'enwiki arbcom elections', 'https://en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2009'))
             ->addRule((new EditCountRule(150, null, '<20091102'))->inNamespace(0))// 150 main-namespace edits before 02 November 2009
-            ->withonlyDB('enwiki');
+            ->withOnlyDatabaseNames('enwiki');
 
 
         ##########
@@ -623,7 +623,7 @@ class EventFactory
         ##########
         yield (new Event(1, 2008, 'enwiki arbcom elections', 'https://en.wikipedia.org/wiki/Wikipedia:Arbitration_Committee_Elections_December_2008'))
             ->addRule((new EditCountRule(150, null, '<20081102'))->inNamespace(0))// 150 main-namespace before 02 November 2008
-            ->withOnlyDB('enwiki');
+            ->withOnlyDatabaseNames('enwiki');
 
 
         ##########
