@@ -23,6 +23,26 @@ class EventFactory
     public function getEvents()
     {
         ##########
+        ## 2021: WMDE TechWishes survey https://phabricator.wikimedia.org/T285475
+        ##########
+        yield (new Event(57, 2021, 'Kleine Umfragen Technische Wünsche', 'https://de.wikipedia.org/wiki/Wikipedia:Technische_W%C3%BCnsche/Topw%C3%BCnsche/Bessere_Unterstützung_von_Geoinformationen/Umfrage'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new DateRegisteredRule('<20210619'), Workflow::ON_ANY_WIKI)// registered before 19 June 2021 (30 days before survey start)
+            ->addRule(new EditCountRule(50, null, '<20210719'))// 50 edits before the day the survey started
+			->withOnlyDB([
+				'commonswiki',
+				'dewiki',
+				'dewikibooks',
+				'dewikinews',
+				'dewikiquote',
+				'dewikisource',
+				'dewikiversity',
+				'dewikivoyage',
+				'dewiktionary',
+			]);
+
+        ##########
         ## 2021: Wikimedia Foundation elections
         ##########
         yield (new Event(56, 2021, 'Wikimedia Foundation elections', 'https://meta.wikimedia.org/wiki/Wikimedia_Foundation_elections/2021'))

@@ -58,7 +58,7 @@ class Event
 
     /**
      * The only database name to analyse (or null to allow any wiki).
-     * @var string|null
+     * @var string|string[]|null
      */
     public $onlyDB;
 
@@ -152,7 +152,7 @@ class Event
 
     /**
      * Set the only database name to analyse.
-     * @param string $value
+     * @param string|string[] $value
      * @return $this;
      */
     public function withOnlyDB($value)
