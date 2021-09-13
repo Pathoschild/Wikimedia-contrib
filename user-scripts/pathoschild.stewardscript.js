@@ -151,8 +151,8 @@
                     ** Prefill reason
                     *****************/
                     $('#wpReasonList option[value="Cross-wiki abuse"]')
-                        .val("crosswiki abuse")
-                        .text("crosswiki abuse")
+                        .val("Cross-wiki abuse")
+                        .text("Cross-wiki abuse")
                         .prop("selected", 1);
 
                     /*****************
