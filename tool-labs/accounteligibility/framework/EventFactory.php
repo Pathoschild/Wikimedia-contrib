@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 56;
+        return 58;
     }
 
     /**
@@ -22,6 +22,14 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2021: Commons Picture of the Year for 2020
+        ##########
+        yield (new Event(58, 2021, 'Commons Picture of the Year for 2020', 'https://commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2020'))
+            ->addRule(new DateRegisteredRule('<202101'), Workflow::ON_ANY_WIKI)// registered before 01 January 2021
+            ->addRule(new EditCountRule(75, null, '<202101'), Workflow::ON_ANY_WIKI);// 75 edits before 01 January 2021
+
+
         ##########
         ## 2021: WMDE TechWishes survey https://phabricator.wikimedia.org/T285475
         ##########
