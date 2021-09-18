@@ -68,6 +68,7 @@ $offset = $engine->offset;
 $engine->useRegex = $useRegex;
 $engine->showLocked = $showLocked;
 $engine->showHidden = $showHidden;
+$engine->caseInsensitive = $caseInsensitive;
 
 #############################
 ## Input form

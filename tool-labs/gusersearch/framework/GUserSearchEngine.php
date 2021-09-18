@@ -58,6 +58,11 @@ class GUserSearchEngine extends Base
     public $showHidden;
 
     /**
+     * Whether the search is case-insensitive. (Only used for pagination.)
+     */
+    public $caseInsensitive;
+
+    /**
      * The earliest registration date for which to show users.
      * @var string
      */
@@ -225,6 +230,7 @@ class GUserSearchEngine extends Base
     public function getPaginationLinkHtml($limit, $offset, $label = null)
     {
         $link = "<a href='?name=" . urlencode($this->name);
+
         if ($limit != self::DEFAULT_LIMIT)
             $link .= "&limit={$limit}";
         if ($offset > 0)
@@ -235,6 +241,9 @@ class GUserSearchEngine extends Base
             $link .= "&show_locked=1";
         if ($this->showHidden)
             $link .= "&show_hidden=1";
+        if ($this->caseInsensitive)
+            $link .= "&icase=1";
+
         $link .= "' title='{$label}'>{$label}</a>";
 
         return $link;
