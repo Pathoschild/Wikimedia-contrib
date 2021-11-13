@@ -108,7 +108,7 @@ do {
                 $type = 'css';
 
             // output
-            echo "<li class='type-$type' data-redirect='$isRedirect' data-is-subpage='$isSubpage' data-type='$type' data-size='$size' data-ns='$namespaceNumber' data-title='", $backend->formatValue($page['page_title']), "'><a href='https://$domain/wiki/", $backend->formatValue($title), "'>", $backend->formatValue($title), "</a> <small>(<span class='page-size'>$size bytes</span>, <span class='page-edited'>last <a href='https://www.mediawiki.org/wiki/Manual:Page_table#page_touched'>touched</a> $touched</span>)</small></li>";
+            echo "<li class='type-$type' data-redirect='$isRedirect' data-is-subpage='$isSubpage' data-type='$type' data-size='$size' data-ns='$namespaceNumber' data-title='", $backend->formatValue($page['page_title']), "'><a href='https://$domain/wiki/", $backend->formatWikiUrlTitle($title), "'>", $backend->formatValue($title), "</a> <small>(<span class='page-size'>$size bytes</span>, <span class='page-edited'>last <a href='https://www.mediawiki.org/wiki/Manual:Page_table#page_touched'>touched</a> $touched</span>)</small></li>";
         }
         echo '</ul>';
     }

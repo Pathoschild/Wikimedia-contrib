@@ -321,9 +321,9 @@ foreach ($groups as $group) {
     echo "
         <h3 id='{$group['anchor']}'>{$backend->formatText($group['name'])}</h3>
         <div class='group'>
-            <a href='https://meta.wikimedia.org/wiki/Special:GlobalUsers?group=", urlencode($group['key']), "' title='list of users in this group'>{$group['members']} account", ($group['members'] != 1 ? 's' : ''), "</a> on ";
+            <a href='https://meta.wikimedia.org/wiki/Special:GlobalUsers?group=", $backend->formatWikiUrlTitle($group['key']), "' title='list of users in this group'>{$group['members']} account", ($group['members'] != 1 ? 's' : ''), "</a> on ";
     if ($group['wikiset']) {
-        echo '<a href="https://meta.wikimedia.org/wiki/Special:WikiSets/', $group['wikiset']['id'], '">';
+        echo '<a href="https://meta.wikimedia.org/wiki/Special:WikiSets/', $backend->formatWikiUrlTitle($group['wikiset']['id']), '">';
         if ($group['wikiset']['type'] == 'optout')
             echo 'all except ';
         echo $group['wikiset']['count'], ' wiki', ($group['wikiset']['count'] != 1 ? 's' : ''), '</a>';

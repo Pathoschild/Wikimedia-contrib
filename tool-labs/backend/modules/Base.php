@@ -41,6 +41,17 @@ abstract class Base
     }
 
     /**
+     * Format the title segment of a Wikimedia URL.
+     * @param string $str The string to format.
+     * @return string The formatted string.
+     */
+    public function formatWikiUrlTitle($str)
+    {
+        $str = str_replace(' ', '_', trim($str));
+        return urlencode($str);
+    }
+
+    /**
      * Format a string as a plaintext HTML output.
      * @param string $str The string to format.
      * @return string The formatted string.

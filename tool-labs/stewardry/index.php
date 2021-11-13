@@ -107,7 +107,7 @@ do {
 
         foreach ($matching as $row) {
             $name = $row["user_name"];
-            $urlName = $backend->formatValue($name);
+            $urlName = $backend->formatWikiUrlTitle($name);
             $lastEdit = $row["last_edit"];
             $lastLog = $row["last_$group"];
             $domain = $engine->wiki->domain;
