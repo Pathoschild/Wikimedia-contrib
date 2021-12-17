@@ -23,6 +23,15 @@ class EventFactory
     public function getEvents()
     {
         ##########
+        ## 2022: WMDE TechWishes survey https://phabricator.wikimedia.org/T297691
+        ##########
+        yield (new Event(59, 2022, 'Umfrage Technische Wünsche', 'https://de.wikipedia.org/wiki/Wikipedia:Technische_W%C3%BCnsche'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new DateRegisteredRule('<20211226'), Workflow::ON_ANY_WIKI); // registered before 25 December 2021 (30 days before survey start)
+
+
+        ##########
         ## 2021: Commons Picture of the Year for 2020
         ##########
         yield (new Event(58, 2021, 'Commons Picture of the Year for 2020', 'https://commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2020'))
