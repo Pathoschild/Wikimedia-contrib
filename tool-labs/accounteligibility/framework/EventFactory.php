@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 58;
+        return 61;
     }
 
     /**
@@ -22,6 +22,27 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2022: steward elections
+        ##########
+        // voters
+        yield (new Event(61, 2022, 'steward elections', 'https://meta.wikimedia.org/wiki/Stewards/Elections_2022'))
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(600, null, '<202111', EditCountRule::ACCUMULATE))// 600 edits before 01 November 2021
+            ->addRule(new EditCountRule(50, '202108', '<202202', EditCountRule::ACCUMULATE));// 50 edits between 01 August 2021 and 31 January 2022
+
+        // candidates
+        yield (new Event(60, 2021, 'steward elections (candidates)', 'https://meta.wikimedia.org/wiki/Stewards/Elections_2022'))
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(600, null, '<202111', EditCountRule::ACCUMULATE))// 600 edits before 01 November 2021
+            ->addRule(new EditCountRule(50, '202108', '<202202', EditCountRule::ACCUMULATE))// 50 edits between 01 August 2021 and 31 January 2022
+            ->addRule(new HasGroupDurationRule('sysop', 90, '<202202070000'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
+            ->withAction('<strong>be a candidate</strong>')
+            ->withExtraRequirements([
+                'You must be 18 years old, and at the age of majority in your country.',
+                'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
+                'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_personal_data_policy" title="Access to nonpublic personal data policy">sign the confidentiality agreement</a>.'
+            ]);
         ##########
         ## 2022: WMDE TechWishes survey https://phabricator.wikimedia.org/T297691
         ##########
