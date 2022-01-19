@@ -126,6 +126,7 @@ if ($engine->isValid() && $ip->ip->isValid()) {
         <div>
             Related toys:
             <a href='https://whois.toolforge.org/gateway.py?lookup=true&ip=", $ip->ip->getFriendly(), "' title='whois query'>whois</a>,
+            <a href='https://bullseye.toolforge.org/ip/", $ip->ip->getFriendly(), "' title='bullseye tool'>bullseye</a>,
             <a href='https://meta.wikimedia.org/wiki/Special:GlobalBlock?wpAddress={$engine->targetWikiUrl}' title='Special:GlobalBlock'>global block</a>.
         </div>
         ";
