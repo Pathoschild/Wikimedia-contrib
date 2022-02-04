@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 61;
+        return 62;
     }
 
     /**
@@ -22,6 +22,20 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2022: vote to ratify the Universal Code of Conduct Enforcement Guidelines
+        ##########
+        yield (new Event(62, 2022, 'vote to ratify the Universal Code of Conduct Enforcement Guidelines', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Enforcement_guidelines/Voter_information'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20220207', EditCountRule::ACCUMULATE))// 300 edits before 07 February 2022
+            ->addRule(new EditCountRule(20, '20210807', '<20220207', EditCountRule::ACCUMULATE))// 20 edits between 07 August 2021 and 07 February 2022
+            ->withExtraRequirements(['Your account must not be used by a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Enforcement_guidelines/Voter_information#Voting_eligibility">official voting information</a> for specific exceptions which cover developers; current staff or contractors for the Wikimedia Foundation or a movement affiliate; and current or former members of the Wikimedia Foundation Board of Trustees.'
+            ]);
+
+
         ##########
         ## 2022: steward elections
         ##########
