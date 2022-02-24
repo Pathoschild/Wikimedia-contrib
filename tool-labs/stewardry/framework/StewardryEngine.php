@@ -16,7 +16,7 @@ class StewardryEngine extends Base
         'bureaucrat' => ['rights'],
         'interface-admin' => [],
         'checkuser' => [],
-        'oversight' => [],
+        'suppress' => [],
         'bot' => []
     ];
 
