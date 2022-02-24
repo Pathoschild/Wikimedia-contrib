@@ -171,7 +171,7 @@
                     var shortcuts = {
                         "lock": "#mw-centralauth-status-locked-yes, #mw-centralauth-status-hidden-no",
                         "lock & hide": "#mw-centralauth-status-locked-yes, #mw-centralauth-status-hidden-list",
-                        "lock & oversight": "#mw-centralauth-status-locked-yes, #mw-centralauth-status-hidden-oversight"
+                        "lock & suppress": "#mw-centralauth-status-locked-yes, #mw-centralauth-status-hidden-oversight"
                     };
                     var $cell;
                     $("#mw-centralauth-admin-status-locked")

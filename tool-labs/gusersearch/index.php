@@ -147,19 +147,19 @@ if ($count) {
             </tr>
         ";
 
-    $anyOversighted = false;
+    $anySuppressed = false;
     while ($row = $engine->db->fetchAssoc()) {
         /* get values */
         $inGroups = ($row['gu_groups'] ? '1' : '0');
         $isLocked = (int)$row['gu_locked'];
         $isHidden = ($row['gu_hidden'] == "lists" ? 1 : 0);
-        $isOversighted = ($row['gu_hidden'] == "suppressed" ? 1 : 0);
-        $isOkay = (!$isLocked && !$isHidden && !$isOversighted ? 1 : 0);
+        $isSuppressed = ($row['gu_hidden'] == "suppressed" ? 1 : 0);
+        $isOkay = (!$isLocked && !$isHidden && !$isSuppressed ? 1 : 0);
         $linkTarget = urlencode($row['gu_name']);
 
-        $isNameHidden = ($isHidden || $isOversighted);
+        $isNameHidden = ($isHidden || $isSuppressed);
         if ($isNameHidden)
-            $anyOversighted = true;
+            $anySuppressed = true;
 
         /* summarize status */
         $statusLabel = "";
@@ -168,15 +168,15 @@ if ($count) {
             array_push($statuses, 'locked');
         if ($isHidden)
             array_push($statuses, 'hidden');
-        if ($isOversighted)
-            array_push($statuses, 'oversighted');
+        if ($isSuppressed)
+            array_push($statuses, 'suppressed');
 
         if (count($statuses) > 0)
             $statusLabel = implode(' | ', $statuses);
 
         /* output */
         echo "
-            <tr class='user-okay-{$isOkay} user-locked-{$isLocked} user-hidden-{$isHidden} user-oversighted-{$isOversighted} user-in-groups-{$inGroups}'>
+            <tr class='user-okay-{$isOkay} user-locked-{$isLocked} user-hidden-{$isHidden} user-suppressed-{$isSuppressed} user-in-groups-{$inGroups}'>
                 <td class='id'>{$row['gu_id']}</td>
                 <td class='name'>", ($isNameHidden ? str_pad("", mb_strlen($row['gu_name'], 'utf-8'), "*") : "<a href='" . $backend->url('/stalktoy/' . $linkTarget) . "' title='about user'>{$row['gu_name']}</a>"), "</td>
                 <td class='registration'>{$row['gu_registration']}</td>
@@ -190,8 +190,8 @@ if ($count) {
 
 if ($name && (($useRegex && !preg_match('/[+*.]/', $name)) || (!$useRegex && !preg_match('/[_%]/', $name))))
     echo "<p><strong><big>※</big></strong>You searched for an exact match; did you want partial matches? See <em>Search syntax</em> above.</p>";
-if (isset($anyOversighted) && $anyOversighted)
-    echo "<p><strong><big>※</big></strong>Hidden or oversighted names are censored for privacy reasons.</p>";
+if (isset($anySuppressed) && $anySuppressed)
+    echo "<p><strong><big>※</big></strong>Hidden or suppressed names are censored for privacy reasons.</p>";
 
 $backend->profiler->stop('output');
 $backend->footer();

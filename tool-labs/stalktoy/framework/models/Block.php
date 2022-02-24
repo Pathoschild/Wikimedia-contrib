@@ -36,7 +36,7 @@ class Block
     public $expiry;
 
     /**
-     * Whether the account has been oversighted by this block and no longer appears in edit histories and public logs (only applicable to account blocks).
+     * Whether the account has been suppressed by this block and no longer appears in edit histories and public logs (only applicable to account blocks).
      * @var bool
      */
     public $isHidden;
