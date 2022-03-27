@@ -108,7 +108,7 @@ $hasResults = (int)!$count;
 
 echo "
     <h2>Search results</h2>
-    <p id='search-summary' class='search-results-{$hasResults}'>{$engine->getFormattedSummary()}.</p>
+    <p id='search-summary' class='search-results-{$hasResults}'>{$backend->formatText($engine->getFormattedSummary())}.</p>
     ";
 
 #############################
@@ -154,11 +154,11 @@ if ($count) {
         /* output */
         echo "
             <tr class='user-okay-{$isOkay} user-locked-{$isLocked} user-in-groups-{$inGroups}'>
-                <td class='id'>{$row['gu_id']}</td>
-                <td class='name'><a href='" . $backend->url('/stalktoy/' . $linkTarget) . "' title='about user'>{$row['gu_name']}</a></td>
-                <td class='registration'>{$row['gu_registration']}</td>
-                <td class='status'>{$statusLabel}</td>
-                <td class='groups'>{$row['gu_groups']}</td>
+                <td class='id'>{$backend->formatText($row['gu_id'])}</td>
+                <td class='name'><a href='" . $backend->url('/stalktoy/' . $linkTarget) . "' title='about user'>{$backend->formatText($row['gu_name'])}</a></td>
+                <td class='registration'>{$backend->formatText($row['gu_registration'])}</td>
+                <td class='status'>{$backend->formatText($statusLabel)}</td>
+                <td class='groups'>{$backend->formatText($row['gu_groups'])}</td>
                 <td class='linkies'><a href='https://meta.wikimedia.org/wiki/Special:CentralAuth?target={$linkTarget}' title='CentralAuth'>CentralAuth</a></td>
             </tr>";
     }
