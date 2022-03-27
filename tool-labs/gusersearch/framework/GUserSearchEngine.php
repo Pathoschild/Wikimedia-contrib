@@ -52,12 +52,6 @@ class GUserSearchEngine extends Base
     public $showLocked;
 
     /**
-     * Whether to show hidden users. (Only used for pagination.)
-     * @var bool
-     */
-    public $showHidden;
-
-    /**
      * Whether the search is case-insensitive. (Only used for pagination.)
      */
     public $caseInsensitive;
@@ -239,8 +233,6 @@ class GUserSearchEngine extends Base
             $link .= "&regex=1";
         if ($this->showLocked)
             $link .= "&show_locked=1";
-        if ($this->showHidden)
-            $link .= "&show_hidden=1";
         if ($this->caseInsensitive)
             $link .= "&icase=1";
 
@@ -306,7 +298,7 @@ class GUserSearchEngine extends Base
         $this->query .= "
             SELECT t_user.*, t_groups.gu_groups
             FROM (
-                SELECT gu_id, gu_name, DATE_FORMAT(gu_registration, '%Y-%b-%d %H:%i') AS gu_registration, gu_locked, gu_hidden
+                SELECT gu_id, gu_name, DATE_FORMAT(gu_registration, '%Y-%b-%d %H:%i') AS gu_registration, gu_locked
                 FROM centralauth_p.{$globalUsers}
                 " . $this->prepareFilters($globalUsers) . "
                 ORDER BY gu_id DESC

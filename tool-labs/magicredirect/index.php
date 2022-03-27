@@ -25,8 +25,7 @@ $tokens = [
         'id' => 'The user\'s global identifier number.',
         'name' => 'The unique name of the user.',
         'registration' => 'The date on which the global account was registered.',
-        'locked' => 'Whether the global account has been <a href="https://meta.wikimedia.org/wiki/Steward_handbook#Managing_global_accounts" title="about account locking">locked</a>.',
-        'hidden' => 'Whether the global account has been <a href="https://meta.wikimedia.org/wiki/Steward_handbook#Managing_global_accounts" title="about account hiding">hidden</a>.'
+        'locked' => 'Whether the global account has been <a href="https://meta.wikimedia.org/wiki/Steward_handbook#Managing_global_accounts" title="about account locking">locked</a>.'
     ]
 ];
 
@@ -66,7 +65,7 @@ if ($target) {
     /* apply user */
     if ($user && strpos($target, '{user.') !== false) {
         $user = $backend->formatUsername($user);
-        $row = $db->query('SELECT gu_id AS id, gu_name AS name, gu_registration AS registration, gu_locked AS locked, gu_hidden AS hidden FROM centralauth_p.globaluser WHERE gu_name = ? LIMIT 1', [$user])->fetchAssoc();
+        $row = $db->query('SELECT gu_id AS id, gu_name AS name, gu_registration AS registration, gu_locked AS locked FROM centralauth_p.globaluser WHERE gu_name = ? LIMIT 1', [$user])->fetchAssoc();
         if ($row) {
             foreach ($tokens['user'] as $token => $description)
                 $target = str_replace('{user.' . $token . '}', $row[$token], $target);

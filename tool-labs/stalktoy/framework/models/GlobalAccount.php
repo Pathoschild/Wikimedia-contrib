@@ -43,12 +43,6 @@ class GlobalAccount
     public $isLocked;
 
     /**
-     * Whether the global account is hidden, so that it is censored from public lists.
-     * @var bool
-     */
-    public $isHidden;
-
-    /**
      * The global groups to which the user account belongs (as a comma-separated list).
      * @var string[]
      */

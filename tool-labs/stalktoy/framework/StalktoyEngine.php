@@ -135,7 +135,6 @@ class StalktoyEngine extends Base
                     gu_name,
                     DATE_FORMAT(gu_registration, "%Y-%m-%d %H:%i") AS gu_timestamp,
                     gu_locked,
-                    gu_hidden,
                     GROUP_CONCAT(gug_group SEPARATOR ",") AS gu_groups,
                     lu_wiki
                 FROM
@@ -154,7 +153,6 @@ class StalktoyEngine extends Base
         if ($account->exists) {
             $account->id = $row['gu_id'];
             $account->name = $row['gu_name'];
-            $account->isHidden = $row['gu_hidden'];
             $account->isLocked = $row['gu_locked'];
             $account->registered = $row['gu_timestamp'];
             $account->groups = ($row['gu_groups'] ? explode(',', $row['gu_groups']) : []);

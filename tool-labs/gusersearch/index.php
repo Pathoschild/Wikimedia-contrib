@@ -18,7 +18,6 @@ $backend->profiler->start('initialize');
 $name = $backend->get('name', $backend->getRouteValue());
 $useRegex = (bool)$backend->get('regex');
 $showLocked = (bool)$backend->get('show_locked');
-$showHidden = (bool)$backend->get('show_hidden');
 $caseInsensitive = (bool)$backend->get('icase');
 
 /* add user name filter */
@@ -43,13 +42,6 @@ if (!$showLocked) {
     $engine->describeFilter("NOT locked");
 }
 
-/* add hide status filter */
-if (!$showHidden) {
-    $engine->filter(GUserSearchEngine::T_GLOBALUSER, 'gu_hidden', GUserSearchEngine::OP_NOT_EQUAL, 'lists');
-    $engine->filter(GUserSearchEngine::T_GLOBALUSER, '`gu_hidden`', GUserSearchEngine::OP_NOT_EQUAL, 'suppressed');
-    $engine->describeFilter("NOT hidden");
-}
-
 /* add date filter */
 if ($engine->minDate) {
     $engine->describeFilter("registered after {$engine->minDate}");
@@ -67,7 +59,6 @@ $offset = $engine->offset;
 
 $engine->useRegex = $useRegex;
 $engine->showLocked = $showLocked;
-$engine->showHidden = $showHidden;
 $engine->caseInsensitive = $caseInsensitive;
 
 #############################
@@ -84,9 +75,6 @@ echo "
         <div style='padding-left:0.5em; border:1px solid gray; color:gray;'>
             ", Form::checkbox('show_locked', $showLocked), "
             <label for='show_locked'>Show locked accounts</label><br />
-
-            ", Form::checkbox('show_hidden', $showHidden), "
-            <label for='show_hidden'>Show hidden accounts</label><br />
 
             ", Form::checkbox('regex', $useRegex, ['onClick' => 'script.toggleRegex(this.checked);']), "
             <label for='regex'>Use <a href='http://www.wellho.net/regex/mysql.html' title='MySQL regex reference'>regular expression</a> (much slower)</label><br />
@@ -147,42 +135,31 @@ if ($count) {
             </tr>
         ";
 
-    $anySuppressed = false;
     while ($row = $engine->db->fetchAssoc()) {
         /* get values */
         $inGroups = ($row['gu_groups'] ? '1' : '0');
         $isLocked = (int)$row['gu_locked'];
-        $isHidden = ($row['gu_hidden'] == "lists" ? 1 : 0);
-        $isSuppressed = ($row['gu_hidden'] == "suppressed" ? 1 : 0);
-        $isOkay = (!$isLocked && !$isHidden && !$isSuppressed ? 1 : 0);
+        $isOkay = !$isLocked ? 1 : 0;
         $linkTarget = urlencode($row['gu_name']);
-
-        $isNameHidden = ($isHidden || $isSuppressed);
-        if ($isNameHidden)
-            $anySuppressed = true;
 
         /* summarize status */
         $statusLabel = "";
         $statuses = [];
         if ($isLocked)
             array_push($statuses, 'locked');
-        if ($isHidden)
-            array_push($statuses, 'hidden');
-        if ($isSuppressed)
-            array_push($statuses, 'suppressed');
 
         if (count($statuses) > 0)
             $statusLabel = implode(' | ', $statuses);
 
         /* output */
         echo "
-            <tr class='user-okay-{$isOkay} user-locked-{$isLocked} user-hidden-{$isHidden} user-suppressed-{$isSuppressed} user-in-groups-{$inGroups}'>
+            <tr class='user-okay-{$isOkay} user-locked-{$isLocked} user-in-groups-{$inGroups}'>
                 <td class='id'>{$row['gu_id']}</td>
-                <td class='name'>", ($isNameHidden ? str_pad("", mb_strlen($row['gu_name'], 'utf-8'), "*") : "<a href='" . $backend->url('/stalktoy/' . $linkTarget) . "' title='about user'>{$row['gu_name']}</a>"), "</td>
+                <td class='name'><a href='" . $backend->url('/stalktoy/' . $linkTarget) . "' title='about user'>{$row['gu_name']}</a></td>
                 <td class='registration'>{$row['gu_registration']}</td>
                 <td class='status'>{$statusLabel}</td>
                 <td class='groups'>{$row['gu_groups']}</td>
-                <td class='linkies'>", ($isNameHidden ? "&mdash;" : "<a href='https://meta.wikimedia.org/wiki/Special:CentralAuth?target={$linkTarget}' title='CentralAuth'>CentralAuth</a>"), "</td>
+                <td class='linkies'><a href='https://meta.wikimedia.org/wiki/Special:CentralAuth?target={$linkTarget}' title='CentralAuth'>CentralAuth</a></td>
             </tr>";
     }
     echo "</table>";
@@ -190,8 +167,6 @@ if ($count) {
 
 if ($name && (($useRegex && !preg_match('/[+*.]/', $name)) || (!$useRegex && !preg_match('/[_%]/', $name))))
     echo "<p><strong><big>※</big></strong>You searched for an exact match; did you want partial matches? See <em>Search syntax</em> above.</p>";
-if (isset($anySuppressed) && $anySuppressed)
-    echo "<p><strong><big>※</big></strong>Hidden or suppressed names are censored for privacy reasons.</p>";
 
 $backend->profiler->stop('output');
 $backend->footer();
