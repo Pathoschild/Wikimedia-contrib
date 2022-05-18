@@ -33,8 +33,13 @@ var pathoschild = pathoschild || {};
                         link.attr("href", href.replace(self.langUrlToken, "$1lang=en$3"));
                 });
 
-                // fix .mw-content-ltr right-aligning text on rtl wikis
-                mw.util.addCSS(".mw-content-ltr { text-align:left; }");
+                // fix harcoded RTL styles
+                mw.util.addCSS(
+                    `
+                        .mw-content-ltr { text-align:left; }
+                        .ltr, .ltr dd, .ltr ol, .ltr ul { direction: ltr !important; }
+                    `
+                );
             }
         }
     };
