@@ -157,7 +157,13 @@ $flagBlurbs = [
     
     // GWToolset extension: https://github.com/wikimedia/mediawiki-extensions-GWToolset/blob/master/i18n/en.json
     "right-gwtoolset" => "Use GWToolset",
-
+    
+    // IPInfo extension: https://github.com/wikimedia/mediawiki-extensions-IPInfo/blob/master/i18n/en.json
+    "right-ipinfo": "Retrieve information about IP addresses attached to revisions or log entries",
+	"right-ipinfo-view-basic": "Allow a basic view of the IP information attached to revisions or log entries",
+	"right-ipinfo-view-full": "Allow a full view of the IP information attached to revisions or log entries",
+	"right-ipinfo-view-log": "View a log of who has accessed IP information",
+    
     // MassMessage extension: https://github.com/wikimedia/mediawiki-extensions-MassMessage/blob/master/i18n/en.json
     "right-massmessage" => "Send a message to multiple users at once",
 
