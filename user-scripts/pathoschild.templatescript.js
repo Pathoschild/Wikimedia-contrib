@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         /*********
         ** Fields
         *********/
-        self.version = "2.5.2";
+        self.version = "2.5.3";
         self.strings = {
             defaultHeaderText: "TemplateScript", // the sidebar header text label for the default group
             regexEditor: "Regex editor" // the default 'regex editor' script
@@ -619,7 +619,12 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 sidebar.find("ul").empty();
 
                 // add to DOM
-                $("#p-tb").parent().append(sidebar);
+                var languageList = $("#p-lang");
+                if (languageList.length)
+                    sidebar.insertBefore(languageList);
+                else
+                    $("#p-tb").parent().append(sidebar);
+
                 return sidebar;
             };
 
