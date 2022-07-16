@@ -29,7 +29,7 @@ class EventFactory
             ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
             ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
             ->addRule(new EditCountRule(300, null, '<20220705', EditCountRule::ACCUMULATE))// 300 edits before 05 July 2022
-            ->addRule(new EditCountRule(20, '20220105', '<20220705', EditCountRule::ACCUMULATE))// 20 edits between 05 January 2022 and 05 July 2022
+            ->addRule(new EditCountRule(20, '20220105', '<20220706', EditCountRule::ACCUMULATE))// 20 edits between 05 January 2022 and 05 July 2022
             ->withExtraRequirements(['Your account must not be used by a bot.'])
             ->withExceptions([
                 'See the <a href="https://meta.wikimedia.org/wiki/Wikimedia_Foundation_elections/2022/Voter_eligibility_guidelines">official voting information</a> for specific exceptions which cover developers, staff, contractors, community organizers, and committee members for the Wikimedia Foundation and certain affiliates.'
