@@ -84,7 +84,7 @@
     "name": "meta-synchbot",
     "title": "Synchbot",
     "description": "Synchronises user pages across Wikimedia projects in every language. This allows users to create user pages on every wiki, or to have global JavaScript and CSS. (Due to potential for misuse, must submit an on-wiki request.)",
-    "url": "meta.wikimedia.org/wiki/Synchbot",
+    "url": "https://meta.wikimedia.org/wiki/Synchbot",
     "keywords": "batch, cross-wiki, editing",
     "author": "Pathoschild"
   }
