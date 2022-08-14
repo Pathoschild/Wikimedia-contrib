@@ -411,9 +411,9 @@ else if ($engine->isValid() && $engine->target) {
                 if (!$isUnified && !$isUnifiable)
                     $labelUnified = $unifiedLabels[2];
 
-                $hasGlobalGroups = $globalGroupsByWiki && isset($globalGroupsByWiki[$wiki->dbName]) && $globalGroupsByWiki[$wiki->dbName];;
+                $hasGlobalGroups = $globalGroupsByWiki && isset($globalGroupsByWiki[$dbname]) && $globalGroupsByWiki[$dbname];
                 $globalGroups = $hasGlobalGroups
-                    ? implode(', ', $globalGroupsByWiki[$wiki->dbName])
+                    ? implode(', ', $globalGroupsByWiki[$dbname])
                     : '&nbsp;';
 
                 if ($user->isBlocked) {

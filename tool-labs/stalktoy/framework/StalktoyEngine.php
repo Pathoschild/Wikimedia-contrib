@@ -371,15 +371,8 @@ class StalktoyEngine extends Base
      */
     public function getWikiUnifiable($dbname)
     {
-        // in https://noc.wikimedia.org/conf/highlight.php?file=fishbowl.dblist
-        if (in_array($dbname, ['foundationwiki', 'nostalgiawiki', 'rswikimedia']))
-            return false;
-
-        // wikis that don't actually exist anymore
-        if (in_array($dbname, ['vewikimedia']))
-            return false;
-
-        return true;
+        // in https://noc.wikimedia.org/conf/highlight.php?file=dblists/nonglobal.dblist
+        return !in_array($dbname, ['labswiki', 'labtestwiki']);
     }
 
     ########
