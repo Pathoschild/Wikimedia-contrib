@@ -23,6 +23,13 @@ class EventFactory
     public function getEvents()
     {
         ##########
+        ## 2022: Commons Picture of the Year for 2021
+        ##########
+        yield (new Event(64, 2022, 'Commons Picture of the Year for 2021', 'https://commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2021'))
+            ->addRule(new DateRegisteredRule('<202201'), Workflow::ON_ANY_WIKI)// registered before 01 January 2022
+            ->addRule(new EditCountRule(75, null, '<202201'), Workflow::ON_ANY_WIKI);// 75 edits before 01 January 2022
+        
+        ##########
         ## 2022: Board of Trustees election
         ##########
         yield (new Event(63, 2022, 'Wikimedia Foundation elections', 'https://meta.wikimedia.org/wiki/Wikimedia_Foundation_elections/2022'))
