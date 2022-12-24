@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 64;
+        return 65;
     }
 
     /**
@@ -22,6 +22,19 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2023: Vote to ratify the revised Universal Code of Conduct Enforcement Guidelines
+        ##########
+        yield (new Event(65, 2023, 'Vote to ratify the revised Universal Code of Conduct Enforcement Guidelines', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Revised_enforcement_guidelines/Voter_information'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20230103', EditCountRule::ACCUMULATE))// 300 edits before 03 January 2023
+            ->addRule(new EditCountRule(20, '20220703', '<20230103', EditCountRule::ACCUMULATE))// 20 edits between 05 January 2022 and 05 July 2022
+            ->withExtraRequirements(['Your account must not be a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Revised_enforcement_guidelines/Voter_information">official voting rules</a> for specific exceptions including developers, staff, contractors, community organizers, committee members, and tool/script contributors.'
+            ]);
+
         ##########
         ## 2022: Commons Picture of the Year for 2021
         ##########
