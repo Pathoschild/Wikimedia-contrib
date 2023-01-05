@@ -39,7 +39,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<20230131'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_personal_data_policy" title="Access to nonpublic personal data policy">sign the confidentiality agreement</a>.'
             ]);
@@ -108,7 +108,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<202202071400'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_personal_data_policy" title="Access to nonpublic personal data policy">sign the confidentiality agreement</a>.'
             ]);
@@ -181,7 +181,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<202102051400'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_personal_data_policy" title="Access to nonpublic personal data policy">sign the confidentiality agreement</a>.'
             ]);
@@ -210,7 +210,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<202002081400'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_personal_data_policy" title="Access to nonpublic personal data policy">sign the confidentiality agreement</a>.'
             ]);
@@ -239,7 +239,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<201902081400'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_personal_data_policy" title="Access to nonpublic personal data policy">sign the confidentiality agreement</a>.'
             ]);
@@ -268,7 +268,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<201802081400'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_information_policy" title="Access to nonpublic information policy">sign the confidentiality agreement</a>.'
             ]);
@@ -336,7 +336,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<201702'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at least the age of majority in your country before the final day of voting.',
+                'You must be at least 18 years old, and at least the age of majority in your country before the final day of voting.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_information_policy" title="Access to nonpublic information policy">sign the confidentiality agreement</a>.'
             ]);
@@ -365,7 +365,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<20160208'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Access_to_nonpublic_information_policy" title="Access to nonpublic information policy">sign the confidentiality agreement</a>.'
             ]);
@@ -404,7 +404,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<20150208'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2015.'
             ]);
@@ -441,7 +441,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<20140208'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2014.'
             ]);
@@ -462,7 +462,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<20130208'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2013.'
             ]);
@@ -521,7 +521,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<20120129'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="https://foundation.wikimedia.org/wiki/Template:Policy-board" title="Wikimedia Foundation policies">Foundation policies</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 08 February 2012.'
             ]);
@@ -564,7 +564,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<20110913'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="https://foundation.wikimedia.org/wiki/Template:Policy-board" title="Wikimedia Foundation policies">Foundation policies</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 07 February 2011.'
             ]);
@@ -617,7 +617,7 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<20110129'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="https://foundation.wikimedia.org/wiki/Template:Policy-board" title="Wikimedia Foundation policies">Foundation policies</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 07 February 2011.'
             ]);
@@ -645,7 +645,7 @@ class EventFactory
             ->addRule(new DateRegisteredRule('<20100329'))// registered before 29 March 2010
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a> and <a href="https://foundation.wikimedia.org/wiki/Template:Policy-board" title="Wikimedia Foundation policies">Foundation policies</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 01 February 2010.'
             ]);
@@ -674,7 +674,7 @@ class EventFactory
             ->addRule(new DateRegisteredRule('<20091029'))// registered for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation before 01 February 2010.'
             ]);
@@ -712,7 +712,7 @@ class EventFactory
             ->addRule(new DateRegisteredRule('<200811'))// registered for three months before 01 November 2008
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be 18 years old, and at the age of majority in your country.',
+                'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">Steward policy</a>.',
                 'You must <a href="https://meta.wikimedia.org/wiki/Steward_handbook/email_templates" title="instructions for providing ID">provide your full name and proof of identity</a> to the Wikimedia Foundation.'
             ]);
