@@ -61,7 +61,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         /*********
         ** Fields
         *********/
-        self.version = "0.13";
+        self.version = "0.14";
         self.strings = {
             header: "Regex editor", // the header text shown in the form
             search: "Search",       // the search input label
@@ -86,8 +86,22 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             editor: null,        // the TemplateScript editor
             initialisation: null // a promise completed when initialisation is done
         };
-        self.config = $.extend({ alwaysVisible: false }, config);
+        self.config = $.extend(
+            {
+                /**
+                 * Whether the regex editor is always visible. If true, closing the editor will reset it instead.
+                 */
+                alwaysVisible: false,
 
+                /**
+                 * Add the regex editor UI to the page.
+                 * @param {jQuery} $container The regex editor UI to add.
+                 * @returns Returns true if the UI was added, or false to insert it before the textbox.
+                 */
+                appendToPage: function($container) { return false; }
+            },
+            config
+        );
 
         /*********
         ** Private methods
@@ -397,7 +411,9 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                         })
                     ]
                 });
-                $container.insertBefore(state.$target);
+
+                if (!config.appendToPage || !config.appendToPage($container))
+                    $container.insertBefore(state.$target);
 
                 // add input boxes
                 if (patterns) {

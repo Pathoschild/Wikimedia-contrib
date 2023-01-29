@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         /*********
         ** Fields
         *********/
-        self.version = "2.5.3";
+        self.version = "2.5.4";
         self.strings = {
             defaultHeaderText: "TemplateScript", // the sidebar header text label for the default group
             regexEditor: "Regex editor" // the default 'regex editor' script
@@ -1173,7 +1173,17 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 name: self.strings.regexEditor,
                 scriptUrl: "https://tools-static.wmflabs.org/meta/scripts/pathoschild.regexeditor.js",
                 script: function(editor) {
-                    var regexEditor = new pathoschild.RegexEditor();
+                    var regexEditor = new pathoschild.RegexEditor({
+                        appendToPage: function($container) {
+                            var toolbar = state.$target.parents(".wikiEditor-ui").find(".wikiEditor-ui-top");
+                            if (toolbar.length) {
+                                toolbar.append($container);
+                                return true;
+                            }
+
+                            return false;
+                        }
+                    });
                     regexEditor.create(state.$target, editor);
                 }
             });

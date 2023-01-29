@@ -24,6 +24,11 @@
 }
 
 #regex-editor .search,
+#regex-editor .replace {
+    border: 1px solid #a2a9b1;
+}
+
+#regex-editor .search,
 #regex-editor .preview {
     position: absolute;
     top: 0;
@@ -32,7 +37,6 @@
     width: 100%;
     margin: 0;
     padding: .1em;
-    border: 0;
     box-sizing: border-box;
     font-family: 'courier new', monospace;
     line-height: 1.3em;
