@@ -152,20 +152,21 @@ class HasGroupDurationRule implements Rule
         if (count($ranges) == 0)
             return 0;
 
-        // determine widest range
+        // find longest range
+        $longestRange = 0;
         $maxDuration = 0;
         foreach ($ranges as $i => $range) {
             $duration = $range[1] - $range[0];
             if ($duration > $maxDuration) {
                 $maxDuration = $duration;
+                $longestRange = $i;
             }
         }
 
-        // calculate range length
-        $start = DateTime::createFromFormat('YmdHis', $ranges[$i][0]);
-        $end = DateTime::createFromFormat('YmdHis', $ranges[$i][1]);
-        $diff = $start->diff($end);
-        return $diff->days;
+        // get day length
+        $start = DateTime::createFromFormat('YmdHis', $ranges[$longestRange][0]);
+        $end = DateTime::createFromFormat('YmdHis', $ranges[$longestRange][1]);
+        return $start->diff($end)->days;
     }
 
     /**
