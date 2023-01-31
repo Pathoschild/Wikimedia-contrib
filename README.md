@@ -28,16 +28,26 @@ These user scripts extend the wiki interface seen by a user, and they're sometim
 
 ## For maintainers
 ### Deploy to Toolforge
-This repo uses two Toolforge accounts by default: `meta` (all tools except crossactivity) and
-`meta2` (crossactivity only). They redirect as needed, so all tools can be accessed through either
-hostname. To use different accounts, edit the `tool-labs/backend/modules/__config__.php` and
-`tool-labs/.lighttpd*` files accordingly.
+This repo uses three Toolforge accounts by default:
+
+account | tools
+------- | -----
+`meta`  | most tools
+`meta2` | crossactivity
+`meta3` | stalktoy
+
+They redirect as needed, so all tools can be accessed through eitherhostname. To use different
+accounts, edit the `tool-labs/backend/modules/__config__.php` and `tool-labs/.lighttpd*` files
+accordingly.
 
 To deploy from scratch:
 
 1. [Connect to Toolforge via SSH](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts).
 2. Run this script:
    ```sh
+   ##########
+   ## Set up meta
+   ##########
    # switch to the meta project
    become meta
 
@@ -47,7 +57,7 @@ To deploy from scratch:
    mkdir public_html
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta.conf .lighttpd.conf
    cd public_html
-   for TARGET in backend content 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect pgkbot regextoy stalktoy stewardry userpages
+   for TARGET in backend content 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect pgkbot regextoy stewardry userpages
    do
       ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
    done
@@ -61,6 +71,10 @@ To deploy from scratch:
    ## launch server
    webservice --backend=kubernetes start
 
+
+   ##########
+   ## Set up meta2
+   ##########
    ## switch to the meta2 project
    exit
    become meta2
@@ -72,6 +86,28 @@ To deploy from scratch:
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta2.conf .lighttpd.conf
    cd public_html
    for TARGET in backend content crossactivity
+   do
+      ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
+   done
+
+   ## launch server
+   webservice --backend=kubernetes start
+
+
+   ##########
+   ## Set up meta3
+   ##########
+   ## switch to the meta3 project
+   exit
+   become meta3
+
+   ## set up files
+   git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
+   mkdir cache
+   mkdir public_html
+   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta3.conf .lighttpd.conf
+   cd public_html
+   for TARGET in backend content stalktoy
    do
       ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
    done
