@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 68;
+        return 70;
     }
 
     /**
@@ -22,6 +22,28 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2024: steward elections
+        ##########
+        // voters
+        yield (new Event(70, 2024, 'steward elections', 'https://meta.wikimedia.org/wiki/Stewards/Elections_2024'))
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(600, null, '<202311', EditCountRule::ACCUMULATE))// 600 edits before 01 November 2023
+            ->addRule(new EditCountRule(50, '202308', '<202402', EditCountRule::ACCUMULATE));// 50 edits between 01 August 2023 and 31 January 2024
+
+        // candidates
+        yield (new Event(69, 2024, 'steward elections (candidates)', 'https://meta.wikimedia.org/wiki/Stewards/Elections_2024'))
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(600, null, '<202311', EditCountRule::ACCUMULATE))// 600 edits before 01 November 2023
+            ->addRule(new EditCountRule(50, '202308', '<202402', EditCountRule::ACCUMULATE))// 50 edits between 01 August 2023 and 31 January 2024
+            ->addRule(new HasGroupDurationRule('sysop', 90, '<20240131'), Workflow::ON_ANY_WIKI)// flagged as a sysop for three months
+            ->withAction('<strong>be a candidate</strong>')
+            ->withExtraRequirements([
+                'You must be at least 18 years old, and at least the age of majority in your country.',
+                'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
+                'You must <a href="https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Access_to_nonpublic_personal_data_policy" title="Access to nonpublic personal data policy">sign the confidentiality agreement</a>.'
+            ]);
+
         ##########
         ## 2023: Commons Picture of the Year for 2022
         ##########
