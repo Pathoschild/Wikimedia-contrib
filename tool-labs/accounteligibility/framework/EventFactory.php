@@ -23,6 +23,19 @@ class EventFactory
     public function getEvents()
     {
         ##########
+        ## 2024: Vote to ratify the charter for the Universal Code of Conduct Coordinating Committee
+        ##########
+        yield (new Event(72, 2024, 'Vote to ratify the charter for the Universal Code of Conduct Coordinating Committee', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Charter/Voter_information'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)// not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20231216', EditCountRule::ACCUMULATE))// 300 edits before 16 December 2023
+            ->addRule(new EditCountRule(20, '20230616', '<20231216', EditCountRule::ACCUMULATE))// 20 edits between 16 June 2023 and 16 December 2023
+            ->withExtraRequirements(['Your account must not be a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Charter/Voter_information#Voting_eligibility">official voting rules</a> for specific exceptions including developers, staff, contractors, community organizers, and tool/script contributors.'
+            ]);
+
+        ##########
         ## 2024: Commons Picture of the Year for 2023
         ##########
         yield (new Event(71, 2024, 'Commons Picture of the Year for 2023', 'https://commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2023'))
