@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 71;
+        return 74;
     }
 
     /**
@@ -22,6 +22,32 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2024: Universal Code of Conduct Coordinating Committee elections
+        ##########
+        // voters
+        yield (new Event(74, 2024, 'Universal Code of Conduct Coordinating Committee elections (voters)', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024/Voter_eligibility_criteria'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20240317', EditCountRule::ACCUMULATE))      // 300 edits before 17 March 2024
+            ->addRule(new EditCountRule(20, '20230317', '<20240317', EditCountRule::ACCUMULATE)) // 20 edits between 17 March 2023 and 17 March 2024
+            ->withExtraRequirements(['Your account must not be a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024/Voter_eligibility_criteria">official voting rules</a> for specific exceptions including developers, translators, staff, contractors, community organizers, and tool/script contributors.'
+            ]);
+
+        // candidates
+        yield (new Event(73, 2024, 'Universal Code of Conduct Coordinating Committee elections (candidates)', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024#Call_for_Candidates'))
+            ->addRule(new NotBlockedRule(), Workflow::HARD_FAIL)                            // not blocked on any wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new AccountAgeRule(365, '<20240317'))                                 // registered at least 365 days before 17 March 2024
+            ->addRule(new EditCountRule(500, null, '<20240317', EditCountRule::ACCUMULATE)) // 500 edits before 17 March 2024
+            ->withExtraRequirements(['Your account must not be a bot.'])
+            ->withAction('<strong>be a candidate</strong>')
+            ->withExtraRequirements([
+                'You must meet the other <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024#Call_for_Candidates">candidate eligibility requirements</a>.'
+            ]);
+
         ##########
         ## 2024: Vote to ratify the charter for the Universal Code of Conduct Coordinating Committee
         ##########

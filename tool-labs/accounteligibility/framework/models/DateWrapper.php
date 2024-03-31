@@ -9,6 +9,12 @@ class DateWrapper
     ## Accessors
     ##########
     /**
+     * The date in PHP format.
+     * @var DateTime
+     */
+    public $date;
+
+    /**
      * The date in MediaWiki's database format.
      * @var int
      */
@@ -34,9 +40,9 @@ class DateWrapper
      */
     public function __construct($date)
     {
-        $date = $this->getDate($date);
-        $this->mediawiki = intval($date->format("YmdHis"));
-        $this->readable = $date->format("d F Y");
+        $this->date = $this->getDate($date);
+        $this->mediawiki = intval($this->date->format("YmdHis"));
+        $this->readable = $this->date->format("d F Y");
     }
 
 
