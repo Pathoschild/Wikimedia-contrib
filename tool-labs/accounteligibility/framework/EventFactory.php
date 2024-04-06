@@ -38,10 +38,10 @@ class EventFactory
 
         // candidates
         yield (new Event(73, 2024, 'Universal Code of Conduct Coordinating Committee elections (candidates)', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024#Call_for_Candidates'))
-            ->addRule(new NotBlockedRule(), Workflow::HARD_FAIL)                            // not blocked on any wiki
+            ->addRule(new NotBlockedRule(), Workflow::HARD_FAIL)                               // not blocked on any wiki
             ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-            ->addRule(new AccountAgeRule(365, '<20240317'))                                 // registered at least 365 days before 17 March 2024
-            ->addRule(new EditCountRule(500, null, '<20240317', EditCountRule::ACCUMULATE)) // 500 edits before 17 March 2024
+            ->addRule(new AccountAgeRule(365, '202403051200'))                                 // registered at least 365 days before 05 March 2024 at 12:00 UTC
+            ->addRule(new EditCountRule(500, null, '202403051200', EditCountRule::ACCUMULATE)) // 500 edits before 05 March 2024 at 12:00 UTC
             ->withExtraRequirements(['Your account must not be a bot.'])
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([

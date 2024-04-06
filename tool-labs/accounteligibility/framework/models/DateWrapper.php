@@ -43,6 +43,10 @@ class DateWrapper
         $this->date = $this->getDate($date);
         $this->mediawiki = intval($this->date->format("YmdHis"));
         $this->readable = $this->date->format("d F Y");
+
+        $time = $this->date->format("H:i");
+        if ($time != "00:00")
+            $this->readable .= " at " . $time . " UTC";
     }
 
 
