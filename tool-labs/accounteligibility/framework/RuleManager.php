@@ -55,6 +55,7 @@ class RuleManager
         // accumulate rules
         $results = [];
         $allPassed = true;
+        $allPassedOrSoftPassed = true;
         $anyFailedHard = null;
         foreach ($this->rules as $rule) {
             // ignore finalised rules
@@ -67,10 +68,17 @@ class RuleManager
                 $allPassed = false;
                 continue; // not applicable to this wiki
             }
-            if (!$result->isPass())
+
+            if (!$result->isPass()) {
                 $allPassed = false;
+
+                if (!$result->isSoftPass())
+                    $allPassedOrSoftPassed = false;
+            }
+
             if ($result->isFail() && ($result->isFinal || $rule->shouldFailHard))
                 $anyFailedHard = true;
+            
             array_push($results, $result);
         }
 
@@ -78,10 +86,14 @@ class RuleManager
         if ($allPassed) {
             $this->final = true;
             $this->result = Result::PASS;
-        } else if ($anyFailedHard) {
+        }
+        else if ($allPassedOrSoftPassed)
+            $this->result = Result::SOFT_PASS;
+        else if ($anyFailedHard) {
             $this->final = true;
             $this->result = Result::FAIL;
         }
+
         return $results;
     }
 }

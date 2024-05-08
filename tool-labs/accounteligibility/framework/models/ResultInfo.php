@@ -65,6 +65,15 @@ class ResultInfo
     }
 
     /**
+     * Get whether the eligibility check passed, but we should still check other wikis.
+     * @var bool
+     */
+    public function isSoftPass()
+    {
+        return $this->result == Result::SOFT_PASS;
+    }
+
+    /**
      * Get whether the eligibility check failed.
      * @var bool
      */

@@ -131,6 +131,7 @@ while ($engine->user->name) {
                     break;
 
                 case Result::PASS:
+                case Result::SOFT_PASS:
                     $engine->msg("• {$result->message}", "is-pass");
                     break;
 
@@ -151,7 +152,7 @@ while ($engine->user->name) {
             }
         }
     } while (!$rules->final && $engine->getNext());
-    $engine->eligible = $rules->result == Result::PASS;
+    $engine->eligible = $rules->result == Result::PASS || $rules->result == Result::SOFT_PASS;
     $engine->profiler->stop('verify requirements');
 
 

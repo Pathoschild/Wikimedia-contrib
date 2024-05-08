@@ -68,7 +68,7 @@ class NotBlockedRule implements Rule
 
         // get result
         if ($this->totalBlocks == 0) // not blocked
-            return new ResultInfo(Result::PASS, "not currently blocked...");
+            return new ResultInfo(Result::SOFT_PASS, "not currently blocked..."); // still need check other wikis
         else if ($this->maxBlocks <= 0) // one block with none allowed
             return new ResultInfo(Result::FAIL, "blocked on this wiki.");
         else if ($this->totalBlocks > $this->maxBlocks) // too many blocks
@@ -76,7 +76,7 @@ class NotBlockedRule implements Rule
         else { // some blocks but under the limit
             return $isBlocked
                 ? new ResultInfo(Result::ACCUMULATING, "blocked on this wiki but still eligible ({$this->totalBlocks} out of max {$this->maxBlocks} so far)...")
-                : new ResultInfo(Result::PASS, "not currently blocked ({$this->totalBlocks} out of max {$this->maxBlocks} so far)...");
+                : new ResultInfo(Result::SOFT_PASS, "not currently blocked ({$this->totalBlocks} out of max {$this->maxBlocks} so far)..."); // still need check other wikis
         }
     }
 

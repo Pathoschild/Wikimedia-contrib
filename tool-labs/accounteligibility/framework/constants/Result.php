@@ -18,6 +18,12 @@ class Result
     const ACCUMULATING = 'accumulating';
 
     /**
+     * The user is eligible, but we should still check other wikis.
+     * @var string
+     */
+    const SOFT_PASS = 'soft_pass';
+
+    /**
      * The user is eligible.
      * @var string
      */
