@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 74;
+        return 75;
     }
 
     /**
@@ -23,10 +23,24 @@ class EventFactory
     public function getEvents()
     {
         ##########
+        ## 2024: Wikimedia Movement Charter ratification vote
+        ##########
+        // voters
+        yield (new Event(75, 2024, 'Wikimedia Movement Charter ratification vote', 'https://meta.wikimedia.org/wiki/Movement_Charter/Ratification/Voting'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20240526', EditCountRule::ACCUMULATE))      // 300 edits before 26 May 2024
+            ->addRule(new EditCountRule(20, '20220526', '<20240526', EditCountRule::ACCUMULATE)) // 20 edits between 26 May 2022 and 26 May 2024
+            ->withExtraRequirements(['Your account must not be a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Movement_Charter/Ratification/Voting/Eligibility_criteria">official voting rules</a> for specific exceptions including developers, translators, staff, contractors, community organizers, and affiliates.'
+            ]);
+
+        ##########
         ## 2024: Universal Code of Conduct Coordinating Committee elections
         ##########
         // voters
-        yield (new Event(74, 2024, 'Universal Code of Conduct Coordinating Committee elections (voters)', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024/Voter_eligibility_criteria'))
+        yield (new Event(74, 2024, 'Universal Code of Conduct Coordinating Committee elections (voters)', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024'))
             ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
             ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
             ->addRule(new EditCountRule(300, null, '<20240317', EditCountRule::ACCUMULATE))      // 300 edits before 17 March 2024
