@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 75;
+        return 76;
     }
 
     /**
@@ -22,6 +22,19 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2024: Board of Trustees election
+        ##########
+        yield (new Event(76, 2024, 'Wikimedia Foundation elections', 'https://meta.wikimedia.org/wiki/Wikimedia_Foundation_elections/2024'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20240804', EditCountRule::ACCUMULATE))      // 300 edits before 04 August 2022
+            ->addRule(new EditCountRule(20, '20220906', '<20240804', EditCountRule::ACCUMULATE)) // 20 edits between 06 September 2022 and 04 August 2022
+            ->withExtraRequirements(['Your account must not be used by a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Wikimedia_Foundation_elections/2024/Voter_eligibility_guidelines">official voting information</a> for specific exceptions which cover developers, translators, staff, contractors, community organizers, etc.'
+            ]);
+
         ##########
         ## 2024: Wikimedia Movement Charter ratification vote
         ##########
