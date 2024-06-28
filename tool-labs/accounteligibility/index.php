@@ -100,11 +100,13 @@ while ($engine->user->name) {
 
     /* initialize wiki queue */
     $engine->profiler->start('init wiki queue');
+    echo '<details open><summary>';
     if (!$engine->initWikiQueue($engine->event->onlyDatabaseNames, $engine->event->minEditsForAutoselect)) {
         if (!$engine->selectManually)
             $engine->msg('Selection failed, aborted.');
         break;
     }
+    echo '</summary>';
     $engine->profiler->stop('init wiki queue');
 
     /* validate user exists */
@@ -154,6 +156,7 @@ while ($engine->user->name) {
     } while (!$rules->final && $engine->getNext());
     $engine->eligible = $rules->result == Result::PASS || $rules->result == Result::SOFT_PASS;
     $engine->profiler->stop('verify requirements');
+    echo '</details>';
 
 
     ############################

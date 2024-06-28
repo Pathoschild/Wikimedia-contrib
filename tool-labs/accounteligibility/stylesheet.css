@@ -30,3 +30,7 @@ h3 {
 .is-subnote {
     margin-left: 6em;
 }
+
+details summary div:only-child {
+    display: inline-block;
+}
