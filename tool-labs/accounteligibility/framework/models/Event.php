@@ -63,7 +63,7 @@ class Event
     public $onlyDatabaseNames;
 
     /**
-     * Whether the event is obsolete.
+     * Whether the event is obsolete, so it should be grayed out in the UI.
      * @var bool
      */
     public $obsolete;
@@ -147,6 +147,16 @@ class Event
     public function withMinEditsForAutoselect($value)
     {
         $this->minEditsForAutoselect = $value;
+        return $this;
+    }
+
+    /**
+     * Mark this event obsolete so it's grayed out in the UI.
+     * @return $this
+     */
+    public function markObsolete()
+    {
+        $this->obsolete = true;
         return $this;
     }
 
