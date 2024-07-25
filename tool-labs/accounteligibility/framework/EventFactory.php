@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 76;
+        return 77;
     }
 
     /**
@@ -22,6 +22,19 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2024: Universal Code of Conduct Coordinating Committee special elections
+        ##########
+        yield (new Event(77, 2024, 'Universal Code of Conduct Coordinating Committee special elections (voters)', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024_Special_Election'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20240720', EditCountRule::ACCUMULATE))      // 300 edits before 20 July 2024
+            ->addRule(new EditCountRule(20, '20230720', '<20240720', EditCountRule::ACCUMULATE)) // 20 edits between 20 July 2023 and 20 July 2024
+            ->withExtraRequirements(['Your account must not be a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024_Special_Election/Voter_eligibility_criteria">official voting rules</a> for specific exceptions including developers, translators, staff, contractors, community organizers, and tool/script contributors.'
+            ]);
+
         ##########
         ## 2024: Board of Trustees election
         ##########
