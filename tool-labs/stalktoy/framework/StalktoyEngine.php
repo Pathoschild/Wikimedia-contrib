@@ -252,13 +252,14 @@ class StalktoyEngine extends Base
             '
                 SELECT
                     gb_address,
-                    gb_by,
+                    gu_name,
                     gb_reason,
                     DATE_FORMAT(gb_timestamp, "%Y-%b-%d") AS timestamp,
                     gb_anon_only,
                     DATE_FORMAT(gb_expiry, "%Y-%b-%d") AS expiry
                 FROM
                     centralauth_p.globalblocks
+                    LEFT JOIN centralauth_p.globaluser ON gb_by_central_id = gu_id
                 WHERE
                     (gb_range_start <= ? AND gb_range_end >= ?)
                     OR (gb_range_start >= ? AND gb_range_end <= ?)
@@ -269,7 +270,7 @@ class StalktoyEngine extends Base
 
         foreach ($query as $row) {
             $block = new Stalktoy\Block();
-            $block->by = $row['gb_by'];
+            $block->by = $row['gu_name'];
             $block->target = $row['gb_address'];
             $block->timestamp = $row['timestamp'];
             $block->expiry = $row['expiry'];
