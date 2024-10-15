@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 77;
+        return 78;
     }
 
     /**
@@ -22,6 +22,20 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2024: enwiki administrator elections
+        ##########
+        yield (new Event(78, 2024, 'enwiki administrator elections', 'https://en.wikipedia.org/wiki/Wikipedia:Administrator_elections'))
+            ->addRule(new NotBlockedRule())
+            ->addRule(new AccountAgeRule(61, '<20241025'))                                           // "created their account over 2 months before the election"
+            ->addRule((new EditCountRule(150, null, '<20240925'))->inNamespace(0)->includeDeleted()) // "have 150 mainspace edits by 1 month before the election"
+            ->addRule((new EditCountRule(10, '20230925', '<20240925')))                              // "have 10 live edits in the year running up to 1 month before the election"
+            ->withOnlyDatabaseNames('enwiki')
+            ->withExtraRequirements([
+                'Your account must not be vanished.',
+                'You must not have already voted with another account.'
+            ]);
+
         ##########
         ## 2024: Universal Code of Conduct Coordinating Committee special elections
         ##########

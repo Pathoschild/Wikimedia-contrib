@@ -93,6 +93,15 @@ class EditCountRule implements Rule
     }
 
     /**
+     * Also count deleted edits. This significantly increases query time.
+     */
+    public function includeDeleted()
+    {
+        $this->countDeleted = true;
+        return $this;
+    }
+
+    /**
      * Collect information from a wiki and return whether the rule has been met.
      * @param Toolserver $db The database wrapper.
      * @param Wiki $wiki The current wiki.
@@ -123,7 +132,13 @@ class EditCountRule implements Rule
 
         $message = $isMet ? "has at least {$this->minCount} edits " : "does not have at least {$this->minCount} edits ";
         if ($this->namespace !== null)
-            $message .= "in namespace {$this->namespace} ";
+        {
+            $message .= $this->namespace === 0
+                ? "in the main namespace "
+                : "in namespace {$this->namespace} ";
+        }
+        if ($this->countDeleted)
+            $message .= "(including deleted) ";
         if ($this->minDate && $this->maxDate)
             $message .= "between {$start->readable} and {$end->readable} ";
         else if ($start)
