@@ -39,9 +39,9 @@ class EventFactory
             ->addRule(new HasGroupDurationRule('sysop', 90, '<20250131'), Workflow::ON_ANY_WIKI) // flagged as a sysop for three months
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
-                'You must be at least 18 years old, and at least the age of majority in your country.',
-                'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
-                'You must <a href="https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Access_to_nonpublic_personal_data_policy" title="Access to nonpublic personal data policy">sign the confidentiality agreement</a>.'
+                'You must be at least 18 years old, and at least the age of majority in your country, before 06 February 2025.',
+                'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Stewards_policy" title="Stewards policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Wikimedia_Foundation_Access_to_Nonpublic_Personal_Data_Policy" title="Wikimedia Foundation Access to Nonpublic Personal Data Policy">access to non-public personal data</a>.',
+                'You must <a href="https://foundation.wikimedia.org/wiki/Special:MyLanguage/Legal:Wikimedia_Foundation_Confidentiality_Agreement_for_Nonpublic_Information" title="Wikimedia Foundation Confidentiality Agreement for Nonpublic Information">sign the confidentiality agreement</a>.'
             ]);
 
         ##########
