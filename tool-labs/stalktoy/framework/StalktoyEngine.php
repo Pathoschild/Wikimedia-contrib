@@ -391,17 +391,38 @@ class StalktoyEngine extends Base
         $end = $ip->ip->getEncoded(IPAddress::END);
         $query = $this->db->query(
             '
-                SELECT
-                    ipb_by_actor,
-                    ipb_address,
-                    ipb_reason_id,
-                    DATE_FORMAT(ipb_timestamp, "%Y-%b-%d") AS timestamp,
-                    DATE_FORMAT(ipb_expiry, "%Y-%b-%d") AS expiry,
-                    ipb_anon_only
-                FROM ipblocks_ipindex
-                WHERE
-                    (ipb_range_start <= ? AND ipb_range_end >= ?)
-                    OR (ipb_range_start >= ? AND ipb_range_end <= ?)
+                -- find range blocks (which have `ipb_range_start` and `ipb_range_end` set)
+                (
+                    SELECT
+                        ipb_by_actor,
+                        ipb_address,
+                        ipb_reason_id,
+                        ipb_anon_only,
+                        DATE_FORMAT(ipb_timestamp, "%Y-%b-%d") AS timestamp,
+                        DATE_FORMAT(ipb_expiry, "%Y-%b-%d") AS expiry
+                    FROM ipblocks_ipindex
+                    WHERE
+                        ipb_address IS NOT NULL
+                        AND ipb_range_start IS NOT NULL
+                        AND ipb_range_end >= ?/*start*/
+                        AND ipb_range_start <= ?/*end*/
+                )
+
+                -- find single-IP blocks (where we need to calculate the IP hex ourselves)
+                UNION ALL (
+                    SELECT
+                        ipb_by_actor,
+                        ipb_address,
+                        ipb_reason_id,
+                        ipb_anon_only,
+                        DATE_FORMAT(ipb_timestamp, "%Y-%b-%d") AS timestamp,
+                        DATE_FORMAT(ipb_expiry, "%Y-%b-%d") AS expiry
+                    FROM ipblocks_ipindex
+                    WHERE
+                        ipb_address IS NOT NULL
+                        AND ipb_range_start IS NULL
+                        AND LPAD(HEX(INET_ATON(ipb_address)), 8, \'0\') BETWEEN ?/*start*/ and ?/*end*/
+                )
             ',
             [$start, $end, $start, $end]
         )->fetchAllAssoc();
