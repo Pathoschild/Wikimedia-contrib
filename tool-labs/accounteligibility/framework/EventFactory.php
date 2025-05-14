@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 80;
+        return 81;
     }
 
     /**
@@ -22,6 +22,19 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2025: Universal Code of Conduct Coordinating Committee special elections
+        ##########
+        yield (new Event(81, 2025, 'Universal Code of Conduct Coordinating Committee elections (voters)', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2025'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20250513', EditCountRule::ACCUMULATE))      // 300 edits before 13 May 2025
+            ->addRule(new EditCountRule(20, '20240513', '<20250513', EditCountRule::ACCUMULATE)) // 20 edits between 13 May 2024 and 13 May 2025
+            ->withExtraRequirements(['Your account must not be a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2025/Voter_eligibility_criteria">official voting rules</a> for specific exceptions including developers, staff, and contractors.'
+            ]);
+
         ##########
         ## 2025: steward elections
         ##########
