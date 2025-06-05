@@ -302,15 +302,16 @@ class StalktoyEngine extends Base
                     DATE_FORMAT(user_registration, "%Y-%m-%d %H:%i") AS registration,
                     user_editcount,
                     GROUP_CONCAT(ug_group SEPARATOR ", ") AS user_groups,
-                    ipb_by_actor,
-                    ipb_reason_id,
-                    DATE_FORMAT(ipb_timestamp, "%Y-%m-%d %H:%i") AS ipb_timestamp,
-                    ipb_deleted,
-                    COALESCE(DATE_FORMAT(ipb_expiry, "%Y-%m-%d %H:%i"), ipb_expiry) AS ipb_expiry
+                    bl_by_actor,
+                    bl_reason_id,
+                    DATE_FORMAT(bl_timestamp, "%Y-%m-%d %H:%i") AS bl_timestamp,
+                    bl_deleted,
+                    COALESCE(DATE_FORMAT(bl_expiry, "%Y-%m-%d %H:%i"), bl_expiry) AS bl_expiry
                 FROM
                     user
                     LEFT JOIN user_groups ON user_id = ug_user
-                    LEFT JOIN ipblocks_ipindex ON user_id = ipb_user
+                    LEFT JOIN block_target ON user_id = bt_user
+                    LEFT JOIN block ON bt_id = bl_target
                 WHERE user_name = ?
                 LIMIT 1
             ',
@@ -322,10 +323,10 @@ class StalktoyEngine extends Base
             $row['actor_id'] = $db->query('SELECT actor_id FROM actor WHERE actor_user = ? LIMIT 1', [$row['user_id']])->fetchValue();
 
         // fetch block reason if needed
-        if ($row['ipb_reason_id'])
+        if ($row['bl_reason_id'])
         {
-            $row['ipb_by_text'] = $db->query('SELECT actor_name FROM actor WHERE actor_id = ? LIMIT 1', [$row['ipb_by_actor']])->fetchValue();
-            $row['ipb_reason'] = $db->query('SELECT comment_text FROM comment WHERE comment_id = ? LIMIT 1', [$row['ipb_reason_id']])->fetchValue();
+            $row['bl_by_name'] = $db->query('SELECT actor_name FROM actor WHERE actor_id = ? LIMIT 1', [$row['bl_by_actor']])->fetchValue();
+            $row['bl_reason'] = $db->query('SELECT comment_text FROM comment WHERE comment_id = ? LIMIT 1', [$row['bl_reason_id']])->fetchValue();
         }
 
         // build model
@@ -350,15 +351,15 @@ class StalktoyEngine extends Base
             }
 
             // block details
-            $account->isBlocked = isset($row['ipb_timestamp']);
+            $account->isBlocked = isset($row['bl_timestamp']);
             if ($account->isBlocked) {
                 $account->block = new Stalktoy\Block();
-                $account->block->by = $row['ipb_by_text'];
+                $account->block->by = $row['bl_by_name'];
                 $account->block->target = $userName;
-                $account->block->reason = $row['ipb_reason'];
-                $account->block->timestamp = $row['ipb_timestamp'];
-                $account->block->isHidden = $row['ipb_deleted'];
-                $account->block->expiry = $row['ipb_expiry'];
+                $account->block->reason = $row['bl_reason'];
+                $account->block->timestamp = $row['bl_timestamp'];
+                $account->block->isHidden = $row['bl_deleted'];
+                $account->block->expiry = $row['bl_expiry'];
             }
         }
 
@@ -391,38 +392,25 @@ class StalktoyEngine extends Base
         $end = $ip->ip->getEncoded(IPAddress::END);
         $query = $this->db->query(
             '
-                -- find range blocks (which have `ipb_range_start` and `ipb_range_end` set)
-                (
-                    SELECT
-                        ipb_by_actor,
-                        ipb_address,
-                        ipb_reason_id,
-                        ipb_anon_only,
-                        DATE_FORMAT(ipb_timestamp, "%Y-%b-%d") AS timestamp,
-                        DATE_FORMAT(ipb_expiry, "%Y-%b-%d") AS expiry
-                    FROM ipblocks_ipindex
-                    WHERE
-                        ipb_address IS NOT NULL
-                        AND ipb_range_start IS NOT NULL
-                        AND ipb_range_end >= ?/*start*/
-                        AND ipb_range_start <= ?/*end*/
-                )
-
-                -- find single-IP blocks (where we need to calculate the IP hex ourselves)
-                UNION ALL (
-                    SELECT
-                        ipb_by_actor,
-                        ipb_address,
-                        ipb_reason_id,
-                        ipb_anon_only,
-                        DATE_FORMAT(ipb_timestamp, "%Y-%b-%d") AS timestamp,
-                        DATE_FORMAT(ipb_expiry, "%Y-%b-%d") AS expiry
-                    FROM ipblocks_ipindex
-                    WHERE
-                        ipb_address IS NOT NULL
-                        AND ipb_range_start IS NULL
-                        AND LPAD(HEX(INET_ATON(ipb_address)), 8, \'0\') BETWEEN ?/*start*/ and ?/*end*/
-                )
+                SELECT
+                    bt_address,
+                    bl_by_actor,
+                    bl_reason_id,
+                    bl_anon_only,
+                    DATE_FORMAT(bl_timestamp, "%Y-%b-%d") AS timestamp,
+                    DATE_FORMAT(bl_expiry, "%Y-%b-%d") AS expiry
+                FROM
+                    block
+                    INNER JOIN block_target ON bt_id = bl_target
+                WHERE
+                    bt_address IS NOT NULL
+                    AND CASE
+                        WHEN bt_range_end IS NULL THEN
+                            bt_ip_hex BETWEEN ?/*start*/ AND ?/*end*/
+                        ELSE
+                            bt_range_end >= ?/*start*/
+                            AND bt_range_start <= ?/*end*/
+                    END
             ',
             [$start, $end, $start, $end]
         )->fetchAllAssoc();
@@ -431,15 +419,15 @@ class StalktoyEngine extends Base
         $blocks = [];
         foreach ($query as $row) {
             $block = new Stalktoy\Block();
-            $block->target = $row['ipb_address'];
+            $block->target = $row['bt_address'];
             $block->timestamp = $row['timestamp'];
             $block->expiry = $row['expiry'];
-            $block->anonOnly = $row['ipb_anon_only'];
+            $block->anonOnly = $row['bl_anon_only'];
             $block->isHidden = false;
 
-            $block->by = $this->db->query("SELECT actor_name FROM actor WHERE actor_id = ? LIMIT 1", [$row['ipb_by_actor']])->fetchValue();
-            if ($row['ipb_reason_id'])
-                $block->reason = $this->db->query("SELECT comment_text FROM comment WHERE comment_id = ? LIMIT 1", [$row['ipb_reason_id']])->fetchValue();
+            $block->by = $this->db->query("SELECT actor_name FROM actor WHERE actor_id = ? LIMIT 1", [$row['bl_by_actor']])->fetchValue();
+            if ($row['bl_reason_id'])
+                $block->reason = $this->db->query("SELECT comment_text FROM comment WHERE comment_id = ? LIMIT 1", [$row['bl_reason_id']])->fetchValue();
 
             $blocks[] = $block;
         }
