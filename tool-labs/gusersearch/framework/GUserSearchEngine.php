@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Provides global user search methods.
  */
@@ -17,104 +19,91 @@ class GUserSearchEngine extends Base
 
     /**
      * The minimum limit on the number of records that can be returned.
-     * @var int
      */
     const MIN_LIMIT = 1;
 
     /**
      * The maximum limit on the number of records that can be returned.
-     * @var int
      */
     const MAX_LIMIT = 5000;
 
     /**
      * The default limit on the number of records that can be returned.
-     * @var int
      */
     const DEFAULT_LIMIT = 50;
 
     /**
      * The current username. (Only used for pagination.)
-     * @var string
      */
-    public $name;
+    public string $name = '';
 
     /**
      * Whether the current search is a regex pattern. (Only used for pagination.)
-     * @var bool
      */
-    public $useRegex;
+    public bool $useRegex;
 
     /**
      * Whether to show locked users. (Only used for pagination.)
-     * @var bool
      */
-    public $showLocked;
+    public bool $showLocked;
 
     /**
      * Whether the search is case-insensitive. (Only used for pagination.)
      */
-    public $caseInsensitive;
+    public bool $caseInsensitive;
 
     /**
      * The earliest registration date for which to show users.
-     * @var string
      */
-    public $minDate;
+    public ?string $minDate;
 
     /**
      * The SQL filters to apply, as a `table name => [operator, value]` lookup.
-     * @var array
+     * @var array<string, array<string, string[]>>
      */
-    protected $filters = [];
+    protected array $filters = [];
 
     /**
      * The human-readable string representations of the SQL filters.
      * @var string[]
      */
-    protected $filterDescriptions = [];
+    protected array $filterDescriptions = [];
 
     /**
      * Whether the script has been disposed.
-     * @var bool
      */
-    private $disposed = false;
+    private bool $disposed = false;
 
     /**
      * The maximum number of results to show.
-     * @var int
      */
-    public $limit = 50;
+    public int $limit = 50;
 
     /**
      * The number of results to skip.
-     * @var int
      */
-    public $offset = 0;
+    public int $offset = 0;
 
     /**
      * The SQL query to execute.
-     * @var string
      */
-    public $query = "";
+    public string $query = "";
 
     /**
      * The parameterised values for the SQL query.
-     * @var array
+     * @var mixed[]
      */
-    public $values = [];
+    public array $values = [];
 
     /**
      * Provides a wrapper used by page scripts to generate HTML, interact with the database, and so forth.
-     * @var Backend
      */
-    private $backend;
+    private Backend $backend;
 
     /**
      * The underlying database connection.
-     * @var Toolserver
      */
-    public $db;
+    public Toolserver $db;
 
 
     ##########
@@ -124,7 +113,7 @@ class GUserSearchEngine extends Base
      * Construct an instance.
      * @param Backend $backend Provides a wrapper used by page scripts to generate HTML, interact with the database, and so forth.
      */
-    public function __construct($backend)
+    public function __construct(Backend $backend)
     {
         parent::__construct();
 
@@ -139,7 +128,7 @@ class GUserSearchEngine extends Base
      * @param string $operator The SQL comparison operator (one of {@see GUserSearchEngine::OP_REGEXP}, {@see GUserSearchEngine::OP_LIKE}, {@see GUserSearchEngine::OP_EQUAL}, or {@see GUserSearchEngine::OP_NOT_EQUAL}).
      * @param string $value The value to compare against.
      */
-    public function filter($table, $field, $operator, $value)
+    public function filter(string $table, string $field, string $operator, string $value): void
     {
         $this->filters[$table][$field] = [$operator, $value];
     }
@@ -148,7 +137,7 @@ class GUserSearchEngine extends Base
      * Add a human-readable filter label for the summary output.
      * @param string $text The filter label.
      */
-    public function describeFilter($text)
+    public function describeFilter(string $text): void
     {
         array_push($this->filterDescriptions, $this->formatText($text));
     }
@@ -157,7 +146,7 @@ class GUserSearchEngine extends Base
      * Set the maximum number of records to return.
      * @param int $limit The maximum number of records to return. This should be a value between {@see GUserSearchEngine::MIN_LIMIT} and {@see GUserSearchEngine::MAX_LIMIT}.
      */
-    public function setLimit($limit)
+    public function setLimit(int $limit): void
     {
         $limit = (int)$limit;
 
@@ -174,7 +163,7 @@ class GUserSearchEngine extends Base
      * Set the number of records to skip.
      * @param int $offset The number of records to skip.
      */
-    public function setOffset($offset)
+    public function setOffset(int $offset): void
     {
         $offset = (int)$offset;
         if ($offset < 0)
@@ -187,9 +176,8 @@ class GUserSearchEngine extends Base
      * Get the value of a filter.
      * @param string $table The filtered SQL table.
      * @param string $field The filtered SQL field.
-     * @return string|null
      */
-    public function getFilterValue($table, $field)
+    public function getFilterValue(string $table, string $field): ?string
     {
         if (isset($this->filters[$table][$field]))
             return $this->filters[$table][$field][1];
@@ -198,9 +186,8 @@ class GUserSearchEngine extends Base
 
     /**
      * Get a human-readable summary of the query result and search options.
-     * @return string
      */
-    public function getFormattedSummary()
+    public function getFormattedSummary(): string
     {
         $count = $this->db->countRows();
         $output = '';
@@ -209,7 +196,7 @@ class GUserSearchEngine extends Base
             $output .= ($count < $this->limit ? "Found all " : "Found latest ");
             $output .= $this->db->countRows() . " global accounts where ";
         } else
-            $output .= "Found <b>no global accounts</b> matching ";
+            $output .= "Found no global accounts matching ";
 
         return $output . '[' . implode('] and [', $this->filterDescriptions) . ']';
     }
@@ -219,9 +206,8 @@ class GUserSearchEngine extends Base
      * @param int $limit The maximum number of records to return. This should be a value between {@see GUserSearchEngine::MIN_LIMIT} and {@see GUserSearchEngine::MAX_LIMIT}.
      * @param int $offset The number of records to skip.
      * @param string $label The link text.
-     * @return string
      */
-    public function getPaginationLinkHtml($limit, $offset, $label = null)
+    public function getPaginationLinkHtml($limit, $offset, $label = null): string
     {
         $link = "<a href='?name=" . urlencode($this->name);
 
@@ -244,9 +230,8 @@ class GUserSearchEngine extends Base
     /**
      * Prepare the SQL filters for execution and return the generated SQL where clause.
      * @param string $table The table whose filters to prepare.
-     * @return string
      */
-    protected function prepareFilters($table)
+    protected function prepareFilters(string $table): string
     {
         if (!isset($this->filters[$table]) || !count($this->filters[$table]))
             return "";
@@ -263,7 +248,7 @@ class GUserSearchEngine extends Base
     /**
      * Prepare and execute the SQL query.
      */
-    public function query()
+    public function query(): void
     {
         $db = $this->db;
         $profiler = $this->backend->profiler;
@@ -281,9 +266,9 @@ class GUserSearchEngine extends Base
         if ($this->minDate) {
             $profiler->start('calculate range for date filter');
 
-            $minID = $db->query('SELECT gu_id FROM centralauth_p.globaluser WHERE gu_registration < ? ORDER BY gu_id DESC LIMIT 1', $this->minDate)->fetchValue();
-            if ($minID) {
-                $this->filter(GUserSearchEngine::T_GLOBALUSER, 'gu_registration', '>', $minID);
+            $minId = $db->query('SELECT gu_id FROM centralauth_p.globaluser WHERE gu_registration < ? ORDER BY gu_id DESC LIMIT 1', [$this->minDate])->fetchValue();
+            if ($minId) {
+                $this->filter(GUserSearchEngine::T_GLOBALUSER, 'gu_registration', '>', $minId);
             }
 
             $profiler->stop('calculate range for date filter');
@@ -326,7 +311,7 @@ class GUserSearchEngine extends Base
     /**
      * Release resources used by script.
      */
-    public function dispose()
+    public function dispose(): void
     {
         if ($this->disposed)
             return;

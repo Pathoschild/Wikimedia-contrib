@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * An abstract rule accumulator that collects information from each wiki to determine whether the
@@ -13,5 +14,5 @@ interface Rule
      * @param LocalUser $user The local user account.
      * @return ResultInfo|null The eligibility check result, or null if the rule doesn't apply to this wiki.
      */
-    function accumulate($db, $wiki, $user);
+    function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo;
 }

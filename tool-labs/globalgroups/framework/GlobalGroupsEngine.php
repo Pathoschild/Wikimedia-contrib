@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * The tool engine.
@@ -10,11 +11,11 @@ class GlobalGroupsEngine extends Base
     ##########
     /**
      * Compare two groups for sorting based on the $sort value.
-     * @param array $a The left group.
-     * @param array $b The right group.
-     * @return int
+     * @param array<'members'|'rights'|'name', mixed> $a The left group.
+     * @param array<'members'|'rights'|'name', mixed> $b The right group.
+     * @param 'members'|'name'|'permissions' $sortBy The field to sort by.
      */
-    function groupSort($a, $b)
+    function groupSort(array $a, array $b, string $sortBy): int
     {
         global $sort;
         switch ($sort) {

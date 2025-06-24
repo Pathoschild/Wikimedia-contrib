@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * The tool engine.
  */
@@ -13,9 +15,8 @@ class CatanalysisEngine extends Base
      * @param int $total The total value across all bars.
      * @param int $barvalue The value of this bar.
      * @param bool $strike Whether to format the label as struck out.
-     * @return string
      */
-    public function getBarHtml($label, $total, $barvalue, $strike = false)
+    public function getBarHtml(string $label, int $total, int $barvalue, bool $strike = false): string
     {
         $bars = floor($total / $barvalue);
         $out = '';
@@ -39,10 +40,9 @@ class CatanalysisEngine extends Base
      * Get the HTML for a link.
      * @param string $url The base wiki URL.
      * @param string $target The link URL.
-     * @param string $text The link text.
-     * @return string
+     * @param string|null $text The link text.
      */
-    public function getLinkHtml($url, $target, $text = null)
+    public function getLinkHtml(string $url, string $target, ?string $text = null): string
     {
         $text = $this->formatText($text ? $text : $target);
         $target = $this->formatValue($target);
@@ -54,7 +54,7 @@ class CatanalysisEngine extends Base
      * @param int $id The namespace ID.
      * @return string
      */
-    public function getNamespaceName($id)
+    public function getNamespaceName(int $id): string
     {
         switch ($id) {
             // built-in namespaces (https://www.mediawiki.org/wiki/Manual:Namespace#Built-in_namespaces)
@@ -130,11 +130,11 @@ class CatanalysisEngine extends Base
     /**
      * Get a SQL query that fetches all the edits to pages with a common prefix.
      * @param Database $db The connected database instance.
-     * @param string $namespace The namespace to search.
+     * @param string|null $namespace The namespace to search.
      * @param string $title The page prefix to search.
      * @return Database The Database instance to chain query methods.
      */
-    public function getEditsByPrefix($db, $namespace, $title)
+    public function getEditsByPrefix(Database $db, ?string $namespace, string $title): Database
     {
         /* build initial query */
         $sql = '
@@ -183,7 +183,7 @@ class CatanalysisEngine extends Base
      * @param string $title The category title to search.
      * @return Database The Database instance to chain query methods.
      */
-    public function getEditsByCategory($db, $title)
+    public function getEditsByCategory(Database $db, string $title): Database
     {
         /* fetch list of subcategories */
         $cats = [];
@@ -255,9 +255,8 @@ class CatanalysisEngine extends Base
     /**
      * Get whether the given username matches an anonymous user.
      * @param string $name The username.
-     * @return boolean
      */
-    public function isAnonymousUser($name)
+    public function isAnonymousUser(string $name): bool
     {
         $ip = new IPAddress($name);
         return $ip->isValid();
@@ -269,7 +268,7 @@ class CatanalysisEngine extends Base
      * @param Database $revisionQuery The revision query.
      * @return Metrics The revision metrics.
      */
-    public function getEditMetrics($db, $revisionQuery) {
+    public function getEditMetrics(Database $db, Database $revisionQuery): Metrics {
         $metrics = new Metrics();
 
         // fetch revisions
@@ -279,8 +278,11 @@ class CatanalysisEngine extends Base
         $actorNames = [];
         foreach ($revisions as $row)
             $actorNames[$row['rev_actor']] = null;
-        foreach ($db->query('SELECT actor_id, actor_name FROM actor WHERE actor_id IN (' . implode(',', array_keys($actorNames)) .')')->fetchAllAssoc() as $actor)
-            $actorNames[$actor['actor_id']] = $actor['actor_name'];
+        if (count($actorNames) > 0)
+        {
+            foreach ($db->query('SELECT actor_id, actor_name FROM actor WHERE actor_id IN (' . implode(',', array_keys($actorNames)) .')')->fetchAllAssoc() as $actor)
+                $actorNames[$actor['actor_id']] = $actor['actor_name'];
+        }
 
         // process data
         foreach ($revisions as $row) {
@@ -292,10 +294,10 @@ class CatanalysisEngine extends Base
             $username = $isAnonymous ? '(Anonymous)' : $row['actor_name'];
 
             // init hashes if needed
-            $month = $this->initArrayKey($metrics->months, $monthKey, function() { return new MonthMetrics(); });
-            $user = $this->initArrayKey($metrics->users, $username, function() { return new UserData(); });
-            $page = $this->initArrayKey($metrics->pages, $row['rev_page'], function() { return new PageData(); });
-            $monthUser = $this->initArrayKey($month->users, $username, function() { return new UserData(); });
+            $month = $this->initArrayKey($metrics->months, $monthKey, fn() => new MonthMetrics());
+            $user = $this->initArrayKey($metrics->users, $username, fn() => new UserData());
+            $page = $this->initArrayKey($metrics->pages, (string)$row['rev_page'], fn() => new PageData());
+            $monthUser = $this->initArrayKey($month->users, $username, fn() => new UserData());
 
             // update metrics
             $metrics->edits++;
@@ -316,7 +318,7 @@ class CatanalysisEngine extends Base
             // update page data
             $page->id = $row['rev_page'];
             $page->namespace = $row['page_namespace'];
-            if (!$page->name) {
+            if (!isset($page->name)) {
                 $page->name = str_replace('_', ' ', $row['page_title']);
                 $namespaceName = $this->getNamespaceName($page->namespace);
                 if($namespaceName)
@@ -324,7 +326,7 @@ class CatanalysisEngine extends Base
             }
             $page->edits++;
             $page->size = $row['rev_len'];
-            $page->isRedirect = $row['page_is_redirect'];
+            $page->isRedirect = boolval($row['page_is_redirect']);
         }
         unset($bytesAdded, $month, $monthKey, $prevSize, $query, $row);
 
@@ -333,13 +335,13 @@ class CatanalysisEngine extends Base
         $metrics->pages = array_values($metrics->pages);
         $metrics->users = array_values($metrics->users);
 
-        usort($metrics->months, function($a, $b) { return strcmp($a->name, $b->name); });
-        usort($metrics->pages, function($a, $b) { return strcmp($a->name, $b->name); });
-        usort($metrics->users, function($a, $b) { return strcmp($a->name, $b->name); });
+        usort($metrics->months, fn($a, $b) => strcmp($a->name, $b->name));
+        usort($metrics->pages, fn($a, $b) => strcmp($a->name, $b->name));
+        usort($metrics->users, fn($a, $b) => strcmp($a->name, $b->name));
 
         foreach($metrics->months as &$month) {
             $month->users = array_values($month->users);
-            usort($month->users, function($a, $b) { return strcmp($a->name, $b->name); });
+            usort($month->users, fn($a, $b) => strcmp($a->name, $b->name));
         }
 
         return $metrics;
@@ -351,17 +353,20 @@ class CatanalysisEngine extends Base
      * @param Metrics $metrics The revision metrics.
      * @return Metrics The revision metrics.
      */
-    public function flagBots($db, &$metrics)
+    public function flagBots(Database $db, Metrics &$metrics): Metrics
     {
         // get list of usernames
-        $users = array_map(function($user) { return $user->name; }, $metrics->users);
+        $users = array_map(fn($user) => $user->name, $metrics->users);
 
         // get flags
         $bots = [];
-        $query = $db->query('SELECT user_name FROM user INNER JOIN user_groups ON user_id = ug_user WHERE user_name IN (' . rtrim(str_repeat('?,', count($users)), ',') . ') AND ug_group = "bot"', $users);
-        while ($user = $query->fetchValue())
-            $bots[$user] = true;
-        unset($user, $query);
+        if (count($users) > 0)
+        {
+            $query = $db->query('SELECT user_name FROM user INNER JOIN user_groups ON user_id = ug_user WHERE user_name IN (' . rtrim(str_repeat('?,', count($users)), ',') . ') AND ug_group = "bot"', $users);
+            while ($user = $query->fetchValue())
+                $bots[$user] = true;
+            unset($user, $query);
+        }
 
         // flag bots in overall metrics
         foreach ($metrics->users as &$user)
@@ -390,24 +395,23 @@ class CatanalysisEngine extends Base
         return $metrics;
     }
 
+
     ##########
     ## Private methods
     ##########
     /**
      * Initialise an array key with the given default value if it isn't defined yet.
-     * @param mixed[] $array The array whose key to set.
-     * @param mixed $key The array key to set.
-     * @param mixed $default The default value to set if the key isn't defined.
-     * @return mixed Returns the value at that key.
+     * @template T
+     * @param array<string, mixed> $array The array whose key to set.
+     * @param string $key The array key to set.
+     * @param callable(): T $default The default value to set if the key isn't defined.
+     * @return T Returns the value at that key.
      */
-    private function initArrayKey(&$array, $key, $default)
+    private function initArrayKey(array &$array, string $key, callable $default): mixed
     {
-        if (!array_key_exists($key, $array)) {
-            if (is_callable($default))
-                $array[$key] = $default();
-            else
-                $array[$key] = $default;
-        }
+        if (!array_key_exists($key, $array))
+            $array[$key] = $default();
+
         return $array[$key];
     }
 }

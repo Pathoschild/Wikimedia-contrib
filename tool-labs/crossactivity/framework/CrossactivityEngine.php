@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * The tool engine.
@@ -10,10 +11,9 @@ class CrossactivityEngine extends Base
     ##########
     /**
      * Get HTML for a table cell containing a formatted date colored-coded by age.
-     * @param string $date The date to format.
-     * @return string
+     * @param string|null $date The date to format.
      */
-    function getColoredCellHtml($date)
+    function getColoredCellHtml(?string $date): string
     {
         if (!$date)
             $color = "CCC";
@@ -32,23 +32,23 @@ class CrossactivityEngine extends Base
 
     /**
      * Get HTML for a table cell containing a list of groups.
-     * @param string $groups The comma-separated groups to show.
-     * @return string
+     * @param string|null $groups The comma-separated groups to show.
      */
-    function getGroupCellHtml($groups)
+    function getGroupCellHtml(?string $groups): string
     {
+        $text = $this->formatText($groups);
+
         return empty($groups)
             ? "<td style='background-color:#CCC;'>&nbsp;</td>"
-            : "<td>$this->formatText($groups)</td>";
+            : "<td>$text</td>";
     }
 
     /**
      * Get an HTML wiki link.
      * @param string $domain The wiki domain.
      * @param string $page The page title.
-     * @return string
      */
-    function getLinkHtml($domain, $page)
+    function getLinkHtml(string $domain, string $page): string
     {
         return "<a href='https://{$domain}?title=" . urlencode($page) . "' title='" . htmlspecialchars($page) . "'>$domain</a>";
     }

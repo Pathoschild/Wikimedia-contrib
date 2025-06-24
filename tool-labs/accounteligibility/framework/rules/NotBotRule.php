@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * A rule which checks whether the account does not have a bot flag on any wiki.

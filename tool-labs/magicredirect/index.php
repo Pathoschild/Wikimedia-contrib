@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 require_once('../backend/modules/Backend.php');
 $backend = Backend::create('A template\'s magic redirect', 'Redirects to an arbitrary URL with tokens based on user and wiki filled in. This is primarily intended for Wikimedia templates such as {{<a href="https://meta.wikimedia.org/wiki/Template:sr-request" title="template:sr-request on Meta">sr-request</a>}} (see <a href="?url=//{wiki.domain}/wiki/Special:UserRights/{user.name}@{wiki.name}&wiki=metawiki&user=Pathoschild" title="reload with example values">example</a>).')
     ->link('/magicredirect/stylesheet.css')
@@ -18,7 +20,7 @@ $tokens = [
         'domain' => 'The domain portion of the URL, like \'fr.wikisource.org\'.',
         'size' => 'The number of articles on the wiki.',
         'isClosed' => 'Whether the wiki is locked and no longer publicly editable.',
-        'serverNumber' => 'The number of the server on which the wiki\'s <em>replicated</em> database is located.',
+        'serverName' => 'The name of the server on which the wiki\'s <em>replicated</em> database is located.',
         'host' => 'The host name of the server on which the wiki\'s <em>replicated</em> database is located.'
     ],
     'user' => [
@@ -54,7 +56,7 @@ if ($target) {
             if ($data->name == $dbname || $data->domain == $domain) {
                 $found = true;
                 foreach ($tokens['wiki'] as $token => $description)
-                    $target = str_replace('{wiki.' . $token . '}', $data->$token, $target);
+                    $target = str_replace('{wiki.' . $token . '}', (string)$data->$token, $target);
                 break;
             }
         }
@@ -68,7 +70,7 @@ if ($target) {
         $row = $db->query('SELECT gu_id AS id, gu_name AS name, gu_registration AS registration, gu_locked AS locked FROM centralauth_p.globaluser WHERE gu_name = ? LIMIT 1', [$user])->fetchAssoc();
         if ($row) {
             foreach ($tokens['user'] as $token => $description)
-                $target = str_replace('{user.' . $token . '}', $row[$token], $target);
+                $target = str_replace('{user.' . $token . '}', (string)$row[$token], $target);
         } else
             $error .= "<div class='fail'>Could not find a user with the name '{$backend->formatText($user)}'.</div>";
     }

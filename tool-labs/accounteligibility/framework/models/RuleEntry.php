@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * A rule entry with workflow logic.
@@ -10,45 +11,38 @@ class RuleEntry
     ##########
     /**
      * The eligibility rule.
-     * @var Rule
      */
-    public $rule;
+    public Rule $rule;
 
     /**
      * Whether to skip the remaining rules for the current wiki if this rule fails.
-     * @var bool
      */
-    public $shouldSkipOnFail = false;
+    public bool $shouldSkipOnFail = false;
 
     /**
      * Whether to immediately consider the user ineligible if this rule fails.
-     * @var bool
      */
-    public $shouldFailHard = false;
+    public bool $shouldFailHard = false;
 
     /**
      * This rule only needs to pass on one wiki.
-     * @var bool
      */
-    public $onAnyWiki = false;
+    public bool $onAnyWiki = false;
 
     /**
      * The result of the last eligibility check.
-     * @var ResultInfo
      */
-    public $lastResult;
+    public ?ResultInfo $lastResult = null;
 
     /**
      * The aggregate result (one of the {@see Result} values).
-     * @var string
      */
-    public $result = Result::ACCUMULATING;
+    public string $result = Result::ACCUMULATING;
 
     /**
      * Whether the result is final (i.e. there's no need to check further wikis).
-     * @var bool
      */
-    public $isFinal = false;
+    public bool $isFinal = false;
 
 
     ##########
@@ -59,7 +53,7 @@ class RuleEntry
      * @param Rule $rule The eligibility rule.
      * @param int $workflow The workflow options (a bit flag of {@see Workflow} options).
      */
-    public function __construct($rule, $workflow)
+    public function __construct(Rule $rule, int $workflow)
     {
         if (!$rule)
             throw new Exception('Can\'t create a rule entry with a null rule.');
@@ -77,7 +71,7 @@ class RuleEntry
      * @param LocalUser $user The local user account.
      * @return ResultInfo|null The eligibility check result, or null if the rule doesn't apply to this wiki.
      */
-    public function accumulate($db, $wiki, $user)
+    public function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo
     {
         // already final
         if ($this->isFinal)

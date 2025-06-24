@@ -69,7 +69,7 @@ To deploy from scratch:
    ln -s ~/git/wikimedia-contrib/user-scripts scripts
 
    ## launch server
-   webservice --backend=kubernetes start
+   toolforge webservice php8.2 start
 
 
    ##########
@@ -91,7 +91,7 @@ To deploy from scratch:
    done
 
    ## launch server
-   webservice --backend=kubernetes start
+   toolforge webservice php8.2 start
 
 
    ##########
@@ -113,7 +113,7 @@ To deploy from scratch:
    done
 
    ## launch server
-   webservice --backend=kubernetes start
+   toolforge webservice php8.2 start
    ```
 
 That's it! The new tools should now be running at https://meta.toolforge.org. To update an account

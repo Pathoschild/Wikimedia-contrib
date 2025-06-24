@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Provides static helpers for generating form elements.
@@ -20,12 +21,11 @@ class Form
     /**
      * Get an HTML string for a generic element.
      * @param string $tag The tag name.
-     * @param array $attrs The tag attributes as a name => value lookup.
-     * @param string $text The inner tag HTML.
-     * @param int $options The tag options (one of {@see Form::SELF_CLOSING}).
-     * @return string
+     * @param array<string, mixed> $attrs The tag attributes as a name => value lookup.
+     * @param string|null $text The inner tag HTML.
+     * @param int|null $options The tag options (one of {@see Form::SELF_CLOSING}).
      */
-    static function element($tag, $attrs, $text, $options = null)
+    static function element(string $tag, array $attrs, ?string $text, ?int $options = null): string
     {
         $out = "<{$tag}";
 
@@ -43,12 +43,11 @@ class Form
     /**
      * Get an HTML string for a checkbox.
      * @param string $name The checkbox name value.
-     * @param bool $checked Whether the checkbox should be checked.
-     * @param array $attrs The tag attributes as a name => value lookup.
-     * @param int $options The tag options (one of {@see Form::SELF_CLOSING}).
-     * @return string
+     * @param bool|null $checked Whether the checkbox should be checked.
+     * @param array<string, mixed> $attrs The tag attributes as a name => value lookup.
+     * @param int|null $options The tag options (one of {@see Form::SELF_CLOSING}).
      */
-    static function checkbox($name, $checked, $attrs = [], $options = null)
+    static function checkbox(string $name, ?bool $checked, array $attrs = [], ?int $options = null): string
     {
         $attrs['type'] = 'checkbox';
         $attrs['name'] = $name;
@@ -62,22 +61,21 @@ class Form
     /**
      * Get an HTML string for a drop-down menu.
      * @param string $name The dropdown name value.
-     * @param int $selectedIndex The index of the option to select.
-     * @param array $selectOptions The options with which to populate the dropdown as a key => value lookup.
-     * @param array $attrs The tag attributes as a name => value lookup.
-     * @param int $options The tag options (one of {@see Form::SELF_CLOSING}).
-     * @return string
+     * @param bool|int|string|null $selectedKey The key of the option to select.
+     * @param array<string, string> $selectOptions The options with which to populate the dropdown as a key => value lookup.
+     * @param array<string, mixed> $attrs The tag attributes as a name => value lookup.
+     * @param int|null $options The tag options (one of {@see Form::SELF_CLOSING}).
      */
-    static function select($name, $selectedIndex, $selectOptions, $attrs = [], $options = null)
+    static function select(string $name, bool|int|string|null $selectedKey, array $selectOptions, array $attrs = [], ?int $options = null): string
     {
         $attrs['name'] = $name;
         $attrs['id'] = $name;
 
         /* generate <option> tags */
         $optionTags = '';
-        foreach ($selectOptions as $index => $value) {
-            $optionAttrs = Array('value' => $index);
-            if ($index == $selectedIndex)
+        foreach ($selectOptions as $key => $value) {
+            $optionAttrs = ['value' => $key];
+            if ($key == $selectedKey)
                 $optionAttrs['selected'] = 'selected';
             $optionTags .= self::element('option', $optionAttrs, $value);
         }

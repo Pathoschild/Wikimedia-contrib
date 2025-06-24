@@ -1,5 +1,7 @@
 <?php
+declare(strict_types=1);
 set_time_limit(120); // set timout to two minutes
+
 require_once('../backend/modules/Base.php');
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/Form.php');
@@ -46,7 +48,8 @@ $i = strpos($fullTitle, ':');
 if ($i) {
     $namespace = substr($fullTitle, 0, $i);
     $title = substr($fullTitle, $i + 1);
-} else {
+}
+else {
     $namespace = null;
     $title = $fullTitle;
 }
@@ -62,7 +65,7 @@ $db = $backend->getDatabase();
         <fieldset>
             <p>Enter a category name to analyse members of, or a prefix to analyze subpages of (see <a
                         href="index.php?title=Wp/kab&cat=0&db=incubatorwiki" title="example">prefix</a> and <a
-                        href="index.php?title=Hindi&cat=1&db=sourceswiki" title="example">category</a> examples).</p>
+                        href="index.php?title=Af+Afrikaans+(Afrikaans)&cat=1&db=sourceswiki" title="example">category</a> examples).</p>
 
             <input type="text" id="title" name="title" value="<?= $backend->formatValue($fullTitle) ?>"/>
             (this is a <?= Form::select('cat', $cat, [1 => 'category', 0 => 'prefix']) ?> on <select name="wiki" id="wiki">
@@ -134,7 +137,7 @@ do {
     ##########
     $backend->profiler->start('fetch domain');
     $db->connect('metawiki');
-    $url = $db->query('SELECT url AS domain FROM meta_p.wiki WHERE dbname=? LIMIT 1', $database)->fetchValue();
+    $url = $db->query('SELECT url AS domain FROM meta_p.wiki WHERE dbname=? LIMIT 1', [$database])->fetchValue();
     $db->dispose();
     $backend->profiler->stop('fetch domain');
 
@@ -192,7 +195,7 @@ do {
 
         /* user list */
         $users = $metrics->users;
-        usort($users, function($a, $b) { return $b->edits - $a->edits; });
+        usort($users, fn($a, $b) => $b->edits - $a->edits);
         echo '<h4 id="list_editors">editors</h4><ol>';
         foreach ($users as $user) {
             echo '<li';
@@ -273,7 +276,7 @@ do {
             '<table>';
 
             $users = $month->users;
-            usort($users, function($a, $b) { return $b->edits - $a->edits; });
+            usort($users, fn($a, $b) => $b->edits - $a->edits);
             foreach ($users as $user) {
                 $isActive = $user->edits > $maxEditsForInactivity && !$user->isBot && !$user->isAnonymous;
                 echo $engine->getBarHtml($engine->getLinkHtml($url, 'user:' . $user->name, $user->name), $user->edits, 10, !$isActive);

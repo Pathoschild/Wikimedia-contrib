@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 require_once('__config__.php');
 require_once('Base.php');
 require_once('external/KLogger.php');
@@ -18,58 +20,44 @@ class Backend extends Base
     ## Properties
     ##########
     /**
-     * The current page's filename, like "index.php".
-     * @var string
-     */
-    private $filename = null;
-
-    /**
      * The page title, usually the name of the script.
-     * @var string
      */
-    private $title = null;
+    private string $title;
 
     /**
      * A short description displayed at the top of the page; defaults to nothing.
-     * @var string
      */
-    private $blurb = null;
+    private ?string $blurb = null;
 
     /**
      * Extra content to insert into the HTML head.
-     * @var string
      */
-    private $injectHead = '';
+    private string $injectHead = '';
 
     /**
      * Writes messages to a log file for troubleshooting.
-     * @var Logger
      */
-    public $logger = null;
+    public Logger $logger;
 
     /**
      * Reads and writes data to a cache with expiry dates.
-     * @var Cacher
      */
-    public $cache = null;
+    public Cacher $cache;
 
     /**
      * The global tool settings.
-     * @var array
      */
-    public $config;
+    public array $config;
 
     /**
      * The license text to inject.
-     * @var string
      */
-    public $license;
+    public string $license;
 
     /**
      * Provides database operations with optimizations and connection caching.
-     * @var Toolserver
      */
-    private $db = null;
+    private ?Toolserver $db = null;
 
 
     ##########
@@ -78,9 +66,9 @@ class Backend extends Base
     /**
      * Construct an instance.
      * @param string $title The page title to display.
-     * @param string $blurb A short description displayed at the top of the page.
+     * @param string|null $blurb A short description displayed at the top of the page.
      */
-    public function __construct($title, $blurb)
+    public function __construct(string $title, ?string $blurb)
     {
         parent::__construct();
 
@@ -89,8 +77,7 @@ class Backend extends Base
         $this->config = &$settings;
 
         /* handle options */
-        $this->filename = basename($_SERVER['SCRIPT_NAME']);
-        $this->title = $title ? $title : $this->filename;
+        $this->title = $title ? $title : basename($_SERVER['SCRIPT_NAME']);
         $this->blurb = $blurb ? $blurb : null;
         $this->license = $settings['license'];
 
@@ -106,20 +93,18 @@ class Backend extends Base
     /**
      * Create a backend instance for a page.
      * @param string $title The page title to display.
-     * @param string $blurb A short description displayed at the top of the page.
-     * @return Backend
+     * @param string|null $blurb A short description displayed at the top of the page.
      */
-    public static function create($title, $blurb)
+    public static function create(string $title, ?string $blurb): Backend
     {
         return new Backend($title, $blurb);
     }
 
     /**
      * Get a database wrapper.
-     * @param int $options The database options.
-     * @return Toolserver
+     * @param int|null $options The database options.
      */
-    public function getDatabase($options = null)
+    public function getDatabase(?int $options = null): Toolserver
     {
         if (!$this->db)
             $this->db = new Toolserver($this->profiler, $this->logger, $this->cache, $options);
@@ -132,7 +117,7 @@ class Backend extends Base
      * @param mixed $default The value to return if the request does not contain the value.
      * @return mixed The expected or default value.
      */
-    public function get($name, $default = null)
+    public function get(string $name, mixed $default = null): mixed
     {
         if (isset($_GET[$name]) && $_GET[$name] != '')
             return $_GET[$name];
@@ -142,9 +127,9 @@ class Backend extends Base
     /**
      * Get the value of the route placeholder (e.g, 'Pathoschild' in '/stalktoy/Pathoschild').
      * @param int $index The index of the placeholder to get.
-     * @return mixed|null The expected value (if available).
+     * @return mixed The expected value (if available).
      */
-    public function getRouteValue($index = 0)
+    public function getRouteValue(int $index = 0): mixed
     {
         $path = $this->get("@path");
         if ($path)
@@ -161,9 +146,8 @@ class Backend extends Base
     /**
      * Get an absolute URL.
      * @param string $url The URL fragment. If it starts with '/', it will be treated as relative to the configured tools root.
-     * @return string
      */
-    public function url($url)
+    public function url(string $url): string
     {
         if (substr($url, 0, 1) == '/' && substr($url, 1, 2) != '/') {
             global $settings;
@@ -175,25 +159,14 @@ class Backend extends Base
     /**
      * Link to external CSS or JavaScript in the header.
      * @param string $url The URL of the CSS or JavaScript to fetch. If it starts with '/', it will be treated as relative to the configured tools root.
-     * @param string $as The reference type to render ('css' or 'js'), or null to use the file extension.
-     * @return $this
      */
-    public function link($url, $as = null)
+    public function link(string $url): self
     {
-        if (!$as)
-            $as = trim(substr($url, -3), '\.');
         $url = $this->url($url);
 
-        switch ($as) {
-            case 'css':
-                $this->injectHead .= "<link rel='stylesheet' type='text/css' href='$url' />";
-                break;
-            case 'js':
-                $this->injectHead .= "<script type='text/javascript' src='$url'></script>";
-                break;
-            default:
-                die("Invalid extension '$as' (URL '$url') passed to Backend->link.");
-        }
+        $this->injectHead .= str_ends_with($url, '.css')
+            ? "<link rel='stylesheet' type='text/css' href='$url' />"
+            : "<script type='text/javascript' src='$url'></script>";
 
         return $this;
     }
@@ -201,9 +174,8 @@ class Backend extends Base
     /**
      * Inject a JavaScript script into the page head.
      * @param string $script The script to inject.
-     * @return $this
      */
-    public function addScript($script)
+    public function addScript(string $script): self
     {
         $this->injectHead .= "<script type='text/javascript'>{$script}</script>";
         return $this;
@@ -214,9 +186,8 @@ class Backend extends Base
     #############################
     /**
      * Output the page head.
-     * @return $this
      */
-    public function header()
+    public function header(): self
     {
         /* print document head */
         echo "
@@ -274,13 +245,13 @@ class Backend extends Base
     /**
      * Output the page footer.
      */
-    public function footer()
+    public function footer(): void
     {
         /* generate benchmarks */
         $precisionPercentage = $this->config['profile_perc_precision'];
         $precisionTime = $this->config['profile_time_precision'];
         $totalTime = $this->profiler->getElapsedSinceStart();
-        $timerResults = array();
+        $timerResults = [];
         foreach ($this->profiler->getKeys() as $key) {
             $time = $this->profiler->getElapsed($key);
             $timerResults[$key] = sprintf(

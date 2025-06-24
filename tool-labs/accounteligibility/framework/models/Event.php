@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Metadata about an event for which eligibility can be analysed.
@@ -10,69 +11,62 @@ class Event
     ##########
     /**
      * The unique event ID.
-     * @var int
      */
-    public $id;
+    public int $id;
 
     /**
      * The year in which the event occurred.
-     * @var int
      */
-    public $year;
+    public int $year;
 
     /**
      * The human-readable event name.
-     * @var string
      */
-    public $name;
+    public string $name;
 
     /**
      * The URL for the page which provides more information about the event.
-     * @var string
      */
-    public $url;
+    public string $url;
 
     /**
      * A human-readable label for the action for which eligibility is being analysed (e.g. "be a candidate").
-     * @var string
      */
-    public $action;
+    public string $action;
 
     /**
      * A list of additional human-readable requirements that must be met which can't be verified by the script.
      * @var string[]
      */
-    public $extraRequirements = [];
+    public array $extraRequirements = [];
 
     /**
      * A list of exceptions that can't be verified by the script.
      * @var string[]
      */
-    public $exceptions = [];
+    public array $exceptions = [];
 
     /**
      * The minimum number of edits for a local account to be autoselected for analysis.
-     * @var int
      */
-    public $minEditsForAutoselect = 1;
+    public int $minEditsForAutoselect = 1;
 
     /**
      * The only database names to analyse (or null to allow any wiki).
      * @var string[]|null
      */
-    public $onlyDatabaseNames;
+    public ?array $onlyDatabaseNames = null;
 
     /**
      * Whether the event is obsolete, so it should be grayed out in the UI.
-     * @var bool
      */
-    public $obsolete;
+    public bool $obsolete = false;
 
     /**
      * The eligibility rules.
      * @var RuleEntry[]
      */
-    public $rules = [];
+    public array $rules = [];
 
 
     ##########
@@ -85,7 +79,7 @@ class Event
      * @param string $name The human-readable event name.
      * @param string $url The URL for the page which provides more information about the event.
      */
-    public function __construct($id, $year, $name, $url)
+    public function __construct(int $id, int $year, string $name, string $url)
     {
         $this->id = $id;
         $this->year = $year;
@@ -98,10 +92,12 @@ class Event
      * Add a new eligibility rule for this event.
      * @param Rule $rule The eligibility rule.
      * @param int $options An optional bit flag (see {@see Workflow}).
-     * @return $this
      */
-    public function addRule($rule, $options = null)
+    public function addRule(Rule $rule, ?int $options = null): self
     {
+        if ($options === null)
+            $options = 0;
+
         array_push($this->rules, new RuleEntry($rule, $options));
         return $this;
     }
@@ -109,9 +105,8 @@ class Event
     /**
      * Set a human-readable label for the action for which eligibility is being analysed (e.g. "be a candidate").
      * @param string $value The value to set.
-     * @return $this
      */
-    public function withAction($value)
+    public function withAction(string $value): self
     {
         $this->action = $value;
         return $this;
@@ -120,9 +115,8 @@ class Event
     /**
      * Set a list of additional human-readable requirements that must be met which can't be verified by the script.
      * @param string[] $value The value to set.
-     * @return $this
      */
-    public function withExtraRequirements($value)
+    public function withExtraRequirements(array $value): self
     {
         $this->extraRequirements = $value;
         return $this;
@@ -131,9 +125,8 @@ class Event
     /**
      * Set a list of exceptions that can't be verified by the script.
      * @param string[] $value The value to set.
-     * @return $this
      */
-    public function withExceptions($value)
+    public function withExceptions(array $value): self
     {
         $this->exceptions = $value;
         return $this;
@@ -141,10 +134,9 @@ class Event
 
     /**
      * Set the minimum number of edits for a local account to be autoselected for analysis.
-     * @param int $value
-     * @return $this
+     * @param int $value The minimum number of edits required.
      */
-    public function withMinEditsForAutoselect($value)
+    public function withMinEditsForAutoselect(int $value): self
     {
         $this->minEditsForAutoselect = $value;
         return $this;
@@ -152,9 +144,8 @@ class Event
 
     /**
      * Mark this event obsolete so it's grayed out in the UI.
-     * @return $this
      */
-    public function markObsolete()
+    public function markObsolete(): self
     {
         $this->obsolete = true;
         return $this;
@@ -162,10 +153,9 @@ class Event
 
     /**
      * Set the only database names to analyse.
-     * @param string|string[] $value
-     * @return $this;
+     * @param string|string[] $value The database name or names to allow.
      */
-    public function withOnlyDatabaseNames($value)
+    public function withOnlyDatabaseNames(array|string $value): self
     {
         $this->onlyDatabaseNames = is_array($value)
             ? array_values($value)
@@ -175,9 +165,8 @@ class Event
 
     /**
      * Get whether a database name is allowed based on the 'onlyDatabaseNames' field.
-     * @return bool
      */
-    public function allowsDatabase($dbName)
+    public function allowsDatabase(string $dbName): bool
     {
         return
             $this->onlyDatabaseNames == null

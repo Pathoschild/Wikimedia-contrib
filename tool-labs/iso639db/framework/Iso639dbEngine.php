@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Encapsulates searching the code database.
  */
@@ -15,34 +17,34 @@ class Iso639dbEngine extends Base
     /**
      * The language name to search for.
      */
-    public $name = null;
+    public ?string $name = null;
 
     /**
      * The language code to search for.
      */
-    public $code = null;
+    public ?string $code = null;
 
     /**
      * The number of records to skip.
      */
-    public $offset = 0;
+    public int $offset = 0;
 
     /**
      * The ISO 639 datasets to search.
+     * @var string[]
      */
-    public $filters = [];
+    public array $filters = [];
 
     /**
      * Provides a wrapper used by page scripts to generate HTML, interact with the database, and so forth.
-     * @var Backend
      */
-    private $backend;
+    private Backend $backend;
 
     /**
      * The possible values for predefined fields.
-     * @var string[][]
+     * @var array<string, string[]>
      */
-    private $fieldValues = [
+    private array $fieldValues = [
         'list' => ['1', '2', '2/B', '3'],
         'scope' => ['individual', 'dialect', 'macrolanguage', 'collection', 'reserved', 'special'],
         'type' => ['living', 'extinct', 'ancient', 'historic', 'constructed']
@@ -56,7 +58,7 @@ class Iso639dbEngine extends Base
      * Construct an instance.
      * @param Backend $backend Provides a wrapper used by page scripts to generate HTML, interact with the database, and so forth.
      */
-    public function __construct($backend)
+    public function __construct(Backend $backend)
     {
         parent::__construct();
 
@@ -72,9 +74,9 @@ class Iso639dbEngine extends Base
 
     /**
      * Fetch the matching language data from the database.
-     * @return array
+     * @return array<string, mixed>
      */
-    public function execute()
+    public function execute(): array
     {
         // build SQL query
         $conditions = [];
@@ -128,10 +130,9 @@ class Iso639dbEngine extends Base
     /**
      * Get HTML for a filter dropdown option.
      * @param string $key The filter key.
-     * @param string $text The display text.
-     * @return string
+     * @param string|null $text The display text.
      */
-    function getFilterOptionHtml($key, $text = null)
+    function getFilterOptionHtml(string $key, ?string $text = null): string
     {
         if (!$text)
             $text = $key;

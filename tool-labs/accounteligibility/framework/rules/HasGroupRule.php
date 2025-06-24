@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * A rule which checks whether the account has a local group.
@@ -10,15 +11,14 @@ class HasGroupRule implements Rule
     ##########
     /**
      * The group name to match.
-     * @var string
+     * @var 'bot'|'sysop'
      */
-    private $group;
+    private string $group;
 
     /**
      * Whether the presence of the group is a failing condition; set by subclass rules like {@see NotBotRule}.
-     * @var bool
      */
-    protected $negate = false;
+    protected bool $negate = false;
 
 
     ##########
@@ -29,7 +29,7 @@ class HasGroupRule implements Rule
      * @param string $group The group name to match (one of 'bot' or 'sysop').
      * @throws InvalidArgumentException The group is not whitelisted.
      */
-    public function __construct($group)
+    public function __construct(string $group)
     {
         if ($group != 'bot' && $group != 'sysop')
             throw new InvalidArgumentException("Unrecognized role '$group' not found in whitelist.");
@@ -43,7 +43,7 @@ class HasGroupRule implements Rule
      * @param LocalUser $user The local user account.
      * @return ResultInfo|null The eligibility check result, or null if the rule doesn't apply to this wiki.
      */
-    public function accumulate($db, $wiki, $user)
+    public function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo
     {
         // accumulate
         $hasGroup = (bool)$db->query('SELECT COUNT(ug_user) FROM user_groups WHERE ug_user=? AND ug_group=? LIMIT 1', [$user->id, $this->group])->fetchColumn();

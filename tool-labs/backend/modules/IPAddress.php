@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 require_once(__DIR__ . '/external/mediawiki-ip.php');
 require_once(__DIR__ . '/external/mediawiki-globalfunctions.php');
 
@@ -12,13 +14,11 @@ class IPAddress
     ##########
     /**
      * A bit flag representing the first IP address in a range.
-     * @var int
      */
     const START = 0;
 
     /**
      * A bit flag representing the last IP address in a range.
-     * @var int
      */
     const END = 1;
 
@@ -26,37 +26,33 @@ class IPAddress
      * The first and last IP addresses in the range encoded into MediaWiki's pseudo-hexadecimal notation.
      * @var string[]
      */
-    private $encodedRange = null;
+    private array $encodedRange = [];
 
     /**
      * The first and last IP addresses in the range in human-readable format.
      * @var string[]
      */
-    private $range = null;
+    private array $range = [];
 
     /**
      * Whether the IP address is a valid IPv4 or IPv6 address or range.
-     * @var bool
      */
-    private $isValid = false;
+    private bool $isValid;
 
     /**
      * Whether the IP address is a valid IPv4 address.
-     * @var bool
      */
-    private $isIPv4 = false;
+    private bool $isIPv4 = false;
 
     /**
      * Whether the IP address is a valid IPv6 address.
-     * @var bool
      */
-    private $isIPv6 = false;
+    private bool $isIPv6 = false;
 
     /**
      * Whether the IP address is a valid IPv4 or IPv6 address range.
-     * @var bool
      */
-    private $isValidRange = false;
+    private bool $isValidRange = false;
 
 
     ##########
@@ -64,12 +60,12 @@ class IPAddress
     ##########
     /**
      * Construct an instance.
-     * @param string $address The string representation of an IP address or CIDR range.
+     * @param string|null $address The string representation of an IP address or CIDR range.
      */
-    public function __construct($address)
+    public function __construct(?string $address)
     {
         // analyze address format
-        $this->isValid = IP::isIPAddress($address);
+        $this->isValid = $address && IP::isIPAddress($address);
         if (!$this->isValid)
             return;
         $this->isIPv4 = IP::isIPv4($address);
@@ -78,44 +74,40 @@ class IPAddress
         // analyze address range
         $this->isValidRange = IP::isValidBlock($address);
         $this->encodedRange = IP::parseRange($address);
-        $this->range = array(
+        $this->range = [
             IP::prettifyIP(IP::formatHex($this->encodedRange[self::START])),
             IP::prettifyIP(IP::formatHex($this->encodedRange[self::END]))
-        );
+        ];
     }
 
     /**
      * Get whether the value is a valid IPv4 or IPv6 address or range.
-     * @return bool
      */
-    public function isValid()
+    public function isValid(): bool
     {
         return $this->isValid;
     }
 
     /**
      * Get whether the value is an IPv4 address or range.
-     * @return bool
      */
-    public function isIPv4()
+    public function isIPv4(): bool
     {
         return $this->isIPv4;
     }
 
     /**
      * Get whether the value is an IPv6 address or range.
-     * @return bool
      */
-    public function isIPv6()
+    public function isIPv6(): bool
     {
         return $this->isIPv6;
     }
 
     /**
      * Get whether the value is an IPv4 or IPv6 range.
-     * @return bool
      */
-    public function isRange()
+    public function isRange(): bool
     {
         return $this->isValidRange;
     }
@@ -123,9 +115,8 @@ class IPAddress
     /**
      * Get the encoded representation of the IP address.
      * @param int $end Which end of the IP address range to get (one of {@see IPAddress::START} or {@see IPAddress::END}).
-     * @return string|null
      */
-    public function getEncoded($end = IPAddress::START)
+    public function getEncoded(int $end = IPAddress::START): ?string
     {
         if (!$this->isValid)
             return null;
@@ -135,9 +126,8 @@ class IPAddress
     /**
      * Get the human-readable representation of the IP address.
      * @param int $end Which end of the IP address range to get (one of {@see IPAddress::START} or {@see IPAddress::END}).
-     * @return string|null
      */
-    public function getFriendly($end = IPAddress::START)
+    public function getFriendly(int $end = IPAddress::START): ?string
     {
         if (!$this->isValid)
             return null;

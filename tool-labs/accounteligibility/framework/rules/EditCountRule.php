@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * A rule which checks that the user has a minimum number of edits between two dates.
@@ -10,57 +11,48 @@ class EditCountRule implements Rule
     ##########
     /**
      * A bit flag indicating edits should be accumulated crosswiki.
-     * @var int
      */
     const ACCUMULATE = 1;
 
     /**
      * Include the number of deleted edits in the count. This increases query time.
-     * @var int
      */
     const COUNT_DELETED = 2;
 
     /**
      * The minimum number of edits.
-     * @var int
      */
-    private $minCount;
+    private int $minCount;
 
     /**
      * The minimum date for which to consider edits, or null for no minimum.
-     * @var DateWrapper|null
      */
-    private $minDate;
+    private ?DateWrapper $minDate;
 
     /**
      * The maximum date for which to consider edits, or null for no maximum.
-     * @var DateWrapper|null
      */
-    private $maxDate;
+    private ?DateWrapper $maxDate;
 
     /**
      * The namespace for which to count edits, or for any namespace.
-     * @var int|null
      */
-    private $namespace;
+    private ?int $namespace = null;
 
     /**
      * Whether edits can be accumulated across multiple wikis.
-     * @var bool
      */
-    private $accumulate;
+    private bool $accumulate;
 
     /**
      * Whether to count deleted edits. This significantly increases query time.
-     * @var bool
      */
-    private $countDeleted;
+    private bool $countDeleted;
 
     /**
      * The number of edits on all analysed wikis.
-     * @var int
      */
-    private $totalEdits = 0;
+    private int $totalEdits = 0;
 
 
     ##########
@@ -73,7 +65,7 @@ class EditCountRule implements Rule
      * @param string|null $maxDate The maximum date for which to consider edits in a format recognised by {@see DateWrapper::__construct}, or null for no maximum.
      * @param int $options The eligibility options (any of {@see EditCountRule::ACCUMULATE} or {@see EditCountRule::COUNT_DELETED}).
      */
-    public function __construct($minCount, $minDate, $maxDate, $options = 0)
+    public function __construct(int $minCount, ?string $minDate, ?string $maxDate, int $options = 0)
     {
         $this->minCount = $minCount;
         $this->minDate = $minDate ? new DateWrapper($minDate) : null;
@@ -86,7 +78,7 @@ class EditCountRule implements Rule
      * Only count edits to the specified namespace.
      * @param int $namespace The namespace ID.
      */
-    public function inNamespace($namespace)
+    public function inNamespace(int $namespace): self
     {
         $this->namespace = $namespace;
         return $this;
@@ -95,7 +87,7 @@ class EditCountRule implements Rule
     /**
      * Also count deleted edits. This significantly increases query time.
      */
-    public function includeDeleted()
+    public function includeDeleted(): self
     {
         $this->countDeleted = true;
         return $this;
@@ -108,7 +100,7 @@ class EditCountRule implements Rule
      * @param LocalUser $user The local user account.
      * @return ResultInfo|null The eligibility check result, or null if the rule doesn't apply to this wiki.
      */
-    public function accumulate($db, $wiki, $user)
+    public function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo
     {
         // accumulate
         $localEdits = $this->getEditCount($db, $user, $wiki);
@@ -164,9 +156,8 @@ class EditCountRule implements Rule
      * @param Database $db The database wrapper.
      * @param LocalUser $user The local user account.
      * @param Wiki $wiki The current wiki.
-     * @return int
      */
-    private function getEditCount($db, $user, $wiki)
+    private function getEditCount(Toolserver $db, LocalUser $user, Wiki $wiki): int
     {
         $count = 0;
 
@@ -227,21 +218,23 @@ class EditCountRule implements Rule
      * @param DateWrapper|null $start The minimum date for which to consider edits, or null for no minimum.
      * @param DateWrapper|null $end The maximum date for which to consider edits, or null for no maximum.
      * @param string[] $tokens The parameterised SQL values to populate.
-     * @return string
      */
-    private function getDateFilterSql($fieldName, $start, $end, &$tokens)
+    private function getDateFilterSql(string $fieldName, ?DateWrapper $start, ?DateWrapper $end, array &$tokens): string
     {
         if ($start && $end) {
             $tokens[] = $start->mediawiki;
             $tokens[] = $end->mediawiki;
             return "$fieldName BETWEEN ? AND ?";
-        } elseif ($start) {
+        }
+        elseif ($start) {
             $tokens[] = $start->mediawiki;
             return "$fieldName >= ?";
-        } elseif ($end) {
+        }
+        elseif ($end) {
             $tokens[] = $end->mediawiki;
             return "$fieldName <= ?";
-        } else
+        }
+        else
             return "1 = 1"; // not filtered by range
     }
 }

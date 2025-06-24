@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Provides metadata about a page.
@@ -10,37 +11,31 @@ class PageData
     ##########
     /**
      * The page ID.
-     * @var int
      */
-    public $id;
+    public int $id;
 
     /**
      * The page namespace ID.
-     * @var int
      */
-    public $namespace;
+    public int $namespace;
 
     /**
      * The display name.
-     * @var string
      */
-    public $name;
+    public string $name;
 
     /**
      * The number of edits to this page.
-     * @var int
      */
-    public $edits = 0;
+    public int $edits = 0;
 
     /**
      * The current page size.
-     * @var int
      */
-    public $size = 0;
+    public int $size = 0;
 
     /**
      * Whether the current page is a redirect.
-     * @var bool
      */
-    public $isRedirect = false;
+    public bool $isRedirect = false;
 }

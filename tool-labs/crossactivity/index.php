@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 require_once('../backend/modules/Backend.php');
 require_once('framework/CrossactivityEngine.php');
 $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.')
@@ -85,7 +87,7 @@ do {
         /* get data */
         $db->connect($dbname);
         $actor = $db->query('SELECT actor_id, actor_user FROM actor WHERE actor_name = ? LIMIT 1', [$user])->fetchAssoc();
-        if ($actor['actor_user']) {
+        if (isset($actor['actor_user'])) {
             $actorID = $actor['actor_id'];
             $userID = $actor['actor_user'];
 

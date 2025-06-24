@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Provides account eligibility methods and event data.
  */
@@ -11,99 +13,88 @@ class AccountEligibilityEngine extends Base
      * The event data.
      * @var array<int, Event>
      */
-    public $events = [];
+    public array $events = [];
 
     ##########
     ## Properties
     ##########
     /**
      * The underlying database manager.
-     * @var Toolserver
      */
-    public $db;
+    public Toolserver $db;
 
     /**
      * Provides basic performance profiling.
-     * @var Profiler
      */
-    public $profiler;
+    public Profiler $profiler;
 
     /**
      * Provides a wrapper used by page scripts to generate HTML, interact with the database, and so forth.
-     * @var Backend
      */
-    private $backend;
-
-    /**
-     * The target username to analyse.
-     * @var string
-     */
-    private $username;
+    private Backend $backend;
 
     /**
      * The selected event ID.
-     * @var int|null
      */
-    private $eventID;
+    private int $eventId;
 
     /**
      * Whether the user must select a wiki manually, because there is no matching global account.
      */
-    public $selectManually = false;
+    public bool $selectManually = false;
 
     /**
      * The selected wiki.
-     * @var Wiki
      */
-    public $wiki;
+    public ?Wiki $wiki = null;
+
+    /**
+     * The account username to analyse.
+     */
+    public string $username;
 
     /**
      * The current local user account.
-     * @var LocalUser
      */
-    public $user;
+    public ?LocalUser $user = null;
 
     /**
      * The selected event.
-     * @var Event
      */
-    public $event;
+    public Event $event;
 
     /**
      * The available wikis.
      * @var Wiki[]
      */
-    public $wikis = [];
+    public array $wikis = [];
 
     /**
      * The user's local accounts as a database name => local account lookup.
      * @var LocalUser[]
      */
-    public $users = [];
+    public array $users = [];
 
     /**
      * The list of database names to analyse.
-     * @var array
+     * @var string[]
      */
-    public $queue = [];
+    public array $queue = [];
 
     /**
      * The index of the next item in the wiki queue.
-     * @var int
      */
-    public $nextQueueIndex = -1;
+    public int $nextQueueIndex = -1;
 
     /**
      * Whether the user has met all the rules.
-     * @var bool
      */
-    public $eligible = true;
+    public bool $eligible = true;
 
     /**
      * Whether the user has a unified global account.
-     * @var bool
      */
-    public $unified = false;
+    public bool $unified = false;
 
 
     ############################
@@ -113,10 +104,10 @@ class AccountEligibilityEngine extends Base
      * Construct an instance.
      * @param Backend $backend Provides a wrapper used by page scripts to generate HTML, interact with the database, and so forth.
      * @param string $user The username to analyse.
-     * @param int $eventID The event ID to analyse.
+     * @param int $eventId The event ID to analyse.
      * @param string $dbname The wiki database name to analyse.
      */
-    public function __construct($backend, $user, $eventID, $dbname)
+    public function __construct(Backend $backend, string $user, ?string $eventId, ?string $dbname)
     {
         parent::__construct();
 
@@ -133,8 +124,8 @@ class AccountEligibilityEngine extends Base
         $eventFactory = new EventFactory();
         foreach ($eventFactory->getEvents() as $event)
             $this->events[$event->id] = $event;
-        $this->eventID = $eventID != null ? $eventID : $eventFactory->getDefaultEventID();
-        $this->event = $this->events[$this->eventID];
+        $this->eventId = $eventId !== null ? intval($eventId) : $eventFactory->getDefaultEventID();
+        $this->event = $this->events[$this->eventId];
         $this->profiler->stop("init events");
 
         /* get wikis */
@@ -150,7 +141,7 @@ class AccountEligibilityEngine extends Base
      * Get whether there are no more wikis to process.
      * @return bool
      */
-    public function isQueueEmpty()
+    public function isQueueEmpty(): bool
     {
         return $this->nextQueueIndex >= 0;
     }
@@ -160,7 +151,7 @@ class AccountEligibilityEngine extends Base
      * @param bool $echo Whether to write the wiki name to the output.
      * @return bool Whether a wiki was successfully loaded from the queue.
      */
-    public function getNext($echo = true)
+    public function getNext(bool $echo = true): bool
     {
         if (!$this->connectNext())
             return false;
@@ -173,12 +164,12 @@ class AccountEligibilityEngine extends Base
 
     /**
      * Load the specified wiki.
-     * @param string $dbname The database name to load.
+     * @param string|null $dbname The database name to load.
      */
-    public function connect($dbname)
+    public function connect(?string $dbname): void
     {
         /* reset variables */
-        $this->user = new LocalUser(null, $this->backend->formatUsername($this->username), null, null, null, null);
+        $this->user = null;
 
         /* connect & fetch user details */
         if ($dbname) {
@@ -191,7 +182,7 @@ class AccountEligibilityEngine extends Base
      * Load the next wiki in the queue.
      * @return bool Whether a wiki was successfully loaded from the queue.
      */
-    public function connectNext()
+    public function connectNext(): bool
     {
         while ($this->nextQueueIndex >= 0) {
             /* skip private wiki (not listed in meta_p.wiki) */
@@ -214,7 +205,7 @@ class AccountEligibilityEngine extends Base
      * @param int $minEdits The minimum number of edits.
      * @return bool Whether at least one wiki was successfully loaded.
      */
-    public function initWikiQueue($defaultDbNames = null, $minEdits = 1)
+    public function initWikiQueue(?array $defaultDbNames = null, int $minEdits = 1): bool
     {
         ########
         ## Set selected wiki
@@ -240,11 +231,11 @@ class AccountEligibilityEngine extends Base
         else {
             /* fetch unified wikis */
             $this->profiler->start('init wiki queue: fetch unified wikis');
-            $unifiedDbnames = $this->db->getUnifiedWikis($this->user->name);
+            $unifiedDbnames = $this->db->getUnifiedWikis($this->username);
             if (!$unifiedDbnames) {
                 $this->selectManually = true;
-                $encoded = urlencode($this->user->name);
-                echo '<div id="result" class="neutral" data-is-error="1">', $this->formatText($this->user->name), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="', $this->backend->url('/stalktoy/' . $encoded), '" title="global details about this user">global details about this user</a>).</div>';
+                $encoded = urlencode($this->username);
+                echo '<div id="result" class="neutral" data-is-error="1">', $this->formatText($this->username), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="', $this->backend->url('/stalktoy/' . $encoded), '" title="global details about this user">global details about this user</a>).</div>';
                 return false;
             }
             $this->profiler->stop('init wiki queue: fetch unified wikis');
@@ -255,7 +246,7 @@ class AccountEligibilityEngine extends Base
                 if (!isset($this->wikis[$unifiedDbname]))
                     continue; // skip private wikis (not listed in meta_p.wiki)
                 $this->db->connect($unifiedDbname);
-                $this->queue[$unifiedDbname] = $this->db->query('SELECT user_editcount FROM user WHERE user_name = ? LIMIT 1', [$this->user->name])->fetchColumn();
+                $this->queue[$unifiedDbname] = $this->db->query('SELECT user_editcount FROM user WHERE user_name = ? LIMIT 1', [$this->username])->fetchColumn();
             }
             $this->profiler->stop('init wiki queue: fetch edit counts');
 
@@ -283,12 +274,12 @@ class AccountEligibilityEngine extends Base
      * Get the user's local account information for the current wiki.
      * @return LocalUser
      */
-    public function getUser()
+    public function getUser(): LocalUser
     {
         $dbname = $this->wiki->dbName;
 
         if (!isset($this->users[$dbname]))
-            $this->users[$dbname] = $this->db->getUserDetails($dbname, $this->user->name);
+            $this->users[$dbname] = $this->db->getUserDetails($dbname, $this->username);
 
         $this->user = $this->users[$dbname];
         return $this->user;
@@ -297,9 +288,9 @@ class AccountEligibilityEngine extends Base
     /**
      * Write a message to the output.
      * @param string $message The message to print.
-     * @param string $classes The CSS classes to add to the output line.
+     * @param string|null $classes The CSS classes to add to the output line.
      */
-    function msg($message, $classes = null)
+    function msg(string $message, ?string $classes = null): void
     {
         $classes = $classes ? trim($classes) : 'is-note';
         echo "<div class='$classes'>$message</div>";
@@ -308,9 +299,9 @@ class AccountEligibilityEngine extends Base
     /**
      * Print a 'name@wiki...' header for the current wiki.
      */
-    function printWiki()
+    function printWiki(): void
     {
-        $name = $this->user->name;
+        $name = $this->username;
         $domain = $this->wiki->domain;
         $this->msg("On <a href='https://$domain/wiki/User:" . $this->backend->formatWikiUrlTitle($name) . "' title='" . $this->backend->formatValue($name) . "&apos;s user page on $domain'>$domain</a>:", 'is-wiki');
     }

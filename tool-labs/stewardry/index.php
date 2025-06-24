@@ -1,9 +1,11 @@
 <?php
+declare(strict_types=1);
+
 require_once('../backend/modules/Backend.php');
 require_once('framework/StewardryEngine.php');
 $backend = Backend::Create('Stewardry', 'Estimates which users in a group are available based on their last edit or action.')
-    ->link('/content/jquery.tablesorter.js', true)
-    ->link('/stewardry/scripts.js', true)
+    ->link('/content/jquery.tablesorter.js')
+    ->link('/stewardry/scripts.js')
     ->header();
 
 ##########
@@ -22,7 +24,7 @@ echo "
         <select name='wiki' id='wiki'>
     ";
 foreach ($engine->db->getDomains() as $dbname => $domain)
-    echo "<option value='$dbname' ", ($dbname == $engine->wiki->name ? ' selected="selected"' : ''), ">$domain</option>";
+    echo "<option value='$dbname' ", ($engine->wiki && $dbname == $engine->wiki->name ? ' selected="selected"' : ''), ">$domain</option>";
 echo "
     </select><br/>
 
@@ -87,12 +89,14 @@ do {
     // sections
     foreach ($engine->groups as $group => $v) {
         // filter & sort users
-        $matching = array_filter($data, function ($r) use ($group) {
-            return !!$r["user_has_$group"];
-        });
-        usort($matching, function($a, $b) {
-            return max($b['last_edit'], $b["last_$group"]) <=> max($a['last_edit'], $a["last_$group"]);
-        });
+        $matching = array_filter(
+            $data,
+            fn($row) => $row["user_has_$group"]
+        );
+        usort(
+            $matching,
+            fn($a, $b) => max($b['last_edit'], $b["last_$group"]) <=> max($a['last_edit'], $a["last_$group"])
+        );
 
         // print header
         echo "<h2 id='{$group}_activity'>{$group}s</h2>";

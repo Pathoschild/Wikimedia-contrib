@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * A rule which checks that the account is at least the given number of days old.
  */
@@ -10,15 +12,13 @@ class AccountAgeRule implements Rule
     ##########
     /**
      * The minimum number of days for which the account must be registered.
-     * @var int
      */
-    private $minDaysOld;
+    private int $minDaysOld;
 
     /**
      * The maximum date up to which to count the age, or null for no maximum.
-     * @var DateWrapper|null
      */
-    private $maxDate;
+    private ?DateWrapper $maxDate;
 
 
     ##########
@@ -29,7 +29,7 @@ class AccountAgeRule implements Rule
      * @param int $minDaysOld The minimum number of days for which the account must be registered.
      * @param string|null $maxDate The maximum date up to which to count the age in a format recognised by {@see DateWrapper::__construct}, or null for no maximum.
      */
-    public function __construct($minDaysOld, $maxDate = null)
+    public function __construct(int $minDaysOld, ?string $maxDate = null)
     {
         $this->minDaysOld = $minDaysOld;
         $this->maxDate = $maxDate ? new DateWrapper($maxDate) : null;
@@ -42,7 +42,7 @@ class AccountAgeRule implements Rule
      * @param LocalUser $user The local user account.
      * @return ResultInfo|null The eligibility check result, or null if the rule doesn't apply to this wiki.
      */
-    public function accumulate($db, $wiki, $user)
+    public function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo
     {
         // get result
         $daysOld = $this->getAccountAge($db, $user);
@@ -84,7 +84,7 @@ class AccountAgeRule implements Rule
      * @param LocalUser $user The local user account.
      * @return int|null Returns the number of days between the user's registration and the max (or current) date, or null if the user was registered before registration dates started being tracked in 2005.
      */
-    private function getAccountAge($db, $user)
+    private function getAccountAge(Toolserver $db, LocalUser $user): ?int
     {
         $registered = $user->registered;
         if (!$user->registered)

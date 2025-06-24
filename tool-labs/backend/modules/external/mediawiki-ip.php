@@ -78,7 +78,7 @@ class IP {
      * Note: canonicalize() tries to convert translated addresses to IPv4.
      *
      * @param $ip String: possible IP address
-     * @return Boolean
+     * @return bool
      */
     public static function isIPAddress( $ip ) {
         return (bool)preg_match( '/^' . IP_ADDRESS_STRING . '$/', $ip );
@@ -89,7 +89,7 @@ class IP {
      * Note: Unlike isValid(), this looks for networks too.
      *
      * @param $ip String: possible IP address
-     * @return Boolean
+     * @return bool
      */
     public static function isIPv6( $ip ) {
         return (bool)preg_match( '/^' . RE_IPV6_ADD . '(?:\/' . RE_IPV6_PREFIX . ')?$/', $ip );
@@ -100,7 +100,7 @@ class IP {
      * Note: Unlike isValid(), this looks for networks too.
      *
      * @param $ip String: possible IP address
-     * @return Boolean
+     * @return bool
      */
     public static function isIPv4( $ip ) {
         return (bool)preg_match( '/^' . RE_IP_ADD . '(?:\/' . RE_IP_PREFIX . ')?$/', $ip );
@@ -125,7 +125,7 @@ class IP {
      * Note: canonicalize() tries to convert translated addresses to IPv4.
      *
      * @param $ipblock String
-     * @return Boolean: True if it is valid.
+     * @return bool: True if it is valid.
      */
     public static function isValidBlock( $ipblock ) {
         return ( preg_match( '/^' . RE_IPV6_BLOCK . '$/', $ipblock )

@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 require_once('../backend/modules/Backend.php');
 $backend = Backend::create('User pages', 'Find your user pages on all Wikimedia wikis.')
     ->link('/userpages/scripts.js')

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * A rule which checks whether the account had a group flag for a minimum duration.
@@ -10,27 +11,24 @@ class HasGroupDurationRule implements Rule
     ##########
     /**
      * The group key to find.
-     * @var string
      */
-    private $group;
+    private string $group;
 
     /**
      * The minimum number of days required.
-     * @var int
      */
-    private $minDays;
+    private int $minDays;
 
     /**
      * The maximum date by which the minimum duration should have been met.
-     * @var DateWrapper
      */
-    private $maxDate;
+    private ?DateWrapper $maxDate;
 
     /**
      * The user's role assignment/removal logs on Meta as a role => array hash.
-     * @var array
+     * @var array<string, array<string, mixed>>
      */
-    private $metaLogCache = [];
+    private array $metaLogCache = [];
 
 
     ##########
@@ -42,7 +40,7 @@ class HasGroupDurationRule implements Rule
      * @param int $minDays The minimum number of days required.
      * @param string $maxDate The maximum date by which the minimum duration should have been met in a format recognised by {@see DateWrapper::__construct}.
      */
-    public function __construct($group, $minDays, $maxDate)
+    public function __construct(string $group, int $minDays, ?string $maxDate)
     {
         $this->group = $group;
         $this->minDays = $minDays;
@@ -56,7 +54,7 @@ class HasGroupDurationRule implements Rule
      * @param LocalUser $user The local user account.
      * @return ResultInfo|null The eligibility check result, or null if the rule doesn't apply to this wiki.
      */
-    public function accumulate($db, $wiki, $user)
+    public function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo
     {
         // get data
         $days = $this->getLongestRoleDuration($db, $user, $this->group, $wiki);
@@ -91,7 +89,7 @@ class HasGroupDurationRule implements Rule
      * @param Wiki $wiki The current wiki.
      * @return float The number of days flagged.
      */
-    private function getLongestRoleDuration($db, $user, $group, $wiki)
+    private function getLongestRoleDuration(Toolserver $db, LocalUser $user, string $group, Wiki $wiki): float
     {
         // SQL to determine the current groups after each log entry
         // (depending on how it was stored on that particular day)
@@ -100,13 +98,14 @@ class HasGroupDurationRule implements Rule
                 log_title,
                 log_timestamp,
                 log_params,
-                comment_text AS log_comment -- TODO: migrate to new comment schema
+                comment_text AS log_comment
             FROM
                 logging_logindex
                 LEFT JOIN comment ON log_comment_id = comment_id
             WHERE
                 log_type = "rights"
-                AND log_title';
+                AND log_title
+        ';
         $logName = str_replace(' ', '_', $user->name);
 
         // fetch local logs
@@ -171,10 +170,10 @@ class HasGroupDurationRule implements Rule
 
     /**
      * Extract the timestamp ranges when the user had the group.
-     * @param array $logs The sorted log entries, in the format returned by parseLogParams.
-     * @return array An array of tuples representing timestamp ranges.
+     * @param array<string, array<string, mixed>> $logs The sorted log entries, in the format returned by parseLogParams.
+     * @return array<string[]> An array of tuples representing timestamp ranges.
      */
-    private function getRanges($logs)
+    private function getRanges(array $logs): array
     {
         $ranges = [];
         $i = -1;
@@ -219,9 +218,9 @@ class HasGroupDurationRule implements Rule
      * Parse the log_params field for a log entry.
      * @param string $params The log_parse value.
      * @param string $group The group key to find.
-     * @return array A representation of the log metadata for the given log entry, with three keys: old_group (whether the user had the group before the log entry), new_group (whether the user had it after the log entry), and expiry (the date when the permission will auto-expire, if applicable).
+     * @return array<string, array<string, mixed>>|null A representation of the log metadata for the given log entry, with three keys: old_group (whether the user had the group before the log entry), new_group (whether the user had it after the log entry), and expiry (the date when the permission will auto-expire, if applicable).
      */
-    private function parseLogParams($params, $group)
+    private function parseLogParams(string $params, string $group): ?array
     {
         if (empty(trim($params)))
             return null;

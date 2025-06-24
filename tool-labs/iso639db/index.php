@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/Database.php');
 require_once('framework/Iso639dbEngine.php');

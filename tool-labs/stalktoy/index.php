@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/IPAddress.php');
 require_once('../backend/modules/Form.php');
@@ -281,12 +283,12 @@ else if ($engine->isValid() && $engine->target) {
         <div class='is-global-details' data-is-global='", ($account->exists ? '1' : '0'), "'";
     if ($account->exists) {
         echo "
-            data-home-wiki='{$backend->formatValue($account->homeWiki)}'
-            data-status='", ($account->isLocked && $account->isHidden ? 'locked, hidden' : ($account->isLocked ? 'locked' : ($account->isHidden ? 'hidden' : 'okay'))), "
-            data-id='{$account->id}'
-            data-registered='{$account->registered}'
-            data-groups='{$backend->formatValue(implode(', ', $account->groups))}'
-            ";
+            data-home-wiki=\"{$backend->formatValue($account->homeWiki)}\"
+            data-status=\"", ($account->isLocked ? 'locked' : 'okay'), "\"
+            data-id=\"{$account->id}\"
+            data-registered=\"{$account->registered}\"
+            data-groups=\"{$backend->formatValue(implode(', ', $account->groups))}\"
+        ";
     }
     echo '>';
     if ($account->exists) {
@@ -323,12 +325,9 @@ else if ($engine->isValid() && $engine->target) {
             <tr>
                 <td>Status:</td>
                 <td>";
-        if ($account->isLocked || $account->isHidden) {
-            if ($account->isLocked)
-                echo "<span class='bad'>Locked</span> ";
-            if ($account->isHidden)
-                echo "<span class='bad'>Hidden</span>";
-        } else if ($engine->target == 'Shanel')
+        if ($account->isLocked)
+            echo "<span class='bad'>Locked</span> ";
+        else if ($engine->target == 'Shanel')
             echo "<span class='good'>&nbsp;&hearts;&nbsp;</span>";
         else
             echo "<span class='good'>okay</span>";

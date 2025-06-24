@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Provides database operations with optimizations and connection caching.
  *
@@ -17,13 +19,11 @@ class Database
     #####
     /**
      * A bitflag indicating exceptions should be thrown.
-     * @var int
      */
     const ERROR_THROW = 1;
 
     /**
      * A bitflag indicating exceptions should be printed to the screen.
-     * @var int
      */
     const ERROR_PRINT = 2;
 
@@ -34,7 +34,6 @@ class Database
 
     /**
      * The PDO database vendor driver.
-     * @var string
      */
     const DRIVER = 'mysql';
 
@@ -43,27 +42,23 @@ class Database
     #####
     /**
      * The current error mode.
-     * @var int
      */
-    protected $errorMode = 2; // ERROR_PRINT
+    protected int $errorMode = 2; // ERROR_PRINT
 
     /**
      * The configuration file path from which to read the default database settings.
-     * @var string
      */
-    protected $configFile; // set in constructor
+    protected string $configFile; // set in constructor
 
     /**
      * The default DB username.
-     * @var string
      */
-    protected $defaultUser;
+    protected string $defaultUser;
 
     /**
      * The default DB password.
-     * @var string
      */
-    protected $defaultPassword;
+    protected string $defaultPassword;
 
     #####
     ## State
@@ -71,93 +66,82 @@ class Database
     /* connection arrays */
     /**
      * A host => PDO connection lookup hash.
-     * @var array
+     * @var array<string, PDO|null>
      */
-    protected $connections = Array();
+    protected array $connections = [];
 
     /**
      * A host => Exception lookup hash.
-     * @var array
+     * @var array<string, Exception>
      */
-    protected $exceptions = Array();
+    protected array $exceptions = [];
 
     /**
      * The current DB host name.
-     * @var string
      */
-    protected $host;
+    protected ?string $host = null;
 
     /**
      * The current DB username.
-     * @var string
      */
-    protected $username;
+    protected ?string $username = null;
 
     /**
      * The current DB password.
-     * @var string
      */
-    protected $password;
+    protected ?string $password = null;
 
     /**
      * The current DB name.
-     * @var string
      */
-    protected $database;
+    protected ?string $database = null;
 
     /**
      * Whether an error occurred in the current session.
-     * @var bool
      */
-    protected $borked = false;
+    protected bool $borked = false;
 
     /**
      * The previous DB host name.
-     * @var string
      */
-    protected $prevHost;
+    protected ?string $prevHost = null;
 
     /**
      * The previous DB username.
-     * @var string
      */
-    protected $prevUsername;
+    protected ?string $prevUsername = null;
 
     /**
      * The previous DB password.
-     * @var string
      */
-    protected $prevPassword;
+    protected ?string $prevPassword = null;
 
     /**
      * The previous DB name.
-     * @var string
      */
-    protected $prevDatabase;
+    protected ?string $prevDatabase = null;
 
     /**
      * The last prepared query.
      * @var PDOStatement|null
      */
-    protected $query = null;
+    protected ?PDOStatement $query = null;
 
     /**
      * The underlying logger.
-     * @var Logger
      */
-    protected $logger = null;
+    protected Logger $logger;
 
     /**
      * Provides basic performance profiling.
      * @var Profiler
      */
-    protected $profiler = null;
+    protected Profiler $profiler;
 
     /**
      * Whether the database has been disposed.
-     * @var bool
      */
-    private $disposed = false;
+    private bool $disposed = false;
 
 
     ##########
@@ -167,7 +151,7 @@ class Database
      * The underlying database connection.
      * @var PDO
      */
-    public $db = null;
+    public ?PDO $db = null;
 
 
     ##########
@@ -177,11 +161,11 @@ class Database
      * Construct an instance.
      * @param Profiler $profiler Provides basic performance profiling.
      * @param Logger $logger Writes messages to a log file for troubleshooting.
-     * @param integer $options Additional mode options which can be bitwise ORed together (one of {@see Database::ERROR_THROW} or {@see Database::ERROR_PRINT}).
-     * @param string $defaultUser The username to use when authenticating to the database, or null to retrieve it from the user configuration file.
-     * @param string $defaultPassword The password to use when authenticating to the database, or null to retrieve it from the user configuration file.
+     * @param int|null $options Additional mode options which can be bitwise ORed together (one of {@see Database::ERROR_THROW} or {@see Database::ERROR_PRINT}).
+     * @param string|null $defaultUser The username to use when authenticating to the database, or null to retrieve it from the user configuration file.
+     * @param string|null $defaultPassword The password to use when authenticating to the database, or null to retrieve it from the user configuration file.
      */
-    public function __construct($profiler, $logger, $options = null, $defaultUser = null, $defaultPassword = null)
+    public function __construct(Profiler $profiler, Logger $logger, ?int $options = null, ?string $defaultUser = null, ?string $defaultPassword = null)
     {
         /* configuration */
         $this->configFile = REPLICA_CNF_PATH;
@@ -189,14 +173,13 @@ class Database
         $this->logger = $logger;
 
         /* get default login details */
-        $this->defaultUser = $defaultUser;
-        $this->defaultPassword = $defaultPassword;
-
         if ((!$defaultUser || !$defaultPassword) && file_exists($this->configFile)) {
             $config = parse_ini_file($this->configFile);
-            $this->defaultUser = ($defaultUser ? $defaultUser : $config['user']);
-            $this->defaultPassword = ($defaultPassword ? $defaultPassword : $config['password']);
+            $defaultUser = ($defaultUser ? $defaultUser : $config['user']);
+            $defaultPassword = ($defaultPassword ? $defaultPassword : $config['password']);
         }
+        $this->defaultUser = $defaultUser;
+        $this->defaultPassword = $defaultPassword;
 
         /* get options */
         if ($options & self::ERROR_MODES)
@@ -206,7 +189,7 @@ class Database
     /**
      * Close all database connections and release resources.
      */
-    public function dispose()
+    public function dispose(): void
     {
         if ($this->disposed)
             return;
@@ -229,12 +212,12 @@ class Database
     /**
      * Open a database connection. This will reuse an existing server connection if it has been previously opened.
      * @param string $host The server address to connect to.
-     * @param string $database The name of the database to connect to.
-     * @param string $username The username to use when authenticating to the database, or null to authenticate with the default username.
-     * @param string $password The password to use when authenticating to the database, or null to authenticate with the default password.
+     * @param string|null $database The name of the database to connect to.
+     * @param string|null $username The username to use when authenticating to the database, or null to authenticate with the default username.
+     * @param string|null $password The password to use when authenticating to the database, or null to authenticate with the default password.
      * @return bool Whether the connection was successfully established.
      */
-    public function connect($host, $database = null, $username = null, $password = null)
+    public function connect(string $host, ?string $database = null, ?string $username = null, ?string $password = null): bool
     {
         /* normalize database name for Toolforge */
         if (isset($database) && substr($database, -2) != '_p')
@@ -285,7 +268,7 @@ class Database
      * Reopen the previous connection. This is typically used after establishing a temporary connection to a different database.
      * @return bool Whether the connection was successfully established.
      */
-    public function connectPrevious()
+    public function connectPrevious(): bool
     {
         if ($this->prevHost)
             return $this->connect($this->prevHost, $this->prevDatabase, $this->prevUsername, $this->prevPassword);
@@ -299,10 +282,10 @@ class Database
     /**
      * Submit a parameterized SQL query to the database.
      * @param string $sql The raw SQL command to submit.
-     * @param array $values The values to substituted for parameterized placeholders in the SQL command.
+     * @param array<string, mixed> $values The values to substituted for parameterized placeholders in the SQL command.
      * @return Database|false The Database instance for method chaining (or false if the query failed).
      */
-    public function query($sql, $values = [])
+    public function query(string $sql, array $values = []): self|false
     {
         $sql .= " /*{$this->logger->key}*/";
 
@@ -332,9 +315,9 @@ class Database
     #############################
     /**
      * Fetch the next row as a hash of field names and values, and advance the internal pointer.
-     * @return array|false The hash of field names and values, or false if the query failed.
+     * @return array<string, mixed>|false The hash of field names and values, or false if the query failed.
      */
-    public function fetchAssoc()
+    public function fetchAssoc(): array|false
     {
         if ($this->borked)
             return false;
@@ -348,9 +331,9 @@ class Database
     /**
      * Fetch a single value from the next row, and advance the internal pointer.
      * @param int $columnNumber The numeric index of the column to retrieve.
-     * @return string|false The value of the retrieved field, or false if the query failed.
+     * @return mixed The value of the retrieved field, or false if the query failed.
      */
-    public function fetchColumn($columnNumber = 0)
+    public function fetchColumn(int $columnNumber = 0): mixed
     {
         return $this->fetchValue($columnNumber);
     }
@@ -358,9 +341,9 @@ class Database
     /**
      * Fetch a single value from the next row, and advance the internal pointer.
      * @param int $columnNumber The numeric index of the column to retrieve.
-     * @return string|false The value of the retrieved field, or false if the query failed.
+     * @return mixed The value of the retrieved field, or false if the query failed.
      */
-    public function fetchValue($columnNumber = 0)
+    public function fetchValue(int $columnNumber = 0): mixed
     {
         if ($this->borked)
             return false;
@@ -373,9 +356,9 @@ class Database
 
     /**
      * Fetch all result rows as an array of field name & value hashes.
-     * @return array|false An array of field name & value hashes, or false if the query failed.
+     * @return array<string, mixed>|false An array of field name & value hashes, or false if the query failed.
      */
-    public function fetchAllAssoc()
+    public function fetchAllAssoc(): array|false
     {
         if ($this->borked)
             return false;
@@ -391,7 +374,7 @@ class Database
      * Get the number of rows returned by the query.
      * @return int The number of rows returned by the query.
      */
-    public function countRows()
+    public function countRows(): int
     {
         if (!$this->query)
             return 0;
@@ -405,11 +388,11 @@ class Database
     /**
      * Handle an exception.
      * @param Exception $exception The intercepted exception to handle.
-     * @param string $error_message The error message to log (if any).
+     * @param string|null $error_message The error message to log (if any).
      * @throws Exception Throws the received exception if required by the error mode.
      * @return false
      */
-    protected function handleException($exception, $error_message = null)
+    protected function handleException(Exception $exception, ?string $error_message = null): false
     {
         $this->log("exception: error=[{$exception->getMessage()}], message=[{$error_message}]");
 
@@ -430,9 +413,8 @@ class Database
 
     /**
      * Get a human-readable data dump about the current query.
-     * @return string|null
      */
-    protected function getQueryDebugData()
+    protected function getQueryDebugData(): string|null|false
     {
         if ($this->query == null)
             return null;
@@ -445,7 +427,7 @@ class Database
      * Log a trace message.
      * @param string $message The message to log.
      */
-    protected function log($message)
+    protected function log(string $message): void
     {
         if ($this->logger != null)
             $this->logger->log('Database> ' . $message);

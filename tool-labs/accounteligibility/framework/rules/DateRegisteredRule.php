@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * A rule which checks when the account was registered.
@@ -10,9 +11,8 @@ class DateRegisteredRule implements Rule
     ##########
     /**
      * The maximum date by which the account should have been registered.
-     * @var DateWrapper
      */
-    private $maxDate;
+    private DateWrapper $maxDate;
 
 
     ##########
@@ -22,7 +22,7 @@ class DateRegisteredRule implements Rule
      * Construct an instance.
      * @param string $maxDate The maximum date by which the account should have been registered in a format recognised by {@see DateWrapper::__construct}.
      */
-    public function __construct($maxDate)
+    public function __construct(string $maxDate)
     {
         $this->maxDate = new DateWrapper($maxDate);
     }
@@ -34,7 +34,7 @@ class DateRegisteredRule implements Rule
      * @param LocalUser $user The local user account.
      * @return ResultInfo|null The eligibility check result, or null if the rule doesn't apply to this wiki.
      */
-    public function accumulate($db, $wiki, $user)
+    public function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo
     {
         // accumulate
         $registered = $user->registered;

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Wraps a {@see DateTime} with formatting options.
@@ -10,21 +11,18 @@ class DateWrapper
     ##########
     /**
      * The date in PHP format.
-     * @var DateTime
      */
-    public $date;
+    public DateTime $date;
 
     /**
      * The date in MediaWiki's database format.
-     * @var int
      */
-    public $mediawiki;
+    public string $mediawiki;
 
     /**
      * The human-readable representation of the date.
-     * @var string
      */
-    public $readable;
+    public string $readable;
 
 
     ##########
@@ -38,10 +36,10 @@ class DateWrapper
      *        (e.g. '<201701' instead of '20161231235959').
      * @throws InvalidArgumentException The specified date is empty or not in a valid format.
      */
-    public function __construct($date)
+    public function __construct(string $date)
     {
         $this->date = $this->getDate($date);
-        $this->mediawiki = intval($this->date->format("YmdHis"));
+        $this->mediawiki = $this->date->format("YmdHis");
         $this->readable = $this->date->format("d F Y");
 
         $time = $this->date->format("H:i");
@@ -56,10 +54,9 @@ class DateWrapper
     /**
      * Get a full date from a date number.
      * @param string $input The date to wrap in a format accepted by {@see DateWrapper::__construct}.
-     * @return DateTime
      * @throws InvalidArgumentException The specified date is empty or not in a valid format.
      */
-    private function getDate($input)
+    private function getDate(string $input): DateTime
     {
         // validate
         if (!$input)
@@ -72,12 +69,12 @@ class DateWrapper
 
         // get values
         $usePreceding = isset($tokens['modifier']) && $tokens['modifier'] == '<';
-        $year = $tokens['year'];
-        $month = isset($tokens['month']) ? $tokens['month'] : '01';
-        $day = isset($tokens['day']) ? $tokens['day'] : '01';
-        $hour = isset($tokens['hour']) ? $tokens['hour'] : '00';
-        $minute = isset($tokens['minute']) ? $tokens['minute'] : '00';
-        $second = isset($tokens['second']) ? $tokens['second'] : '00';
+        $year = intval($tokens['year']);
+        $month = isset($tokens['month']) ? intval($tokens['month']) : 1;
+        $day = isset($tokens['day']) ? intval($tokens['day']) : 1;
+        $hour = isset($tokens['hour']) ? intval($tokens['hour']) : 0;
+        $minute = isset($tokens['minute']) ? intval($tokens['minute']) : 0;
+        $second = isset($tokens['second']) ? intval($tokens['second']) : 0;
 
         // get date
         $date = (new DateTime())->setDate($year, $month, $day)->setTime($hour, $minute, $second);

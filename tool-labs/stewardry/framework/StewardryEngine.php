@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Provides methods for stewardry.
  */
@@ -9,9 +11,9 @@ class StewardryEngine extends Base
     ##########
     /**
      * The predefined user groups which can be analyzed through this tool.
-     * @var array
+     * @var array<string, string[]>
      */
-    public $presetGroups = [
+    public array $presetGroups = [
         'sysop' => ['abusefilter', 'block', 'delete', 'protect', 'rights'],
         'bureaucrat' => ['rights'],
         'interface-admin' => [],
@@ -22,27 +24,24 @@ class StewardryEngine extends Base
 
     /**
      * The input dbname to analyze.
-     * @var string
      */
-    public $dbname = null;
+    public ?string $dbname = null;
 
     /**
      * The current wiki.
-     * @var Wiki
      */
-    public $wiki = null;
+    public ?Wiki $wiki = null;
 
     /**
      * Maps the selected group names (like 'sysop') to the relevant log types.
      * @var array<string, string[]>
      */
-    public $groups = [];
+    public array $groups = [];
 
     /**
      * The database handler from which to query data.
-     * @var Toolserver
      */
-    public $db = null;
+    public Toolserver $db;
 
 
 
@@ -53,7 +52,7 @@ class StewardryEngine extends Base
      * Construct an instance.
      * @param Backend $backend The backend framework.
      */
-    public function __construct($backend)
+    public function __construct(Backend $backend)
     {
         parent::__construct();
 
@@ -75,8 +74,9 @@ class StewardryEngine extends Base
 
     /**
      * Generate a SQL query which returns activity metrics for the selected groups.
+     * @returns array<string, mixed>[] A lookup of metrics by user.
      */
-    public function fetchMetrics()
+    public function fetchMetrics(): array
     {
         $this->db->Connect($this->wiki->name);
 
@@ -104,6 +104,13 @@ class StewardryEngine extends Base
             // last edit
             $user['last_edit'] = $this->db->query('SELECT rev_timestamp FROM revision_userindex WHERE rev_actor = ? ORDER BY rev_id DESC LIMIT 1', [$user['actor_id']])->fetchValue();
 
+            // prefill group values
+            foreach ($groupNames as $groupName)
+            {
+                $user["user_has_$groupName"] = false;
+                $user["last_$groupName"] = null;
+            }
+
             // last group action
             $userGroups = explode(',', $user['user_groups']);
             foreach ($userGroups as $groupName)
@@ -120,10 +127,9 @@ class StewardryEngine extends Base
 
     /**
      * Get the HTML for a color-coded date cell.
-     * @param string $dateStr The date string to display.
-     * @return string
+     * @param string|false|null $dateStr The date string to display.
      */
-    public function getDateCellHtml($dateStr)
+    public function getDateCellHtml(string|false|null $dateStr): string
     {
         if ($dateStr) {
             $date = DateTime::createFromFormat('YmdGis', $dateStr, new DateTimeZone('UTC'));

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Represents a cached item with expiry.
@@ -12,19 +13,19 @@ class CacheItem
      * The date on which the item was cached.
      * @var DateTime
      */
-    public $date = null;
+    public DateTime $date;
 
     /**
      * The expiry date.
      * @var DateTime
      */
-    public $expiry = null;
+    public DateTime $expiry;
 
     /**
      * The cached data.
      * @var mixed
      */
-    public $data = null;
+    public mixed $data;
 
 
     ##########
@@ -33,9 +34,9 @@ class CacheItem
     /**
      * Construct an instance.
      * @param mixed $data The data to cache.
-     * @param DateInterval $interval The amount of time for which to cache the item (or null for one day).
+     * @param DateInterval|null $interval The amount of time for which to cache the item (or null for one day).
      */
-    public function __construct($data, $interval = null)
+    public function __construct(mixed $data, ?DateInterval $interval = null)
     {
         // set data
         $this->data = $data;
@@ -53,9 +54,8 @@ class CacheItem
     /**
      * Get whether the cache item should be purged.
      * @param DateTime $minDate The oldest cache date to keep.
-     * @return bool
      */
-    public function isPurged($minDate = null)
+    public function isPurged(?DateTime $minDate = null): bool
     {
         return $minDate && $this->date <= $minDate;
     }
@@ -63,27 +63,24 @@ class CacheItem
     /**
      * Get whether the cache item has expired (or been purged).
      * @param DateTime $minDate The oldest cache date to keep.
-     * @return bool
      */
-    public function isExpired($minDate = null)
+    public function isExpired(?DateTime $minDate = null): bool
     {
         return $this->isPurged($minDate) || $this->expiry <= new DateTime('now', new DateTimeZone('UTC'));
     }
 
     /**
      * Get the cache date as a human-readable string.
-     * @return string
      */
-    public function getFormattedDate()
+    public function getFormattedDate(): string
     {
         return $this->date->format('Y-m-d H:i:s \(\U\T\C\)');
     }
 
     /**
      * Get the expiry date as a human-readable string.
-     * @return string
      */
-    public function getFormattedExpiry()
+    public function getFormattedExpiry(): string
     {
         return $this->expiry->format('Y-m-d H:i:s \(\U\T\C\)');
     }
@@ -99,21 +96,18 @@ class Cacher
     ##########
     /**
      * The full path to the directory to read and write to.
-     * @var string
      */
-    private $path = null;
+    private string $path;
 
     /**
      * The oldest cache date to purge.
-     * @var DateTime
      */
-    private $purgeDate = null;
+    private ?DateTime $purgeDate = null;
 
     /**
      * Writes messages to a log file for troubleshooting.
-     * @var Logger
      */
-    private $logger = null;
+    private Logger $logger;
 
 
     ##########
@@ -125,7 +119,7 @@ class Cacher
      * @param Logger $logger Writes messages to a log file for troubleshooting.
      * @param bool $purge Whether to purge expired messages.
      */
-    public function __construct($path, $logger, $purge = null)
+    public function __construct(string $path, Logger $logger, ?bool $purge = null)
     {
         $path = pathinfo($path);
         $this->path = $path['dirname'] . '/' . $path['basename'] . '/';
@@ -137,9 +131,8 @@ class Cacher
     /**
      * Get cached data saved with a key.
      * @param string $key The unique key identifying the cache item.
-     * @return mixed
      */
-    public function getWithMetadata($key)
+    public function getWithMetadata(string $key): mixed
     {
         // parse path
         $path = $this->getPath($key);
@@ -150,7 +143,8 @@ class Cacher
             return null;
         }
         $data = file_get_contents($path);
-        $data = unserialize($data);
+        if ($data)
+            $data = unserialize($data);
         if (!$data) {
             $this->logger->log('cache miss (file could not be deserialized): ' . $path);
             return null;
@@ -174,7 +168,7 @@ class Cacher
      * @param string $key The unique key identifying the cache item.
      * @return mixed
      */
-    public function get($key)
+    public function get(string $key): mixed
     {
         $cached = $this->getWithMetadata($key);
         if ($cached == null)
@@ -186,9 +180,9 @@ class Cacher
      * Save a cached value.
      * @param string $key The unique key identifying the cached data.
      * @param object $data The data to save.
-     * @param DateInterval $interval The amount of time for which to cache the data (or null for one day).
+     * @param DateInterval|null $interval The amount of time for which to cache the data (or null for one day).
      */
-    public function save($key, $data, $interval = null)
+    public function save(string $key, mixed $data, ?DateInterval $interval = null): void
     {
         $path = $this->getPath($key);
         $item = new CacheItem($data, $interval);
@@ -214,7 +208,7 @@ class Cacher
      * @param string $key The cache key.
      * @return string
      */
-    private function getPath($key)
+    private function getPath(string $key): string
     {
         return $this->path . urlencode($key) . '.dat';
     }

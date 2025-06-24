@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Stalktoy;
 
 /**
@@ -8,13 +10,12 @@ class GlobalIP
 {
     /**
      * The underlying IP address.
-     * @var \IPAddress
      */
-    public $ip;
+    public \IPAddress $ip;
 
     /**
      * The global blocks placed against this IP address or IP addresses within this range.
      * @var \Stalktoy\Block[]
      */
-    public $globalBlocks;
+    public array $globalBlocks = [];
 }

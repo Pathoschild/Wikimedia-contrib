@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Provides metadata about an eligibility check.
@@ -10,33 +11,30 @@ class ResultInfo
     ##########
     /**
      * The eligibility check result (one of the {@see Result} values).
-     * @var string
      */
-    public $result;
+    public string $result;
 
     /**
      * Whether the result is final (i.e. there's no need to check further wikis).
-     * @var bool
      */
-    public $isFinal = false;
+    public bool $isFinal;
 
     /**
      * A human-readable message summarising the eligibility result.
-     * @var string
      */
-    public $message;
+    public string $message;
 
     /**
      * Warning messages to append for this result.
      * @var string[]
      */
-    public $warnings = [];
+    public array $warnings = [];
 
     /**
      * Notes to append for this result.
      * @var string[]
      */
-    public $notes = [];
+    public array $notes = [];
 
 
     ##########
@@ -48,7 +46,7 @@ class ResultInfo
      * @param string $message Whether the result is final (i.e. there's no need to check further wikis).
      * @param bool $isFinal A human-readable message summarising the eligibility result.
      */
-    public function __construct($result, $message, $isFinal = false)
+    public function __construct(string $result, string $message, bool $isFinal = false)
     {
         $this->result = $result;
         $this->message = $message;
@@ -57,27 +55,24 @@ class ResultInfo
 
     /**
      * Get whether the eligibility check passed.
-     * @var bool
      */
-    public function isPass()
+    public function isPass(): bool
     {
         return $this->result == Result::PASS;
     }
 
     /**
      * Get whether the eligibility check passed, but we should still check other wikis.
-     * @var bool
      */
-    public function isSoftPass()
+    public function isSoftPass(): bool
     {
         return $this->result == Result::SOFT_PASS;
     }
 
     /**
      * Get whether the eligibility check failed.
-     * @var bool
      */
-    public function isFail()
+    public function isFail(): bool
     {
         return $this->result == Result::FAIL;
     }
@@ -86,7 +81,7 @@ class ResultInfo
      * Add a warning message for this result.
      * @param string $message The warning message.
      */
-    public function addWarning($message)
+    public function addWarning(string $message): void
     {
         array_push($this->warnings, $message);
     }
@@ -95,7 +90,7 @@ class ResultInfo
      * Add a note about this result.
      * @param string $message The note message.
      */
-    public function addNote($message)
+    public function addNote(string $message): void
     {
         array_push($this->notes, $message);
     }

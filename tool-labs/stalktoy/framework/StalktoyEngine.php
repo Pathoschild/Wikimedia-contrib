@@ -1,75 +1,60 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Implements logic for the Stalktoy tool.
  */
 class StalktoyEngine extends Base
 {
     ##########
-    ## Properties
-    ##########
-    /**
-     * The local user details.
-     * @var array
-     */
-    private $local;
-
-
-    ##########
     ## Accessors
     ##########
     /**
      * The lookup target.
-     * @var string
      */
-    public $target;
+    public ?string $target = null;
 
     /**
      * The lookup target formatted for injection into a URL.
-     * @var string
      */
-    public $targetUrl;
+    public ?string $targetUrl = null;
 
     /**
      * The lookup target formatted for injection into the page name portion of a wiki URL.
-     * @var string
      */
-    public $targetWikiUrl;
+    public ?string $targetWikiUrl = null;
 
     /**
      * A lookup hash of wiki data.
-     * @var Wiki[]
+     * @var array<string, Wiki>
      */
-    public $wikis;
+    public array $wikis = [];
 
     /**
      * A lookup hash of wiki domains.
      * @var string[]
      */
-    public $domains;
+    public array $domains = [];
 
     /**
      * The selected wiki.
-     * @var Wiki|null
      */
-    public $wiki;
+    public ?string $wiki = null;
 
     /**
      * (User lookups only.) Whether to show all wikis, even if the user doesn't have an account there.
-     * @var bool
      */
-    public $showAllWikis = false;
+    public bool $showAllWikis = false;
 
     /**
      * (User lookups only.) Whether to list relevant global groups next to each wiki.
-     * @var bool
      */
-    public $showGroupsPerWiki = false;
+    public bool $showGroupsPerWiki = false;
 
     /**
      * The database wrapper.
-     * @var Toolserver
      */
-    public $db;
+    public ?Toolserver $db = null;
 
 
     ##########
@@ -78,9 +63,9 @@ class StalktoyEngine extends Base
     /**
      * Construct an instance.
      * @param Backend $backend The tool backend framework.
-     * @param string $target The username or IP address to analyze.
+     * @param string|null $target The username or IP address to analyze.
      */
-    public function __construct($backend, $target)
+    public function __construct(Backend $backend, ?string $target)
     {
         parent::__construct();
 
@@ -104,7 +89,7 @@ class StalktoyEngine extends Base
     /**
      * Whether there is a username or IP address to analyze.
      */
-    public function isValid()
+    public function isValid(): bool
     {
         return !!$this->target;
     }
@@ -113,19 +98,17 @@ class StalktoyEngine extends Base
      * Set the current wiki to analyze.
      * @param string $wiki The database name of the wiki to analyze.
      */
-    public function setWiki($wiki)
+    public function setWiki(string $wiki): void
     {
         $this->wiki = $wiki;
         $this->db->connect($wiki);
-        $this->local = [];
     }
 
     /**
      * Get details about a global account.
      * @param string $target The username for which to fetch details.
-     * @return \Stalktoy\GlobalAccount
      */
-    public function getGlobal($target)
+    public function getGlobal(string $target): \Stalktoy\GlobalAccount
     {
         // fetch details
         $row = $this->db->query(
@@ -151,9 +134,9 @@ class StalktoyEngine extends Base
         $account = new Stalktoy\GlobalAccount();
         $account->exists = isset($row['gu_id']);
         if ($account->exists) {
-            $account->id = $row['gu_id'];
+            $account->id = intval($row['gu_id']);
             $account->name = $row['gu_name'];
-            $account->isLocked = $row['gu_locked'];
+            $account->isLocked = boolval($row['gu_locked']);
             $account->registered = $row['gu_timestamp'];
             $account->groups = ($row['gu_groups'] ? explode(',', $row['gu_groups']) : []);
             $account->homeWiki = $row['lu_wiki'];
@@ -167,9 +150,9 @@ class StalktoyEngine extends Base
      * Get the user's global groups that apply for each wiki.
      * @param int $id The user's global account ID.
      * @param string[] $wikis The database names of the wikis on which the user's account is unified.
-     * @returns array An array of groups in the form array(dbname => string[]).
+     * @returns array<string, string[]> An array of groups in the form `[dbname => string[]]`.
      */
-    public function getGlobalGroupsByWiki($id, $wikis)
+    public function getGlobalGroupsByWiki(int $id, array $wikis): array
     {
         // fetch details
         $rows = $this->db->query(
@@ -232,10 +215,9 @@ class StalktoyEngine extends Base
 
     /**
      * Get global details about an IP address or range.
-     * @param string $target The IP address or range for which to fetch details.
-     * @return \Stalktoy\GlobalIP
+     * @param string|null $target The IP address or range for which to fetch details.
      */
-    public function getGlobalIP($target)
+    public function getGlobalIP(?string $target): \Stalktoy\GlobalIP
     {
         $ip = new Stalktoy\GlobalIP();
 
@@ -275,7 +257,7 @@ class StalktoyEngine extends Base
             $block->timestamp = $row['timestamp'];
             $block->expiry = $row['expiry'];
             $block->reason = $row['gb_reason'];
-            $block->anonOnly = $row['gb_anon_only'];
+            $block->anonOnly = boolval($row['gb_anon_only']);
             $block->isHidden = false;
             $ip->globalBlocks[] = $block;
         }
@@ -289,9 +271,8 @@ class StalktoyEngine extends Base
      * @param string $userName The name of the user for which to fetch local details.
      * @param bool $isUnified Whether the user has a unified account on this wiki.
      * @param Wiki $wiki The wiki on which the account is being fetched.
-     * @return \Stalktoy\LocalAccount
      */
-    public function getLocal($db, $userName, $isUnified, $wiki)
+    public function getLocal(Toolserver $db, string $userName, bool $isUnified, Wiki $wiki): \Stalktoy\LocalAccount
     {
         // fetch details
         $row = $db->query(
@@ -335,17 +316,17 @@ class StalktoyEngine extends Base
         $account->wiki = $wiki;
         if ($account->exists) {
             // account details
-            $account->id = $row['user_id'];
-            $account->actorID = $row['actor_id'];
+            $account->id = intval($row['user_id']);
+            $account->actorId = intval($row['actor_id']);
             $account->registered = $row['registration'];
             $account->registeredRaw = $row['user_registration'];
-            $account->editCount = $row['user_editcount'];
+            $account->editCount = intval($row['user_editcount']);
             $account->groups = $row['user_groups'];
             $account->isUnified = $isUnified;
 
             // handle edge cases with older accounts
             if (!$account->registeredRaw) {
-                $date = $db->getRegistrationDate($account->id, $account->actorID);
+                $date = $db->getRegistrationDate($account->id, $account->actorId);
                 $account->registered = $date['formatted'];
                 $account->registeredRaw = $date['raw'];
             }
@@ -358,7 +339,7 @@ class StalktoyEngine extends Base
                 $account->block->target = $userName;
                 $account->block->reason = $row['bl_reason'];
                 $account->block->timestamp = $row['bl_timestamp'];
-                $account->block->isHidden = $row['bl_deleted'];
+                $account->block->isHidden = boolval($row['bl_deleted']);
                 $account->block->expiry = $row['bl_expiry'];
             }
         }
@@ -369,9 +350,8 @@ class StalktoyEngine extends Base
     /**
      * Get whether a wiki is participating in CentralAuth for global accounts.
      * @param string $dbname The database name.
-     * @return bool
      */
-    public function getWikiUnifiable($dbname)
+    public function getWikiUnifiable(string $dbname): bool
     {
         // in https://noc.wikimedia.org/conf/highlight.php?file=dblists/nonglobal.dblist
         return !in_array($dbname, ['labswiki', 'labtestwiki']);
@@ -382,10 +362,10 @@ class StalktoyEngine extends Base
     ########
     /**
      * Get a list of local blocks against editing by this IP address.
-     * @param \Stalktoy\GlobalIP $ip
+     * @param \Stalktoy\GlobalIP $ip The IP address for which to fetch local blocks.
      * @return Stalktoy\Block[]
      */
-    public function getLocalIPBlocks($ip)
+    public function getLocalIPBlocks(\Stalktoy\GlobalIP $ip): array
     {
         // get blocks
         $start = $ip->ip->getEncoded(IPAddress::START);
@@ -422,7 +402,7 @@ class StalktoyEngine extends Base
             $block->target = $row['bt_address'];
             $block->timestamp = $row['timestamp'];
             $block->expiry = $row['expiry'];
-            $block->anonOnly = $row['bl_anon_only'];
+            $block->anonOnly = boolval($row['bl_anon_only']);
             $block->isHidden = false;
 
             $block->by = $this->db->query("SELECT actor_name FROM actor WHERE actor_id = ? LIMIT 1", [$row['bl_by_actor']])->fetchValue();
@@ -440,9 +420,8 @@ class StalktoyEngine extends Base
      * @param string $domain The domain URL (if any).
      * @param string $title The link title.
      * @param string|null $text The link text (or null to use the title).
-     * @return string
      */
-    function link($domain, $title, $text = null)
+    function link(string $domain, string $title, string|int|null $text = null): string
     {
         if ($text === null)
             $text = $title;
@@ -457,9 +436,8 @@ class StalktoyEngine extends Base
      * Convert wikilink syntax in a block reason to HTML.
      * @param string $text The block reason to convert.
      * @param string $domain The wiki domain URL.
-     * @return string
      */
-    function formatReason($text, $domain)
+    function formatReason(string $text, string $domain): string
     {
         if (!preg_match_all('/\[\[([^\]]+)\]\]/', $text, $links))
             return $text;

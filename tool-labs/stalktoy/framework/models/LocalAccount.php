@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Stalktoy;
 
 /**
@@ -8,60 +10,56 @@ class LocalAccount
 {
     /**
      * Whether the user account exists.
-     * @var bool
      */
-    public $exists;
+    public bool $exists;
 
     /**
      * The unique identifier for this account.
-     * @var int
      */
-    public $id;
+    public int $id = -1;
 
     /**
-     * When the account was registered (formatted yyyy-mm-dd hh-ii).
-     * @var string
+     * The unique 'actor' ID for this account.
      */
-    public $registered;
+    public int $actorId = -1;
 
     /**
-     * When the account was registered.
-     * @var int
+     * When the account was registered (as a formatted `yyyy-mm-dd hh-ii` date string).
      */
-    public $registeredRaw;
+    public ?string $registered = null;
+
+    /**
+     * When the account was registered (as a numeric value).
+     */
+    public ?string $registeredRaw = null;
 
     /**
      * The number of edits made by the account.
      */
-    public $editCount;
+    public int $editCount = 0;
 
     /**
      * Whether the user is currently blocked.
-     * @var bool
      */
-    public $isBlocked;
+    public bool $isBlocked = false;
 
     /**
      * Whether the local account is linked to the global account of the same name.
-     * @var bool
      */
-    public $isUnified;
+    public bool $isUnified = false;
 
     /**
-     * The global groups to which the user account belongs (as a comma-separated list).
-     * @var string
+     * The global groups to which the user account belongs (as a comma-separated list), or null if they have none.
      */
-    public $groups;
+    public ?string $groups = null;
 
     /**
      * Details about the user's current block.
-     * @var \Stalktoy\Block
      */
-    public $block;
+    public ?\Stalktoy\Block $block = null;
 
     /**
      * The wiki on which this account resides.
-     * @var \Wiki
      */
-    public $wiki;
+    public \Wiki $wiki;
 }

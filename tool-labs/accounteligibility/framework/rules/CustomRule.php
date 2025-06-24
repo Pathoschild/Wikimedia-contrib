@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * A rule which uses injected behaviour.
@@ -10,9 +11,9 @@ class CustomRule implements Rule
     ##########
     /**
      * A callback which gets the result for a wiki.
-     * @var Closure
+     * @var callable(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo
      */
-    private $accumulator;
+    private callable $accumulator;
 
 
     ##########
@@ -20,9 +21,9 @@ class CustomRule implements Rule
     ##########
     /**
      * Construct an instance.
-     * @param Closure $accumulator A callback which gets the result for a wiki.
+     * @param callable(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo $accumulator A callback which gets the result for a wiki.
      */
-    public function __construct($accumulator)
+    public function __construct(callable $accumulator)
     {
         $this->accumulator = $accumulator;
     }
@@ -34,8 +35,8 @@ class CustomRule implements Rule
      * @param LocalUser $user The local user account.
      * @return ResultInfo|null The eligibility check result, or null if the rule doesn't apply to this wiki.
      */
-    public function accumulate($db, $wiki, $user)
+    public function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo
     {
-        return $this->accumulator->call($this, [$db, $wiki, $user]);
+        return ($this->accumulator)($db, $wiki, $user);
     }
 }

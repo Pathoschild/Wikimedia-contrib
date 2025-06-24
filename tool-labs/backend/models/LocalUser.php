@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Metadata about a local user account.
@@ -10,39 +11,33 @@ class LocalUser
     ##########
     /**
      * The unique local user ID.
-     * @var int
      */
-    public $id;
+    public int $id;
 
     /**
      * The user name.
-     * @var string
      */
-    public $name;
+    public string $name;
 
     /**
-     * When the local account was registered.
-     * @var int
+     * When the local account was registered, in the numeric MediaWiki format.
      */
-    public $registered;
+    public ?string $registered;
 
     /**
      * When the local account was registered, as a formatted human-readable string.
-     * @var string
      */
-    public $registeredStr;
+    public ?string $registeredStr;
 
     /**
      * The total number of edits by this local account.
-     * @var int
      */
-    public $edits;
+    public int $edits;
 
     /**
      * The user's unique actor ID.
-     * @var int
      */
-    public $actorID;
+    public int $actorID;
 
 
     ##########
@@ -52,12 +47,12 @@ class LocalUser
      * Construct an instance.
      * @param int $id The unique local user ID.
      * @param string $name The user name.
-     * @param int $registered When the local account was registered.
+     * @param string $registered When the local account was registered, in the numeric MediaWiki format.
      * @param string $registeredStr When the local account was registered, as a formatted human-readable string.
      * @param int $edits The total number of edits by this local account.
      * @param int $actorID The user's unique actor ID.
      */
-    public function __construct($id, $name, $registered, $registeredStr, $edits, $actorID)
+    public function __construct(int $id, string $name, ?string $registered, ?string $registeredStr, int $edits, int $actorID)
     {
         $this->id = $id;
         $this->name = $name;

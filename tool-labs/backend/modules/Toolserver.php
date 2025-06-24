@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 require_once('Database.php');
 require_once('Wikimedia.php');
 
@@ -14,21 +16,20 @@ class Toolserver extends Database
     ##########
     /**
      * A dbname => host lookup.
-     * @var array
+     * @var array<string, string>
      */
-    private $dbnHosts = [];
+    private array $dbnHosts = [];
 
     /**
      * The Wikimedia wiki data.
-     * @var Wikimedia
      */
-    private $wikis;
+    private Wikimedia $wikis;
 
     /**
      * The database names that should be ignored.
      * @var string[]
      */
-    private $ignoreDbNames = [
+    private array $ignoreDbNames = [
         "alswikibooks", // deleted
         "alswikiquote", // deleted
         "alswiktionary", // deleted
@@ -46,11 +47,11 @@ class Toolserver extends Database
      * @param Profiler $profiler Provides basic performance profiling.
      * @param Logger $logger Logs trace messages for troubleshooting.
      * @param Cacher $cache Handles reading and writing data to a directory with expiry dates.
-     * @param integer $options Additional mode options which can be bitwise ORed together (available options: ERROR_THROW, ERROR_PRINT).
-     * @param string $defaultUser The username to use when authenticating to the database, or null to retrieve it from the user configuration file.
-     * @param string $defaultPassword The password to use when authenticating to the database, or null to retrieve it from the user configuration file.
+     * @param int|null $options Additional mode options which can be bitwise ORed together (available options: ERROR_THROW, ERROR_PRINT).
+     * @param string|null $defaultUser The username to use when authenticating to the database, or null to retrieve it from the user configuration file.
+     * @param string|null $defaultPassword The password to use when authenticating to the database, or null to retrieve it from the user configuration file.
      */
-    public function __construct($profiler, $logger, $cache, $options = null, $defaultUser = null, $defaultPassword = null)
+    public function __construct(Profiler $profiler, Logger $logger, Cacher $cache, ?int $options = null, ?string $defaultUser = null, ?string $defaultPassword = null)
     {
         parent::__construct($profiler, $logger, $options, $defaultUser, $defaultPassword);
 
@@ -70,7 +71,7 @@ class Toolserver extends Database
      * @param string $password The password to use when authenticating to the database, or null to authenticate with the default password.
      * @return bool Whether the connection was successfully established.
      */
-    public function connect($host, $database = null, $username = null, $password = null)
+    public function connect(string $host, ?string $database = null, ?string $username = null, ?string $password = null): bool
     {
         /* alias host */
         $dbname = $this->normalizeDbn($host);
@@ -85,10 +86,12 @@ class Toolserver extends Database
     /**
      * Normalise a database name into a consistent format like "enwiki".
      * @param string $dbname The database name.
-     * @return string
      */
-    public function normalizeDbn($dbname)
+    public function normalizeDbn(?string $dbname): string
     {
+        if (!$dbname)
+            return '';
+
         $dbn = str_replace('-', '_', $dbname);
         if (substr($dbn, -2) == '_p')
             $dbn = substr($dbn, 0, -2);
@@ -99,7 +102,7 @@ class Toolserver extends Database
      * Get a database name => wiki lookup.
      * @return Wiki[]
      */
-    public function getWikis()
+    public function getWikis(): array
     {
         return $this->wikis->getWikis();
     }
@@ -107,27 +110,26 @@ class Toolserver extends Database
     /**
      * Get the data for a wiki.
      * @param string $dbname The wiki's unique database name.
-     * @return Wiki
      */
-    public function getWiki($dbname)
+    public function getWiki(string $dbname): ?Wiki
     {
         return $this->wikis->getWiki($dbname);
     }
 
     /**
      * Get a database name => domain lookup.
-     * @return array
+     * @return array<string, string>
      */
-    public function getDomains()
+    public function getDomains(): array
     {
         return $this->wikis->getDomains();
     }
 
     /**
      * Get a database name => host lookup.
-     * @return array
+     * @return array<string, string>
      */
-    public function getDbnHosts()
+    public function getDbnHosts(): array
     {
         return $this->dbnHosts;
     }
@@ -135,9 +137,8 @@ class Toolserver extends Database
     /**
      * Get the domain for a database name.
      * @param string $dbname The database name to find.
-     * @return string|null
      */
-    public function getDomain($dbname)
+    public function getDomain(string $dbname): ?string
     {
         return $this->wikis->getDomain($dbname);
     }
@@ -145,9 +146,8 @@ class Toolserver extends Database
     /**
      * Get the host name for a database name.
      * @param string $dbname The database name to find.
-     * @return string|null
      */
-    public function getHost($dbname)
+    public function getHost(string $dbname): ?string
     {
         return $this->wikis->getHost($dbname);
     }
@@ -155,9 +155,8 @@ class Toolserver extends Database
     /**
      * Get whether the wiki has been locked.
      * @param string $dbname The database name to find.
-     * @return bool|null
      */
-    public function getLocked($dbname)
+    public function getLocked(string $dbname): ?bool
     {
         $wiki = $this->wikis->getWiki($dbname);
         return $wiki != null ? $wiki->isClosed : null;
@@ -166,9 +165,8 @@ class Toolserver extends Database
     /**
      * Get a global account's home wiki.
      * @param string $user The username to search.
-     * @return string|null
      */
-    public function getHomeWiki($user)
+    public function getHomeWiki(string $user): ?string
     {
         try {
             $this->connect('metawiki');
@@ -198,7 +196,7 @@ class Toolserver extends Database
      * @param string $user The username to search.
      * @return string[]|null
      */
-    public function getUnifiedWikis($user)
+    public function getUnifiedWikis(string $user): ?array
     {
         try {
             $this->connect('metawiki');
@@ -230,9 +228,8 @@ class Toolserver extends Database
      * @param string $wiki The wiki database name.
      * @param string $username The username to search.
      * @param string $dateFormat The format to use for dates.
-     * @return LocalUser|null
      */
-    public function getUserDetails($wiki, $username, $dateFormat = '%Y-%b-%d %H:%i')
+    public function getUserDetails(string $wiki, string $username, string $dateFormat = '%Y-%b-%d %H:%i'): ?LocalUser
     {
         try {
             // fetch basic user info
@@ -274,9 +271,9 @@ class Toolserver extends Database
      * @param int $actorID The user's actor ID.
      * @param string $format The date format.
      * @param bool $skipUserTable Whether to ignore the user table (e.g. because you already checked there).
-     * @return array|null
+     * @return array<string, string>|null
      */
-    public function getRegistrationDate($userID, $actorID, $format = '%Y-%m-%d %H:%i', $skipUserTable = false)
+    public function getRegistrationDate(int $userId, int $actorId, string $format = '%Y-%m-%d %H:%i', bool $skipUserTable = false): ?array
     {
         if ($this->borked)
             return null;
@@ -291,7 +288,7 @@ class Toolserver extends Database
                     WHERE user_id=?
                     LIMIT 1
                 ');
-                $query->execute([$userID]);
+                $query->execute([$userId]);
                 $date = $query->fetch(PDO::FETCH_ASSOC);
                 if (isset($date['raw']))
                     return $date;
@@ -309,7 +306,7 @@ class Toolserver extends Database
                     AND log_type = "newusers"
                     AND log_title = "Userlogin"
                 LIMIT 1');
-            $query->execute([$actorID]);
+            $query->execute([$actorId]);
             $date = $query->fetch(PDO::FETCH_ASSOC);
             if (isset($date['raw']))
                 return $date;
@@ -317,7 +314,7 @@ class Toolserver extends Database
             /* failed */
             return ['raw' => null, 'formatted' => 'in 2005 or earlier'];
         } catch (PDOException $exc) {
-            $this->handleException($exc, 'Could not retrieve registration date for user id "' . htmlentities($userID) . '".');
+            $this->handleException($exc, 'Could not retrieve registration date for user id "' . htmlentities((string)$userId) . '".');
             return null;
         }
     }

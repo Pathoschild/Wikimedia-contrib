@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Provides metadata about a user.
@@ -10,25 +11,21 @@ class UserData
     ##########
     /**
      * The user name.
-     * @var string
      */
-    public $name;
+    public string $name;
 
     /**
      * The number of edits.
-     * @var int
      */
-    public $edits = 0;
+    public int $edits = 0;
 
     /**
      * Whether this user is a bot.
-     * @var boolean
      */
-    public $isBot = false;
+    public bool $isBot = false;
 
     /**
      * Whether this user is anonymous.
-     * @var boolean
      */
-    public $isAnonymous = false;
+    public bool $isAnonymous = false;
 }

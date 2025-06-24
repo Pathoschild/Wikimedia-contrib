@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Stalktoy;
 
 /**
@@ -8,43 +10,36 @@ class GlobalAccountStats
 {
     /**
      * The number of wikis on which the account is registered.
-     * @var int
      */
-    public $wikis = 0;
+    public int $wikis = 0;
 
     /**
      * The number of edits the user has made across all wikis.
-     * @var int
      */
-    public $editCount = 0;
+    public int $editCount = 0;
 
     /**
      * The maximum number of edits the user has made on any one wiki.
-     * @var int
      */
-    public $maxEditCount = 0;
+    public int $maxEditCount = 0;
 
     /**
      * The name of the wiki on which the user has made the most edits.
-     * @var string
      */
-    public $maxEditCountDomain = null;
+    public string $maxEditCountDomain = null;
 
     /**
      * When the user registered his earliest account.
-     * @var int
      */
-    public $earliestRegisteredRaw = null;
+    public int $earliestRegisteredRaw = null;
 
     /**
      * When the user registered his earliest account (formatted as yyyy-mm-dd hh:ii).
-     * @var int
      */
-    public $earliestRegistered = null;
+    public int $earliestRegistered = null;
 
     /**
      * The domain on which the user registered their earliest account.
-     * @var string
      */
-    public $earliestRegistedDomain = null;
+    public string $earliestRegisteredDomain = null;
 }

@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 require_once('../backend/modules/Backend.php');
 require_once('framework/GlobalGroupsEngine.php');
 $backend = Backend::create('GlobalGroups', 'A review of extra permissions assigned to <a href="https://meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets" title="global groups">global groups</a> on Wikimedia Foundation wikis.')
@@ -295,7 +297,10 @@ foreach ($db->query('SELECT DISTINCT ggp_group FROM centralauth_p.global_group_p
 ## Sort
 ##########
 $sort = $backend->get('sort', 'name');
-uasort($groups, array($engine, 'groupSort'));
+uasort(
+    $groups,
+    fn($a, $b) => $engine->groupSort($a, $b, $sort)
+);
 
 
 #########

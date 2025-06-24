@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * An enumeration representing workflow options.
@@ -7,7 +8,6 @@ class Workflow
 {
     /**
      * If this rule fails, don't try to run the remaining rules for this wiki.
-     * @var int
      */
     const SKIP_ON_FAIL = 1;
 

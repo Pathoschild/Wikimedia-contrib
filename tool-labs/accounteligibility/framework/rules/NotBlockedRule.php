@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * A rule which checks that the account has no current local blocks.
@@ -10,21 +11,18 @@ class NotBlockedRule implements Rule
     ##########
     /**
      * The maximum number of current blocks allowed. (A value > 1 only makes sense when accumulating blocks crosswiki.)
-     * @var int
      */
-    private $maxBlocks;
+    private int $maxBlocks;
 
     /**
      * Only check for blocks on this wiki.
-     * @var string
      */
-    private $onlyForWiki;
+    private ?string $onlyForWiki = null;
 
     /**
      * The number of current blocks found.
-     * @var int
      */
-    private $totalBlocks;
+    private int $totalBlocks = 0;
 
 
     ##########
@@ -34,7 +32,7 @@ class NotBlockedRule implements Rule
      * Construct an instance.
      * @param int $maxBlocks The maximum number of current blocks allowed, counted crosswiki.
      */
-    public function __construct($maxBlocks = 0)
+    public function __construct(int $maxBlocks = 0)
     {
         $this->maxBlocks = $maxBlocks;
     }
@@ -43,7 +41,7 @@ class NotBlockedRule implements Rule
      * Only check for blocks on a specified wiki.
      * @param string $wiki The wiki dbname.
      */
-    public function onWiki($wiki)
+    public function onWiki(string $wiki): self
     {
         $this->onlyForWiki = $wiki;
         return $this;
@@ -56,7 +54,7 @@ class NotBlockedRule implements Rule
      * @param LocalUser $user The local user account.
      * @return ResultInfo|null The eligibility check result, or null if the rule doesn't apply to this wiki.
      */
-    public function accumulate($db, $wiki, $user)
+    public function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo
     {
         // skip if not applicable
         if ($this->onlyForWiki && $wiki->dbName != $this->onlyForWiki)
@@ -88,9 +86,8 @@ class NotBlockedRule implements Rule
      * Get whether the user is blocked on the current wiki.
      * @param Toolserver $db The database wrapper.
      * @param LocalUser $user The local user account.
-     * @return bool
      */
-    private function isBlocked($db, $user)
+    private function isBlocked(Toolserver $db, LocalUser $user): bool
     {
         $db->query('SELECT COUNT(*) FROM block_target WHERE bt_user=? LIMIT 1', [$user->id]);
         return (bool)$db->fetchColumn();

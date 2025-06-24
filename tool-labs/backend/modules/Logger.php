@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 require_once('external/KLogger.php');
 
 /**
@@ -11,15 +13,14 @@ class Logger
     ##########
     /**
      * A unique session key used to group related log entries.
-     * @var string
      */
-    public $key = null;
+    public string $key;
 
     /**
      * The underlying logging library.
-     * @var KLogger|null
      */
-    private $logger = null;
+    private ?KLogger $logger = null;
+
 
     ##########
     ## Public methods
@@ -30,7 +31,7 @@ class Logger
      * @param string $key A unique session key used to group related log entries.
      * @param bool $enabled Whether to enable logging.
      */
-    public function __construct($path, $key, $enabled)
+    public function __construct(string $path, string $key, bool $enabled)
     {
         $this->key = $key;
         $this->logger = $enabled
@@ -42,7 +43,7 @@ class Logger
      * Write a message to the log.
      * @param string $message The message to log.
      */
-    public function log($message)
+    public function log(string $message): void
     {
         if ($this->logger != null) {
             $message = "[{$this->key}] $message";

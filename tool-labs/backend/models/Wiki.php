@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Represents a Wikimedia wiki and database.
@@ -10,69 +11,58 @@ class Wiki
     ##########
     /**
      * The simplified database name (dbname), like 'enwiki'.
-     * @var string
      */
-    public $name = null;
+    public string $name;
 
     /**
      * The database name (dbname), like 'enwiki'.
-     * @var string
      */
-    public $dbName = null;
+    public string $dbName;
 
     /**
      * The ISO 639 language code associated with the wiki. (A few wikis have invalid codes like 'zh-classical' or 'noboard-chapters'.)
-     * @var string
      */
-    public $lang = null;
+    public string $lang;
 
     /**
      * The wiki family (project name), like 'wikibooks'.
-     * @var string
      */
-    public $family = null;
+    public string $family;
 
     /**
      * The base URL, like 'https://en.wikisource.org'.
-     * @var string
      */
-    public $url = null;
+    public string $url;
 
     /**
      * The domain portion of the URL, like 'en.wikisource.org'.
-     * @var string
      */
-    public $domain = null;
+    public string $domain;
 
     /**
      * The number of articles on the wiki (?).
-     * @var int
      */
-    public $size = null;
+    public int $size;
 
     /**
      * Whether the wiki is locked and no longer editable by the public.
-     * @var bool
      */
-    public $isClosed = null;
+    public bool $isClosed;
 
     /**
      * The name of the server on which the wiki's replicated database is located.
-     * @var string
      */
-    public $serverName = null;
+    public string $serverName;
 
     /**
      * The host name of the server on which the wiki's replicated database is located.
-     * @var string
      */
-    public $host = null;
+    public string $host;
 
     /**
      * Whether the wiki contains content in multiple languages.
-     * @var bool
      */
-    public $isMultilingual = null;
+    public bool $isMultilingual;
 
 
     ##########
@@ -85,10 +75,10 @@ class Wiki
      * @param string $family The wiki family (project name), like 'wikibooks'.
      * @param string $url The base URL, like 'https://en.wikisource.org'.
      * @param int $size The number of articles on the wiki (?).
-     * @param bool $isClosed Whether the wiki is locked and no longer editable by the public.
+     * @param bool|int $isClosed Whether the wiki is locked and no longer editable by the public.
      * @param string $serverName The name of the server on which the wiki's replicated database is located.
      */
-    public function __construct($name, $lang, $family, $url, $size, $isClosed, $serverName)
+    public function __construct(string $name, string $lang, string $family, string $url, int $size, bool|int $isClosed, string $serverName)
     {
         $this->dbName = $name;
         $this->name = $name;
@@ -119,9 +109,9 @@ class Wiki
         $this->url = $url;
         $this->domain = preg_replace('/^https?:\/\//', '', $url);
         $this->size = $size;
-        $this->isClosed = $isClosed;
+        $this->isClosed = boolval($isClosed);
         $this->serverName = $serverName;
         $this->host = $serverName;
-        $this->isMultilingual = in_array($name, array('commonswiki', 'incubatorwiki', 'mediawikiwiki', 'metawiki', 'specieswiki', 'wikidatawiki'));
+        $this->isMultilingual = in_array($name, ['commonswiki', 'incubatorwiki', 'mediawikiwiki', 'metawiki', 'specieswiki', 'wikidatawiki']);
     }
 }
