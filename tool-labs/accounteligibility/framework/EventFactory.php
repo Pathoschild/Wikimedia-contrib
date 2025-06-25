@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 81;
+        return 82;
     }
 
     /**
@@ -22,6 +22,22 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2025: Board of Trustees election
+        ##########
+        yield (new Event(82, 2025, 'Wikimedia Foundation elections', 'https://meta.wikimedia.org/wiki/Wikimedia_Foundation_elections/2025'))
+            ->addRule(new NotGloballyBlockedRule())
+            ->addRule(new NotGloballyLockedRule())
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20250728', EditCountRule::ACCUMULATE))      // 300 edits before 28 July 2025
+            ->addRule(new EditCountRule(20, '20240828', '<20250728', EditCountRule::ACCUMULATE)) // 20 edits between 28 August 2024 and 28 July 2025
+            ->withExtraRequirements(['Your account must not be used by a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Wikimedia_Foundation_elections/2025/Voter_eligibility_guidelines">official voting information</a> for specific exceptions which cover developers, translators, staff, contractors, community organizers, etc.'
+            ]);
+
+
         ##########
         ## 2025: Universal Code of Conduct Coordinating Committee special elections
         ##########
