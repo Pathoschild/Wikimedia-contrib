@@ -63,10 +63,16 @@ class Event
     public bool $obsolete = false;
 
     /**
-     * The eligibility rules.
-     * @var RuleEntry[]
+     * The local eligibility rules.
+     * @var LocalRuleEntry[]
      */
-    public array $rules = [];
+    public array $localRules = [];
+
+    /**
+     * The global eligibility rules.
+     * @var GlobalRule[]
+     */
+    public array $globalRules = [];
 
 
     ##########
@@ -90,15 +96,23 @@ class Event
 
     /**
      * Add a new eligibility rule for this event.
-     * @param Rule $rule The eligibility rule.
-     * @param int $options An optional bit flag (see {@see Workflow}).
+     * @param LocalRule|GlobalRule $rule The eligibility rule.
+     * @param int $localOptions An optional bit flag (see {@see Workflow}). This only applies for local rules.
      */
-    public function addRule(Rule $rule, ?int $options = null): self
+    public function addRule(LocalRule|GlobalRule $rule, ?int $localOptions = null): self
     {
-        if ($options === null)
-            $options = 0;
+        if ($rule instanceof LocalRule)
+            array_push($this->localRules, new LocalRuleEntry($rule, $localOptions ?? 0));
+        else if ($rule instanceof GlobalRule)
+        {
+            if ($localOptions !== null)
+                throw new Exception('Can\'t specify workflow options for global rule in event #' . $this->id . '.');
 
-        array_push($this->rules, new RuleEntry($rule, $options));
+            array_push($this->globalRules, $rule);
+        }
+        else
+            throw new Exception('Can\'t add a rule of type ' . get_class($rule) . ' for event #' . $this->id . ': does not implement LocalRule or GlobalRule.');
+
         return $this;
     }
 

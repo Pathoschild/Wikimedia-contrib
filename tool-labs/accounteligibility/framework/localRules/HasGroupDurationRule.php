@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * A rule which checks whether the account had a group flag for a minimum duration.
  */
-class HasGroupDurationRule implements Rule
+class HasGroupDurationRule implements LocalRule
 {
     ##########
     ## Properties

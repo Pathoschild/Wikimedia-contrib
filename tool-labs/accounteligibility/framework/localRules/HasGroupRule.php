@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * A rule which checks whether the account has a local group.
  */
-class HasGroupRule implements Rule
+class HasGroupRule implements LocalRule
 {
     ##########
     ## Properties

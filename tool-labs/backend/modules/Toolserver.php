@@ -163,30 +163,43 @@ class Toolserver extends Database
     }
 
     /**
-     * Get a global account's home wiki.
+     * Get a global account's details.
      * @param string $user The username to search.
      */
-    public function getHomeWiki(string $user): ?string
+    public function getGlobalAccount(string $user): ?GlobalUser
     {
         try {
             $this->connect('metawiki');
 
             $query = $this->db->prepare('
-                SELECT lu_wiki
-                FROM centralauth_p.localuser
-                WHERE
-                    lu_name=?
-                    AND lu_attached_method IN ("primary", "new")
+                SELECT
+                    gu_id,
+                    gu_name,
+                    gu_home_db,
+                    gu_locked,
+                    gu_registration
+                FROM centralauth_p.globaluser
+                WHERE gu_name = ?
                 LIMIT 1
             ');
             $query->execute([$user]);
 
             $this->connectPrevious();
 
-            $wiki = $query->fetchColumn();
-            return $wiki ? $wiki : null;
-        } catch (PDOException $exc) {
-            $this->handleException($exc, 'Could not retrieve home wiki for user "' . htmlentities($user) . '".');
+            if (!$query)
+                return null;
+
+            $row = $query->fetch(PDO::FETCH_ASSOC);
+            return new GlobalUser(
+                id: intval($row['gu_id']),
+                name: $row['gu_name'],
+                homeWiki: $row['gu_home_db'],
+                isLocked: boolval($row['gu_locked']),
+                registered: $row['gu_registration']
+            );
+        }
+        catch (PDOException $exc) {
+            $this->handleException($exc, 'Could not retrieve global account for user "' . htmlentities($user) . '".');
             return null;
         }
     }
@@ -217,7 +230,8 @@ class Toolserver extends Database
             }
 
             return $wikis;
-        } catch (PDOException $exc) {
+        }
+        catch (PDOException $exc) {
             $this->handleException($exc, 'Could not retrieve unified wikis for user "' . htmlentities($user) . '".');
             return null;
         }
@@ -259,7 +273,8 @@ class Toolserver extends Database
 
             // return model
             return new LocalUser($user['id'], $user['name'], $user['registration_raw'], $user['registration'], $user['edits'], $actor['actor_id']);
-        } catch (PDOException $exc) {
+        }
+        catch (PDOException $exc) {
             $this->handleException($exc, 'Could not retrieve local account details for user "' . htmlentities($username) . '" at wiki "' . htmlentities($wiki) . '".');
             return null;
         }
@@ -313,7 +328,8 @@ class Toolserver extends Database
 
             /* failed */
             return ['raw' => null, 'formatted' => 'in 2005 or earlier'];
-        } catch (PDOException $exc) {
+        }
+        catch (PDOException $exc) {
             $this->handleException($exc, 'Could not retrieve registration date for user id "' . htmlentities((string)$userId) . '".');
             return null;
         }

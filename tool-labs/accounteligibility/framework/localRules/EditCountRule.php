@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * A rule which checks that the user has a minimum number of edits between two dates.
  */
-class EditCountRule implements Rule
+class EditCountRule implements LocalRule
 {
     ##########
     ## Properties

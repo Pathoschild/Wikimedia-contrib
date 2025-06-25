@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * A rule which uses injected behaviour.
  */
-class CustomRule implements Rule
+class CustomRule implements LocalRule
 {
     ##########
     ## Properties

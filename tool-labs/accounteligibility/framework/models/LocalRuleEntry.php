@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 /**
- * A rule entry with workflow logic.
+ * A local rule entry with workflow logic.
  */
-class RuleEntry
+class LocalRuleEntry
 {
     ##########
     ## Properties
@@ -12,7 +12,7 @@ class RuleEntry
     /**
      * The eligibility rule.
      */
-    public Rule $rule;
+    public LocalRule $rule;
 
     /**
      * Whether to skip the remaining rules for the current wiki if this rule fails.
@@ -50,10 +50,10 @@ class RuleEntry
     ##########
     /**
      * Construct an instance.
-     * @param Rule $rule The eligibility rule.
+     * @param LocalRule $rule The eligibility rule.
      * @param int $workflow The workflow options (a bit flag of {@see Workflow} options).
      */
-    public function __construct(Rule $rule, int $workflow)
+    public function __construct(LocalRule $rule, int $workflow)
     {
         if (!$rule)
             throw new Exception('Can\'t create a rule entry with a null rule.');

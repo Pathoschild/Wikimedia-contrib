@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * A rule which checks that the account has no current local blocks.
  */
-class NotBlockedRule implements Rule
+class NotBlockedRule implements LocalRule
 {
     ##########
     ## Properties
@@ -89,7 +89,7 @@ class NotBlockedRule implements Rule
      */
     private function isBlocked(Toolserver $db, LocalUser $user): bool
     {
-        $db->query('SELECT COUNT(*) FROM block_target WHERE bt_user=? LIMIT 1', [$user->id]);
-        return (bool)$db->fetchColumn();
+        $db->query('SELECT 1 FROM block_target WHERE bt_user=? LIMIT 1', [$user->id]);
+        return boolval($db->fetchColumn());
     }
 }

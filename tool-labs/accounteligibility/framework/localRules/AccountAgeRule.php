@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * A rule which checks that the account is at least the given number of days old.
  */
-class AccountAgeRule implements Rule
+class AccountAgeRule implements LocalRule
 {
     ##########
     ## Properties

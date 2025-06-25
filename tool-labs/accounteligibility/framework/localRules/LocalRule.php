@@ -5,7 +5,7 @@ declare(strict_types=1);
  * An abstract rule accumulator that collects information from each wiki to determine whether the
  * rule matches.
  */
-interface Rule
+interface LocalRule
 {
     /**
      * Collect information from a wiki and return whether the rule has been met.

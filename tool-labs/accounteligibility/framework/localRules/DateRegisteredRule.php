@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * A rule which checks when the account was registered.
  */
-class DateRegisteredRule implements Rule
+class DateRegisteredRule implements LocalRule
 {
     ##########
     ## Properties

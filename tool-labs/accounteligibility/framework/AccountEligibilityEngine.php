@@ -297,7 +297,15 @@ class AccountEligibilityEngine extends Base
     }
 
     /**
-     * Print a 'name@wiki...' header for the current wiki.
+     * Print a 'Global account:' header for the current wiki.
+     */
+    function printGlobalAccount(): void
+    {
+        $this->msg("Global account:", 'is-wiki');
+    }
+
+    /**
+     * Print a 'On wiki:' header for the current wiki.
      */
     function printWiki(): void
     {

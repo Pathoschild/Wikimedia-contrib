@@ -2,9 +2,10 @@
 declare(strict_types=1);
 
 require_once("../backend/modules/Backend.php");
+require_once("../backend/models/GlobalUser.php");
 require_once("../backend/models/LocalUser.php");
 spl_autoload_register(function ($className) {
-    foreach (["framework/$className.php", "framework/constants/$className.php", "framework/models/$className.php", "framework/rules/$className.php"] as $path) {
+    foreach (["framework/$className.php", "framework/constants/$className.php", "framework/models/$className.php", "framework/globalRules/$className.php", "framework/localRules/$className.php"] as $path) {
         if (file_exists($path))
             include($path);
     }
@@ -112,13 +113,61 @@ if ($engine->username)
             break;
         }
 
-        /* verify eligibility rules */
-        $engine->profiler->start('verify requirements');
-        $rules = new RuleManager($engine->event->rules);
+        /* verify global eligility rules */
+        if (count($engine->event->globalRules) > 0)
+        {
+            $engine->profiler->start('fetch global account');
+            $engine->db->connect('metawiki');
+            $globalAccount = $engine->db->getGlobalAccount($engine->username);
+            $engine->profiler->stop('fetch global account');
+
+            $engine->profiler->start('verify global requirements');
+            $engine->printGlobalAccount();
+            $globalRules = new GlobalRuleManager($engine->event->globalRules);
+            foreach ($globalRules->verify($engine->db, $globalAccount) as $result) {
+                // print result
+                switch ($result->result) {
+                    case Result::FAIL:
+                        $engine->msg("• {$result->message}", "is-fail");
+                        break;
+
+                    case Result::PASS:
+                        $engine->msg("• {$result->message}", "is-pass");
+                        break;
+
+                    default:
+                        throw new InvalidArgumentException("Unknown global rule eligibility result '{$result->result}'");
+                }
+
+                // print warnings
+                if ($result->warnings) {
+                    foreach ($result->warnings as $warning)
+                        $engine->msg("{$warning}", "is-subnote is-warn");
+                }
+
+                // print notes
+                if ($result->notes) {
+                    foreach ($result->notes as $note)
+                        $engine->msg("{$note}", "is-subnote");
+                }
+            }
+
+            if ($globalRules->result !== RESULT::PASS)
+            {
+                echo '<div class="error">', $engine->formatText($engine->username), ' is not eligible to vote in the <a href="', $engine->event->url, '" title="', $backend->formatValue($engine->event->name), '">', $engine->event->name, '</a> in ', $engine->event->year, '.</div>';
+                break;
+            }
+
+            $engine->profiler->stop('verify global requirements');
+        }
+
+        /* verify local eligibility rules */
+        $engine->profiler->start('verify local requirements');
+        $localRules = new LocalRuleManager($engine->event->localRules);
 
         $engine->printWiki();
         do {
-            foreach ($rules->accumulate($engine->db, $engine->wiki, $engine->user) as $result) {
+            foreach ($localRules->accumulate($engine->db, $engine->wiki, $engine->user) as $result) {
                 // print result
                 switch ($result->result) {
                     case Result::FAIL:
@@ -135,7 +184,7 @@ if ($engine->username)
                         break;
 
                     default:
-                        throw new InvalidArgumentException("Unknown rule eligibility result '{$result->result}'");
+                        throw new InvalidArgumentException("Unknown local rule eligibility result '{$result->result}'");
                 }
 
                 // print warnings
@@ -150,9 +199,9 @@ if ($engine->username)
                         $engine->msg("{$note}", "is-subnote");
                 }
             }
-        } while (!$rules->final && $engine->getNext());
-        $engine->eligible = $rules->result == Result::PASS || $rules->result == Result::SOFT_PASS;
-        $engine->profiler->stop('verify requirements');
+        } while (!$localRules->final && $engine->getNext());
+        $engine->eligible = $localRules->result == Result::PASS || $localRules->result == Result::SOFT_PASS;
+        $engine->profiler->stop('verify local requirements');
         echo '</details>';
 
 
@@ -196,11 +245,8 @@ if ($engine->username)
             ########
             echo '<small>See also: <a href="', $backend->url('/stalktoy/' . urlencode($engine->username)), '" title="global account details">global account details</a></small>.';
         }
-
-        /* exit loop */
-        break;
     }
-    while ($engine->user);
+    while (false); // do-while loop just lets us break early
 
     echo '</div>';
 }

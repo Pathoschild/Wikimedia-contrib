@@ -1,40 +1,38 @@
 <?php
 
 /**
- * Manages eligibility and workflow between {@Rule} instances.
+ * Manages eligibility and workflow between {@LocalRule} instances.
  */
-class RuleManager
+class LocalRuleManager
 {
     ##########
     ## Properties
     ##########
     /**
      * The managed rules.
-     * @var RuleEntry[]
+     * @var LocalRuleEntry[]
      */
-    public $rules = [];
+    public array $rules = [];
 
     /**
      * The aggregate result of the eligibility checks (one of the {@see Result} values).
-     * @var string
      */
-    public $result = Result::ACCUMULATING;
+    public string $result = Result::ACCUMULATING;
 
     /**
      * Whether the accumulated result is final (i.e. there's no need to check further wikis).
-     * @var bool
      */
-    public $final = false;
+    public bool $final = false;
 
 
     ##########
     ## Public methods
     ##########
     /**
-     * Add a new eligibility rule to the manager.
-     * @param RuleEntry[] $rules The eligibility rules to check.
+     * Set the eligibility rules to validatate.
+     * @param LocalRuleEntry[] $rules The eligibility rules to check.
      */
-    public function __construct($rules)
+    public function __construct(array $rules)
     {
         $this->rules = $rules;
     }
@@ -46,11 +44,11 @@ class RuleManager
      * @param LocalUser $user The local user account.
      * @return ResultInfo[] The eligibility check results for this wiki.
      */
-    public function accumulate($db, $wiki, $user)
+    public function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): array
     {
         // validate
         if ($this->final)
-            throw new LogicException("The rule manager cannot be accumulated because a final eligibility result has already been reached.");
+            throw new LogicException("The local rule manager cannot be accumulated because a final eligibility result has already been reached.");
 
         // accumulate rules
         $results = [];
