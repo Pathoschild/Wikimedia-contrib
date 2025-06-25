@@ -125,8 +125,7 @@ class EventFactory
             ->withExtraRequirements(['Your account must not be a bot.'])
             ->withExceptions([
                 'See the <a href="https://meta.wikimedia.org/wiki/Movement_Charter/Ratification/Voting/Eligibility_criteria">official voting rules</a> for specific exceptions including developers, translators, staff, contractors, community organizers, and affiliates.'
-            ])
-            ->markObsolete();
+            ]);
 
         ##########
         ## 2024: Universal Code of Conduct Coordinating Committee elections
@@ -140,8 +139,7 @@ class EventFactory
             ->withExtraRequirements(['Your account must not be a bot.'])
             ->withExceptions([
                 'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024/Voter_eligibility_criteria">official voting rules</a> for specific exceptions including developers, translators, staff, contractors, community organizers, and tool/script contributors.'
-            ])
-            ->markObsolete();
+            ]);
 
         // candidates
         yield (new Event(73, 2024, 'Universal Code of Conduct Coordinating Committee elections (candidates)', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024#Call_for_Candidates'))
@@ -153,8 +151,7 @@ class EventFactory
             ->withAction('<strong>be a candidate</strong>')
             ->withExtraRequirements([
                 'You must meet the other <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2024#Call_for_Candidates">candidate eligibility requirements</a>.'
-            ])
-            ->markObsolete();
+            ]);
 
         ##########
         ## 2024: Vote to ratify the charter for the Universal Code of Conduct Coordinating Committee
@@ -167,26 +164,23 @@ class EventFactory
             ->withExtraRequirements(['Your account must not be a bot.'])
             ->withExceptions([
                 'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Charter/Voter_information#Voting_eligibility">official voting rules</a> for specific exceptions including developers, staff, contractors, community organizers, and tool/script contributors.'
-            ])
-            ->markObsolete();
+            ]);
 
         ##########
         ## 2024: Commons Picture of the Year for 2023
         ##########
         yield (new Event(71, 2024, 'Commons Picture of the Year for 2023', 'https://commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2023'))
-            ->addRule(new DateRegisteredRule('<202401'), Workflow::ON_ANY_WIKI)      // registered before 01 January 2024
-            ->addRule(new EditCountRule(75, null, '<202401'), Workflow::ON_ANY_WIKI) // 75 edits before 01 January 2024
-            ->markObsolete();
-        
+            ->addRule(new DateRegisteredRule('<202401'), Workflow::ON_ANY_WIKI)       // registered before 01 January 2024
+            ->addRule(new EditCountRule(75, null, '<202401'), Workflow::ON_ANY_WIKI); // 75 edits before 01 January 2024
+
         ##########
         ## 2024: steward elections
         ##########
         // voters
         yield (new Event(70, 2024, 'steward elections', 'https://meta.wikimedia.org/wiki/Stewards/Elections_2024'))
             ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
-            ->addRule(new EditCountRule(600, null, '<202311', EditCountRule::ACCUMULATE))    // 600 edits before 01 November 2023
-            ->addRule(new EditCountRule(50, '202308', '<202402', EditCountRule::ACCUMULATE)) // 50 edits between 01 August 2023 and 31 January 2024
-            ->markObsolete();
+            ->addRule(new EditCountRule(600, null, '<202311', EditCountRule::ACCUMULATE))     // 600 edits before 01 November 2023
+            ->addRule(new EditCountRule(50, '202308', '<202402', EditCountRule::ACCUMULATE)); // 50 edits between 01 August 2023 and 31 January 2024
 
         // candidates
         yield (new Event(69, 2024, 'steward elections (candidates)', 'https://meta.wikimedia.org/wiki/Stewards/Elections_2024'))
@@ -199,8 +193,7 @@ class EventFactory
                 'You must be at least 18 years old, and at least the age of majority in your country.',
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Stewards_policy" title="Steward policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Privacy_policy" title="privacy policy">privacy</a>.',
                 'You must <a href="https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Access_to_nonpublic_personal_data_policy" title="Access to nonpublic personal data policy">sign the confidentiality agreement</a>.'
-            ])
-            ->markObsolete();
+            ]);
 
         ##########
         ## 2023: Commons Picture of the Year for 2022
