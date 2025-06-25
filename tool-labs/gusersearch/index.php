@@ -51,12 +51,12 @@ if ($engine->minDate) {
 
 /* set limit */
 if ($x = $backend->get('limit'))
-    $engine->setLimit($x);
+    $engine->setLimit(intval($x));
 $limit = $engine->limit;
 
 /* set offset */
 if ($x = $backend->get('offset'))
-    $engine->setOffset($x);
+    $engine->setOffset(intval($x));
 $offset = $engine->offset;
 
 $engine->useRegex = $useRegex;
