@@ -158,6 +158,7 @@ if ($engine->username)
                 break;
             }
 
+            $engine->db->connect($engine->wiki->dbName);
             $engine->profiler->stop('verify global requirements');
         }
 
