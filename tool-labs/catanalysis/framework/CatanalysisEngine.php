@@ -166,10 +166,13 @@ class CatanalysisEngine extends Base
         else
             $sql .= 'WHERE ';
 
-        $sql .= 'revision.rev_actor IS NOT NULL AND ';
-
-        /* add prefix */
-        $sql .= ' (page_title=? OR page_title LIKE ?) ORDER BY revision.rev_timestamp';
+        /* add prefix & revision filter */
+        $sql .= '
+                revision.rev_actor IS NOT NULL
+                AND revision.rev_len IS NOT NULL -- ignore suppressed revisions
+                AND (page_title=? OR page_title LIKE ?)
+            ORDER BY revision.rev_timestamp
+        ';
         $values[] = str_replace(' ', '_', $title);
         $values[] = str_replace(' ', '_', $title . '%');
 
@@ -244,7 +247,9 @@ class CatanalysisEngine extends Base
         $sql .= '
                     )
                 ) AS catlink ON page.page_id = catlink.cl_from
-            WHERE revision.rev_actor IS NOT NULL
+            WHERE
+                revision.rev_actor IS NOT NULL
+                AND revision.rev_len IS NOT NULL -- ignore suppressed revisions
             ORDER BY revision.rev_timestamp
         ';
 
