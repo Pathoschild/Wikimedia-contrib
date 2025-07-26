@@ -381,7 +381,7 @@ class StalktoyEngine extends Base
                     DATE_FORMAT(bl_expiry, "%Y-%b-%d") AS expiry
                 FROM
                     block
-                    INNER JOIN block_target ON bt_id = bl_target
+                    INNER JOIN block_target_ipindex ON bt_id = bl_target
                 WHERE
                     bt_address IS NOT NULL
                     AND CASE
