@@ -26,7 +26,7 @@ class GlobalAccount
     /**
      * The name of the wiki registered as the primary for this account.
      */
-    public string $homeWiki;
+    public ?string $homeWiki;
 
     /**
      * When the account was registered (formatted yyyy-mm-dd hh-ii).
