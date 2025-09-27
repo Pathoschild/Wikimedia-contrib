@@ -76,8 +76,11 @@ class LocalRuleManager
 
             if ($result->isFail() && ($result->isFinal || $rule->shouldFailHard))
                 $anyFailedHard = true;
-            
+
             array_push($results, $result);
+
+            if ($rule->shouldSkipOnFail && $result->isFail())
+                break;
         }
 
         // handle workflow
