@@ -88,7 +88,10 @@ class AccountAgeRule implements LocalRule
     {
         $registered = $user->registered;
         if (!$user->registered)
-            $registered = $db->getRegistrationDate($user->id, $user->actorID, "d F Y", true)[0];
+        {
+            $rawRegistered = $db->getRegistrationDate($user->id, $user->actorID, skipUserTable: true);
+            $registered = $rawRegistered ? $rawRegistered['raw'] : null;
+        }
 
         if (!$registered)
             return null; // before 2005
