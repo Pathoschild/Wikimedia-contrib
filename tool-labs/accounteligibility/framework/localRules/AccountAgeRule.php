@@ -20,6 +20,11 @@ class AccountAgeRule implements LocalRule
      */
     private ?DateWrapper $maxDate;
 
+    /**
+     * Whether to check that the player is old enough on any wiki, instead of passing on each wiki individually.
+     */
+    private bool $onAnyWiki = true;
+
 
     ##########
     ## Public methods
@@ -28,11 +33,13 @@ class AccountAgeRule implements LocalRule
      * Construct an instance.
      * @param int $minDaysOld The minimum number of days for which the account must be registered.
      * @param string|null $maxDate The maximum date up to which to count the age in a format recognised by {@see DateWrapper::__construct}, or null for no maximum.
+     * @param bool $onAnyWiki Whether to check that the player is old enough on any wiki, instead of passing on each wiki individually.
      */
-    public function __construct(int $minDaysOld, ?string $maxDate = null)
+    public function __construct(int $minDaysOld, ?string $maxDate = null, bool $onAnyWiki = true)
     {
         $this->minDaysOld = $minDaysOld;
         $this->maxDate = $maxDate ? new DateWrapper($maxDate) : null;
+        $this->onAnyWiki = $onAnyWiki;
     }
 
     /**
@@ -47,7 +54,9 @@ class AccountAgeRule implements LocalRule
         // get result
         $daysOld = $this->getAccountAge($db, $user);
         $isOldEnough = is_null($daysOld) || $daysOld >= $this->minDaysOld;
-        $result = $isOldEnough ? Result::PASS : Result::ACCUMULATING;
+        $result = $isOldEnough
+            ? Result::PASS
+            : ($this->onAnyWiki ? Result::ACCUMULATING : Result::FAIL);
 
         // get message
         $message =

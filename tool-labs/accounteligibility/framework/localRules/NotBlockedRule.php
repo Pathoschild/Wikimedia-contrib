@@ -24,6 +24,11 @@ class NotBlockedRule implements LocalRule
      */
     private int $totalBlocks = 0;
 
+    /**
+     * Whether to check that the player is non-blocked on every wiki, instead of passing on each wiki individually.
+     */
+    private bool $checkAllWikis = true;
+
 
     ##########
     ## Public methods
@@ -31,10 +36,12 @@ class NotBlockedRule implements LocalRule
     /**
      * Construct an instance.
      * @param int $maxBlocks The maximum number of current blocks allowed, counted crosswiki.
+     * @param bool $checkAllWikis Whether to check that the player is non-blocked on every wiki, instead of passing on each wiki individually.
      */
-    public function __construct(int $maxBlocks = 0)
+    public function __construct(int $maxBlocks = 0, bool $checkAllWikis = true)
     {
         $this->maxBlocks = $maxBlocks;
+        $this->checkAllWikis = $checkAllWikis;
     }
 
     /**
@@ -66,7 +73,7 @@ class NotBlockedRule implements LocalRule
 
         // get result
         if ($this->totalBlocks == 0) // not blocked
-            return new ResultInfo(Result::SOFT_PASS, "not currently blocked..."); // still need check other wikis
+            return new ResultInfo($this->checkAllWikis ? Result::SOFT_PASS : Result::PASS, "not currently blocked...");
         else if ($this->maxBlocks <= 0) // one block with none allowed
             return new ResultInfo(Result::FAIL, "blocked on this wiki.");
         else if ($this->totalBlocks > $this->maxBlocks) // too many blocks

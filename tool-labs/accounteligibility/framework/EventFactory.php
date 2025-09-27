@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 82;
+        return 83;
     }
 
     /**
@@ -22,6 +22,21 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2025: Wikimedia ESEAP Hub election for Community Connector
+        ##########
+        yield (new Event(83, 2025, 'Wikimedia ESEAP Hub Community Connector election', 'https://meta.wikimedia.org/wiki/ESEAP_Hub/Governance/Community_Connector/Voting_2025#Voter_eligibility_criteria'))
+            // global rules
+            ->addRule(new NotGloballyBlockedRule())
+            ->addRule(new NotGloballyLockedRule())
+
+            // all rules must match on a single wiki
+            ->addRule(new NotBlockedRule(checkAllWikis: false), Workflow::SKIP_ON_FAIL)
+            ->addRule(new NotBotRule(), Workflow::SKIP_ON_FAIL)
+            ->addRule(new AccountAgeRule(90, '<20250921', onAnyWiki: false), Workflow::SKIP_ON_FAIL) // registered at least 90 days before 21 September 2025
+            ->addRule(new EditCountRule(300, null, '<20250921'), Workflow::SKIP_ON_FAIL)             // 300 edits before 21 September 2025
+            ->addRule(new EditCountRule(20, '20240921', '<20250921'), Workflow::SKIP_ON_FAIL);       // 20 edits between 21 September 2024 and 21 September 2025
+
         ##########
         ## 2025: Board of Trustees election
         ##########
@@ -36,7 +51,6 @@ class EventFactory
             ->withExceptions([
                 'See the <a href="https://meta.wikimedia.org/wiki/Wikimedia_Foundation_elections/2025/Voter_eligibility_guidelines">official voting information</a> for specific exceptions which cover developers, translators, staff, contractors, community organizers, etc.'
             ]);
-
 
         ##########
         ## 2025: Universal Code of Conduct Coordinating Committee special elections
