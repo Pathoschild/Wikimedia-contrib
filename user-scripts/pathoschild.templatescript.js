@@ -28,7 +28,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         /*********
         ** Fields
         *********/
-        self.version = "2.5.4";
+        self.version = "2.5.5";
         self.strings = {
             defaultHeaderText: "TemplateScript", // the sidebar header text label for the default group
             regexEditor: "Regex editor" // the default 'regex editor' script
@@ -615,7 +615,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
 
                 // adjust content
                 sidebar.attr({ id: id, 'aria-labelledby': id + "-label" });
-                sidebar.find("#p-tb-label, h1, h2, h3, h4, h5").first().text(name).attr({ id: id + "-label" });
+                sidebar.find("div.vector-menu-heading, #p-tb-label, h1, h2, h3, h4, h5").first().text(name).attr({ id: id + "-label" });
                 sidebar.find("ul").empty();
 
                 // add to DOM
