@@ -7,15 +7,26 @@
 	the text to appear blurred.
  */
 
-.regex       {font-family: Monospace;}
-.regex b     {background: #aad1f7; color: #aad1f7;} /* metasequence */
-.regex i     {background: #f9ca69; color: #f9ca69;} /* char class */
-.regex i b   {background: #f7a700; color: #f7a700;} /* char class: metasequence */
-.regex i u   {background: #efba4a; color: #efba4a;} /* char class: range-hyphen */
-.regex b.g1  {background: #d2f854; color: #d2f854;} /* group: depth 1 */
-.regex b.g2  {background: #9ec70c; color: #9ec70c;} /* group: depth 2 */
-.regex b.g3  {background: #ecc9f7; color: #ecc9f7;} /* group: depth 3 */
-.regex b.g4  {background: #54b70b; color: #54b70b;} /* group: depth 4 */
-.regex b.g5  {background: #b688cf; color: #b688cf;} /* group: depth 5 */
-.regex b.err {background: #ff4300; color: #ff4300;} /* error */
-.regex b, .regex i, .regex u {font-weight: normal; font-style: normal; text-decoration: none;}
+.regex {/*color: #000;*/ font-family: Consolas, "Source Code Pro", Monospace; white-space: pre-wrap; word-break: break-all; overflow-wrap: anywhere;}
+.regex b {font-weight: normal;}
+.regex i {font-style: normal;}
+.regex u {text-decoration: none;}
+
+/* metasequence */
+.regex b {background: #aad1f7;}
+/* error */
+.regex b.err {background: #ff4300;}
+
+/* char class */
+.regex i {background: #f9ca69;}
+/* char class: metasequence */
+.regex i b {background: #f7a700;}
+/* char class: range-hyphen */
+.regex i u {background: #efba4a;}
+
+/* group: depth */
+.regex b.g1 {background: #d2f854;}
+.regex b.g2 {background: #9ec70c;}
+.regex b.g3 {background: #ecc9f7;}
+.regex b.g4 {background: #54b70b;}
+.regex b.g5 {background: #b688cf;}

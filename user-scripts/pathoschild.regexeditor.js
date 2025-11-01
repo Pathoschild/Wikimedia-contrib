@@ -61,7 +61,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
         /*********
         ** Fields
         *********/
-        self.version = "0.14";
+        self.version = "0.15.0";
         self.strings = {
             header: "Regex editor", // the header text shown in the form
             search: "Search",       // the search input label
@@ -193,7 +193,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
             // add search formatting
             var updateFormatting = function() {
                 // update syntax highlighting
-                var formatted = RegexColorizer.colorizeText($search.val())
+                var formatted = RegexColorizer.colorizePattern($search.val())
                     + "&nbsp;"; // height:auto is calculated incorrectly if the last line is blank
                 $preview.html(formatted);
 
