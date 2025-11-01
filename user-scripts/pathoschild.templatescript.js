@@ -834,7 +834,7 @@ window.pathoschild = window.pathoschild || {}; // use window for ResourceLoader 
                 opts.forActions = ["*"];
 
             // normalise namespaces
-            if (opts.forNamespaces) {
+            if (opts.forNamespaces || opts.forNamespaces === 0) {
                 // cast to array
                 if (!Array.isArray(opts.forNamespaces))
                     opts.forNamespaces = [opts.forNamespaces];
