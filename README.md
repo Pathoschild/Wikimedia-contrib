@@ -36,7 +36,7 @@ account | tools
 `meta2` | crossactivity
 `meta3` | stalktoy
 
-They redirect as needed, so all tools can be accessed through eitherhostname. To use different
+They redirect as needed, so all tools can be accessed through either hostname. To use different
 accounts, edit the `tool-labs/backend/modules/__config__.php` and `tool-labs/.lighttpd*` files
 accordingly.
 
