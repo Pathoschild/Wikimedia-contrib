@@ -37,9 +37,10 @@ class DateRegisteredRule implements LocalRule
     public function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo
     {
         // accumulate
-        $registered = $user->registered;
-        if (!$user->registered)
-            $registered = $db->getRegistrationDate($user->id, $user->actorID, "d F Y", true)[0];
+        $registered =
+            $user->registered
+            ?? $db->getRegistrationDate($user->id, $user->actorID, "d F Y", true)[0]
+            ?? null;
         $isMet = !$registered/*before 2005*/ || $registered <= $this->maxDate->mediawiki;
 
         // get result
