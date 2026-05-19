@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 86;
+        return 87;
     }
 
     /**
@@ -22,6 +22,32 @@ class EventFactory
      */
     public function getEvents()
     {
+        ##########
+        ## 2026: Universal Code of Conduct Annual Review vote
+        ##########
+        yield (new Event(88, 2026, 'Universal Code of Conduct Annual Review', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Annual_review/2026'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20260424', EditCountRule::ACCUMULATE))      // 300 edits before 24 April 2026
+            ->addRule(new EditCountRule(20, '20251024', '<20260424', EditCountRule::ACCUMULATE)) // 20 edits between 24 October 2025 and 24 April 2026
+            ->withExtraRequirements(['Your account must not be a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2026/Voter_eligibility_criteria">official voting rules</a> for specific exceptions including developers, staff, and contractors.'
+            ]);
+
+        ##########
+        ## 2026: Universal Code of Conduct Coordinating Committee elections
+        ##########
+        yield (new Event(87, 2026, 'Universal Code of Conduct Coordinating Committee elections', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2026'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20260424', EditCountRule::ACCUMULATE))      // 300 edits before 24 April 2026
+            ->addRule(new EditCountRule(20, '20251024', '<20260424', EditCountRule::ACCUMULATE)) // 20 edits between 24 October 2025 and 24 April 2026
+            ->withExtraRequirements(['Your account must not be a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2026/Voter_eligibility_criteria">official voting rules</a> for specific exceptions including developers, staff, and contractors.'
+            ]);
+
         ##########
         ## 2026: Commons Picture of the Year for 2025
         ##########
@@ -50,7 +76,7 @@ class EventFactory
                 'You must agree to abide by the policies governing <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Stewards_policy" title="Stewards policy">steward access</a>, <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/CheckUser_policy" title="checkuser policy">checkuser access</a>, <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Oversight_policy" title="oversight policy">oversight access</a>, and <a href="https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Wikimedia_Foundation_Access_to_Nonpublic_Personal_Data_Policy" title="Wikimedia Foundation Access to Nonpublic Personal Data Policy">access to non-public personal data</a>.',
                 'You must <a href="https://foundation.wikimedia.org/wiki/Special:MyLanguage/Legal:Wikimedia_Foundation_Confidentiality_Agreement_for_Nonpublic_Information" title="Wikimedia Foundation Confidentiality Agreement for Nonpublic Information">sign the confidentiality agreement</a>.'
             ]);
-     
+
         ##########
         ## 2025: Wikimedia ESEAP Hub election for Community Connector
         ##########
@@ -242,7 +268,7 @@ class EventFactory
         yield (new Event(68, 2023, 'Commons Picture of the Year for 2022', 'https://commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2022'))
             ->addRule(new DateRegisteredRule('<202301'), Workflow::ON_ANY_WIKI)// registered before 01 January 2023
             ->addRule(new EditCountRule(75, null, '<202301'), Workflow::ON_ANY_WIKI);// 75 edits before 01 January 2023
-        
+
         ##########
         ## 2023: steward elections
         ##########
@@ -284,7 +310,7 @@ class EventFactory
         yield (new Event(64, 2022, 'Commons Picture of the Year for 2021', 'https://commons.wikimedia.org/wiki/Commons:Picture_of_the_Year/2021'))
             ->addRule(new DateRegisteredRule('<202201'), Workflow::ON_ANY_WIKI)// registered before 01 January 2022
             ->addRule(new EditCountRule(75, null, '<202201'), Workflow::ON_ANY_WIKI);// 75 edits before 01 January 2022
-        
+
         ##########
         ## 2022: Board of Trustees election
         ##########
