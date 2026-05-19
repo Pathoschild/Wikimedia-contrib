@@ -21,7 +21,33 @@ class EventFactory
      * Get all available events.
      */
     public function getEvents()
-    {
+    {   
+        ##########
+        ## 2026: Universal Code of Conduct Annual Review vote
+        ##########
+        yield (new Event(88, 2026, 'Universal Code of Conduct Annual Review', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Annual_review/2026'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20260424', EditCountRule::ACCUMULATE))      // 300 edits before 24 April 2026
+            ->addRule(new EditCountRule(20, '20251024', '<20260424', EditCountRule::ACCUMULATE)) // 20 edits between 24 October 2025 and 24 April 2026
+            ->withExtraRequirements(['Your account must not be a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2026/Voter_eligibility_criteria">official voting rules</a> for specific exceptions including developers, staff, and contractors.'
+            ]);
+        
+        ##########
+        ## 2026: Universal Code of Conduct Coordinating Committee elections
+        ##########
+        yield (new Event(87, 2026, 'Universal Code of Conduct Coordinating Committee elections', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2026'))
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new EditCountRule(300, null, '<20260424', EditCountRule::ACCUMULATE))      // 300 edits before 24 April 2026
+            ->addRule(new EditCountRule(20, '20251024', '<20260424', EditCountRule::ACCUMULATE)) // 20 edits between 24 October 2025 and 24 April 2026
+            ->withExtraRequirements(['Your account must not be a bot.'])
+            ->withExceptions([
+                'See the <a href="https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Coordinating_Committee/Election/2026/Voter_eligibility_criteria">official voting rules</a> for specific exceptions including developers, staff, and contractors.'
+            ]);
+        
         ##########
         ## 2026: Commons Picture of the Year for 2025
         ##########
