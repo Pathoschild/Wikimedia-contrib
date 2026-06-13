@@ -23,6 +23,19 @@ class EventFactory
     public function getEvents()
     {
         ##########
+        ## 2026: Wikimedia ESEAP Hub endorsement for Community Connector - Cycle 2
+        ##########
+        yield (new Event(89, 2026, 'ESEAP Community Connector Endorsement Cycle 2', 'https://meta.wikimedia.org/wiki/ESEAP_Hub/Governance/Community_Connector/Endorsement/Cycle_2'))
+            ->addRule(new NotGloballyBlockedRule())
+            ->addRule(new NotGloballyLockedRule())
+            ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
+            ->addRule(new NotBotRule(), Workflow::HARD_FAIL)
+            ->addRule(new AccountAgeRule(90, '<20260617'), Workflow::ON_ANY_WIKI)                // registered at least 90 days before 17 June 2026
+            ->addRule(new EditCountRule(300, null, '<20260617', EditCountRule::ACCUMULATE))      // 300 edits before 17 June 2026
+            ->addRule(new EditCountRule(20, '20250617', '<20260617', EditCountRule::ACCUMULATE)) // 20 edits between 17 June 2025 and 17 June 2026
+            ->withExtraRequirements(['Your account must not be used by a bot.']);
+
+        ##########
         ## 2026: Universal Code of Conduct Annual Review vote
         ##########
         yield (new Event(88, 2026, 'Universal Code of Conduct Annual Review', 'https://meta.wikimedia.org/wiki/Universal_Code_of_Conduct/Annual_review/2026'))
