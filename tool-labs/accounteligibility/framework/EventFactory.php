@@ -14,7 +14,7 @@ class EventFactory
      */
     public function getDefaultEventID()
     {
-        return 87;
+        return 89;
     }
 
     /**
@@ -25,7 +25,19 @@ class EventFactory
         ##########
         ## 2026: Wikimedia ESEAP Hub endorsement for Community Connector - Cycle 2
         ##########
-        yield (new Event(89, 2026, 'ESEAP Community Connector Endorsement Cycle 2', 'https://meta.wikimedia.org/wiki/ESEAP_Hub/Governance/Community_Connector/Endorsement/Cycle_2'))
+        yield (new Event(90, 2026, 'ESEAP Community Connector Endorsement Cycle 2 (candidate)', 'https://meta.wikimedia.org/wiki/ESEAP_Hub/Governance/Community_Connector/Endorsement/Cycle_2'))
+            ->addRule(new NotGloballyBlockedRule())
+            ->addRule(new NotGloballyLockedRule())
+            ->addRule(new NotBlockedRule(), Workflow::HARD_FAIL)                                  // not permanently blocked on any wiki
+            ->addRule(new AccountAgeRule(1096, '<20260617'), Workflow::ON_ANY_WIKI)               // registered at least 3 years before 17 June 2026 (i.e. as of 16 June 2023)
+            ->addRule(new EditCountRule(1000, null, '<20260617', EditCountRule::ACCUMULATE))      // 1000 edits before 17 June 2026
+            ->addRule(new EditCountRule(100, '20250613', '<20260613', EditCountRule::ACCUMULATE)) // 100 edits between 13 June 2025 and 13 June 2026
+            ->withAction('<strong>be a candidate</strong>')
+            ->withExtraRequirements(
+                ['See <a href="https://meta.wikimedia.org/wiki/ESEAP_Hub/Governance/Community_Connector/Endorsement/Cycle_2#Community_Connector’s_eligibility">governance experience requirements</a>.']
+            );
+
+        yield (new Event(89, 2026, 'ESEAP Community Connector Endorsement Cycle 2 (endorser)', 'https://meta.wikimedia.org/wiki/ESEAP_Hub/Governance/Community_Connector/Endorsement/Cycle_2'))
             ->addRule(new NotGloballyBlockedRule())
             ->addRule(new NotGloballyLockedRule())
             ->addRule(new NotBlockedRule(1), Workflow::HARD_FAIL)                                // not blocked on more than one wiki
