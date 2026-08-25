@@ -47,6 +47,12 @@ class StalktoyEngine extends Base
     public bool $showAllWikis = false;
 
     /**
+     * (User lookups only.) Whether to search every wiki for local accounts which aren't attached to
+     * the global account.
+     */
+    public bool $showDetached = false;
+
+    /**
      * (User lookups only.) Whether to list relevant global groups next to each wiki.
      */
     public bool $showGroupsPerWiki = false;

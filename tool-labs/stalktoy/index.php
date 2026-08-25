@@ -41,6 +41,7 @@ if (!$target) {
 # initialise
 $engine = new StalktoyEngine($backend, $target);
 $engine->showAllWikis = $backend->getBool('show_all_wikis') ?? false;
+$engine->showDetached = $backend->getBool('show_detached') ?? false;
 $engine->showGroupsPerWiki = $backend->getBool('global_groups_per_wiki') ?? false;
 $deletedGlobalGroups = ['Cabal'];
 
@@ -61,6 +62,8 @@ echo "
             
             ", Form::checkbox('show_all_wikis', $engine->showAllWikis), "
             <label for='show_all_wikis'>Show wikis where account is not registered.</label><br />
+            ", Form::checkbox('show_detached', $engine->showDetached), "
+            <label for='show_detached'>Show detached local accounts (slower).</label><br />
             ", Form::checkbox('global_groups_per_wiki', $engine->showGroupsPerWiki), "
             <label for='global_groups_per_wiki'>Show relevant global groups for each wiki.</label><br />
         </div>
@@ -221,8 +224,17 @@ else if ($engine->isValid() && $engine->target) {
     /* local details */
     $backend->profiler->start('fetch local accounts');
     $local = [];
-    $localAccounts = $engine->getLocalAccounts($engine->target, $engine->wikis, $account->wikiHash);
-    foreach ($engine->wikis as $wiki => $wikiData) {
+
+    $searchAllWikis = $engine->showDetached || $engine->showAllWikis;
+    $searchWikis = $searchAllWikis
+        ? $engine->wikis
+        : array_intersect_key($engine->wikis, $account->wikiHash);
+
+    $localAccounts = $searchWikis
+        ? $engine->getLocalAccounts($engine->target, $searchWikis, $account->wikiHash)
+        : [];
+
+    foreach ($searchWikis as $wiki => $wikiData) {
         $domain = $wikiData->domain;
         $localAccount = $localAccounts[$wiki] ?? $engine->getMissingLocalAccount($wikiData);
 
@@ -266,7 +278,7 @@ else if ($engine->isValid() && $engine->target) {
         }
     }
 
-
+    
     #######
     ## Output global details
     ########
@@ -464,8 +476,24 @@ else if ($engine->isValid() && $engine->target) {
                 </tr>
                 ";
         }
-        echo '</tbody></table></div>';
-    } else
+        echo '</tbody></table>';
+
+        /* detached notice */
+        if (!$searchAllWikis)
+            echo "<small>Only wikis linked to the global account are shown. You can enable 'Show detached local accounts' to search for those (slower).</small>";
+
+        echo '</div>';
+    }
+    else if (!$searchAllWikis) {
+        echo
+            "<div class='neutral'>",
+            ($account->exists
+                ? "No local accounts were found, but only the wikis attached to the global account were checked."
+                : "No local accounts were searched, since there's no global account."
+            ),
+            " You can enable 'Show detached local accounts' to search for those (slower).</div>";
+    }
+    else
         echo "<div class='error'>There are no local accounts with this name.</div>\n";
     $backend->profiler->stop('output');
 }
