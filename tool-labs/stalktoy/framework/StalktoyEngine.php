@@ -56,6 +56,12 @@ class StalktoyEngine extends Base
      */
     public ?Toolserver $db = null;
 
+    /**
+     * The database names of the wikis which couldn't be queried.
+     * @var string[]
+     */
+    public array $failedWikis = [];
+
 
     ##########
     ## Public methods
@@ -217,7 +223,7 @@ class StalktoyEngine extends Base
      * Get global details about an IP address or range.
      * @param string|null $target The IP address or range for which to fetch details.
      */
-    public function getGlobalIP(?string $target): \Stalktoy\GlobalIP
+    public function getGlobalIp(?string $target): \Stalktoy\GlobalIP
     {
         $ip = new Stalktoy\GlobalIP();
 
@@ -266,82 +272,122 @@ class StalktoyEngine extends Base
     }
 
     /**
-     * Get details about a local account.
-     * @param Toolserver $db The database from which to fetch details.
+     * Get details about a user's local account on each of the given wikis.
+     *
      * @param string $userName The name of the user for which to fetch local details.
-     * @param bool $isUnified Whether the user has a unified account on this wiki.
-     * @param Wiki $wiki The wiki on which the account is being fetched.
+     * @param array<string, Wiki> $wikis The wikis to check, indexed by database name.
+     * @param array<string, int> $unifiedHash A lookup of the wikis on which the user's account is unified.
+     * @return array<string, \Stalktoy\LocalAccount> The accounts which exist, indexed by database name, in the order the wikis were given.
      */
-    public function getLocal(Toolserver $db, string $userName, bool $isUnified, Wiki $wiki): \Stalktoy\LocalAccount
+    public function getLocalAccounts(string $userName, array $wikis, array $unifiedHash): array
     {
         // fetch details
-        $row = $db->query(
+        $result = $this->db->queryManyWikis(
+            array_keys($wikis),
             '
                 SELECT
+                    {dbname} AS wiki,
                     user_id,
                     user_registration,
                     DATE_FORMAT(user_registration, "%Y-%m-%d %H:%i") AS registration,
                     user_editcount,
-                    GROUP_CONCAT(ug_group SEPARATOR ", ") AS user_groups,
-                    bl_by_actor,
-                    bl_reason_id,
+                    GROUP_CONCAT(DISTINCT ug_group ORDER BY ug_group SEPARATOR ", ") AS user_groups,
+                    actor.actor_id,
+                    blocked_by_actor.actor_name AS bl_by_name,
+                    comment_text AS bl_reason,
                     DATE_FORMAT(bl_timestamp, "%Y-%m-%d %H:%i") AS bl_timestamp,
                     bl_deleted,
                     COALESCE(DATE_FORMAT(bl_expiry, "%Y-%m-%d %H:%i"), bl_expiry) AS bl_expiry
                 FROM
-                    user
-                    LEFT JOIN user_groups ON user_id = ug_user
-                    LEFT JOIN block_target ON user_id = bt_user
-                    LEFT JOIN block ON bt_id = bl_target
+                    {db}.`user`
+                    LEFT JOIN {db}.user_groups ON user_id = ug_user
+                    LEFT JOIN {db}.actor ON user_id = actor.actor_user
+                    LEFT JOIN {db}.block_target ON user_id = bt_user
+                    LEFT JOIN {db}.block ON bt_id = bl_target
+                    LEFT JOIN {db}.actor AS blocked_by_actor ON bl_by_actor = blocked_by_actor.actor_id
+                    LEFT JOIN {db}.comment ON bl_reason_id = comment_id
                 WHERE user_name = ?
-                LIMIT 1
+                GROUP BY user_id
             ',
             [$userName]
-        )->fetchAssoc();
+        );
+        $this->failedWikis = $result->failedWikis;
 
-        // fetch actor ID if needed
-        if ($row['user_id'])
-            $row['actor_id'] = $db->query('SELECT actor_id FROM actor WHERE actor_user = ? LIMIT 1', [$row['user_id']])->fetchValue();
+        // index by wiki
+        $rowsByWiki = [];
+        foreach ($result->rows as $row)
+            $rowsByWiki[$row['wiki']] = $row;
 
-        // fetch block reason if needed
-        if ($row['bl_reason_id'])
-        {
-            $row['bl_by_name'] = $db->query('SELECT actor_name FROM actor WHERE actor_id = ? LIMIT 1', [$row['bl_by_actor']])->fetchValue();
-            $row['bl_reason'] = $db->query('SELECT comment_text FROM comment WHERE comment_id = ? LIMIT 1', [$row['bl_reason_id']])->fetchValue();
+        // build models, in the order the wikis were given
+        $accounts = [];
+        foreach ($wikis as $dbname => $wiki) {
+            if (isset($rowsByWiki[$dbname]))
+                $accounts[$dbname] = $this->buildLocalAccount($rowsByWiki[$dbname], $wiki, $userName, isset($unifiedHash[$dbname]));
         }
 
-        // build model
-        $account = new Stalktoy\LocalAccount();
-        $account->exists = isset($row['user_id']);
-        $account->wiki = $wiki;
-        if ($account->exists) {
-            // account details
-            $account->id = intval($row['user_id']);
-            $account->actorId = intval($row['actor_id']);
-            $account->registered = $row['registration'];
-            $account->registeredRaw = $row['user_registration'];
-            $account->editCount = intval($row['user_editcount']);
-            $account->groups = $row['user_groups'];
-            $account->isUnified = $isUnified;
+        // backfill registration dates for accounts created before MediaWiki tracked them (late
+        // 2005 or earlier).
+        foreach ($accounts as $dbname => $account) {
+            if ($account->registeredRaw)
+                continue;
 
-            // handle edge cases with older accounts
-            if (!$account->registeredRaw) {
-                $date = $db->getRegistrationDate($account->id, $account->actorId);
+            $this->setWiki($dbname);
+            $date = $this->db->getRegistrationDate($account->id, $account->actorId, skipUserTable: true);
+            if ($date) {
                 $account->registered = $date['formatted'];
                 $account->registeredRaw = $date['raw'];
             }
+        }
 
-            // block details
-            $account->isBlocked = isset($row['bl_timestamp']);
-            if ($account->isBlocked) {
-                $account->block = new Stalktoy\Block();
-                $account->block->by = $row['bl_by_name'];
-                $account->block->target = $userName;
-                $account->block->reason = $row['bl_reason'];
-                $account->block->timestamp = $row['bl_timestamp'];
-                $account->block->isHidden = boolval($row['bl_deleted']);
-                $account->block->expiry = $row['bl_expiry'];
-            }
+        return $accounts;
+    }
+
+    /**
+     * Build a model for a user which has no account on a wiki.
+     *
+     * @param Wiki $wiki The wiki on which the account doesn't exist.
+     */
+    public function getMissingLocalAccount(Wiki $wiki): \Stalktoy\LocalAccount
+    {
+        $account = new Stalktoy\LocalAccount();
+        $account->wiki = $wiki;
+        $account->exists = false;
+        return $account;
+    }
+
+    /**
+     * Build a local account model from a DB row for a valid user.
+     *
+     * @param array<string, mixed> $row The result row.
+     * @param Wiki $wiki The wiki on which the account was found.
+     * @param string $userName The name of the user.
+     * @param bool $isUnified Whether the user has a unified account on this wiki.
+     */
+    private function buildLocalAccount(array $row, Wiki $wiki, string $userName, bool $isUnified): \Stalktoy\LocalAccount
+    {
+        $account = new Stalktoy\LocalAccount();
+        $account->wiki = $wiki;
+        $account->exists = true;
+
+        // account details
+        $account->id = intval($row['user_id']);
+        $account->actorId = intval($row['actor_id']);
+        $account->registered = $row['registration'];
+        $account->registeredRaw = $row['user_registration'];
+        $account->editCount = intval($row['user_editcount']);
+        $account->groups = $row['user_groups'];
+        $account->isUnified = $isUnified;
+
+        // block details
+        $account->isBlocked = isset($row['bl_timestamp']);
+        if ($account->isBlocked) {
+            $account->block = new Stalktoy\Block();
+            $account->block->by = $row['bl_by_name'] ?? '';
+            $account->block->target = $userName;
+            $account->block->reason = $row['bl_reason'] ?? '';
+            $account->block->timestamp = $row['bl_timestamp'];
+            $account->block->isHidden = boolval($row['bl_deleted']);
+            $account->block->expiry = $row['bl_expiry'];
         }
 
         return $account;
@@ -361,27 +407,33 @@ class StalktoyEngine extends Base
     ## Get hash of local IP blocks
     ########
     /**
-     * Get a list of local blocks against editing by this IP address.
+     * Get the local blocks against editing by an IP address on each of the given wikis.
+     *
      * @param \Stalktoy\GlobalIP $ip The IP address for which to fetch local blocks.
-     * @return Stalktoy\Block[]
+     * @param array<string, Wiki> $wikis The wikis to check, indexed by database name.
+     * @return array<string, \Stalktoy\Block[]> The blocks on each wiki, indexed by database name.
      */
-    public function getLocalIPBlocks(\Stalktoy\GlobalIP $ip): array
+    public function getLocalIpBlocksByWiki(\Stalktoy\GlobalIP $ip, array $wikis): array
     {
         // get blocks
         $start = $ip->ip->getEncoded(IPAddress::START);
         $end = $ip->ip->getEncoded(IPAddress::END);
-        $query = $this->db->query(
+        $result = $this->db->queryManyWikis(
+            array_keys($wikis),
             '
                 SELECT
+                    {dbname} AS wiki,
                     bt_address,
-                    bl_by_actor,
-                    bl_reason_id,
+                    actor_name AS bl_by_name,
+                    comment_text AS bl_reason,
                     bl_anon_only,
                     DATE_FORMAT(bl_timestamp, "%Y-%b-%d") AS timestamp,
                     DATE_FORMAT(bl_expiry, "%Y-%b-%d") AS expiry
                 FROM
-                    block
-                    INNER JOIN block_target_ipindex ON bt_id = bl_target
+                    {db}.block
+                    INNER JOIN {db}.block_target_ipindex ON bt_id = bl_target
+                    LEFT JOIN {db}.actor ON bl_by_actor = actor_id
+                    LEFT JOIN {db}.comment ON bl_reason_id = comment_id
                 WHERE
                     bt_address IS NOT NULL
                     AND CASE
@@ -393,26 +445,49 @@ class StalktoyEngine extends Base
                     END
             ',
             [$start, $end, $start, $end]
-        )->fetchAllAssoc();
+        );
+        $this->failedWikis = $result->failedWikis;
 
-        // build model
+        // build models
         $blocks = [];
-        foreach ($query as $row) {
+        foreach ($wikis as $dbname => $wiki)
+            $blocks[$dbname] = [];
+
+        foreach ($result->rows as $row) {
             $block = new Stalktoy\Block();
             $block->target = $row['bt_address'];
+            $block->by = $row['bl_by_name'] ?? '';
+            $block->reason = $row['bl_reason'] ?? '';
             $block->timestamp = $row['timestamp'];
             $block->expiry = $row['expiry'];
             $block->anonOnly = boolval($row['bl_anon_only']);
             $block->isHidden = false;
 
-            $block->by = $this->db->query("SELECT actor_name FROM actor WHERE actor_id = ? LIMIT 1", [$row['bl_by_actor']])->fetchValue();
-            if ($row['bl_reason_id'])
-                $block->reason = $this->db->query("SELECT comment_text FROM comment WHERE comment_id = ? LIMIT 1", [$row['bl_reason_id']])->fetchValue();
-
-            $blocks[] = $block;
+            $blocks[$row['wiki']][] = $block;
         }
 
         return $blocks;
+    }
+
+    /**
+     * Get an HTML warning box if some wikis couldn't be queried.
+     */
+    public function renderQueryErrors(): string
+    {
+        if (!$this->failedWikis)
+            return '';
+
+        $count = count($this->failedWikis);
+        if ($count <= 10) {
+            $domains = [];
+            foreach ($this->failedWikis as $dbname)
+                $domains[] = $this->formatValue($this->wikis[$dbname]->domain ?? $dbname);
+            $detail = implode(', ', $domains);
+        }
+        else
+            $detail = "$count of " . count($this->wikis);
+
+        return "<div class='error'><strong>Warning:</strong> couldn't query some wikis ($detail), so the results below may be incomplete.</div>\n";
     }
 
     /**

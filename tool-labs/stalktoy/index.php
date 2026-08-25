@@ -70,7 +70,7 @@ echo "
 #############################
 ## Process data (IP / CIDR)
 #############################
-$ip = $engine->getGlobalIP($engine->target);
+$ip = $engine->getGlobalIp($engine->target);
 if ($engine->isValid() && $ip->ip->isValid()) {
     ########
     ## Fetch data
@@ -86,11 +86,7 @@ if ($engine->isValid() && $ip->ip->isValid()) {
 
     /* local data */
     $backend->profiler->start('fetch local');
-    $localBlocks = [];
-    foreach ($global['wikis'] as $wiki => $wikiData) {
-        $engine->setWiki($wiki);
-        $localBlocks[$wiki] = $engine->getLocalIPBlocks($ip);
-    }
+    $localBlocks = $engine->getLocalIpBlocksByWiki($ip, $global['wikis']);
     $backend->profiler->stop('fetch local');
 
 
@@ -98,6 +94,7 @@ if ($engine->isValid() && $ip->ip->isValid()) {
     ## Output
     ########
     $backend->profiler->start('output');
+    echo $engine->renderQueryErrors();
     echo "
         <div class='result-box'>
             <h3>", ($ip->ip->isIPv4() ? 'IPv4' : 'IPv6'), " ", ($ip->ip->isRange() ? ' range' : ' address'), "</h3>
@@ -224,10 +221,10 @@ else if ($engine->isValid() && $engine->target) {
     /* local details */
     $backend->profiler->start('fetch local accounts');
     $local = [];
+    $localAccounts = $engine->getLocalAccounts($engine->target, $engine->wikis, $account->wikiHash);
     foreach ($engine->wikis as $wiki => $wikiData) {
         $domain = $wikiData->domain;
-        $engine->setWiki($wiki);
-        $localAccount = $engine->getLocal($engine->db, $engine->target, isset($account->wikiHash[$wiki]), $wikiData);
+        $localAccount = $localAccounts[$wiki] ?? $engine->getMissingLocalAccount($wikiData);
 
         if ($localAccount->exists || $engine->showAllWikis)
             $local[$wiki] = $localAccount;
@@ -274,6 +271,7 @@ else if ($engine->isValid() && $engine->target) {
     ## Output global details
     ########
     $backend->profiler->start('output');
+    echo $engine->renderQueryErrors();
     echo "
         <div class='result-box'>
             <h3>Global account</h3>\n

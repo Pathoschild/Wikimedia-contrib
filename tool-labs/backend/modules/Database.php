@@ -265,6 +265,26 @@ class Database
     }
 
     /**
+     * Open a database connection, but treat a connection failure as a handled exception. This will
+     * reuse an existing server connection if it has been previously opened.
+     *
+     * @param string $host The server address to connect to.
+     * @param string|null $database The name of the database to connect to.
+     * @param string|null $username The username to use when authenticating to the database, or null to authenticate with the default username.
+     * @param string|null $password The password to use when authenticating to the database, or null to authenticate with the default password.
+     * @return bool Whether the connection was successfully established.
+     */
+    public function tryConnect(string $host, ?string $database = null, ?string $username = null, ?string $password = null): bool
+    {
+        try {
+            return $this->connect($host, $database, $username, $password);
+        }
+        catch (PDOException $exc) {
+            return $this->handleException($exc, 'Could not connect to database "' . htmlentities((string)($database ?? $host)) . '".');
+        }
+    }
+
+    /**
      * Reopen the previous connection. This is typically used after establishing a temporary connection to a different database.
      * @return bool Whether the connection was successfully established.
      */
@@ -385,6 +405,31 @@ class Database
     ##########
     ## Private methods
     ##########
+    /**
+     * Run a callback which suppresses DB error propagation, since the callback handles them.
+     *
+     * Errors within the callback aren't printed or thrown (regardless of the error mode), and the
+     * connection state is restored afterwards so a failure inside doesn't silently break later
+     * queries.
+     *
+     * @param callable $callback The code to run.
+     * @return mixed The callback's return value.
+     */
+    protected function withSuppressedErrors(callable $callback): mixed
+    {
+        $prevErrorMode = $this->errorMode;
+        $prevBorked = $this->borked;
+        $this->errorMode = 0;
+
+        try {
+            return $callback();
+        }
+        finally {
+            $this->errorMode = $prevErrorMode;
+            $this->borked = $prevBorked;
+        }
+    }
+
     /**
      * Handle an exception.
      * @param Exception $exception The intercepted exception to handle.
