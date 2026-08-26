@@ -59,9 +59,9 @@ echo "
         <div>
             <input type='text' name='target' value='$targetForm' />
             <input type='submit' value='Analyze »' /> <br />
-            
+
             ", Form::checkbox('show_all_wikis', $engine->showAllWikis), "
-            <label for='show_all_wikis'>Show wikis where account is not registered.</label><br />
+            <label for='show_all_wikis'>Show wikis with no matching account or block.</label><br />
             ", Form::checkbox('show_detached', $engine->showDetached), "
             <label for='show_detached'>Show detached local accounts (slower).</label><br />
             ", Form::checkbox('global_groups_per_wiki', $engine->showGroupsPerWiki), "
@@ -102,84 +102,102 @@ if ($engine->isValid() && $ip->ip->isValid()) {
         <div class='result-box'>
             <h3>", ($ip->ip->isIPv4() ? 'IPv4' : 'IPv6'), " ", ($ip->ip->isRange() ? ' range' : ' address'), "</h3>
         ", ($ip->ip->isRange() ? "<b>{$global['pretty_range']}</b><br />" : "");
+
+    ####
+    ## Global blocks
+    ####
+    echo '<h4>Global blocks</h4>';
     if ($global['ip']->globalBlocks) {
         echo '
-            <fieldset>
-                <legend>Global blocks</legend>
-                <ul>
-            ';
+            <ul>
+        ';
         foreach ($global['ip']->globalBlocks as $block) {
             $byUrl = urlencode($block->by);
             $reason = $engine->formatReason($block->reason, 'meta.wikimedia.org');
             echo "<li>{$block->timestamp} &mdash; {$block->expiry}: <b>{$block->target}</b> globally blocked by <a href=\"https://meta.wikimedia.org/wiki/user:$byUrl\">{$block->by}</a> (<small>$reason</small>)</li>";
         }
         echo '
-                </ul>
-            </fieldset>
+            </ul>
         ';
-    } else
+    }
+    else
         echo '<em>No global blocks.</em><br />';
 
+    ####
+    ## Local blocks
+    ####
+    /* get wikis to show */
+    $blockedWikis = array_filter($localBlocks);
+    $shownWikis = $engine->showAllWikis
+        ? $global['wikis']
+        : array_intersect_key($global['wikis'], $blockedWikis);
 
-    ########
+    echo '<h4>Local blocks</h4>';
+    if (!$shownWikis)
+        echo '<em>No local blocks.</em><br />';
+    else {
+        /* print header */
+        echo '
+            <table class="pretty sortable" id="local-ips">
+                <thead>
+                    <tr>
+                    <th>wiki</th>
+                    <th>blocked</th>
+                    </tr>
+                </thead>
+                <tbody>
+            ';
+
+        /* print each row */
+        foreach ($shownWikis as $wiki => $wikiData) {
+            $domain = $wikiData->domain;
+            $blocked = (int)(bool)$localBlocks[$wiki];
+            $open = (int)!$wikiData->isClosed;
+            $linkWiki = $engine->link($domain, 'user:' . $engine->targetWikiUrl, $domain);
+
+            echo "
+                <tr data-open='$open' data-blocked='{$blocked}'>
+                    <td class='wiki'>{$linkWiki}</td>
+                    <td class='blocks'>
+                ";
+            if ($localBlocks[$wiki]) {
+                foreach ($localBlocks[$wiki] as $block) {
+                    $reason = $engine->formatReason($block->reason, $domain);
+                    echo "<span class='is-block-start'>{$block->timestamp}</span> &mdash; <span class='is-block-end'>{$block->expiry}</span>: <b>{$engine->formatValue($block->target)}</b> blocked by <span class='is-block-admin'>{$engine->formatValue($block->by)}</span> (<span class='is-block-reason'>{$engine->formatValue($reason)}</span>)<br />";
+                }
+            }
+            echo "
+                    </td>
+                </tr>
+                ";
+        }
+
+        /* print footer */
+        echo '
+                </tbody>
+            </table>
+        ';
+    }
+    if (!$engine->showAllWikis)
+        echo "<small>Only wikis with a local block are shown. You can enable 'Show wikis with no matching account or block' to list every wiki.</small>";
+
+    ####
     ## Steward tools
-    ########
+    ####
     echo "
+        <h4>See also</h4>
         <div>
             Related toys:
             <a href='https://whois.toolforge.org/gateway.py?lookup=true&ip=", $ip->ip->getFriendly(), "' title='whois query'>whois</a>,
             <a href='https://bullseye.toolforge.org/ip/", $ip->ip->getFriendly(), "' title='bullseye tool'>bullseye</a>,
             <a href='https://meta.wikimedia.org/wiki/Special:GlobalBlock?wpAddress={$engine->targetWikiUrl}' title='Special:GlobalBlock'>global block</a>.
         </div>
-        ";
+    ";
 
-
-    ########
-    ## Local results
-    ########
-    /* print header */
-    echo '
-        <h4>Local blocks</h4>
-        <table class="pretty sortable" id="local-ips">
-            <thead>
-                <tr>
-                <th>wiki</th>
-                <th>blocked</th>
-                </tr>
-            </thead>
-            <tbody>
-        ';
-
-    /* print each row */
-    foreach ($global['wikis'] as $wiki => $wikiData) {
-        $domain = $wikiData->domain;
-        $blocked = (int)(bool)$localBlocks[$wiki];
-        $open = (int)!$wikiData->isClosed;
-        $linkWiki = $engine->link($domain, 'user:' . $engine->targetWikiUrl, $domain);
-
-        echo "
-            <tr data-open='$open' data-blocked='{$blocked}'>
-                <td class='wiki'>{$linkWiki}</td>
-                <td class='blocks'>
-            ";
-        if ($localBlocks[$wiki]) {
-            foreach ($localBlocks[$wiki] as $block) {
-                $reason = $engine->formatReason($block->reason, $domain);
-                echo "<span class='is-block-start'>{$block->timestamp}</span> &mdash; <span class='is-block-end'>{$block->expiry}</span>: <b>{$engine->formatValue($block->target)}</b> blocked by <span class='is-block-admin'>{$engine->formatValue($block->by)}</span> (<span class='is-block-reason'>{$engine->formatValue($reason)}</span>)<br />";
-            }
-        }
-        echo "
-                </td>
-            </tr>
-            ";
-    }
-
-    /* print footer */
-    echo "
-                </tbody>
-            </table>
-        </div>
-        ";
+    ####
+    ## Footer
+    ####
+    echo '</div>';
     $backend->profiler->stop('output');
 }
 
@@ -278,7 +296,7 @@ else if ($engine->isValid() && $engine->target) {
         }
     }
 
-    
+
     #######
     ## Output global details
     ########
@@ -478,7 +496,7 @@ else if ($engine->isValid() && $engine->target) {
         }
         echo '</tbody></table>';
 
-        /* detached notice */
+        /* filtered note */
         if (!$searchAllWikis)
             echo "<small>Only wikis linked to the global account are shown. You can enable 'Show detached local accounts' to search for those (slower).</small>";
 

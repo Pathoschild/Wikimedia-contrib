@@ -69,7 +69,8 @@ class StalktoyEngine extends Base
     public ?string $wiki = null;
 
     /**
-     * (User lookups only.) Whether to show all wikis, even if the user doesn't have an account there.
+     * Whether to show all wikis, even those with no matching account (for a user lookup) or no
+     * matching block (for an IP lookup).
      */
     public bool $showAllWikis = false;
 
