@@ -390,9 +390,13 @@ class StalktoyEngine extends Base
 
         // find IP blocks on each wiki
         //
-        // This first query deliberately avoids joins when possible. There's a significant overhead
-        // to joining on the other views (even if there's no block to join with), and usually only
-        // a few wikis will have blocked the IP.
+        // This first query deliberately:
+        // - Avoids joins when possible. There's a significant overhead to joining on the other
+        //   views (even if there's no block to join with), and usually only a few wikis will have
+        //   blocked the IP.
+        // - Uses `UNION ALL` instead of a `CASE` condition, since the latter causes the query
+        //   optimizer to skip indexes. The extra query is a bit slower on small wikis, but
+        //   much faster on larger wikis.
         $start = $ip->ip->getEncoded(IPAddress::START);
         $end = $ip->ip->getEncoded(IPAddress::END);
         $result = $this->db->queryManyWikis(
@@ -406,13 +410,22 @@ class StalktoyEngine extends Base
                     {db}.block_target_ipindex
                 WHERE
                     bt_address IS NOT NULL
-                    AND CASE
-                        WHEN bt_range_end IS NULL THEN
-                            bt_ip_hex BETWEEN ?/*start*/ AND ?/*end*/
-                        ELSE
-                            bt_range_end >= ?/*start*/
-                            AND bt_range_start <= ?/*end*/
-                    END
+                    AND bt_range_end IS NULL
+                    AND bt_ip_hex BETWEEN ?/*start*/ AND ?/*end*/
+
+                UNION ALL
+
+                SELECT
+                    {dbname} AS wiki,
+                    bt_id,
+                    bt_address
+                FROM
+                    {db}.block_target_ipindex
+                WHERE
+                    bt_address IS NOT NULL
+                    AND bt_range_end IS NOT NULL
+                    AND bt_range_end >= ?/*start*/
+                    AND bt_range_start <= ?/*end*/
             ',
             [$start, $end, $start, $end]
         );
