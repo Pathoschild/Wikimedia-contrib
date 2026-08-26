@@ -362,6 +362,139 @@ class StalktoyEngine extends Base
     }
 
     /**
+     * Get whether a wiki is participating in CentralAuth for global accounts.
+     * @param string $dbname The database name.
+     */
+    public function getWikiUnifiable(string $dbname): bool
+    {
+        // in https://noc.wikimedia.org/conf/highlight.php?file=dblists/nonglobal.dblist
+        return !in_array($dbname, ['labswiki', 'labtestwiki']);
+    }
+
+    ########
+    ## Get hash of local IP blocks
+    ########
+    /**
+     * Get the local blocks against editing by an IP address on each of the given wikis.
+     *
+     * @param \Stalktoy\GlobalIP $ip The IP address for which to fetch local blocks.
+     * @param array<string, Wiki> $wikis The wikis to check, indexed by database name.
+     * @return array<string, \Stalktoy\Block[]> The blocks on each wiki, indexed by database name.
+     */
+    public function getLocalIpBlocksByWiki(\Stalktoy\GlobalIP $ip, array $wikis): array
+    {
+        // init results
+        $blocks = [];
+        foreach ($wikis as $dbname => $wiki)
+            $blocks[$dbname] = [];
+
+        // find IP blocks on each wiki
+        //
+        // This first query deliberately avoids joins when possible. There's a significant overhead
+        // to joining on the other views (even if there's no block to join with), and usually only
+        // a few wikis will have blocked the IP.
+        $start = $ip->ip->getEncoded(IPAddress::START);
+        $end = $ip->ip->getEncoded(IPAddress::END);
+        $result = $this->db->queryManyWikis(
+            array_keys($wikis),
+            '
+                SELECT
+                    {dbname} AS wiki,
+                    bt_id,
+                    bt_address
+                FROM
+                    {db}.block_target_ipindex
+                WHERE
+                    bt_address IS NOT NULL
+                    AND CASE
+                        WHEN bt_range_end IS NULL THEN
+                            bt_ip_hex BETWEEN ?/*start*/ AND ?/*end*/
+                        ELSE
+                            bt_range_end >= ?/*start*/
+                            AND bt_range_start <= ?/*end*/
+                    END
+            ',
+            [$start, $end, $start, $end]
+        );
+        $this->failedWikis = $result->failedWikis;
+
+        // group blocked IPs by wiki (dbname => address[])
+        $targets = [];
+        foreach ($result->rows as $row)
+            $targets[$row['wiki']][$row['bt_id']] = $row['bt_address'];
+
+        // fetch block info from each wiki
+        foreach ($targets as $dbname => $addresses) {
+            $blocks[$dbname] = $this->getBlockDetails($dbname, $addresses);
+        }
+
+        return $blocks;
+    }
+
+    /**
+     * Get an HTML warning box if some wikis couldn't be queried.
+     */
+    public function renderQueryErrors(): string
+    {
+        if (!$this->failedWikis)
+            return '';
+
+        $count = count($this->failedWikis);
+        if ($count <= 10) {
+            $domains = [];
+            foreach ($this->failedWikis as $dbname)
+                $domains[] = $this->formatValue($this->wikis[$dbname]->domain ?? $dbname);
+            $detail = implode(', ', $domains);
+        }
+        else
+            $detail = "$count of " . count($this->wikis);
+
+        return "<div class='error'><strong>Warning:</strong> couldn't query some wikis ($detail), so the results below may be incomplete.</div>\n";
+    }
+
+    /**
+     * Get an HTML link for a domain.
+     * @param string $domain The domain URL (if any).
+     * @param string $title The link title.
+     * @param string|null $text The link text (or null to use the title).
+     */
+    public function link(string $domain, string $title, string|int|null $text = null): string
+    {
+        if ($text === null)
+            $text = $title;
+
+        if (!$domain)
+            return $text;
+        else
+            return "<a href='https://{$domain}/wiki/$title' title='$title'>$text</a>";
+    }
+
+    /**
+     * Convert wikilink syntax in a block reason to HTML.
+     * @param string $text The block reason to convert.
+     * @param string $domain The wiki domain URL.
+     */
+    public function formatReason(string $text, string $domain): string
+    {
+        if (!preg_match_all('/\[\[([^\]]+)\]\]/', $text, $links))
+            return $text;
+
+        foreach ($links[1] as $i => $link) {
+            $pieces = explode('|', $link);
+            $linkTarget = $pieces[0];
+            $linkText = isset($pieces[1]) ? $pieces[1] : $linkTarget;
+
+            $text = str_replace($links[0][$i], "<a href='https://{$domain}/wiki/{$linkTarget}' title='{$linkText}'>{$linkText}</a>", $text);
+        }
+
+        return $text;
+    }
+
+
+    ##########
+    ## Private methods
+    ##########
+    /**
      * Build a local account model from a DB row for a valid user.
      *
      * @param array<string, mixed> $row The result row.
@@ -400,68 +533,55 @@ class StalktoyEngine extends Base
     }
 
     /**
-     * Get whether a wiki is participating in CentralAuth for global accounts.
-     * @param string $dbname The database name.
-     */
-    public function getWikiUnifiable(string $dbname): bool
-    {
-        // in https://noc.wikimedia.org/conf/highlight.php?file=dblists/nonglobal.dblist
-        return !in_array($dbname, ['labswiki', 'labtestwiki']);
-    }
-
-    ########
-    ## Get hash of local IP blocks
-    ########
-    /**
-     * Get the local blocks against editing by an IP address on each of the given wikis.
+     * Get the block details for a set of block targets on one wiki.
      *
-     * @param \Stalktoy\GlobalIP $ip The IP address for which to fetch local blocks.
-     * @param array<string, Wiki> $wikis The wikis to check, indexed by database name.
-     * @return array<string, \Stalktoy\Block[]> The blocks on each wiki, indexed by database name.
+     * @param string $dbname The wiki's dbname.
+     * @param array<int, string> $addresses The blocked addresses whose info to fetch, indexed by block target ID.
+     * @return array<Stalktoy\Block> The fetched blocks.
      */
-    public function getLocalIpBlocksByWiki(\Stalktoy\GlobalIP $ip, array $wikis): array
+    private function getBlockDetails(string $dbname, array $addresses): array
     {
-        // get blocks
-        $start = $ip->ip->getEncoded(IPAddress::START);
-        $end = $ip->ip->getEncoded(IPAddress::END);
-        $result = $this->db->queryManyWikis(
-            array_keys($wikis),
+        // skip if invalid
+        if (!$addresses)
+            return [];
+
+        if (!$this->db->tryConnect($dbname)) {
+            $this->failedWikis[] = $dbname;
+            return [];
+        }
+
+        // fetch from DB
+        $query = $this->db->query(
             '
                 SELECT
-                    {dbname} AS wiki,
-                    bt_address,
+                    bl_target,
                     actor_name AS bl_by_name,
                     comment_text AS bl_reason,
                     bl_anon_only,
                     DATE_FORMAT(bl_timestamp, "%Y-%b-%d") AS timestamp,
                     DATE_FORMAT(bl_expiry, "%Y-%b-%d") AS expiry
                 FROM
-                    {db}.block
-                    INNER JOIN {db}.block_target_ipindex ON bt_id = bl_target
-                    LEFT JOIN {db}.actor ON bl_by_actor = actor_id
-                    LEFT JOIN {db}.comment ON bl_reason_id = comment_id
-                WHERE
-                    bt_address IS NOT NULL
-                    AND CASE
-                        WHEN bt_range_end IS NULL THEN
-                            bt_ip_hex BETWEEN ?/*start*/ AND ?/*end*/
-                        ELSE
-                            bt_range_end >= ?/*start*/
-                            AND bt_range_start <= ?/*end*/
-                    END
+                    block
+                    LEFT JOIN actor ON bl_by_actor = actor_id
+                    LEFT JOIN comment ON bl_reason_id = comment_id
+                WHERE bl_target IN (' . implode(',', array_fill(0, count($addresses), '?')) . ')
             ',
-            [$start, $end, $start, $end]
+            array_keys($addresses)
         );
-        $this->failedWikis = $result->failedWikis;
+        if (!$query) {
+            $this->failedWikis[] = $dbname;
+            return [];
+        }
 
-        // build models
+        $rows = $query->fetchAllAssoc();
+        if ($rows === false)
+            return [];
+
+        // build blocks
         $blocks = [];
-        foreach ($wikis as $dbname => $wiki)
-            $blocks[$dbname] = [];
-
-        foreach ($result->rows as $row) {
+        foreach ($rows as $row) {
             $block = new Stalktoy\Block();
-            $block->target = $row['bt_address'];
+            $block->target = $addresses[$row['bl_target']] ?? '';
             $block->by = $row['bl_by_name'] ?? '';
             $block->reason = $row['bl_reason'] ?? '';
             $block->timestamp = $row['timestamp'];
@@ -469,68 +589,8 @@ class StalktoyEngine extends Base
             $block->anonOnly = boolval($row['bl_anon_only']);
             $block->isHidden = false;
 
-            $blocks[$row['wiki']][] = $block;
+            $blocks[] = $block;
         }
-
         return $blocks;
-    }
-
-    /**
-     * Get an HTML warning box if some wikis couldn't be queried.
-     */
-    public function renderQueryErrors(): string
-    {
-        if (!$this->failedWikis)
-            return '';
-
-        $count = count($this->failedWikis);
-        if ($count <= 10) {
-            $domains = [];
-            foreach ($this->failedWikis as $dbname)
-                $domains[] = $this->formatValue($this->wikis[$dbname]->domain ?? $dbname);
-            $detail = implode(', ', $domains);
-        }
-        else
-            $detail = "$count of " . count($this->wikis);
-
-        return "<div class='error'><strong>Warning:</strong> couldn't query some wikis ($detail), so the results below may be incomplete.</div>\n";
-    }
-
-    /**
-     * Get an HTML link for a domain.
-     * @param string $domain The domain URL (if any).
-     * @param string $title The link title.
-     * @param string|null $text The link text (or null to use the title).
-     */
-    function link(string $domain, string $title, string|int|null $text = null): string
-    {
-        if ($text === null)
-            $text = $title;
-
-        if (!$domain)
-            return $text;
-        else
-            return "<a href='https://{$domain}/wiki/$title' title='$title'>$text</a>";
-    }
-
-    /**
-     * Convert wikilink syntax in a block reason to HTML.
-     * @param string $text The block reason to convert.
-     * @param string $domain The wiki domain URL.
-     */
-    function formatReason(string $text, string $domain): string
-    {
-        if (!preg_match_all('/\[\[([^\]]+)\]\]/', $text, $links))
-            return $text;
-
-        foreach ($links[1] as $i => $link) {
-            $pieces = explode('|', $link);
-            $linkTarget = $pieces[0];
-            $linkText = isset($pieces[1]) ? $pieces[1] : $linkTarget;
-
-            $text = str_replace($links[0][$i], "<a href='https://{$domain}/wiki/{$linkTarget}' title='{$linkText}'>{$linkText}</a>", $text);
-        }
-
-        return $text;
     }
 }
