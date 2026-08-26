@@ -7,6 +7,33 @@ declare(strict_types=1);
 class StalktoyEngine extends Base
 {
     ##########
+    ## Properties
+    ##########
+    /**
+     * The minimum number of leading hexadecimal characters shared by all IPs within one CIDR block,
+     * for the block sizes supported by MediaWiki.
+     *
+     * MediaWiki only supports specific CIDR range sizes. For Wikimedia wikis, $wgBlockCIDRLimit is
+     * set to /16 for IPv4 and /19 for IPv6. The CIDR notation indicates common prefix bits, so we
+     * can derive the number of leading characters in MediaWiki's hexadecimal notation that must be
+     * shared by all valid IP range blocks that cover the given IP.
+     *
+     * For example, let's say we're searching for `127.150.100.10`. The widest range supported by
+     * MediaWiki is /16, so the largest possible MediaWiki IP range block that could cover that IP
+     * is `127.150.0.0/16`. We can thus determine that every possible IP range block that affects
+     * it would have prefix `7F96` (`127.150.0.0` = `7F960000` through `127.150.255.255` =
+     * `7F96FFFF`).
+     *
+     * That lets us optimize IP range scans. The underlying `block_target` table has an index on
+     * `bt_range_start` and `bt_range_end` in that order. A condition like `bt_range_start <= $end`
+     * matches the entire start of the index up to the end position, which can produce many rows
+     * that need to be filtered. Since we know the lowest possible start IP, we can start from that
+     * much closer position in the index instead.
+     */
+    private const BLOCK_RANGE_PREFIX_LENGTH = 4;
+
+
+    ##########
     ## Accessors
     ##########
     /**
@@ -390,15 +417,22 @@ class StalktoyEngine extends Base
 
         // find IP blocks on each wiki
         //
-        // This first query deliberately:
-        // - Avoids joins when possible. There's a significant overhead to joining on the other
-        //   views (even if there's no block to join with), and usually only a few wikis will have
-        //   blocked the IP.
-        // - Uses `UNION ALL` instead of a `CASE` condition, since the latter causes the query
-        //   optimizer to skip indexes. The extra query is a bit slower on small wikis, but
-        //   much faster on larger wikis.
+        // This is a performance-critical query, so it has some non-obvious optimizations to keep it
+        // fast:
+        //
+        // - Avoid joins when possible. There's significant overhead to joining on the other views,
+        //   even when there's no block on that wiki. Usually only a few wikis will have blocked a
+        //   given IP, so we can fetch the other tables only on those few wikis instead.
+        //
+        // - Use `UNION ALL` instead of a `CASE` condition, since the latter causes the query
+        //   optimizer to skip indexes. The extra subquery is a bit slower on small wikis, but much
+        //   faster on larger wikis.
+        //
+        // - Set a lower bound on `bt_range_start`, in addition to matching the actual target range.
+        //   See docs on `BLOCK_RANGE_PREFIX_LENGTH`.
         $start = $ip->ip->getEncoded(IPAddress::START);
         $end = $ip->ip->getEncoded(IPAddress::END);
+        $minRangeStart = $this->getMinPossibleBlockRangeStart($start);
         $result = $this->db->queryManyWikis(
             array_keys($wikis),
             '
@@ -425,9 +459,9 @@ class StalktoyEngine extends Base
                     bt_address IS NOT NULL
                     AND bt_range_end IS NOT NULL
                     AND bt_range_end >= ?/*start*/
-                    AND bt_range_start <= ?/*end*/
+                    AND bt_range_start BETWEEN ?/*minRangeStart*/ AND ?/*end*/
             ',
-            [$start, $end, $start, $end]
+            [$start, $end, $start, $minRangeStart, $end]
         );
         $this->failedWikis = $result->failedWikis;
 
@@ -507,6 +541,23 @@ class StalktoyEngine extends Base
     ##########
     ## Private methods
     ##########
+    /**
+     * Get the lowest possible `bt_range_start` value which starts a MediaWiki CIDR block containing
+     * the first IP of a searched IP address range.
+     *
+     * See docs on {@see BLOCK_RANGE_PREFIX_LENGTH}.
+     * 
+     * @param string $start The first address in the search range, in MediaWiki's pseudo-hexadecimal notation.
+     */
+    private function getMinPossibleBlockRangeStart(string $start): string
+    {
+        $prefixLength = self::BLOCK_RANGE_PREFIX_LENGTH;
+        if (str_starts_with($start, 'v6-'))
+            $prefixLength += 3; // include `v6-` prefix for IPv6 addresses
+
+        return str_pad(substr($start, 0, $prefixLength), strlen($start), '0');
+    }
+
     /**
      * Build a local account model from a DB row for a valid user.
      *
