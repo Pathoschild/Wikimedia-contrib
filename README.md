@@ -2,7 +2,6 @@
 
 ## For users
 ### Tools
-
 [Toolforge](https://toolforge.org/) is part of the Wikimedia Cloud infrastructure hosted by the Wikimedia Foundation for community-developed tools and bots. These tools provide analysis and data to support wiki editors and functionaries.
 
 * **[Account Eligibility](https://meta.toolforge.org/accounteligibility/)** analyzes a user account to determine whether it's eligible to vote in the specified event.
@@ -18,7 +17,6 @@
 * **[User Pages](https://meta.toolforge.org/userpages/)** finds your user pages on all wikis (or finds wikis where you don't have user pages).
 
 ### User scripts
-
 These user scripts extend the wiki interface seen by a user, and they're sometimes available to all users as gadgets (particularly TemplateScript). See _[Gadget kitchen](https://www.mediawiki.org/wiki/Gadget_kitchen)_ for an introduction to user scripts & gadgets.
 
 * **[ForceLTR](https://meta.wikimedia.org/wiki/Force_ltr)** enforces left-to-right layout and editing on right-to-left wikis. This resolves editing glitches in many browsers when one's preferred language is left-to-right, and corrects display when the interface language is not right-to-left.
@@ -54,6 +52,7 @@ To deploy from scratch:
    ## set up tool files
    git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
    mkdir cache
+   mkdir -p logs
    mkdir public_html
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta.conf .lighttpd.conf
    cd public_html
@@ -71,6 +70,9 @@ To deploy from scratch:
    ## launch server
    toolforge webservice php8.2 start
 
+   ## start scheduled jobs (e.g. log rotation)
+   toolforge jobs load ~/git/wikimedia-contrib/tool-labs/jobs.yaml
+
 
    ##########
    ## Set up meta2
@@ -82,6 +84,7 @@ To deploy from scratch:
    ## set up files
    git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
    mkdir cache
+   mkdir -p logs
    mkdir public_html
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta2.conf .lighttpd.conf
    cd public_html
@@ -92,6 +95,9 @@ To deploy from scratch:
 
    ## launch server
    toolforge webservice php8.2 start
+
+   ## start scheduled jobs (e.g. log rotation)
+   toolforge jobs load ~/git/wikimedia-contrib/tool-labs/jobs.yaml
 
 
    ##########
@@ -104,6 +110,7 @@ To deploy from scratch:
    ## set up files
    git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
    mkdir cache
+   mkdir -p logs
    mkdir public_html
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta3.conf .lighttpd.conf
    cd public_html
@@ -114,6 +121,9 @@ To deploy from scratch:
 
    ## launch server
    toolforge webservice php8.2 start
+
+   ## start scheduled jobs (e.g. log rotation)
+   toolforge jobs load ~/git/wikimedia-contrib/tool-labs/jobs.yaml
    ```
 
 That's it! The new tools should now be running at https://meta.toolforge.org. To update an account
@@ -121,5 +131,14 @@ later, just login and run these commands:
 
 ```sh
 git -C git/wikimedia-contrib pull
+toolforge jobs load ~/git/wikimedia-contrib/tool-labs/jobs.yaml # optional, only needed if jobs changed
 webservice restart
 ```
+
+### Web logs
+With the above setup, these logs are created automatically on each tool account:
+- `~/error.log` logs Lighttpd errors (enabled by default).
+- `~/logs/access.log` logs each incoming request via Lighttpd (configured via `~/.lighttpd.conf`).
+- `~/logs/rotate-logs.out` + `~/logs/rotate-logs.err` logs output from the log rotation job.
+
+The log files are rotated daily, with one week of backups in `~/logs`.
