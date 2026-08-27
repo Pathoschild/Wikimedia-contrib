@@ -244,7 +244,7 @@ if ($engine->username)
             ########
             ## Add links for manual verification
             ########
-            echo '<small>See also: <a href="', $backend->url('/stalktoy/' . urlencode($engine->username)), '" title="global account details">global account details</a></small>.';
+            echo '<small>See also: <a href="', $backend->url('/stalktoy/' . urlencode($engine->username)), '?defer=1" title="global account details">global account details</a></small>.';
         }
     }
     while (false); // do-while loop just lets us break early

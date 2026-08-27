@@ -15,6 +15,7 @@ if ($user)
     $user = $backend->formatUsername($user);
 $formUser = $backend->formatValue($user);
 $showAll = $backend->getBool('all') ?? false;
+$deferRun = !empty($user) && $backend->isDeferRequested();
 
 
 ##########
@@ -30,12 +31,19 @@ echo "
     </form>
     ";
 
-if ($user) {
+if ($deferRun) {
+    echo "
+        <div class='result-box'>
+            {$backend->getDeferredHtml("Analyze »")}
+        </div>
+    ";
+}
+else if ($user) {
     echo "
         <div class='result-box'>
             See also
-            <a href='", $backend->url('/stalktoy/' . urlencode($user)), "' title='Global account details'>global account details</a>, 
-            <a href='", $backend->url('/crossactivity/' . urlencode($user)), "' title='Crosswiki activity'>recent activity</a>,
+            <a href='", $backend->url('/stalktoy/' . urlencode($user)), "?defer=1' title='Global account details'>global account details</a>, 
+            <a href='", $backend->url('/crossactivity/' . urlencode($user)), "?defer=1' title='Crosswiki activity'>recent activity</a>,
             <a href='https://meta.wikimedia.org/?title=Special:CentralAuth/", urlencode($user), "' title='Special:CentralAuth'>Special:CentralAuth</a>.
             <hr />
             Filters: page is
@@ -55,7 +63,7 @@ if ($user) {
 ## Process data
 ##########
 do {
-    if (!$user)
+    if (!$user || $deferRun)
         break;
 
     ##########

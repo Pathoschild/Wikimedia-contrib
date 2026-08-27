@@ -180,6 +180,28 @@ class Backend extends Base
     }
 
     /**
+     * Get whether the request has a 'defer' marker, so it should prefill the form instead of
+     * accepting the submission directly.
+     *
+     * This is used to avoid automatically triggering submissions when web crawlers follow links
+     * between tools.
+     */
+    public function isDeferRequested(): bool
+    {
+        return $this->getBool('defer') ?? false;
+    }
+
+    /**
+     * Get an HTML box which asks the user to submit the form to run a deferred action.
+     *
+     * @param string $buttonLabel The label of the button which needs to be clicked.
+     */
+    public function getDeferredHtml(string $buttonLabel): string
+    {
+        return "<div class='neutral' data-is-deferred='1'>Click <em>{$this->formatValue($buttonLabel)}</em> above to show the results.</div>\n";
+    }
+
+    /**
      * Get the value of the route placeholder (e.g, 'Pathoschild' in '/stalktoy/Pathoschild').
      * @param int $index The index of the placeholder to get.
      * @param int $filter The filter to apply to the value (e.g. `FILTER_VALIDATE_INT`).

@@ -4,7 +4,7 @@ declare(strict_types=1);
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/IPAddress.php');
 require_once('../backend/modules/Form.php');
-$backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="/stalktoy/Pathoschild" title="view result for Pathoschild"><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="/stalktoy/127.0.0.1" title="view result for 127.0.0.1"><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="/stalktoy/2001:db8:1234::" title="view result for 2001:db8:1234::"><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="/stalktoy/212.75.0.1/16" title="view result for 212.75.0.1/16"><tt>212.75.0.1/16</tt></a> or <a href="/stalktoy/2600:3C00::/48" title="view result for 2600:3C00::/48"><tt>2600:3C00::/48</tt></a>).')
+$backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="/stalktoy/Pathoschild?defer=1" title="view result for Pathoschild"><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="/stalktoy/127.0.0.1?defer=1" title="view result for 127.0.0.1"><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="/stalktoy/2001:db8:1234::?defer=1" title="view result for 2001:db8:1234::"><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="/stalktoy/212.75.0.1/16?defer=1" title="view result for 212.75.0.1/16"><tt>212.75.0.1/16</tt></a> or <a href="/stalktoy/2600:3C00::/48?defer=1" title="view result for 2600:3C00::/48"><tt>2600:3C00::/48</tt></a>).')
     ->link('/stalktoy/stylesheet.css')
     ->link('/content/jquery.tablesorter.js')
     ->link('https://www.google.com/jsapi', 'js')
@@ -39,7 +39,8 @@ if (!$target) {
 }
 
 # initialise
-$engine = new StalktoyEngine($backend, $target);
+$deferRun = !empty($target) && $backend->isDeferRequested();
+$engine = new StalktoyEngine($backend, $deferRun ? null : $target);
 $engine->showAllWikis = $backend->getBool('show_all_wikis') ?? false;
 $engine->showDetached = $backend->getBool('show_detached') ?? false;
 $engine->showGroupsPerWiki = $backend->getBool('global_groups_per_wiki') ?? false;
@@ -51,8 +52,11 @@ $backend->profiler->stop('initialize');
 ## Input form
 #############################
 $targetForm = '';
-if ($engine->isValid())
+if ($deferRun)
+    $targetForm = $backend->formatValue($backend->formatUsername($target));
+else if ($engine->isValid())
     $targetForm = $backend->formatValue($engine->target);
+
 echo "
     <p>Who shall we stalk?</p>
     <form action='{$backend->url('/stalktoy/')}' method='get'>
@@ -69,6 +73,17 @@ echo "
         </div>
     </form>
     ";
+
+#############################
+## Deferred lookup
+#############################
+if ($deferRun) {
+    echo "
+        <div class='result-box'>
+            {$backend->getDeferredHtml("Analyze »")}
+        </div>
+    ";
+}
 
 #############################
 ## Process data (IP / CIDR)
@@ -188,7 +203,7 @@ if ($engine->isValid() && $ip->ip->isValid()) {
         <h4>See also</h4>
         <div>
             Related toys:
-            <a href='https://whois.toolforge.org/gateway.py?lookup=true&ip=", $ip->ip->getFriendly(), "' title='whois query'>whois</a>,
+            <a href='https://whois.toolforge.org/w/", $ip->ip->getFriendly(), "' title='whois query'>whois</a>,
             <a href='https://bullseye.toolforge.org/ip/", $ip->ip->getFriendly(), "' title='bullseye tool'>bullseye</a>,
             <a href='https://meta.wikimedia.org/wiki/Special:GlobalBlock?wpAddress={$engine->targetWikiUrl}' title='Special:GlobalBlock'>global block</a>.
         </div>
@@ -384,8 +399,8 @@ else if ($engine->isValid() && $engine->target) {
                 </tr>
             </table>
             See also
-            <a href='{$backend->url("/crossactivity/{$engine->targetUrl}")}' title='recent activity'>recent activity</a>,
-            <a href='{$backend->url("/userpages/{$engine->targetUrl}")}' title='user pages'>user pages</a>,
+            <a href='{$backend->url("/crossactivity/{$engine->targetUrl}")}?defer=1' title='recent activity'>recent activity</a>,
+            <a href='{$backend->url("/userpages/{$engine->targetUrl}")}?defer=1' title='user pages'>user pages</a>,
             <a href='https://meta.wikimedia.org/wiki/Special:CentralAuth/{$engine->targetWikiUrl}' title='Special:CentralAuth'>global user manager</a>.
             ";
     } else
