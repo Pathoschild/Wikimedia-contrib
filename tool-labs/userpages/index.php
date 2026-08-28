@@ -13,8 +13,8 @@ $backend = Backend::create('User pages', 'Find your user pages on all Wikimedia 
 $user = $backend->getString('user', allowBlank: false) ?? $backend->getRouteValue();
 if ($user)
     $user = $backend->formatUsername($user);
-$formUser = $backend->formatValue($user);
 $showAll = $backend->getBool('all') ?? false;
+$showDetached = $backend->getBool('show_detached') ?? false;
 $deferRun = !empty($user) && $backend->isDeferRequested();
 
 
@@ -25,8 +25,13 @@ echo "
     <form action='{$backend->url('/userpages')}' method='get'>
         <label for='user'>User name:</label>
         <input type='text' name='user' id='user' value='{$backend->formatValue($user)}' />", ($user == 'Shanel' ? '&hearts;' : ''), "<br />
+
+        <input type='checkbox' id='show_detached' name='show_detached' ", ($showDetached ? 'checked="checked" ' : ''), "/>
+        <label for='show_detached'>Include wikis not connected to the global account (slow)</label><br />
+
         <input type='checkbox' id='all' name='all' ", ($showAll ? 'checked="checked" ' : ''), "/>
-        <label for='all'>Show wikis with no user pages</label><br />
+        <label for='all'>Show 'no pages here' entries</label><br />
+
         <input type='submit' value='Analyze »' />
     </form>
     ";
@@ -67,21 +72,50 @@ do {
         break;
 
     ##########
-    ## Get list of wikis
+    ## Get wikis to check
     ##########
     $db = $backend->getDatabase();
-    $db->connect('metawiki');
+    if (!$db->connect('metawiki')) { // prints error on failure
+        echo '
+                <div class="error">Could not fetch the global account.</div>
+            </div>
+        ';
+        break;
+    }
+
     $wikis = $db->getWikis();
+    $searchWikis = $wikis;
+
+    if (!$showDetached) {
+        $unifiedWikis = $db->getUnifiedWikis($user); // prints errors on failure
+        if ($unifiedWikis === null) {
+            echo '
+                    <div class="error">Could not fetch the global account\'s unified wikis.</div>
+                </div>
+            ';
+            break;
+        }
+
+        $searchWikis = array_intersect_key($wikis, array_flip($unifiedWikis));
+        if (!$searchWikis) {
+            echo "
+                    <div class='neutral'>
+                        There is no global account with this name, or it has been <a href='https://meta.wikimedia.org/wiki/Oversight' title='about hiding user names'>globally hidden</a>.<br />
+                        You can <a href='{$backend->url('/userpages/' . urlencode($user))}?show_detached=1&amp;defer=1'>search all wikis</a> if needed.
+                    </div>
+                </div>
+            ";
+            break;
+        }
+    }
 
 
     ##########
     ## Output data
     ##########
     $any = false;
-    foreach ($wikis as $wiki) {
-        $dbname = $wiki->dbName;
+    foreach ($searchWikis as $dbname => $wiki) {
         $domain = $wiki->domain;
-        $family = $wiki->family;
 
         /* get data */
         $db->connect($dbname);
@@ -124,7 +158,12 @@ do {
     }
 
     if (!$any)
-        echo '<em>No user pages on any Wikimedia wikis.</em>';
+        echo '<em>No user pages found.</em>';
+
+    if (!$showDetached)
+        echo "<p><small>Only wikis connected to the global account were searched. You can <a href='{$backend->url('/userpages/' . urlencode($user))}?show_detached=1&amp;defer=1'>search all wikis</a> if needed.</small></p>";
+
+    echo '</div>';
 } while (0);
 
 $backend->footer();
