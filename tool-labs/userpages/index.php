@@ -111,16 +111,54 @@ do {
 
 
     ##########
+    ## Fetch pages
+    ##########
+    $sqlUser = str_replace(' ', '_', $user);
+    $result = $db->queryManyWikis(
+        array_keys($searchWikis),
+        '
+            SELECT
+                {dbname} AS wiki,
+                page_namespace,
+                page_title,
+                page_is_redirect,
+                page_touched,
+                page_len
+            FROM {db}.page
+            WHERE
+                page_namespace IN (2, 3)
+                AND (page_title = ? OR page_title LIKE CONCAT(?, "/%"))
+        ',
+        [$sqlUser, $sqlUser]
+    );
+
+    $pagesByWiki = [];
+    foreach ($result->rows as $row)
+        $pagesByWiki[$row['wiki']][] = $row;
+
+
+    ##########
     ## Output data
     ##########
+    if ($result->failedWikis) {
+        $count = count($result->failedWikis);
+        if ($count <= 10) {
+            $domains = [];
+            foreach ($result->failedWikis as $dbname)
+                $domains[] = $backend->formatValue($searchWikis[$dbname]->domain ?? $dbname);
+            $detail = implode(', ', $domains);
+        }
+        else
+            $detail = "$count of " . count($searchWikis);
+
+        echo "<div class='error'><strong>Warning:</strong> couldn't query some wikis ($detail), so the results below may be incomplete.</div>\n";
+    }
+
     $any = false;
     foreach ($searchWikis as $dbname => $wiki) {
-        $domain = $wiki->domain;
-
         /* get data */
-        $db->connect($dbname);
-        $sqlUser = str_replace(' ', '_', $user);
-        $pages = $db->query('SELECT page_namespace, page_title, page_is_redirect, page_touched, page_len FROM page WHERE page_namespace IN (2,3) AND (page_title = ? OR page_title LIKE CONCAT(?, "/%"))', [$sqlUser, $sqlUser])->fetchAllAssoc();
+        $domain = $wiki->domain;
+        $pages = $pagesByWiki[$dbname] ?? [];
         if (!$pages && !$showAll)
             continue;
 
@@ -158,7 +196,7 @@ do {
     }
 
     if (!$any)
-        echo '<em>No user pages found.</em>';
+        echo '<p><em>No user pages found.</em></p>';
 
     if (!$showDetached)
         echo "<p><small>Only wikis connected to the global account were searched. You can <a href='{$backend->url('/userpages/' . urlencode($user))}?show_detached=1&amp;defer=1'>search all wikis</a> if needed.</small></p>";
