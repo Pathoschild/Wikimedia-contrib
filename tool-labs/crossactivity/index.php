@@ -96,8 +96,57 @@ do {
     }
 
     ##########
-    ## Fetch results & render
+    ## Fetch activity
     ##########
+    $result = $db->queryManyWikis(
+        array_keys($searchWikis),
+        '
+            SELECT
+                {dbname} AS wiki,
+                (
+                    SELECT GROUP_CONCAT(ug_group ORDER BY ug_group SEPARATOR ", ")
+                    FROM {db}.user_groups
+                    WHERE ug_user = actor_user
+                ) AS user_groups,
+                (
+                    SELECT DATE_FORMAT(MAX(rev_timestamp), "%Y-%m-%d %H:%i")
+                    FROM {db}.revision_userindex
+                    WHERE rev_actor = actor_id
+                ) AS last_edit,
+                (
+                    SELECT DATE_FORMAT(MAX(log_timestamp), "%Y-%m-%d %H:%i")
+                    FROM {db}.logging_userindex
+                    WHERE log_actor = actor_id
+                ) AS last_log_action
+            FROM {db}.actor
+            WHERE
+                actor_name = ?
+                AND actor_user IS NOT NULL
+        ',
+        [$user]
+    );
+
+    $rowsByWiki = [];
+    foreach ($result->rows as $row)
+        $rowsByWiki[$row['wiki']] = $row;
+
+    ##########
+    ## Render
+    ##########
+    if ($result->failedWikis) {
+        $count = count($result->failedWikis);
+        if ($count <= 10) {
+            $domains = [];
+            foreach ($result->failedWikis as $dbname)
+                $domains[] = $backend->formatValue($searchWikis[$dbname]->domain ?? $dbname);
+            $detail = implode(', ', $domains);
+        }
+        else
+            $detail = "$count of " . count($searchWikis);
+
+        echo "<div class='error'><strong>Warning:</strong> couldn't query some wikis ($detail), so the results below may be incomplete.</div>\n";
+    }
+
     echo '<table class="pretty sortable" id="activity-table">
         <thead>
             <tr>
@@ -111,33 +160,30 @@ do {
         <tbody>';
 
     foreach ($searchWikis as $dbname => $wiki) {
-        $domain = $wiki->domain;
-        $family = $wiki->family;
+        # get row if user exists
+        $row = $rowsByWiki[$dbname] ?? null;
+        if (!$row)
+            continue;
 
-        /* get data */
-        $db->connect($dbname);
-        $actor = $db->query('SELECT actor_id, actor_user FROM actor WHERE actor_name = ? LIMIT 1', [$user])->fetchAssoc();
-        if (isset($actor['actor_user'])) {
-            $actorID = $actor['actor_id'];
-            $userID = $actor['actor_user'];
+        # read data
+        $lastEdit = $row['last_edit'];
+        $lastLogAction = $row['last_log_action'];
+        $groups = $row['user_groups'];
 
-            $groups = $db->query('SELECT GROUP_CONCAT(ug_group SEPARATOR ", ") FROM user_groups WHERE ug_user = ?', [$userID])->fetchValue();
-            $lastEdit = $db->query('SELECT DATE_FORMAT(MAX(rev_timestamp), "%Y-%m-%d %H:%i") FROM revision_userindex WHERE rev_actor = ?', [$actorID])->fetchValue();
-            $lastLogAction = $db->query('SELECT DATE_FORMAT(MAX(log_timestamp), "%Y-%m-%d %H:%i") FROM logging_userindex WHERE log_actor = ?', [$actorID])->fetchValue();
+        # skip if no activity to show
+        if (!$showAll && empty($lastEdit) && empty($lastLogAction))
+            continue;
 
-            if ($showAll || !empty($lastEdit) || !empty($lastLogAction)) {
-                echo "
-                    <tr>
-                        <td>$family</td>
-                        <td>", $engine->getLinkHtml($domain, 'User:' . $user), "</td>",
-                        $engine->getColoredCellHtml($lastEdit),
-                        $engine->getColoredCellHtml($lastLogAction),
-                        $engine->getGroupCellHtml($groups), "
-                    </tr>
-                    ";
-            }
-        }
-        $db->dispose();
+        # render row
+        echo "
+            <tr>
+                <td>{$wiki->family}</td>
+                <td>", $engine->getLinkHtml($wiki->domain, 'User:' . $user), "</td>",
+                $engine->getColoredCellHtml($lastEdit),
+                $engine->getColoredCellHtml($lastLogAction),
+                $engine->getGroupCellHtml($groups), "
+            </tr>
+        ";
     }
 
     echo "
