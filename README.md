@@ -68,7 +68,7 @@ To deploy from scratch:
    ln -s ~/git/wikimedia-contrib/user-scripts scripts
 
    ## launch server
-   toolforge webservice php8.2 start
+   toolforge webservice php8.2 start --cpu 2 --mem 2Gi
 
    ## start scheduled jobs (e.g. log rotation)
    toolforge jobs load ~/git/wikimedia-contrib/tool-labs/jobs.yaml
@@ -94,7 +94,7 @@ To deploy from scratch:
    done
 
    ## launch server
-   toolforge webservice php8.2 start
+   toolforge webservice php8.2 start --cpu 2 --mem 2Gi
 
    ## start scheduled jobs (e.g. log rotation)
    toolforge jobs load ~/git/wikimedia-contrib/tool-labs/jobs.yaml
@@ -120,7 +120,7 @@ To deploy from scratch:
    done
 
    ## launch server
-   toolforge webservice php8.2 start
+   toolforge webservice php8.2 start --cpu 2 --mem 2Gi
 
    ## start scheduled jobs (e.g. log rotation)
    toolforge jobs load ~/git/wikimedia-contrib/tool-labs/jobs.yaml
