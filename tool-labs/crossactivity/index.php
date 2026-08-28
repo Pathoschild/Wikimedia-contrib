@@ -24,7 +24,6 @@ $engine = new CrossactivityEngine();
 $user = $backend->getString('user') ?? $backend->getRouteValue();
 if ($user !== null)
     $user = $backend->formatUsername($user);
-$userForm = $backend->formatValue($user);
 $showAll = $backend->getBool('show_all') ?? false;
 $deferRun = !empty($user) && $backend->isDeferRequested();
 
@@ -58,23 +57,47 @@ else if (!empty($user)) {
         ";
 }
 
-/***************
- * Get & process data
- ***************/
+##########
+## Fetch & process data
+##########
 do {
     if (!$user || $deferRun)
         break;
 
-    /***************
-     * Get list of wikis
-     ***************/
+    ##########
+    ## Fetch wikis
+    ##########
     $db = $backend->getDatabase();
-    $db->connect('metawiki');
-    $wikis = $db->getWikis();
+    if (!$db->connect('metawiki')) { // prints error on failure
+        echo '
+                <div class="error">Could not fetch the global account.</div>
+            </div>
+        ';
+        break;
+    }
 
-    /***************
-     * Get data and Output
-     ***************/
+    $wikis = $db->getWikis();
+    $unifiedWikis = $db->getUnifiedWikis($user); // prints errors on failure
+    if ($unifiedWikis === null) {
+        echo '
+                <div class="error">Could not fetch the global account\'s unified wikis.</div>
+            </div>
+        ';
+        break;
+    }
+
+    $searchWikis = array_intersect_key($wikis, array_flip($unifiedWikis));
+    if (!$searchWikis) {
+        echo '
+                <div class="neutral">There is no global account with this name, or it has been <a href="https://meta.wikimedia.org/wiki/Oversight" title="about hiding user names">globally hidden</a>.</div>
+            </div>
+        ';
+        break;
+    }
+
+    ##########
+    ## Fetch results & render
+    ##########
     echo '<table class="pretty sortable" id="activity-table">
         <thead>
             <tr>
@@ -87,8 +110,7 @@ do {
         </thead>
         <tbody>';
 
-    foreach ($wikis as $wiki) {
-        $dbname = $wiki->dbName;
+    foreach ($searchWikis as $dbname => $wiki) {
         $domain = $wiki->domain;
         $family = $wiki->family;
 
@@ -117,11 +139,13 @@ do {
         }
         $db->dispose();
     }
+
     echo "
                 </tbody>
             </table>
+            <small>Only wikis linked to the global account are checked. You can <a href='{$backend->url('/stalktoy/' . urlencode($user))}?show_detached=1&amp;defer=1'>check for detached wikis</a> if needed.</small>
         </div>
-        ";
+    ";
 } while (0);
 
 $backend->footer();
