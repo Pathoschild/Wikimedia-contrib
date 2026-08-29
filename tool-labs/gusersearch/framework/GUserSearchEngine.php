@@ -228,15 +228,18 @@ class GUserSearchEngine extends Base
     }
 
     /**
-     * Prepare the SQL filters for execution and return the generated SQL where clause.
+     * Apply the selected filters now, appending to {@see GUserSearchEngine::$values} and returning the condition SQL to
+     * add to the query. If there are no filters, this does nothing and returns an empty string.
+     *
      * @param string $table The table whose filters to prepare.
+     * @param string $prefix The SQL keyword to prefix to any conditions returned (e.g. `WHERE` or `AND`).
      */
-    protected function prepareFilters(string $table): string
+    protected function applyFilters(string $table, string $prefix = 'WHERE'): string
     {
         if (!isset($this->filters[$table]) || !count($this->filters[$table]))
             return "";
 
-        $output = "WHERE ";
+        $output = "{$prefix} ";
         foreach ($this->filters[$table] as $field => $opts) {
             $output .= "{$field} {$opts[0]} ? AND ";
             array_push($this->values, $opts[1]);
@@ -281,21 +284,23 @@ class GUserSearchEngine extends Base
         $globalUsers = self::T_GLOBALUSER;
         $globalGroups = self::T_GLOBALGROUPS;
         $this->query .= "
-            SELECT t_user.*, t_groups.gu_groups
-            FROM (
-                SELECT gu_id, gu_name, DATE_FORMAT(gu_registration, '%Y-%b-%d %H:%i') AS gu_registration, gu_locked
-                FROM centralauth_p.{$globalUsers}
-                " . $this->prepareFilters($globalUsers) . "
-                ORDER BY gu_id DESC
-                LIMIT {$this->limit}
-                OFFSET {$this->offset}
-            ) AS t_user
-            LEFT JOIN (
-                SELECT gug_user, GROUP_CONCAT(gug_group SEPARATOR ', ') AS gu_groups
-                FROM centralauth_p.{$globalGroups}
-                GROUP BY gug_user
-                " . $this->prepareFilters($globalGroups) . "
-            ) AS t_groups ON gu_id = gug_user
+            SELECT
+                gu_id,
+                gu_name,
+                DATE_FORMAT(gu_registration, '%Y-%b-%d %H:%i') AS gu_registration,
+                gu_locked,
+                (
+                    SELECT GROUP_CONCAT(gug_group ORDER BY gug_group SEPARATOR ', ')
+                    FROM centralauth_p.{$globalGroups}
+                    WHERE
+                        gug_user = gu_id
+                        " . $this->applyFilters($globalGroups, 'AND') . "
+                ) AS gu_groups
+            FROM centralauth_p.{$globalUsers}
+            " . $this->applyFilters($globalUsers) . "
+            ORDER BY gu_id DESC
+            LIMIT {$this->limit}
+            OFFSET {$this->offset}
             ";
         $profiler->stop('build search query');
 
