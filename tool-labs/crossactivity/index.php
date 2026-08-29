@@ -6,6 +6,7 @@ require_once('framework/CrossactivityEngine.php');
 $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.')
     ->link('/content/dataTables/jquery.dataTables.min.js')
     ->link('/content/dataTables/jquery.dataTables.plain.css')
+    ->link('/content/undefer.js')
     ->addScript('
         $(function() {
             $("#activity-table").dataTable({
@@ -51,8 +52,8 @@ else if (!empty($user)) {
     echo "
         <div class='result-box'>
             See also
-            <a href='{$backend->url('/stalktoy/' . urlencode($user))}?defer=1' title='Global account details'>global account details</a>, 
-            <a href='{$backend->url('/userpages/' . urlencode($user))}?defer=1' title='User pages'>user pages</a>,
+            <a href='{$backend->url('/stalktoy/' . urlencode($user))}?defer=1' title='Global account details' data-undefer>global account details</a>, 
+            <a href='{$backend->url('/userpages/' . urlencode($user))}?defer=1' title='User pages' data-undefer>user pages</a>,
             <a href='https://meta.wikimedia.org/?title=Special:CentralAuth/", urlencode($user), "' title='Special:CentralAuth'>Special:CentralAuth</a>.
         ";
 }
@@ -189,7 +190,7 @@ do {
     echo "
                 </tbody>
             </table>
-            <small>Only wikis linked to the global account are checked. You can <a href='{$backend->url('/stalktoy/' . urlencode($user))}?show_detached=1&amp;defer=1'>check for detached wikis</a> if needed.</small>
+            <small>Only wikis linked to the global account are checked. You can <a href='{$backend->url('/stalktoy/' . urlencode($user))}?show_detached=1&amp;defer=1' data-undefer>check for detached wikis</a> if needed.</small>
         </div>
     ";
 } while (0);

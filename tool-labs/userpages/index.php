@@ -5,6 +5,7 @@ require_once('../backend/modules/Backend.php');
 $backend = Backend::create('User pages', 'Find your user pages on all Wikimedia wikis.')
     ->link('/userpages/scripts.js')
     ->link('/userpages/stylesheet.css')
+    ->link('/content/undefer.js')
     ->header();
 
 ##########
@@ -47,8 +48,8 @@ else if ($user) {
     echo "
         <div class='result-box'>
             See also
-            <a href='", $backend->url('/stalktoy/' . urlencode($user)), "?defer=1' title='Global account details'>global account details</a>, 
-            <a href='", $backend->url('/crossactivity/' . urlencode($user)), "?defer=1' title='Crosswiki activity'>recent activity</a>,
+            <a href='", $backend->url('/stalktoy/' . urlencode($user)), "?defer=1' title='Global account details' data-undefer>global account details</a>, 
+            <a href='", $backend->url('/crossactivity/' . urlencode($user)), "?defer=1' title='Crosswiki activity' data-undefer>recent activity</a>,
             <a href='https://meta.wikimedia.org/?title=Special:CentralAuth/", urlencode($user), "' title='Special:CentralAuth'>Special:CentralAuth</a>.
             <hr />
             Filters: page is
@@ -101,7 +102,7 @@ do {
             echo "
                     <div class='neutral'>
                         There is no global account with this name, or it has been <a href='https://meta.wikimedia.org/wiki/Oversight' title='about hiding user names'>globally hidden</a>.<br />
-                        You can <a href='{$backend->url('/userpages/' . urlencode($user))}?show_detached=1&amp;defer=1'>search all wikis</a> if needed.
+                        You can <a href='{$backend->url('/userpages/' . urlencode($user))}?show_detached=1&amp;defer=1' data-undefer>search all wikis</a> if needed.
                     </div>
                 </div>
             ";
@@ -199,7 +200,7 @@ do {
         echo '<p><em>No user pages found.</em></p>';
 
     if (!$showDetached)
-        echo "<p><small>Only wikis connected to the global account were searched. You can <a href='{$backend->url('/userpages/' . urlencode($user))}?show_detached=1&amp;defer=1'>search all wikis</a> if needed.</small></p>";
+        echo "<p><small>Only wikis connected to the global account were searched. You can <a href='{$backend->url('/userpages/' . urlencode($user))}?show_detached=1&amp;defer=1' data-undefer>search all wikis</a> if needed.</small></p>";
 
     echo '</div>';
 } while (0);

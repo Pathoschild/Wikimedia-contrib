@@ -7,6 +7,7 @@ require_once('framework/GUserSearchEngine.php');
 $backend = Backend::create('gUser search', 'Provides searching and filtering of global users on Wikimedia wikis.')
     ->link('/gusersearch/stylesheet.css')
     ->link('/gusersearch/javascript.js')
+    ->link('/content/undefer.js')
     ->header();
 
 #############################
@@ -20,6 +21,7 @@ $name = $backend->getString('name') ?? $backend->getRouteValue();
 $useRegex = $backend->getBool('regex') ?? false;
 $showLocked = $backend->getBool('show_locked') ?? false;
 $caseInsensitive = $backend->getBool('icase') ?? false;
+$deferRun = !empty($name) && $backend->isDeferRequested();
 
 /* add user name filter */
 if ($name != null) {
@@ -99,6 +101,13 @@ echo "
 ## Perform search
 #############################
 $backend->profiler->stop('initialize');
+
+if ($deferRun) {
+    echo $backend->getDeferredHtml("Search »");
+    $backend->footer();
+    return;
+}
+
 $engine->query();
 $backend->profiler->start('output');
 $count = $engine->db->countRows();

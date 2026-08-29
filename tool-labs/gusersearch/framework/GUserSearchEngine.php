@@ -206,17 +206,17 @@ class GUserSearchEngine extends Base
         $link = "<a href='?name=" . urlencode($this->name);
 
         if ($limit != self::DEFAULT_LIMIT)
-            $link .= "&limit={$limit}";
+            $link .= "&amp;limit={$limit}";
         if ($offset > 0)
-            $link .= "&offset={$offset}";
+            $link .= "&amp;offset={$offset}";
         if ($this->useRegex)
-            $link .= "&regex=1";
+            $link .= "&amp;regex=1";
         if ($this->showLocked)
-            $link .= "&show_locked=1";
+            $link .= "&amp;show_locked=1";
         if ($this->caseInsensitive)
-            $link .= "&icase=1";
+            $link .= "&amp;icase=1";
 
-        $link .= "' title='{$label}'>{$label}</a>";
+        $link .= "&amp;defer=1' title='{$label}' data-undefer>{$label}</a>";
 
         return $link;
     }

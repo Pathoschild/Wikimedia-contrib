@@ -4,11 +4,12 @@ declare(strict_types=1);
 require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/IPAddress.php');
 require_once('../backend/modules/Form.php');
-$backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="/stalktoy/Pathoschild?defer=1" title="view result for Pathoschild"><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="/stalktoy/127.0.0.1?defer=1" title="view result for 127.0.0.1"><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="/stalktoy/2001:db8:1234::?defer=1" title="view result for 2001:db8:1234::"><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="/stalktoy/212.75.0.1/16?defer=1" title="view result for 212.75.0.1/16"><tt>212.75.0.1/16</tt></a> or <a href="/stalktoy/2600:3C00::/48?defer=1" title="view result for 2600:3C00::/48"><tt>2600:3C00::/48</tt></a>).')
+$backend = Backend::create('Stalk toy', 'View global details about a user across all Wikimedia wikis. You can provide an account name (like <a href="/stalktoy/Pathoschild?defer=1" title="view result for Pathoschild" data-undefer><tt>Pathoschild</tt></a>), an IPv4 address (like <a href="/stalktoy/127.0.0.1?defer=1" title="view result for 127.0.0.1" data-undefer><tt>127.0.0.1</tt></a>), an IPv6 address (like <a href="/stalktoy/2001:db8:1234::?defer=1" title="view result for 2001:db8:1234::" data-undefer><tt>2001:db8:1234::</tt></a>), or a CIDR block (like <a href="/stalktoy/212.75.0.1/16?defer=1" title="view result for 212.75.0.1/16" data-undefer><tt>212.75.0.1/16</tt></a> or <a href="/stalktoy/2600:3C00::/48?defer=1" title="view result for 2600:3C00::/48" data-undefer><tt>2600:3C00::/48</tt></a>).')
     ->link('/stalktoy/stylesheet.css')
     ->link('/content/jquery.tablesorter.js')
     ->link('https://www.google.com/jsapi', 'js')
     ->link('/stalktoy/scripts.js')
+    ->link('/content/undefer.js')
     ->header();
 
 spl_autoload_register(function ($className) {
@@ -399,8 +400,8 @@ else if ($engine->isValid() && $engine->target) {
                 </tr>
             </table>
             See also
-            <a href='{$backend->url("/crossactivity/{$engine->targetUrl}")}?defer=1' title='recent activity'>recent activity</a>,
-            <a href='{$backend->url("/userpages/{$engine->targetUrl}")}?defer=1' title='user pages'>user pages</a>,
+            <a href='{$backend->url("/crossactivity/{$engine->targetUrl}")}?defer=1' title='recent activity' data-undefer>recent activity</a>,
+            <a href='{$backend->url("/userpages/{$engine->targetUrl}")}?defer=1' title='user pages' data-undefer>user pages</a>,
             <a href='https://meta.wikimedia.org/wiki/Special:CentralAuth/{$engine->targetWikiUrl}' title='Special:CentralAuth'>global user manager</a>.
             ";
     } else

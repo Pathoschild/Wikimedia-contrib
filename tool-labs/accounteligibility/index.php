@@ -14,6 +14,7 @@ spl_autoload_register(function ($className) {
 $backend = Backend::create('AccountEligibility', 'Analyzes a given user account to determine whether it\'s eligible to vote in the specified event.')
     ->link('/accounteligibility/stylesheet.css')
     ->link('/content/jquery.tablesorter.js')
+    ->link('/content/undefer.js')
     ->addScript('$(document).ready(function() { $("#local-accounts").tablesorter({sortList:[[1,1]]}); });')
     ->header();
 
@@ -244,7 +245,7 @@ if ($engine->username)
             ########
             ## Add links for manual verification
             ########
-            echo '<small>See also: <a href="', $backend->url('/stalktoy/' . urlencode($engine->username)), '?defer=1" title="global account details">global account details</a></small>.';
+            echo '<small>See also: <a href="', $backend->url('/stalktoy/' . urlencode($engine->username)), '?defer=1" title="global account details" data-undefer>global account details</a></small>.';
         }
     }
     while (false); // do-while loop just lets us break early
