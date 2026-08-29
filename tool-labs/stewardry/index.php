@@ -5,6 +5,7 @@ require_once('../backend/modules/Backend.php');
 require_once('framework/StewardryEngine.php');
 $backend = Backend::Create('Stewardry', 'Estimates which users in a group are available based on their last edit or action.')
     ->link('/content/jquery.tablesorter.js')
+    ->link('/content/undefer.js')
     ->link('/stewardry/scripts.js')
     ->header();
 
@@ -117,7 +118,7 @@ do {
             $domain = $engine->wiki->domain;
 
             echo "<tr>",
-            "<td><a href='https://$domain/wiki/User:$urlName' title='$urlName&#39;s user page'>{$backend->formatText($name)}</a> <small>[<a href='", $backend->url('/crossactivity/' . $urlName), "' title='scan this user&#39;s activity on all wikis'>all wikis</a>]</small></td>",
+            "<td><a href='https://$domain/wiki/User:$urlName' title='$urlName&#39;s user page'>{$backend->formatText($name)}</a> <small>[<a href='", $backend->url('/crossactivity/' . $urlName), "?defer=1' title='scan this user&#39;s activity on all wikis' data-undefer>all wikis</a>]</small></td>",
             $engine->getDateCellHtml($lastEdit),
             ($showLog ? $engine->getDateCellHtml($lastLog) : ''),
             "</tr>";
