@@ -13,7 +13,6 @@ $backend = Backend::create('gUser search', 'Provides searching and filtering of 
 ## Instantiate script engine
 #############################
 $engine = new GUserSearchEngine($backend);
-$engine->minDate = $backend->getString('date');
 $backend->profiler->start('initialize');
 
 /* get arguments */
@@ -27,26 +26,21 @@ if ($name != null) {
     $engine->name = $name;
     $operator = ($useRegex ? GUserSearchEngine::OP_REGEXP : GUserSearchEngine::OP_LIKE);
 
+    $searchField = 'gu_name';
+    $searchValue = $name;
     if ($caseInsensitive) {
-        $engine->filter(GUserSearchEngine::T_GLOBALUSER, 'UPPER(CONVERT(gu_name USING utf8))', $operator, strtoupper($name));
-        $engine->filter(GUserSearchEngine::T_LOCALWIKIS, 'UPPER(CONVERT(lu_name USING utf8))', $operator, strtoupper($name));
-        $engine->describeFilter("username {$operator} {$name}");
-    } else {
-        $engine->filter(GUserSearchEngine::T_GLOBALUSER, 'gu_name', $operator, $name);
-        $engine->filter(GUserSearchEngine::T_LOCALWIKIS, 'lu_name', $operator, $name);
-        $engine->describeFilter("username {$operator} {$name}");
+        $searchField = "UPPER(CONVERT($searchField USING utf8))";
+        $searchValue = strtoupper($searchValue);
     }
+
+    $engine->filter(GUserSearchEngine::T_GLOBALUSER, $searchField, $operator, $searchValue);
+    $engine->describeFilter("username {$operator} {$name}");
 }
 
 /* add lock status filter */
 if (!$showLocked) {
     $engine->filter(GUserSearchEngine::T_GLOBALUSER, 'gu_locked', GUserSearchEngine::OP_NOT_EQUAL, '1');
     $engine->describeFilter("NOT locked");
-}
-
-/* add date filter */
-if ($engine->minDate) {
-    $engine->describeFilter("registered after {$engine->minDate}");
 }
 
 /* set limit */
@@ -68,7 +62,7 @@ $engine->caseInsensitive = $caseInsensitive;
 #############################
 ## Input form
 #############################
-$formUser = $backend->formatValue(isset($name) ? $name : '');
+$formUser = $backend->formatValue($name ?? '');
 
 echo "
     <form action='{$backend->url('/gusersearch')}' method='get'>

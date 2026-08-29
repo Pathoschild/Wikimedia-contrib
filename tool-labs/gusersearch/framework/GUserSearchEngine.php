@@ -11,7 +11,6 @@ class GUserSearchEngine extends Base
     ##########
     const T_GLOBALUSER = 'globaluser';
     const T_GLOBALGROUPS = 'global_user_groups';
-    const T_LOCALWIKIS = 'localuser';
     const OP_REGEXP = 'REGEXP';
     const OP_LIKE = 'LIKE';
     const OP_EQUAL = '=';
@@ -51,11 +50,6 @@ class GUserSearchEngine extends Base
      * Whether the search is case-insensitive. (Only used for pagination.)
      */
     public bool $caseInsensitive;
-
-    /**
-     * The earliest registration date for which to show users.
-     */
-    public ?string $minDate;
 
     /**
      * The SQL filters to apply, as a `table name => [operator, value]` lookup.
@@ -123,7 +117,7 @@ class GUserSearchEngine extends Base
 
     /**
      * Add an SQL filter to apply to the results.
-     * @param string $table The SQL table to filter (one of {@see GUserSearchGUserSearchEngine::T_GLOBALUSER}, {@see GUserSearchEngine::T_GLOBALGROUPS}, or {@see GUserSearchEngine::T_LOCALWIKIS}).
+     * @param string $table The SQL table to filter (one of {@see GUserSearchEngine::T_GLOBALUSER} or {@see GUserSearchEngine::T_GLOBALGROUPS}).
      * @param string $field The SQL field to filter.
      * @param string $operator The SQL comparison operator (one of {@see GUserSearchEngine::OP_REGEXP}, {@see GUserSearchEngine::OP_LIKE}, {@see GUserSearchEngine::OP_EQUAL}, or {@see GUserSearchEngine::OP_NOT_EQUAL}).
      * @param string $value The value to compare against.
@@ -262,20 +256,6 @@ class GUserSearchEngine extends Base
         $profiler->start('prepare database connections');
         $db->connect('metawiki');
         $profiler->stop('prepare database connections');
-
-        ##########
-        ## Set date limit (will minimize scan for long queries, but slow down fast queries)
-        ##########
-        if ($this->minDate) {
-            $profiler->start('calculate range for date filter');
-
-            $minId = $db->query('SELECT gu_id FROM centralauth_p.globaluser WHERE gu_registration < ? ORDER BY gu_id DESC LIMIT 1', [$this->minDate])->fetchValue();
-            if ($minId) {
-                $this->filter(GUserSearchEngine::T_GLOBALUSER, 'gu_registration', '>', $minId);
-            }
-
-            $profiler->stop('calculate range for date filter');
-        }
 
         ##########
         ## Build query
