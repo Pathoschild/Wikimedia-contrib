@@ -89,7 +89,7 @@ $backend->header();
 
 /* input form */
 echo "
-    <form action='{$backend->url('/magicredirect')}' method='get'>
+    <form action='/magicredirect' method='get'>
         <input id='url' name='url' type='text' value='{$backend->formatValue($url)}'/>
         <label for='url'>URL</label><br/>
 
@@ -125,7 +125,7 @@ if ($error || $target) {
         echo $error;
     else if ($target) {
         /* build URL */
-        $magicUrl = $backend->url('/magicredirect/?redirect=1');
+        $magicUrl = '/magicredirect/?redirect=1';
         if ($user)
             $magicUrl .= '&user=' . urlencode($user);
         if ($wiki)

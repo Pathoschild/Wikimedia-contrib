@@ -234,8 +234,7 @@ class AccountEligibilityEngine extends Base
             $unifiedDbnames = $this->db->getUnifiedWikis($this->username);
             if (!$unifiedDbnames) {
                 $this->selectManually = true;
-                $encoded = urlencode($this->username);
-                echo '<div id="result" class="neutral" data-is-error="1">', $this->formatText($this->username), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="', $this->backend->url('/stalktoy/' . $encoded), '?defer=1" title="global details about this user" data-undefer>global details about this user</a>).</div>';
+                echo '<div id="result" class="neutral" data-is-error="1">', $this->formatText($this->username), ' has no global account, so we cannot auto-select an eligible wiki. Please select a wiki (see <a href="', $this->backend->getToolUrl('stalktoy', $this->username), '?defer=1" title="global details about this user" data-undefer>global details about this user</a>).</div>';
                 return false;
             }
             $this->profiler->stop('init wiki queue: fetch unified wikis');

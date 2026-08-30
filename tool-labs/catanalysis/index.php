@@ -61,7 +61,7 @@ $db = $backend->getDatabase();
 ## Input form
 ##########
 ?>
-    <form action="<?= $backend->url('/catanalysis') ?>" method="get">
+    <form action="/catanalysis" method="get">
         <fieldset>
             <p>Enter a category name to analyse members of, or a prefix to analyze subpages of (see <a
                         href="index.php?title=Wp/kab&cat=0&db=incubatorwiki" title="example">prefix</a> and <a

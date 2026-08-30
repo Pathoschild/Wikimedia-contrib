@@ -23,7 +23,7 @@ $deferRun = !empty($user) && $backend->isDeferRequested();
 ## Render form
 ##########
 echo "
-    <form action='{$backend->url('/userpages')}' method='get'>
+    <form action='/userpages' method='get'>
         <label for='user'>User name:</label>
         <input type='text' name='user' id='user' value='{$backend->formatValue($user)}' />", ($user == 'Shanel' ? '&hearts;' : ''), "<br />
 
@@ -48,8 +48,8 @@ else if ($user) {
     echo "
         <div class='result-box'>
             See also
-            <a href='", $backend->url('/stalktoy/' . urlencode($user)), "?defer=1' title='Global account details' data-undefer>global account details</a>, 
-            <a href='", $backend->url('/crossactivity/' . urlencode($user)), "?defer=1' title='Crosswiki activity' data-undefer>recent activity</a>,
+            <a href='", $backend->getToolUrl('stalktoy', $user), "?defer=1' title='Global account details' data-undefer>global account details</a>,
+            <a href='", $backend->getToolUrl('crossactivity', $user), "?defer=1' title='Crosswiki activity' data-undefer>recent activity</a>,
             <a href='https://meta.wikimedia.org/?title=Special:CentralAuth/", urlencode($user), "' title='Special:CentralAuth'>Special:CentralAuth</a>.
             <hr />
             Filters: page is
@@ -99,10 +99,11 @@ do {
 
         $searchWikis = array_intersect_key($wikis, array_flip($unifiedWikis));
         if (!$searchWikis) {
+            $searchUrl = '/userpages/' . urlencode($user) . '?show_detached=1&defer=1';
             echo "
                     <div class='neutral'>
                         There is no global account with this name, or it has been <a href='https://meta.wikimedia.org/wiki/Oversight' title='about hiding user names'>globally hidden</a>.<br />
-                        You can <a href='{$backend->url('/userpages/' . urlencode($user))}?show_detached=1&amp;defer=1' data-undefer>search all wikis</a> if needed.
+                        You can <a href='{$backend->formatValue($searchUrl)}' data-undefer>search all wikis</a> if needed.
                     </div>
                 </div>
             ";
@@ -199,8 +200,10 @@ do {
     if (!$any)
         echo '<p><em>No user pages found.</em></p>';
 
-    if (!$showDetached)
-        echo "<p><small>Only wikis connected to the global account were searched. You can <a href='{$backend->url('/userpages/' . urlencode($user))}?show_detached=1&amp;defer=1' data-undefer>search all wikis</a> if needed.</small></p>";
+    if (!$showDetached) {
+        $searchUrl = '/userpages/' . urlencode($user) . '?show_detached=1&defer=1';
+        echo "<p><small>Only wikis connected to the global account were searched. You can <a href='{$backend->formatValue($searchUrl)}' data-undefer>search all wikis</a> if needed.</small></p>";
+    }
 
     echo '</div>';
 } while (0);

@@ -229,7 +229,7 @@ class Backend extends Base
     }
 
     /**
-     * Get an absolute URL.
+     * Get an absolute URL to a file on this server.
      * @param string $url The URL fragment. If it starts with '/', it will be treated as relative to the configured tools root.
      */
     public function url(string $url): string
@@ -238,6 +238,27 @@ class Backend extends Base
             global $settings;
             $url = $settings['root_url'] . $url;
         }
+        return $url;
+    }
+
+    /**
+     * Get an absolute URL to a tool in this repo, on whichever tool account it's hosted.
+     * @param string $toolName The tool name (e.g. 'stalktoy'), matching both its folder name in this repo and (if applicable) its Toolforge account name.
+     * @param string|null $lookup The value to pass as a route value, if any. This is URL-encoded automatically.
+     */
+    public function getToolUrl(string $toolName, ?string $lookup = null): string
+    {
+        $urlFormat = $this->config['tool_url_format'];
+
+        // link to legacy shared account
+        $sharedAccount = $this->config['shared_accounts'][$toolName] ?? null;
+        if ($sharedAccount !== null)
+            return sprintf($urlFormat, $sharedAccount) . "/$toolName/" . urlencode($lookup ?? '');
+
+        // link to tool-specific account
+        $url = sprintf($urlFormat, $toolName) . '/';
+        if ($lookup !== null && $lookup !== '')
+            $url .= 'lookup/' . urlencode($lookup);
         return $url;
     }
 
@@ -297,7 +318,7 @@ class Backend extends Base
         /* print navigation menu */
         echo '<ul>';
         foreach ($this->config['tools'] as $toolName => $text) {
-            $url = $this->url("/$toolName");
+            $url = $this->getToolUrl($toolName);
             $displayName = $this->formatValue($text[0]);
             $description = $this->formatValue($text[1]);
 

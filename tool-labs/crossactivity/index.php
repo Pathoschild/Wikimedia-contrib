@@ -33,7 +33,7 @@ $deferRun = !empty($user) && $backend->isDeferRequested();
 ## Input form
 ##########
 echo "
-    <form action='{$backend->url('/crossactivity')}' method='get'>
+    <form action='/crossactivity' method='get'>
         <label for='user'>User name:</label>
         <input type='text' name='user' id='user' value='{$backend->formatValue($user)}' />", ($user == 'Shanel' ? '&hearts;' : ''), "<br />
         <input type='checkbox' id='show_all' name='show_all'", ($showAll ? 'checked="checked" ' : ''), "/> <label for='show_all'>Show wikis with no activity</label><br />
@@ -52,8 +52,8 @@ else if (!empty($user)) {
     echo "
         <div class='result-box'>
             See also
-            <a href='{$backend->url('/stalktoy/' . urlencode($user))}?defer=1' title='Global account details' data-undefer>global account details</a>, 
-            <a href='{$backend->url('/userpages/' . urlencode($user))}?defer=1' title='User pages' data-undefer>user pages</a>,
+            <a href='{$backend->getToolUrl('stalktoy', $user)}?defer=1' title='Global account details' data-undefer>global account details</a>,
+            <a href='{$backend->getToolUrl('userpages', $user)}?defer=1' title='User pages' data-undefer>user pages</a>,
             <a href='https://meta.wikimedia.org/?title=Special:CentralAuth/", urlencode($user), "' title='Special:CentralAuth'>Special:CentralAuth</a>.
         ";
 }
@@ -190,7 +190,7 @@ do {
     echo "
                 </tbody>
             </table>
-            <small>Only wikis linked to the global account are checked. You can <a href='{$backend->url('/stalktoy/' . urlencode($user))}?show_detached=1&amp;defer=1' data-undefer>check for detached wikis</a> if needed.</small>
+            <small>Only wikis linked to the global account are checked. You can <a href='{$backend->getToolUrl('stalktoy', $user)}?show_detached=1&amp;defer=1' data-undefer>check for detached wikis</a> if needed.</small>
         </div>
     ";
 } while (0);

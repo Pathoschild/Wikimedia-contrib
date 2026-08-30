@@ -60,7 +60,7 @@ else if ($engine->isValid())
 
 echo "
     <p>Who shall we stalk?</p>
-    <form action='{$backend->url('/stalktoy/')}' method='get'>
+    <form action='/stalktoy' method='get'>
         <div>
             <input type='text' name='target' value='$targetForm' />
             <input type='submit' value='Analyze »' /> <br />
@@ -342,7 +342,7 @@ else if ($engine->isValid() && $engine->target) {
             foreach ($account->groups as $group) {
                 $globalGroups[] = in_array($group, $deletedGlobalGroups)
                     ? $backend->formatValue($group)
-                    : "<a href='{$backend->url('/globalgroups')}#{$backend->formatAnchor($group)}' title='View global group details'>{$backend->formatValue(str_replace('_', ' ', $group))}</a>";
+                    : "<a href='{$backend->getToolUrl('globalgroups')}#{$backend->formatAnchor($group)}' title='View global group details'>{$backend->formatValue(str_replace('_', ' ', $group))}</a>";
             }
             $globalGroups = implode(', ', $globalGroups);
         }
@@ -406,8 +406,8 @@ else if ($engine->isValid() && $engine->target) {
                 </tr>
             </table>
             See also
-            <a href='{$backend->url("/crossactivity/{$engine->targetUrl}")}?defer=1' title='recent activity' data-undefer>recent activity</a>,
-            <a href='{$backend->url("/userpages/{$engine->targetUrl}")}?defer=1' title='user pages' data-undefer>user pages</a>,
+            <a href='{$backend->getToolUrl('crossactivity', $engine->target)}?defer=1' title='recent activity' data-undefer>recent activity</a>,
+            <a href='{$backend->getToolUrl('userpages', $engine->target)}?defer=1' title='user pages' data-undefer>user pages</a>,
             <a href='https://meta.wikimedia.org/wiki/Special:CentralAuth/{$engine->targetWikiUrl}' title='Special:CentralAuth'>global user manager</a>.
             ";
     } else

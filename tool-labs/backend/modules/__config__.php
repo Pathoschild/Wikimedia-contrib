@@ -68,13 +68,33 @@ $settings['debug'] = false;
 ## URLs and navigation
 #############################
 /**
+ * The absolute URL to a Toolforge account, with a placeholder for the account name.
+ */
+$settings['tool_url_format'] = 'https://%s.toolforge.org';
+
+/**
  * The absolute URL to the Toolforge account hosting the current tool.
  */
-$settings['root_url']  = 'https://' . SCRIPT_USER . '.toolforge.org';
+$settings['root_url']  = sprintf($settings['tool_url_format'], SCRIPT_USER);
+
+/**
+ * The shared accounts which host multiple tools, indexed by tool name.
+ */
+$settings['shared_accounts'] = [
+    'accounteligibility' => 'meta',
+    'catanalysis'        => 'meta',
+    'crossactivity'      => 'meta2',
+    'globalgroups'       => 'meta',
+    'gusersearch'        => 'meta',
+    'magicredirect'      => 'meta',
+    'stalktoy'           => 'meta3',
+    'stewardry'          => 'meta',
+    'userpages'          => 'meta'
+];
 
 /**
  * The tools to display in the navbar.
- * 
+ *
  * Each entry is in the form `toolName => [display name, description]`, where 'toolName' is the canonical name matching
  * its folder.
  */

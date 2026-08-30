@@ -32,7 +32,7 @@ $backend->profiler->stop('init engine');
 ## Input form
 ############################
 echo '
-<form action="', $backend->url('/accounteligibility'), '" method="get">
+<form action="/accounteligibility" method="get">
     <label for="user">User:</label>
     <input type="text" name="user" id="user" value="', $backend->formatValue($engine->username), '" /> at 
     <select name="wiki" id="wiki">
@@ -245,7 +245,7 @@ if ($engine->username)
             ########
             ## Add links for manual verification
             ########
-            echo '<small>See also: <a href="', $backend->url('/stalktoy/' . urlencode($engine->username)), '?defer=1" title="global account details" data-undefer>global account details</a></small>.';
+            echo '<small>See also: <a href="', $backend->getToolUrl('stalktoy', $engine->username), '?defer=1" title="global account details" data-undefer>global account details</a></small>.';
         }
     }
     while (false); // do-while loop just lets us break early

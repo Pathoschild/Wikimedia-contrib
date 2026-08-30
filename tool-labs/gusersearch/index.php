@@ -67,7 +67,7 @@ $engine->caseInsensitive = $caseInsensitive;
 $formUser = $backend->formatValue($name ?? '');
 
 echo "
-    <form action='{$backend->url('/gusersearch')}' method='get'>
+    <form action='/gusersearch' method='get'>
         <input type='text' name='name' value='{$formUser}' />
         ", ($limit != GUserSearchEngine::DEFAULT_LIMIT ? Form::hidden('limit', $limit) : ""), "
 
@@ -134,7 +134,7 @@ if ($deferRun) {
         // form lets user either preserve pagination on submit, or submit main form to start a new search
         echo "
             <div class='neutral' data-is-deferred='1'>
-                <form action='{$backend->url('/gusersearch')}' method='get'>
+                <form action='/gusersearch' method='get'>
                     Click <em>Submit</em> below to see the results.
 
                     ", ($name ?? '') !== '' ? Form::hidden('name', $backend->formatValue($name), ['id' => 'defer-name']) : '', "
@@ -198,7 +198,7 @@ if (!$deferRun) {
             echo "
                 <tr class='user-okay-{$isOkay} user-locked-{$isLocked} user-in-groups-{$inGroups}'>
                     <td class='id'>{$backend->formatText($row['gu_id'])}</td>
-                    <td class='name'><a href='" . $backend->url('/stalktoy/' . $linkTarget) . "?defer=1' title='about user' data-undefer>{$backend->formatText($row['gu_name'])}</a></td>
+                    <td class='name'><a href='" . $backend->getToolUrl('stalktoy', $row['gu_name']) . "?defer=1' title='about user' data-undefer>{$backend->formatText($row['gu_name'])}</a></td>
                     <td class='registration'>{$backend->formatText($row['gu_registration'])}</td>
                     <td class='status'>{$backend->formatText($statusLabel)}</td>
                     <td class='groups'>{$backend->formatText($row['gu_groups'])}</td>

@@ -20,7 +20,7 @@ $data = [];
 ## Render form
 ##########
 echo "
-    <form action='{$backend->url('/stewardry')}' method='get'>
+    <form action='/stewardry' method='get'>
         <label for='wiki'>Wiki:</label>
         <select name='wiki' id='wiki'>
     ";
@@ -118,7 +118,7 @@ do {
             $domain = $engine->wiki->domain;
 
             echo "<tr>",
-            "<td><a href='https://$domain/wiki/User:$urlName' title='$urlName&#39;s user page'>{$backend->formatText($name)}</a> <small>[<a href='", $backend->url('/crossactivity/' . $urlName), "?defer=1' title='scan this user&#39;s activity on all wikis' data-undefer>all wikis</a>]</small></td>",
+            "<td><a href='https://$domain/wiki/User:$urlName' title='$urlName&#39;s user page'>{$backend->formatText($name)}</a> <small>[<a href='", $backend->getToolUrl('crossactivity', $name), "?defer=1' title='scan this user&#39;s activity on all wikis' data-undefer>all wikis</a>]</small></td>",
             $engine->getDateCellHtml($lastEdit),
             ($showLog ? $engine->getDateCellHtml($lastLog) : ''),
             "</tr>";
