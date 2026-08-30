@@ -54,7 +54,7 @@ To deploy from scratch:
    mkdir cache
    mkdir -p logs
    mkdir public_html
-   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta.conf .lighttpd.conf
+   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
    cd public_html
    for TARGET in backend content 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect regextoy stewardry userpages
    do
