@@ -295,22 +295,15 @@ class Backend extends Base
             ";
 
         /* print navigation menu */
-        foreach ($this->config['tools'] as $section => $links) {
-            echo "
-                <h5>$section</h5>
-                <ul>
-                ";
+        echo '<ul>';
+        foreach ($this->config['tools'] as $toolName => $text) {
+            $url = $this->url("/$toolName");
+            $displayName = $this->formatValue($text[0]);
+            $description = $this->formatValue($text[1]);
 
-            foreach ($links as $link) {
-                $title = isset($link[2]) ? $link[2] : $link[0];
-                $desc = isset($link[1]) ? $link[1] : '';
-                $desc = str_replace('\'', '&#38;', $desc);
-                $url = $link[0];
-
-                echo "<li><a href='$url' title='$desc'>$title</a></li>";
-            }
-            echo '</ul>';
+            echo "<li><a href='$url' title='$description'>$displayName</a></li>";
         }
+        echo '</ul>';
 
         /* print content head */
         echo "

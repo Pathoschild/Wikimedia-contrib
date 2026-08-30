@@ -205,17 +205,10 @@ table.sortable .headerSortDown, table.sortable .headerSortUp {
 }
 
 #sidebar h4 {
-    margin: 0 0 -1em 0;
+    margin: 0 0 0.5em 0;
     width: 10em;
     border-bottom: 1px solid #CCC;
     font-size: 0.8em;
-    font-weight: normal;
-}
-
-#sidebar h5 {
-    margin: 1em 0 0 0;
-    font-size: 1.1em;
-    font-family: monospace;
     font-weight: normal;
 }
 

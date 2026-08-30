@@ -9,7 +9,6 @@
 * **[Crosswiki Activity](https://meta.toolforge.org/crossactivity/)** measures a user's latest edit, bureaucrat, or sysop activity on all wikis.
 * **[Global Groups](https://meta.toolforge.org/globalgroups/)** shows a live review of extra permissions assigned to [global groups](https://meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets) on Wikimedia Foundation wikis.
 * **[Global User Search](https://meta.toolforge.org/gusersearch/)** provides searching and filtering of global users on Wikimedia wikis.
-* **[ISO 639 Database](https://meta.toolforge.org/iso639db/)** is a searchable database of languages and ISO 639 codes augmented by native language names from Wikipedia.
 * **[Magic Redirect](https://meta.toolforge.org/magicredirect/)** redirects to an arbitrary URL with tokens based on user and wiki filled in. This is primarily intended for Wikimedia templates ([see example](https://meta.toolforge.org/magicredirect/?url=//{wiki.domain}/wiki/Special:UserRights/{user.name}@{wiki.name}&wiki=metawiki&user=Pathoschild)).
 * **[Stalktoy](https://meta.toolforge.org/stalktoy/)** shows global details about a user across all Wikimedia wikis. You can provide an account name (like `Pathoschild`), an IPv4 address (like `127.0.0.1`), an IPv6 address (like `2001:db8:1234::`), or a CIDR block (like `212.75.0.1/16` or `2600:3C00::/48`).
 * **[Stewardry](https://meta.toolforge.org/stewardry/)** estimates which users in a group are available based on their last edit or action.
@@ -56,7 +55,7 @@ To deploy from scratch:
    mkdir public_html
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
    cd public_html
-   for TARGET in backend content 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect stewardry userpages
+   for TARGET in backend content 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch magicredirect stewardry userpages
    do
       ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
    done

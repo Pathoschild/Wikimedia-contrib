@@ -67,22 +67,27 @@ $settings['debug'] = false;
 #############################
 ## URLs and navigation
 #############################
+/**
+ * The absolute URL to the Toolforge account hosting the current tool.
+ */
 $settings['root_url']  = 'https://' . SCRIPT_USER . '.toolforge.org';
+
+/**
+ * The tools to display in the navbar.
+ * 
+ * Each entry is in the form `toolName => [display name, description]`, where 'toolName' is the canonical name matching
+ * its folder.
+ */
 $settings['tools'] = [
-    'Wikimedia' => [
-        ['/accounteligibility', 'analyze an account to determine whether it is eligible to vote in a given event.', 'Account eligibility'],
-        ['/catanalysis', 'analyze edits to pages in a category tree or with a prefix over time.', 'Category analysis'],
-        ['/crossactivity', 'measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.', 'Crosswiki activity'],
-        ['/globalgroups', 'lists rights with descriptions for each global group.', 'Global groups'],
-        ['/gusersearch', 'searches and filters global account creations', 'Global user search'],
-        ['/magicredirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.', 'Magic redirect'],
-        ['/stalktoy', 'provides comprehensive global information about the given user, IP address, or CIDR range.', 'Stalk toy'],
-        ['/stewardry', 'analyze user activity by group on a Wikimedia wiki.', 'Stewardry'],
-        ['/userpages', 'find your user pages on all wikis.', 'User pages']
-    ],
-    'generic' => [
-        ['/iso639db', 'search ISO 639 codes.', 'ISO-639 database']
-    ]
+    'accounteligibility' => ['Account eligibility', 'analyze an account to determine whether it is eligible to vote in a given event.'],
+    'catanalysis' => ['Category analysis', 'analyze edits to pages in a category tree or with a prefix over time.'],
+    'crossactivity' => ['Crosswiki activity','measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.'],
+    'globalgroups' => ['Global groups', 'lists rights with descriptions for each global group.'],
+    'gusersearch' => ['Global user search', 'searches and filters global account creations'],
+    'magicredirect' => ['Magic redirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.'],
+    'stalktoy' => ['Stalk toy', 'provides comprehensive global information about the given user, IP address, or CIDR range.'],
+    'stewardry' => ['Stewardry', 'analyze user activity by group on a Wikimedia wiki.'],
+    'userpages' => ['User pages', 'find your user pages on all wikis.']
 ];
 
 #############################
