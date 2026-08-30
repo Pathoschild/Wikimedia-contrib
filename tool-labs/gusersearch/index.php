@@ -21,7 +21,7 @@ $name = $backend->getString('name') ?? $backend->getRouteValue();
 $useRegex = $backend->getBool('regex') ?? false;
 $showLocked = $backend->getBool('show_locked') ?? false;
 $caseInsensitive = $backend->getBool('icase') ?? false;
-$deferRun = !empty($name) && $backend->isDeferRequested();
+$deferRun = $backend->isDeferRequested();
 
 /* add user name filter */
 if ($name != null) {
@@ -69,7 +69,7 @@ $formUser = $backend->formatValue($name ?? '');
 echo "
     <form action='{$backend->url('/gusersearch')}' method='get'>
         <input type='text' name='name' value='{$formUser}' />
-        ", (($limit != GUserSearchEngine::DEFAULT_LIMIT) ? "<input type='hidden' name='limit' value='{$limit}' />" : ""), "
+        ", ($limit != GUserSearchEngine::DEFAULT_LIMIT ? Form::hidden('limit', $limit) : ""), "
 
         <input type='submit' value='Search »' /><br />
         <div style='padding-left:0.5em; border:1px solid gray; color:gray;'>
@@ -81,7 +81,7 @@ echo "
 
             ", Form::checkbox('icase', $caseInsensitive), "
             <label for='icase'>Match any capitalization (much slower)</label><br />
-            
+
             <p>
                 <b>Search syntax:</b>
                 <span id='tips-regex'", ($useRegex ? "" : " style='display:none;'"), ">
@@ -95,85 +95,125 @@ echo "
         </div>
     </form>
     ";
+$backend->profiler->stop('initialize');
 
 
 #############################
 ## Perform search
 #############################
-$backend->profiler->stop('initialize');
+$backend->profiler->start('query');
 
-if ($deferRun) {
-    echo $backend->getDeferredHtml("Search »");
-    $backend->footer();
-    return;
+$count = 0;
+if (!$deferRun) {
+    $engine->query();
+    $count = $engine->db->countRows();
 }
-
-$engine->query();
-$backend->profiler->start('output');
-$count = $engine->db->countRows();
 $hasResults = (int)!$count;
 
+$backend->profiler->stop('query');
+
+
+#############################
+## Show results
+#############################
+$backend->profiler->start('output');
+
+##########
+## Header + summary
+##########
 echo "
     <h2>Search results</h2>
-    <p id='search-summary' class='search-results-{$hasResults}'>{$backend->formatText($engine->getFormattedSummary())}.</p>
-    ";
+    <p id='search-summary' class='search-results-", ($deferRun ? 'deferred' : $hasResults), "'>{$backend->formatText($engine->getFormattedSummary(!$deferRun))}.</p>
+";
 
-#############################
-## Output
-#############################
-if ($count) {
-    /* pagination */
-    echo "[",
-    ($offset > 0 ? $engine->getPaginationLinkHtml($limit, $offset - $limit, "&larr;newer {$limit}") : "&larr;newer {$limit}"),
-    " | ",
-    ($engine->db->countRows() >= $limit ? $engine->getPaginationLinkHtml($limit, $offset + $limit, "older {$limit}&rarr;") : "older {$limit}&rarr;"),
-    "] [show {$engine->getPaginationLinkHtml(50, $offset, 50)}, {$engine->getPaginationLinkHtml(250, $offset, 250)}, {$engine->getPaginationLinkHtml(500, $offset, 500)}]";
-
-    /* table */
-    echo "
-        <table class='pretty' id='search-results'>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Unification date</th>
-                <th>Status</th>
-                <th>Global groups</th>
-                <th>Links</th>
-            </tr>
-        ";
-
-    while ($row = $engine->db->fetchAssoc()) {
-        /* get values */
-        $inGroups = ($row['gu_groups'] ? '1' : '0');
-        $isLocked = (int)$row['gu_locked'];
-        $isOkay = !$isLocked ? 1 : 0;
-        $linkTarget = urlencode($row['gu_name']);
-
-        /* summarize status */
-        $statusLabel = "";
-        $statuses = [];
-        if ($isLocked)
-            array_push($statuses, 'locked');
-
-        if (count($statuses) > 0)
-            $statusLabel = implode(' | ', $statuses);
-
-        /* output */
+##########
+## Deferred confirm prompt
+##########
+if ($deferRun) {
+    if ($offset > 0) {
+        // form lets user either preserve pagination on submit, or submit main form to start a new search
         echo "
-            <tr class='user-okay-{$isOkay} user-locked-{$isLocked} user-in-groups-{$inGroups}'>
-                <td class='id'>{$backend->formatText($row['gu_id'])}</td>
-                <td class='name'><a href='" . $backend->url('/stalktoy/' . $linkTarget) . "?defer=1' title='about user' data-undefer>{$backend->formatText($row['gu_name'])}</a></td>
-                <td class='registration'>{$backend->formatText($row['gu_registration'])}</td>
-                <td class='status'>{$backend->formatText($statusLabel)}</td>
-                <td class='groups'>{$backend->formatText($row['gu_groups'])}</td>
-                <td class='linkies'><a href='https://meta.wikimedia.org/wiki/Special:CentralAuth?target={$linkTarget}' title='CentralAuth'>CentralAuth</a></td>
-            </tr>";
+            <div class='neutral' data-is-deferred='1'>
+                <form action='{$backend->url('/gusersearch')}' method='get'>
+                    Click <em>Submit</em> below to see the results.
+
+                    ", ($name ?? '') !== '' ? Form::hidden('name', $backend->formatValue($name), ['id' => 'defer-name']) : '', "
+                    ", $showLocked ? Form::hidden('show_locked', $showLocked, ['id' => 'defer-show_locked']) : '', "
+                    ", $useRegex ? Form::hidden('regex', $useRegex, ['id' => 'defer-regex']) : '', "
+                    ", $caseInsensitive ? Form::hidden('icase', $caseInsensitive, ['id' => 'defer-icase']) : '', "
+                    ", ($limit != GUserSearchEngine::DEFAULT_LIMIT ? Form::hidden('limit', $limit, ['id' => 'defer-limit']) : ''), "
+                    ", Form::hidden('offset', $offset, ['id' => 'defer-offset']), "
+
+                    <input type='submit' value='Submit' />
+                </form>
+            </div>
+        ";
     }
-    echo "</table>";
+    else
+        echo $backend->getDeferredHtml("Search »");
 }
 
-if ($name && (($useRegex && !preg_match('/[+*.]/', $name)) || (!$useRegex && !preg_match('/[_%]/', $name))))
-    echo "<p><strong><big>※</big></strong>You searched for an exact match; did you want partial matches? See <em>Search syntax</em> above.</p>";
+##########
+## Results table
+##########
+if (!$deferRun) {
+    if ($count) {
+        /* pagination */
+        echo "[",
+        ($offset > 0 ? $engine->getPaginationLinkHtml($limit, $offset - $limit, "&larr;newer {$limit}") : "&larr;newer {$limit}"),
+        " | ",
+        ($engine->db->countRows() >= $limit ? $engine->getPaginationLinkHtml($limit, $offset + $limit, "older {$limit}&rarr;") : "older {$limit}&rarr;"),
+        "] [show {$engine->getPaginationLinkHtml(50, $offset, 50)}, {$engine->getPaginationLinkHtml(250, $offset, 250)}, {$engine->getPaginationLinkHtml(500, $offset, 500)}]";
 
+        /* table */
+        echo "
+            <table class='pretty' id='search-results'>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Unification date</th>
+                    <th>Status</th>
+                    <th>Global groups</th>
+                    <th>Links</th>
+                </tr>
+            ";
+
+        while ($row = $engine->db->fetchAssoc()) {
+            /* get values */
+            $inGroups = ($row['gu_groups'] ? '1' : '0');
+            $isLocked = (int)$row['gu_locked'];
+            $isOkay = !$isLocked ? 1 : 0;
+            $linkTarget = urlencode($row['gu_name']);
+
+            /* summarize status */
+            $statusLabel = "";
+            $statuses = [];
+            if ($isLocked)
+                array_push($statuses, 'locked');
+
+            if (count($statuses) > 0)
+                $statusLabel = implode(' | ', $statuses);
+
+            /* output */
+            echo "
+                <tr class='user-okay-{$isOkay} user-locked-{$isLocked} user-in-groups-{$inGroups}'>
+                    <td class='id'>{$backend->formatText($row['gu_id'])}</td>
+                    <td class='name'><a href='" . $backend->url('/stalktoy/' . $linkTarget) . "?defer=1' title='about user' data-undefer>{$backend->formatText($row['gu_name'])}</a></td>
+                    <td class='registration'>{$backend->formatText($row['gu_registration'])}</td>
+                    <td class='status'>{$backend->formatText($statusLabel)}</td>
+                    <td class='groups'>{$backend->formatText($row['gu_groups'])}</td>
+                    <td class='linkies'><a href='https://meta.wikimedia.org/wiki/Special:CentralAuth?target={$linkTarget}' title='CentralAuth'>CentralAuth</a></td>
+                </tr>";
+        }
+        echo "</table>";
+    }
+
+    if ($name && (($useRegex && !preg_match('/[+*.]/', $name)) || (!$useRegex && !preg_match('/[_%]/', $name))))
+        echo "<p><strong><big>※</big></strong>You searched for an exact match; did you want partial matches? See <em>Search syntax</em> above.</p>";
+}
+
+##########
+## Footer
+##########
 $backend->profiler->stop('output');
 $backend->footer();

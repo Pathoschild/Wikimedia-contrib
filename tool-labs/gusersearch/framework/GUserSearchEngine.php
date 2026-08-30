@@ -180,19 +180,44 @@ class GUserSearchEngine extends Base
 
     /**
      * Get a human-readable summary of the query result and search options.
+     * @param bool $showQueryResult Whether to show the query results, rather than just the filter summary.
      */
-    public function getFormattedSummary(): string
+    public function getFormattedSummary(bool $showQueryResult): string
     {
-        $count = $this->db->countRows();
-        $output = '';
+        $summary = 'global accounts';
 
-        if ($count) {
-            $output .= ($count < $this->limit ? "Found all " : "Found latest ");
-            $output .= $this->db->countRows() . " global accounts where ";
-        } else
-            $output .= "Found no global accounts matching ";
+        // add filters
+        if ((bool)$this->filterDescriptions)
+            $summary .= ' where [' . implode('] and [', $this->filterDescriptions) . ']';
 
-        return $output . '[' . implode('] and [', $this->filterDescriptions) . ']';
+        // add offset
+        if ($this->offset > 0)
+        {
+            $summary .= $this->offset % $this->limit === 0
+                ? " (page " . (intdiv($this->offset, $this->limit) + 1) . ")"
+                : " (skip {$this->offset} results)";
+        }
+
+        // add query results
+        if ($showQueryResult)
+        {
+            $count = $this->db->countRows();
+
+            if ($count < 1)
+                $summary = "Found no results for $summary";
+            else
+            {
+                $adjective = $count < $this->limit
+                    ? ($this->offset > 0 ? 'remaining' : 'all') // reached end of list
+                    : ($this->offset > 0 ? 'next' : 'latest');  // more results available
+
+                $summary = "Found $adjective $count $summary";
+            }
+        }
+        else
+            $summary = "Search $summary";
+
+        return $summary;
     }
 
     /**

@@ -59,6 +59,25 @@ class Form
     }
 
     /**
+     * Get an HTML string for a hidden form element.
+     * @param string $name The hidden input name value.
+     * @param bool|int|string|null $value The hidden input value.
+     * @param array<string, mixed> $attrs The tag attributes as a name => value lookup.
+     * @param int|null $options The tag options (one of {@see Form::SELF_CLOSING}).
+     */
+    static function hidden(string $name, bool|int|string|null $value, array $attrs = [], ?int $options = null): string
+    {
+        $attrs['type'] = 'hidden';
+        $attrs['name'] = $name;
+        $attrs['value'] = $value;
+
+        if (!isset($attrs['id']))
+            $attrs['id'] = $name;
+
+        return self::element('input', $attrs, null, $options | self::SELF_CLOSING);
+    }
+
+    /**
      * Get an HTML string for a drop-down menu.
      * @param string $name The dropdown name value.
      * @param bool|int|string|null $selectedKey The key of the option to select.
