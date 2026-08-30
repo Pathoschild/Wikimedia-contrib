@@ -35,7 +35,7 @@ account | tools
 `meta3` | stalktoy
 
 They redirect as needed, so all tools can be accessed through either hostname. To use different
-accounts, edit the `tool-labs/backend/modules/__config__.php` and `tool-labs/.lighttpd*` files
+accounts, edit the `tool-labs/backend/modules/__config__.php` and `tool-labs/.lighttpd.conf` files
 accordingly.
 
 To deploy from scratch:
@@ -56,7 +56,7 @@ To deploy from scratch:
    mkdir public_html
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
    cd public_html
-   for TARGET in backend content 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect regextoy stewardry userpages
+   for TARGET in backend content 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect stewardry userpages
    do
       ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
    done
@@ -86,7 +86,7 @@ To deploy from scratch:
    mkdir cache
    mkdir -p logs
    mkdir public_html
-   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta2.conf .lighttpd.conf
+   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
    cd public_html
    for TARGET in backend content crossactivity
    do
@@ -112,7 +112,7 @@ To deploy from scratch:
    mkdir cache
    mkdir -p logs
    mkdir public_html
-   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta3.conf .lighttpd.conf
+   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
    cd public_html
    for TARGET in backend content stalktoy
    do
