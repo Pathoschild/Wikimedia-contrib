@@ -81,8 +81,7 @@ $settings['tools'] = [
         ['/userpages', 'find your user pages on all wikis.', 'User pages']
     ],
     'generic' => [
-        ['/iso639db', 'search ISO 639 codes.', 'ISO-639 database'],
-        ['/pgkbot', 'IRC-based wiki monitoring bot', 'pgkbot']
+        ['/iso639db', 'search ISO 639 codes.', 'ISO-639 database']
     ]
 ];
 

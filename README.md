@@ -56,7 +56,7 @@ To deploy from scratch:
    mkdir public_html
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.meta.conf .lighttpd.conf
    cd public_html
-   for TARGET in backend content 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect pgkbot regextoy stewardry userpages
+   for TARGET in backend content 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch iso639db magicredirect regextoy stewardry userpages
    do
       ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
    done
