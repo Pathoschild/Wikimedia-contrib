@@ -209,17 +209,17 @@ class Backend extends Base
      */
     public function getRouteValue(int $index = 0, int $filter = FILTER_DEFAULT): mixed
     {
-        // get path
-        $path = $this->getString("@path", allowBlank: false);
-        if (!$path)
+        // get route
+        $route = $this->getString("@route", allowBlank: false);
+        if (!$route)
             return null;
 
         // get raw value
-        $path = substr($path, 1); // ignore initial / in path
-        $parts = explode('/', $path);
-        if (count($parts) <= $index)
+        $route = substr($route, 1); // skip the leading '/'
+        $parts = explode('/', $route);
+        if (count($route) <= $index)
             return null;
-        $value = $parts[$index];
+        $value = $route[$index];
 
         // apply filter
         if ($filter)
