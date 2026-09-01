@@ -202,28 +202,54 @@ class Backend extends Base
     }
 
     /**
-     * Get the value of the route placeholder (e.g, 'Pathoschild' in '/stalktoy/Pathoschild').
-     * @param int $index The index of the placeholder to get.
+     * Get the value of a route segment (e.g, 'Pathoschild' in '/stalktoy/Pathoschild').
+     * @param int $index The index of the route segment to get.
      * @param int $filter The filter to apply to the value (e.g. `FILTER_VALIDATE_INT`).
      * @return mixed The found value, or null if not found or invalid.
      */
     public function getRouteValue(int $index = 0, int $filter = FILTER_DEFAULT): mixed
     {
         // get route
-        $route = $this->getString("@route", allowBlank: false);
-        if (!$route)
+        $route = $this->getRawQueryValue('@route');
+        if (!$route || $route === '/')
             return null;
+        $route = substr($route, 1); // skip the leading '/'
 
         // get raw value
-        $route = substr($route, 1); // skip the leading '/'
-        $parts = explode('/', $route);
-        if (count($route) <= $index)
+        $value = explode('/', $route)[$index] ?? null;
+        if ($value === null)
             return null;
-        $value = $route[$index];
+        $value = urldecode($value);
 
         // apply filter
-        if ($filter)
+        if ($filter !== FILTER_DEFAULT)
             $value = filter_var($value, $filter, FILTER_NULL_ON_FAILURE);
+
+        return $value;
+    }
+
+    /**
+     * Get a value from the request's query string, without URL-decoding it.
+     *
+     * @param string $name The name of the query argument.
+     * @return string|null The raw argument value if found, else null.
+     */
+    private function getRawQueryValue(string $name): ?string
+    {
+        //
+        // note: don't use `$_GET`, since that's already URL-decoded.
+        //
+
+        $rawQueryString = $_SERVER['QUERY_STRING'] ?? '';
+        $rawQueryArgs = explode('&', $rawQueryString);
+
+        $value = null;
+
+        foreach ($rawQueryArgs as $pair) {
+            $parts = explode('=', $pair, 2);
+            if (urldecode($parts[0]) === $name)
+                $value = $parts[1] ?? ''; // take last value defined
+        }
 
         return $value;
     }
