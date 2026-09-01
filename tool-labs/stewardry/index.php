@@ -5,6 +5,7 @@ require_once('../backend/modules/Backend.php');
 require_once('framework/StewardryEngine.php');
 $backend = Backend::Create('Stewardry', 'Estimates which users in a group are available based on their last edit or action.')
     ->link('/content/jquery.tablesorter.js')
+    ->link('/content/submitRoute.js')
     ->link('/content/undefer.js')
     ->link('/stewardry/scripts.js')
     ->header();
@@ -20,7 +21,7 @@ $data = [];
 ## Render form
 ##########
 echo "
-    <form action='/stewardry' method='get'>
+    <form action='/stewardry' method='get' data-submit-route='/stewardry/{wiki}'>
         <label for='wiki'>Wiki:</label>
         <select name='wiki' id='wiki'>
     ";

@@ -9,6 +9,7 @@ $backend = Backend::create('Stalk toy', 'View global details about a user across
     ->link('/content/jquery.tablesorter.js')
     ->link('https://tools-static.wmflabs.org/cdnjs/ajax/libs/echarts/6.1.0/echarts.common.min.js')
     ->link('/stalktoy/scripts.js')
+    ->link('/content/submitRoute.js')
     ->link('/content/undefer.js')
     ->header();
 
@@ -60,7 +61,7 @@ else if ($engine->isValid())
 
 echo "
     <p>Who shall we stalk?</p>
-    <form action='/stalktoy' method='get'>
+    <form action='/stalktoy' method='get' data-submit-route='/stalktoy/{*target}'>
         <div>
             <input type='text' name='target' value='$targetForm' />
             <input type='submit' value='Analyze »' /> <br />

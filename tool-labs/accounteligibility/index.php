@@ -14,6 +14,7 @@ spl_autoload_register(function ($className) {
 $backend = Backend::create('AccountEligibility', 'Analyzes a given user account to determine whether it\'s eligible to vote in the specified event.')
     ->link('/accounteligibility/stylesheet.css')
     ->link('/content/jquery.tablesorter.js')
+    ->link('/content/submitRoute.js')
     ->link('/content/undefer.js')
     ->addScript('$(document).ready(function() { $("#local-accounts").tablesorter({sortList:[[1,1]]}); });')
     ->header();
@@ -32,7 +33,7 @@ $backend->profiler->stop('init engine');
 ## Input form
 ############################
 echo '
-<form action="/accounteligibility" method="get">
+<form action="/accounteligibility" method="get" data-submit-route="/accounteligibility/{event}/{user}">
     <label for="user">User:</label>
     <input type="text" name="user" id="user" value="', $backend->formatValue($engine->username), '" /> at 
     <select name="wiki" id="wiki">

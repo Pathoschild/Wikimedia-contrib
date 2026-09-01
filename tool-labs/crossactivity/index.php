@@ -6,6 +6,7 @@ require_once('framework/CrossactivityEngine.php');
 $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.')
     ->link('/content/dataTables/jquery.dataTables.min.js')
     ->link('/content/dataTables/jquery.dataTables.plain.css')
+    ->link('/content/submitRoute.js')
     ->link('/content/undefer.js')
     ->addScript('
         $(function() {
@@ -33,7 +34,7 @@ $deferRun = !empty($user) && $backend->isDeferRequested();
 ## Input form
 ##########
 echo "
-    <form action='/crossactivity' method='get'>
+    <form action='/crossactivity' method='get' data-submit-route='/crossactivity/{user}'>
         <label for='user'>User name:</label>
         <input type='text' name='user' id='user' value='{$backend->formatValue($user)}' />", ($user == 'Shanel' ? '&hearts;' : ''), "<br />
         <input type='checkbox' id='show_all' name='show_all'", ($showAll ? 'checked="checked" ' : ''), "/> <label for='show_all'>Show wikis with no activity</label><br />

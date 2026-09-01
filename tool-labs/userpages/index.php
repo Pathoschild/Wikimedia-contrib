@@ -5,6 +5,7 @@ require_once('../backend/modules/Backend.php');
 $backend = Backend::create('User pages', 'Find your user pages on all Wikimedia wikis.')
     ->link('/userpages/scripts.js')
     ->link('/userpages/stylesheet.css')
+    ->link('/content/submitRoute.js')
     ->link('/content/undefer.js')
     ->header();
 
@@ -23,7 +24,7 @@ $deferRun = !empty($user) && $backend->isDeferRequested();
 ## Render form
 ##########
 echo "
-    <form action='/userpages' method='get'>
+    <form action='/userpages' method='get' data-submit-route='/userpages/{user}'>
         <label for='user'>User name:</label>
         <input type='text' name='user' id='user' value='{$backend->formatValue($user)}' />", ($user == 'Shanel' ? '&hearts;' : ''), "<br />
 
