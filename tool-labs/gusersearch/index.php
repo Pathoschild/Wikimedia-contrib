@@ -7,6 +7,7 @@ require_once('framework/GUserSearchEngine.php');
 $backend = Backend::create('gUser search', 'Provides searching and filtering of global users on Wikimedia wikis.')
     ->link('/gusersearch/stylesheet.css')
     ->link('/gusersearch/javascript.js')
+    ->link('/content/submitRoute.js')
     ->link('/content/undefer.js')
     ->header();
 
@@ -67,7 +68,7 @@ $engine->caseInsensitive = $caseInsensitive;
 $formUser = $backend->formatValue($name ?? '');
 
 echo "
-    <form action='/gusersearch' method='get'>
+    <form action='/gusersearch' method='get' data-submit-route='/gusersearch/{name}'>
         <input type='text' name='name' value='{$formUser}' />
         ", ($limit != GUserSearchEngine::DEFAULT_LIMIT ? Form::hidden('limit', $limit) : ""), "
 
@@ -134,7 +135,7 @@ if ($deferRun) {
         // form lets user either preserve pagination on submit, or submit main form to start a new search
         echo "
             <div class='neutral' data-is-deferred='1'>
-                <form action='/gusersearch' method='get'>
+                <form action='/gusersearch' method='get' data-submit-route='/gusersearch/{name}'>
                     Click <em>Submit</em> below to see the results.
 
                     ", ($name ?? '') !== '' ? Form::hidden('name', $backend->formatValue($name), ['id' => 'defer-name']) : '', "
