@@ -22,8 +22,8 @@ $backend = Backend::create('AccountEligibility', 'Analyzes a given user account 
 ############################
 ## Initialize
 ############################
-$eventId = $backend->getInt('event') ?? $backend->getRouteValue(0, FILTER_VALIDATE_INT);
-$user = $backend->getString('user', allowBlank: false) ?? $backend->getRouteValue(1) ?? '';
+$eventId = $backend->getRouteValue(0, FILTER_VALIDATE_INT) ?? $backend->getInt('event');
+$user = $backend->getRouteValue(1) ?? $backend->getString('user', allowBlank: false) ?? '';
 $wiki = $backend->getString('wiki');
 $backend->profiler->start('init engine');
 $engine = new AccountEligibilityEngine($backend, $user, $eventId, $wiki);

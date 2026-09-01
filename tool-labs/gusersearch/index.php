@@ -18,7 +18,7 @@ $engine = new GUserSearchEngine($backend);
 $backend->profiler->start('initialize');
 
 /* get arguments */
-$name = $backend->getString('name') ?? $backend->getRouteValue();
+$name = $backend->getRouteValue() ?? $backend->getString('name');
 $useRegex = $backend->getBool('regex') ?? false;
 $showLocked = $backend->getBool('show_locked') ?? false;
 $caseInsensitive = $backend->getBool('icase') ?? false;

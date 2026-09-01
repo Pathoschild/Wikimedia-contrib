@@ -33,12 +33,11 @@ $targetForm = '';
 
 # parse target
 # stalktoy is an edge case for route values: an IP range like '127.0.0.1/16' should be treated as one value despite the path separator.
-$target = $backend->getString('target', allowBlank: false);
-if (!$target) {
-    $target = $backend->getRouteValue();
-    if ($target != null && $backend->getRouteValue(1) != null)
-        $target .= '/' . $backend->getRouteValue(1);
-}
+$target = $backend->getRouteValue();
+if ($target != null && $backend->getRouteValue(1) != null)
+    $target .= '/' . $backend->getRouteValue(1);
+if ($target == null)
+    $target = $backend->getString('target', allowBlank: false);
 
 # initialise
 $deferRun = !empty($target) && $backend->isDeferRequested();

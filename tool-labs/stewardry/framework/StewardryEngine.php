@@ -60,7 +60,7 @@ class StewardryEngine extends Base
         $this->db = $backend->getDatabase();
 
         // parse query
-        $this->dbname = $this->db->normalizeDbn($backend->getString('wiki', allowBlank: false) ?? $backend->getRouteValue());
+        $this->dbname = $this->db->normalizeDbn($backend->getRouteValue() ?? $backend->getString('wiki', allowBlank: false));
         $this->wiki = $this->db->getWiki($this->dbname);
         foreach ($this->presetGroups as $group => $logTypes) {
             if ($backend->getBool($group))

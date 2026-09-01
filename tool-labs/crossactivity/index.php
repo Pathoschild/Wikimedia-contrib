@@ -23,7 +23,7 @@ $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bur
 ## Get data
 ##########
 $engine = new CrossactivityEngine();
-$user = $backend->getString('user') ?? $backend->getRouteValue();
+$user = $backend->getRouteValue() ?? $backend->getString('user');
 if ($user !== null)
     $user = $backend->formatUsername($user);
 $showAll = $backend->getBool('show_all') ?? false;
