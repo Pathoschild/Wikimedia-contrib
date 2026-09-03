@@ -202,24 +202,50 @@ class Backend extends Base
     }
 
     /**
-     * Get the value of a route segment (e.g, 'Pathoschild' in '/stalktoy/Pathoschild').
-     * @param int $index The index of the route segment to get.
+     * Get the segments after `/for/*` in the route path.
+     *
+     * This reads the `@route` query argument (set by the Lighttpd rewrite rules) and ignores leading/trailing/repeated
+     * slashes. For example, '/for///18//Pathoschild/' produces ['18', 'Pathoschild'].
+     *
+     * @return string[]|null The route values, or null if no route was given.
+     */
+    public function getRoute(): ?array
+    {
+        // get raw route
+        $route = $this->getRawQueryValue('@route'); // don't URL-decode yet, to avoid splitting by '/' inside submitted values
+        if ($route === null)
+            return null;
+
+        // split into segments
+        $values = [];
+        foreach (explode('/', $route) as $value) {
+            if ($value !== '')
+                $values[] = urldecode($value);
+        }
+
+        return $values ?: null;
+    }
+
+    /**
+     * Get the value of one segment after `/for/` in the route path.
+     *
+     * See remarks on {@see Backend::getRoute()}.
+     *
+     * @param int $index The index of the route segment to get, starting at 0 for the first segment after `/for/`.
      * @param int $filter The filter to apply to the value (e.g. `FILTER_VALIDATE_INT`).
      * @return mixed The found value, or null if not found or invalid.
      */
     public function getRouteValue(int $index = 0, int $filter = FILTER_DEFAULT): mixed
     {
         // get route
-        $route = $this->getRawQueryValue('@route');
-        if (!$route || $route === '/')
+        $route = $this->getRoute();
+        if (!$route)
             return null;
-        $route = substr($route, 1); // skip the leading '/'
 
         // get raw value
-        $value = explode('/', $route)[$index] ?? null;
+        $value = $route[$index] ?? null;
         if ($value === null)
             return null;
-        $value = urldecode($value);
 
         // apply filter
         if ($filter !== FILTER_DEFAULT)
@@ -268,23 +294,15 @@ class Backend extends Base
     }
 
     /**
-     * Get an absolute URL to a tool in this repo, on whichever tool account it's hosted.
-     * @param string $toolName The tool name (e.g. 'stalktoy'), matching both its folder name in this repo and (if applicable) its Toolforge account name.
+     * Get an absolute URL to a tool in this repo.
+     * @param string $toolName The tool name (e.g. 'stalktoy'), matching both its folder name in this repo and its Toolforge account name.
      * @param string|null $lookup The value to pass as a route value, if any. This is URL-encoded automatically.
      */
     public function getToolUrl(string $toolName, ?string $lookup = null): string
     {
-        $urlFormat = $this->config['tool_url_format'];
-
-        // link to legacy shared account
-        $sharedAccount = $this->config['shared_accounts'][$toolName] ?? null;
-        if ($sharedAccount !== null)
-            return sprintf($urlFormat, $sharedAccount) . "/$toolName/" . urlencode($lookup ?? '');
-
-        // link to tool-specific account
-        $url = sprintf($urlFormat, $toolName) . '/';
+        $url = sprintf($this->config['tool_url_format'], $toolName) . '/';
         if ($lookup !== null && $lookup !== '')
-            $url .= 'lookup/' . urlencode($lookup);
+            $url .= 'for/' . urlencode($lookup);
         return $url;
     }
 

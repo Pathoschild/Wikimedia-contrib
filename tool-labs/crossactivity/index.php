@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once('../backend/modules/Backend.php');
 require_once('framework/CrossactivityEngine.php');
-$backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.')
+$backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bureaucrat, or sysop activity across all wikis.')
     ->link('/content/dataTables/jquery.dataTables.min.js')
     ->link('/content/dataTables/jquery.dataTables.plain.css')
     ->link('/content/submitRoute.js')
@@ -23,7 +23,7 @@ $backend = Backend::create('CrossActivity', 'Measures a user\'s latest edit, bur
 ## Get data
 ##########
 $engine = new CrossactivityEngine();
-$user = $backend->getRouteValue() ?? $backend->getString('user');
+$user = $backend->getRouteValue() ?? $backend->getString('user', allowBlank: false);
 if ($user !== null)
     $user = $backend->formatUsername($user);
 $showAll = $backend->getBool('show_all') ?? false;
@@ -34,7 +34,7 @@ $deferRun = !empty($user) && $backend->isDeferRequested();
 ## Input form
 ##########
 echo "
-    <form action='/crossactivity' method='get' data-submit-route='/crossactivity/{user}'>
+    <form action='/' method='get' data-submit-route='/for/{user}'>
         <label for='user'>User name:</label>
         <input type='text' name='user' id='user' value='{$backend->formatValue($user)}' />", ($user == 'Shanel' ? '&hearts;' : ''), "<br />
         <input type='checkbox' id='show_all' name='show_all'", ($showAll ? 'checked="checked" ' : ''), "/> <label for='show_all'>Show wikis with no activity</label><br />

@@ -4,7 +4,7 @@ declare(strict_types=1);
 require_once('../backend/modules/Backend.php');
 require_once('framework/GlobalGroupsEngine.php');
 $backend = Backend::create('GlobalGroups', 'A review of extra permissions assigned to <a href="https://meta.wikimedia.org/wiki/Steward_handbook#Globally_and_wiki_sets" title="global groups">global groups</a> on Wikimedia Foundation wikis.')
-    ->link('/globalgroups/stylesheet.css')
+    ->link('/tool/stylesheet.css')
     ->header();
 
 ##########

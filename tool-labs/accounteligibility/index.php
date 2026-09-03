@@ -12,7 +12,7 @@ spl_autoload_register(function ($className) {
 });
 
 $backend = Backend::create('AccountEligibility', 'Analyzes a given user account to determine whether it\'s eligible to vote in the specified event.')
-    ->link('/accounteligibility/stylesheet.css')
+    ->link('/tool/stylesheet.css')
     ->link('/content/jquery.tablesorter.js')
     ->link('/content/submitRoute.js')
     ->link('/content/undefer.js')
@@ -22,8 +22,14 @@ $backend = Backend::create('AccountEligibility', 'Analyzes a given user account 
 ############################
 ## Initialize
 ############################
-$eventId = $backend->getRouteValue(0, FILTER_VALIDATE_INT) ?? $backend->getInt('event');
-$user = $backend->getRouteValue(1) ?? $backend->getString('user', allowBlank: false) ?? '';
+$route = $backend->getRoute();
+if ($route) {
+    $eventId = ctype_digit($route[0]) ? (int)$route[0] : null;
+    $user = $route[1] ?? null;
+}
+
+$eventId = $eventId ?? $backend->getInt('event');
+$user = $user ?? $backend->getString('user', allowBlank: false) ?? '';
 $wiki = $backend->getString('wiki');
 $backend->profiler->start('init engine');
 $engine = new AccountEligibilityEngine($backend, $user, $eventId, $wiki);
@@ -33,9 +39,9 @@ $backend->profiler->stop('init engine');
 ## Input form
 ############################
 echo '
-<form action="/accounteligibility" method="get" data-submit-route="/accounteligibility/{event}/{user}">
+<form action="/" method="get" data-submit-route="/for/{event}/{user}">
     <label for="user">User:</label>
-    <input type="text" name="user" id="user" value="', $backend->formatValue($engine->username), '" /> at 
+    <input type="text" name="user" id="user" value="', $backend->formatValue($engine->username), '" /> at
     <select name="wiki" id="wiki">
         <option value="">auto-select wiki</option>', "\n";
 

@@ -7,7 +7,7 @@ require_once('../backend/modules/Backend.php');
 require_once('../backend/modules/Form.php');
 require_once('../backend/modules/IPAddress.php');
 $backend = Backend::create('Catanalysis', 'Analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix). This is primarily intended for test project analysis by the Wikimedia Foundation <a href="https://meta.wikimedia.org/wiki/Language_committee" title="language committee">language committee</a>.')
-    ->link('/catanalysis/stylesheet.css')
+    ->link('/tool/stylesheet.css')
     ->header();
 spl_autoload_register(function ($className) {
     foreach (["framework/$className.php", "framework/models/$className.php"] as $path) {
@@ -61,11 +61,11 @@ $db = $backend->getDatabase();
 ## Input form
 ##########
 ?>
-    <form action="/catanalysis" method="get">
+    <form action="/" method="get">
         <fieldset>
             <p>Enter a category name to analyse members of, or a prefix to analyze subpages of (see <a
-                        href="index.php?title=Wp/kab&cat=0&db=incubatorwiki" title="example">prefix</a> and <a
-                        href="index.php?title=Af+Afrikaans+(Afrikaans)&cat=1&db=sourceswiki" title="example">category</a> examples).</p>
+                        href="/?title=Wp/kab&cat=0&db=incubatorwiki" title="example">prefix</a> and <a
+                        href="/?title=Af+Afrikaans+(Afrikaans)&cat=1&db=sourceswiki" title="example">category</a> examples).</p>
 
             <input type="text" id="title" name="title" value="<?= $backend->formatValue($fullTitle) ?>"/>
             (this is a <?= Form::select('cat', $cat, [1 => 'category', 0 => 'prefix']) ?> on <select name="wiki" id="wiki">

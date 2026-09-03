@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once('../backend/modules/Backend.php');
 $backend = Backend::create('A template\'s magic redirect', 'Redirects to an arbitrary URL with tokens based on user and wiki filled in. This is primarily intended for Wikimedia templates such as {{<a href="https://meta.wikimedia.org/wiki/Template:sr-request" title="template:sr-request on Meta">sr-request</a>}} (see <a href="?url=//{wiki.domain}/wiki/Special:UserRights/{user.name}@{wiki.name}&wiki=metawiki&user=Pathoschild" title="reload with example values">example</a>).')
-    ->link('/magicredirect/stylesheet.css')
+    ->link('/tool/stylesheet.css')
     ->link('/content/jquery.collapse/jquery.collapse.js')
     ->addScript('
         $(document).ready(function() {
@@ -89,7 +89,7 @@ $backend->header();
 
 /* input form */
 echo "
-    <form action='/magicredirect' method='get'>
+    <form action='/' method='get'>
         <input id='url' name='url' type='text' value='{$backend->formatValue($url)}'/>
         <label for='url'>URL</label><br/>
 
@@ -125,7 +125,7 @@ if ($error || $target) {
         echo $error;
     else if ($target) {
         /* build URL */
-        $magicUrl = '/magicredirect/?redirect=1';
+        $magicUrl = '/?redirect=1';
         if ($user)
             $magicUrl .= '&user=' . urlencode($user);
         if ($wiki)

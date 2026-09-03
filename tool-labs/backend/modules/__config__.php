@@ -78,21 +78,6 @@ $settings['tool_url_format'] = 'https://%s.toolforge.org';
 $settings['root_url']  = sprintf($settings['tool_url_format'], SCRIPT_USER);
 
 /**
- * The shared accounts which host multiple tools, indexed by tool name.
- */
-$settings['shared_accounts'] = [
-    'accounteligibility' => 'meta',
-    'catanalysis'        => 'meta',
-    'crossactivity'      => 'meta2',
-    'globalgroups'       => 'meta',
-    'gusersearch'        => 'meta',
-    'magicredirect'      => 'meta',
-    'stalktoy'           => 'meta3',
-    'stewardry'          => 'meta',
-    'userpages'          => 'meta'
-];
-
-/**
  * The tools to display in the navbar.
  *
  * Each entry is in the form `toolName => [display name, description]`, where 'toolName' is the canonical name matching
@@ -101,7 +86,7 @@ $settings['shared_accounts'] = [
 $settings['tools'] = [
     'accounteligibility' => ['Account eligibility', 'analyze an account to determine whether it is eligible to vote in a given event.'],
     'catanalysis' => ['Category analysis', 'analyze edits to pages in a category tree or with a prefix over time.'],
-    'crossactivity' => ['Crosswiki activity','measures a user\'s latest edit, bureaucrat, or sysop activity on all wikis.'],
+    'crossactivity' => ['Crosswiki activity','measures a user\'s latest edit, bureaucrat, or sysop activity across all wikis.'],
     'globalgroups' => ['Global groups', 'lists rights with descriptions for each global group.'],
     'gusersearch' => ['Global user search', 'searches and filters global account creations'],
     'magicredirect' => ['Magic redirect', 'redirects to an arbitrary URL with tokens based on user and wiki filled in.'],

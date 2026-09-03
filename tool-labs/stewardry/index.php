@@ -7,7 +7,7 @@ $backend = Backend::Create('Stewardry', 'Estimates which users in a group are av
     ->link('/content/jquery.tablesorter.js')
     ->link('/content/submitRoute.js')
     ->link('/content/undefer.js')
-    ->link('/stewardry/scripts.js')
+    ->link('/tool/scripts.js')
     ->header();
 
 ##########
@@ -21,7 +21,7 @@ $data = [];
 ## Render form
 ##########
 echo "
-    <form action='/stewardry' method='get' data-submit-route='/stewardry/{wiki}'>
+    <form action='/' method='get' data-submit-route='/for/{wiki}'>
         <label for='wiki'>Wiki:</label>
         <select name='wiki' id='wiki'>
     ";

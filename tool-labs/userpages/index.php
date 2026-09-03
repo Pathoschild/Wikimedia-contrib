@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 require_once('../backend/modules/Backend.php');
 $backend = Backend::create('User pages', 'Find your user pages on all Wikimedia wikis.')
-    ->link('/userpages/scripts.js')
-    ->link('/userpages/stylesheet.css')
+    ->link('/tool/scripts.js')
+    ->link('/tool/stylesheet.css')
     ->link('/content/submitRoute.js')
     ->link('/content/undefer.js')
     ->header();
@@ -24,7 +24,7 @@ $deferRun = !empty($user) && $backend->isDeferRequested();
 ## Render form
 ##########
 echo "
-    <form action='/userpages' method='get' data-submit-route='/userpages/{user}'>
+    <form action='/' method='get' data-submit-route='/for/{user}'>
         <label for='user'>User name:</label>
         <input type='text' name='user' id='user' value='{$backend->formatValue($user)}' />", ($user == 'Shanel' ? '&hearts;' : ''), "<br />
 
@@ -100,7 +100,7 @@ do {
 
         $searchWikis = array_intersect_key($wikis, array_flip($unifiedWikis));
         if (!$searchWikis) {
-            $searchUrl = '/userpages/' . urlencode($user) . '?show_detached=1&defer=1';
+            $searchUrl = '/for/' . urlencode($user) . '?show_detached=1&defer=1';
             echo "
                     <div class='neutral'>
                         There is no global account with this name, or it has been <a href='https://meta.wikimedia.org/wiki/Oversight' title='about hiding user names'>globally hidden</a>.<br />
@@ -202,7 +202,7 @@ do {
         echo '<p><em>No user pages found.</em></p>';
 
     if (!$showDetached) {
-        $searchUrl = '/userpages/' . urlencode($user) . '?show_detached=1&defer=1';
+        $searchUrl = '/for/' . urlencode($user) . '?show_detached=1&defer=1';
         echo "<p><small>Only wikis connected to the global account were searched. You can <a href='{$backend->formatValue($searchUrl)}' data-undefer>search all wikis</a> if needed.</small></p>";
     }
 

@@ -11,10 +11,10 @@
  *   - `{*token}`: same as `{token}`, but also keeps slashes ('/') non-URL-encoded.
  *
  * For example, given a `target` value of `127.0.0.1/16`:
- *   route template      | submitted to
- *   ------------------- | --------------------------
- *   `/lookup/{target}`  | `/lookup/127.0.0.1%2F16`
- *   `/lookup/{*target}` | `/lookup/127.0.0.1/16`
+ *   route template   | submitted to
+ *   ---------------- | --------------------------
+ *   `/for/{target}`  | `/for/127.0.0.1%2F16`
+ *   `/for/{*target}` | `/for/127.0.0.1/16`
  */
 (function () {
     "use strict";
