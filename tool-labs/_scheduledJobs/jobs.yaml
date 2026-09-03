@@ -6,7 +6,7 @@
 #
 
 - name: rotate-logs
-  command: logrotate -v $HOME/git/wikimedia-contrib/tool-labs/logrotate.conf --state $HOME/logrotate.state
+  command: logrotate -v $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/logrotate.conf --state $HOME/logrotate.state
   image: mariadb # default image doesn't have logrotate installed
   schedule: "@daily"
   emails: onfailure

@@ -48,81 +48,73 @@ To deploy from scratch:
    # switch to the meta project
    become meta
 
-   ## set up tool files
+   # set up tool files
    git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
-   mkdir cache
-   mkdir -p logs
-   mkdir public_html
+   mkdir -p bin cache logs public_html
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
-   cd public_html
    for TARGET in backend content 'toolinfo.json' accounteligibility catanalysis globalgroups gusersearch magicredirect stewardry userpages
    do
-      ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
+      ln -s git/wikimedia-contrib/tool-labs/$TARGET public_html/$TARGET --relative
    done
+   cp /usr/bin/kubectl bin/kubectl # scheduled jobs (jobs.yaml) can only access home folder
 
    # set up script CDN (accessed via https://tools-static.wmflabs.org/meta/scripts/*.js).
-   mkdir ~/www
-   mkdir ~/www/static
-   cd ~/www/static
-   ln -s ~/git/wikimedia-contrib/user-scripts scripts
+   mkdir -p www/static
+   ln -s git/wikimedia-contrib/user-scripts www/static/scripts --relative
 
-   ## launch server
+   # launch server
    toolforge webservice php8.2 start --cpu 2 --mem 2Gi
 
-   ## start scheduled jobs (e.g. log rotation)
-   toolforge jobs load ~/git/wikimedia-contrib/tool-labs/jobs.yaml
+   # start scheduled jobs (e.g. log rotation)
+   toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
 
 
    ##########
    ## Set up meta2
    ##########
-   ## switch to the meta2 project
+   # switch to the meta2 project
    exit
    become meta2
 
-   ## set up files
+   # set up files
    git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
-   mkdir cache
-   mkdir -p logs
-   mkdir public_html
+   mkdir -p bin cache logs public_html
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
-   cd public_html
    for TARGET in backend content crossactivity
    do
-      ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
+      ln -s git/wikimedia-contrib/tool-labs/$TARGET public_html/$TARGET --relative
    done
+   cp /usr/bin/kubectl bin/kubectl # scheduled jobs (jobs.yaml) can only access home folder
 
-   ## launch server
+   # launch server
    toolforge webservice php8.2 start --cpu 2 --mem 2Gi
 
-   ## start scheduled jobs (e.g. log rotation)
-   toolforge jobs load ~/git/wikimedia-contrib/tool-labs/jobs.yaml
+   # start scheduled jobs (e.g. log rotation)
+   toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
 
 
    ##########
    ## Set up meta3
    ##########
-   ## switch to the meta3 project
+   # switch to the meta3 project
    exit
    become meta3
 
-   ## set up files
+   # set up files
    git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
-   mkdir cache
-   mkdir -p logs
-   mkdir public_html
+   mkdir -p bin cache logs public_html
    ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
-   cd public_html
    for TARGET in backend content stalktoy
    do
-      ln -s "../git/wikimedia-contrib/tool-labs/$TARGET"
+      ln -s git/wikimedia-contrib/tool-labs/$TARGET public_html/$TARGET --relative
    done
+   cp /usr/bin/kubectl bin/kubectl # scheduled jobs (jobs.yaml) can only access home folder
 
-   ## launch server
+   # launch server
    toolforge webservice php8.2 start --cpu 2 --mem 2Gi
 
-   ## start scheduled jobs (e.g. log rotation)
-   toolforge jobs load ~/git/wikimedia-contrib/tool-labs/jobs.yaml
+   # start scheduled jobs (e.g. log rotation)
+   toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
    ```
 
 That's it! The new tools should now be running at https://meta.toolforge.org. To update an account
@@ -130,7 +122,8 @@ later, just login and run these commands:
 
 ```sh
 git -C git/wikimedia-contrib pull
-toolforge jobs load ~/git/wikimedia-contrib/tool-labs/jobs.yaml # optional, only needed if jobs changed
+cp --update /usr/bin/kubectl bin/kubectl
+toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml # optional, only needed if jobs changed
 webservice restart
 ```
 
