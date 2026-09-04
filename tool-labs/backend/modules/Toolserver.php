@@ -77,7 +77,7 @@ class Toolserver extends Database
     /**
      * Construct an instance.
      * @param Profiler $profiler Provides basic performance profiling.
-     * @param Logger $logger Logs trace messages for troubleshooting.
+     * @param Logger $logger Writes errors to the tool's error log.
      * @param Cacher $cache Handles reading and writing data to a directory with expiry dates.
      * @param int|null $options Additional mode options which can be bitwise ORed together (available options: ERROR_THROW, ERROR_PRINT).
      * @param string|null $defaultUser The username to use when authenticating to the database, or null to retrieve it from the user configuration file.
@@ -220,7 +220,7 @@ class Toolserver extends Database
                 if ($chunkRows !== null)
                     $result->rows = array_merge($result->rows, $chunkRows);
                 else {
-                    $this->log("batched query failed on host [$host]; falling back to one query per wiki");
+                    $this->logger->error("batched query failed on host [$host]; falling back to one query per wiki");
                     $result->add($this->queryEachWiki($chunk, $sqlTemplate, $values));
                 }
             }
@@ -266,7 +266,7 @@ class Toolserver extends Database
             );
         }
         catch (PDOException $exc) {
-            $this->handleException($exc, 'Could not retrieve global account for user "' . htmlentities($user) . '".');
+            $this->handleException($exc, "Could not retrieve global account for user \"$user\".");
             return null;
         }
     }
@@ -299,7 +299,7 @@ class Toolserver extends Database
             return $wikis;
         }
         catch (PDOException $exc) {
-            $this->handleException($exc, 'Could not retrieve unified wikis for user "' . htmlentities($user) . '".');
+            $this->handleException($exc, "Could not retrieve unified wikis for user \"$user\".");
             return null;
         }
     }
@@ -342,7 +342,7 @@ class Toolserver extends Database
             return new LocalUser($user['id'], $user['name'], $user['registration_raw'], $user['registration'], $user['edits'], $actor['actor_id']);
         }
         catch (PDOException $exc) {
-            $this->handleException($exc, 'Could not retrieve local account details for user "' . htmlentities($username) . '" at wiki "' . htmlentities($wiki) . '".');
+            $this->handleException($exc, "Could not retrieve local account details for user \"$username\" at wiki \"$wiki\".");
             return null;
         }
     }
@@ -397,7 +397,7 @@ class Toolserver extends Database
             return ['raw' => null, 'formatted' => 'in 2005 or earlier'];
         }
         catch (PDOException $exc) {
-            $this->handleException($exc, 'Could not retrieve registration date for user id "' . htmlentities((string)$userId) . '".');
+            $this->handleException($exc, "Could not retrieve registration date for user id \"$userId\".");
             return null;
         }
     }
@@ -585,7 +585,7 @@ class Toolserver extends Database
         });
 
         if ($result->failedWikis)
-            $this->log('query failed on some wikis: [' . implode(', ', $result->failedWikis) . '].');
+            $this->logger->error('query failed on some wikis: [' . implode(', ', $result->failedWikis) . '].');
 
         return $result;
     }

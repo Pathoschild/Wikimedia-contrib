@@ -105,7 +105,7 @@ class Cacher
     private ?DateTime $purgeDate = null;
 
     /**
-     * Writes messages to a log file for troubleshooting.
+     * Writes errors to the tool's error log.
      */
     private Logger $logger;
 
@@ -134,31 +134,25 @@ class Cacher
      */
     public function getWithMetadata(string $key): mixed
     {
-        // parse path
+        // read file
         $path = $this->getPath($key);
-
-        // fetch data & handle expiry
-        if (!file_exists($path)) {
-            $this->logger->log('cache miss (file does not exist): ' . $path);
+        $data = @file_get_contents($path);
+        if (!$data)
             return null;
-        }
-        $data = file_get_contents($path);
-        if ($data)
-            $data = unserialize($data);
+
+        // deserialize data
+        $data = unserialize($data);
         if (!$data) {
-            $this->logger->log('cache miss (file could not be deserialized): ' . $path);
-            return null;
-        }
-        if ($data->IsExpired($this->purgeDate)) {
-            if ($data->IsPurged($this->purgeDate))
-                $this->logger->log('cache miss (data purged): ' . $path);
-            else
-                $this->logger->log('cache miss (data expired): ' . $path);
-            unlink($path);
+            $this->logger->error('cache read failed (file could not be deserialized): ' . $path);
             return null;
         }
 
-        $this->logger->log('cache hit (cached=' . $data->GetFormattedDate() . ', expires=' . $data->GetFormattedExpiry() . '): ' . $path);
+        // ignore if expired
+        if ($data->IsExpired($this->purgeDate)) {
+            @unlink($path);
+            return null;
+        }
+
         return $data;
     }
 
@@ -188,15 +182,12 @@ class Cacher
         $item = new CacheItem($data, $interval);
         $item = serialize($item);
         if ($item == null) {
-            $this->logger->log('cache failed (data could not be serialized): ' . $path);
+            $this->logger->error('cache write failed (data could not be serialized): ' . $path);
             return;
         }
 
-        $bytes = file_put_contents($path, $item);
-        if ($bytes === false)
-            $this->logger->log('cache failed (file write failed): ' . $path);
-        else
-            $this->logger->log('cache updated (' . $bytes . ' bytes): ' . $path);
+        if (file_put_contents($path, $item) === false)
+            $this->logger->error('cache write failed (could not write the file): ' . $path);
     }
 
 

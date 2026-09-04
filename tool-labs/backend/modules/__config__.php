@@ -24,12 +24,6 @@ DEFINE('DATA_PATH', '/data/project/' . SCRIPT_USER . '/');
 DEFINE('REPLICA_CNF_PATH', DATA_PATH . '/replica.my.cnf');
 
 /**
- * The directory to which to write log files.
- * @var string
- */
-DEFINE('LOG_PATH', DATA_PATH . '/logs/');
-
-/**
  * The directory to which to write cache files.
  * @var string
  */
@@ -61,7 +55,6 @@ $settings = [];
 #############################
 ini_set('display_errors', 1);
 error_reporting(E_ALL & ~E_NOTICE);
-$settings['debug'] = false;
 
 
 #############################

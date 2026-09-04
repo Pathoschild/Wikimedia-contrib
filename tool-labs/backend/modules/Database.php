@@ -160,7 +160,7 @@ class Database
     /**
      * Construct an instance.
      * @param Profiler $profiler Provides basic performance profiling.
-     * @param Logger $logger Writes messages to a log file for troubleshooting.
+     * @param Logger $logger Writes errors to the tool's error log.
      * @param int|null $options Additional mode options which can be bitwise ORed together (one of {@see Database::ERROR_THROW} or {@see Database::ERROR_PRINT}).
      * @param string|null $defaultUser The username to use when authenticating to the database, or null to retrieve it from the user configuration file.
      * @param string|null $defaultPassword The password to use when authenticating to the database, or null to retrieve it from the user configuration file.
@@ -240,7 +240,6 @@ class Database
 
         /* create new connection, if can't recycle one */
         if (!isset($this->connections[$host]) || !$this->connections[$this->host]) {
-            $this->log('connecting: host=[' . $host . '], database=[' . $database . ']');
             try {
                 $this->connections[$this->host] = new PDO(
                     self::DRIVER . ':host=' . addslashes($this->host) . ';dbname=' . addslashes($database),
@@ -252,7 +251,7 @@ class Database
                     PDO::ERRMODE_EXCEPTION
                 );
             } catch (PDOException $exc) {
-                return $this->handleException($exc, 'Could not connect to database host "' . htmlentities($host) . '".');
+                return $this->handleException($exc, "Could not connect to database host \"$host\".");
             }
         }
 
@@ -280,7 +279,8 @@ class Database
             return $this->connect($host, $database, $username, $password);
         }
         catch (PDOException $exc) {
-            return $this->handleException($exc, 'Could not connect to database "' . htmlentities((string)($database ?? $host)) . '".');
+            $name = $database ?? $host;
+            return $this->handleException($exc, "Could not connect to database \"$name\".");
         }
     }
 
@@ -320,13 +320,11 @@ class Database
             if ($values != null && !is_array($values))
                 $values = Array($values);
 
-            $this->log('query ' . $this->database . ': [' . $this->query->queryString . '], values=[' . preg_replace('/\s+/', ' ', print_r($values, true)) . ']');
             $this->query->execute($values);
-            $this->log('query done');
 
             return $this;
         } catch (Exception $exc) {
-            return $this->handleException($exc, 'Could not perform query:<br /><small>' . $this->getQueryDebugData() . '</small>');
+            return $this->handleException($exc, 'Could not perform query:', showDebugInfo: true);
         }
     }
 
@@ -344,7 +342,7 @@ class Database
         try {
             return $this->query->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $exc) {
-            return $this->handleException($exc, 'Could not fetch result from query:<br /><small>' . $this->getQueryDebugData() . '</small>');
+            return $this->handleException($exc, 'Could not fetch result from query:', showDebugInfo: true);
         }
     }
 
@@ -370,7 +368,7 @@ class Database
         try {
             return $this->query->fetchColumn($columnNumber);
         } catch (PDOException $exc) {
-            return $this->handleException($exc, 'Could not fetch result from query:<br /><small>' . $this->getQueryDebugData() . '</small>');
+            return $this->handleException($exc, 'Could not fetch result from query:', showDebugInfo: true);
         }
     }
 
@@ -385,7 +383,7 @@ class Database
         try {
             return $this->query->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $exc) {
-            return $this->handleException($exc, 'Could not fetch result from query:<br /><small>' . $this->getQueryDebugData() . '</small>');
+            return $this->handleException($exc, 'Could not fetch result from query:', showDebugInfo: true);
         }
     }
 
@@ -433,48 +431,54 @@ class Database
     /**
      * Handle an exception.
      * @param Exception $exception The intercepted exception to handle.
-     * @param string|null $error_message The error message to log (if any).
+     * @param string|null $errorMessage The error message to log (and print if applicable), or null to use the exception message.
+     * @param bool $showDebugInfo Whether to show the debug info from {@see getQueryDebugData} when printing to the page. (The error log always includes it.)
      * @throws Exception Throws the received exception if required by the error mode.
      * @return false
      */
-    protected function handleException(Exception $exception, ?string $error_message = null): false
+    protected function handleException(Exception $exception, ?string $errorMessage = null, bool $showDebugInfo = false): false
     {
-        $this->log("exception: error=[{$exception->getMessage()}], message=[{$error_message}]");
-
+        // track error
         $this->exceptions[$this->host] = $exception;
         $this->borked = true;
 
-        if ($this->errorMode & self::ERROR_PRINT) {
-            if ($error_message)
-                echo '<div class="error">', $error_message, '<br /><small>Exception: ', htmlentities($this->exceptions[$this->host]->getMessage()), '</small></div>';
-            else
-                echo '<div class="error">Exception: ', htmlentities($this->exceptions[$this->host]->getMessage()), '</div>';
-            return false;
+        // apply error mode
+        if ($this->errorMode) { // skip if errors are suppressed, e.g. via withSuppressedErrors
+            $debugInfo = $this->getQueryDebugData();
+
+            // write to `error.log`
+            $this->logger->error("Database error: $errorMessage $debugInfo Exception: {$exception->getMessage()}");
+
+            // write to page output
+            if ($this->errorMode & self::ERROR_PRINT) {
+                if ($errorMessage) {
+                    echo '<div class="error">', htmlentities($errorMessage);
+                    if ($showDebugInfo && $debugInfo)
+                        echo '<br /><small>', htmlentities($debugInfo), '</small>';
+                    echo '<br /><small>Exception: ', htmlentities($exception->getMessage()), '</small></div>';
+                }
+                else
+                    echo '<div class="error">Exception: ', htmlentities($exception->getMessage()), '</div>';
+                return false;
+            }
+
+            // rethrow
+            if ($this->errorMode & self::ERROR_THROW)
+                throw $exception;
         }
-        if ($this->errorMode & self::ERROR_THROW)
-            throw $exception;
+
         return false;
     }
 
     /**
      * Get a human-readable data dump about the current query.
      */
-    protected function getQueryDebugData(): string|null|false
+    private function getQueryDebugData(): string|null|false
     {
         if ($this->query == null)
             return null;
         ob_start();
         $this->query->debugDumpParams();
         return ob_get_clean();
-    }
-
-    /**
-     * Log a trace message.
-     * @param string $message The message to log.
-     */
-    protected function log(string $message): void
-    {
-        if ($this->logger != null)
-            $this->logger->log('Database> ' . $message);
     }
 }

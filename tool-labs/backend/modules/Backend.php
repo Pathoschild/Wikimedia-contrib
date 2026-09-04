@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 require_once('__config__.php');
 require_once('Base.php');
-require_once('external/KLogger.php');
 require_once('Logger.php');
 require_once('Cacher.php');
 require_once('Database.php');
@@ -35,7 +34,7 @@ class Backend extends Base
     private string $injectHead = '';
 
     /**
-     * Writes messages to a log file for troubleshooting.
+     * Writes errors to the tool's error log.
      */
     public Logger $logger;
 
@@ -83,8 +82,7 @@ class Backend extends Base
 
         /* start logger */
         $key = hash('crc32b', $_SERVER['REQUEST_TIME'] . $_SERVER['REQUEST_URI']);
-        $this->logger = new Logger(LOG_PATH, $key, $settings['debug']);
-        $this->logger->log('request: [' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . '] by [' . $_SERVER['HTTP_USER_AGENT'] . ']');
+        $this->logger = new Logger($key);
 
         /* build cache */
         $purge = $this->getBool('purge') ?? false;
@@ -404,7 +402,6 @@ class Backend extends Base
             );
         }
         $resultSeconds = round($totalTime, $precisionTime);
-        $this->logger->log("completed: $resultSeconds seconds.");
 
         /* output */
         echo "
