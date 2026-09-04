@@ -7,8 +7,8 @@
 
 - name: rotate-logs
   command: logrotate -v $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/logrotate.conf --state $HOME/logrotate.state
-  image: mariadb # default image doesn't have logrotate installed
-  schedule: "@daily"
+  image: mariadb     # default image doesn't have logrotate installed
+  schedule: "@daily" # @daily randomizes the time of day to avoid a usage spike at midnight UTC, but doesn't change it when reloaded
   emails: onfailure
   filelog-stdout: logs/rotate-logs.out # relative to the tool's home directory
   filelog-stderr: logs/rotate-logs.err

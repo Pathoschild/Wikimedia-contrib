@@ -63,8 +63,6 @@ To deploy an update:
    # update tool
    git -C git/wikimedia-contrib pull
    cp --update /usr/bin/kubectl bin/kubectl
-
-   # (optional) update jobs if they changed
    toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
 
    # (optional) restart service to bypass caching, or if .lighttpd.conf changed
@@ -135,4 +133,5 @@ With the above setup, these logs are created automatically on each tool account:
 - `~/logs/access.log` logs each incoming request via Lighttpd (configured via `~/.lighttpd.conf`).
 - `~/logs/rotate-logs.out` + `~/logs/rotate-logs.err` logs output from the log rotation job.
 
-The log files are rotated daily, with one week of backups in `~/logs`.
+The log files are rotated daily, with one week of backups in `~/logs`. Toolforge runs `@daily` tasks at a randomized
+time of day for each tool, so logs likely don't switch at midnight.
