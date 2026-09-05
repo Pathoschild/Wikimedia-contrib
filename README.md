@@ -1,5 +1,16 @@
 **Wikimedia-contrib** is a collection of user scripts and Toolforge tools intended for users of Wikimedia Foundation wikis.
 
+## Contents
+* [For users](#for-users)
+  * [Tools](#tools)
+  * [User scripts](#user-scripts)
+* [First-time setup on Toolforge](#first-time-setup-on-toolforge)
+  * [Tool accounts](#tool-accounts)
+  * [User scripts](#user-scripts-1)
+  * [Legacy redirects](#legacy-redirects)
+* [Deploy an update](#deploy-an-update)
+* [Web logs](#web-logs)
+
 ## For users
 ### Tools
 [Toolforge](https://toolforge.org/) is part of the Wikimedia Cloud infrastructure hosted by the Wikimedia Foundation for community-developed tools and bots. These tools provide analysis and data to support wiki editors and functionaries.
@@ -23,11 +34,13 @@ These user scripts extend the wiki interface seen by a user, and they're sometim
 * **[TemplateScript](https://meta.wikimedia.org/wiki/TemplateScript)** adds a menu of configurable templates and scripts to the sidebar. It automatically handles templates for various forms (from editing to protection), edit summaries, auto-submission, and filtering which templates are shown based on namespace, form, or arbitrary conditions. Templates can be inserted at the cursor position or at a preconfigured position, and scripts can be invoked when a sidebar link is activated. TemplateScript is also used as a framework for other scripts, and includes a [fully-featured regex editor](https://meta.wikimedia.org/wiki/User:Pathoschild/Scripts/TemplateScript#Regex_editor).
 * **[UseJS](https://meta.wikimedia.org/wiki/UseJS)** imports JavaScript for the current page when the URL contains a parameter like `&usejs=MediaWiki:Common.js`. It only accepts scripts in the protected `MediaWiki:` namespace.
 
-## Deploy to Toolforge
+## First-time setup on Toolforge
+This section covers setting up the Toolforge accounts which host the tools from scratch.
+
 ### Tool accounts
 Each tool has its own account, with a subdomain matching its folder name. For example, Stalktoy is at [stalktoy.toolforge.org](https://stalktoy.toolforge.org).
 
-To deploy a tool from scratch:
+To set up a tool:
 1. [Connect to Toolforge via SSH](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts).
 2. Run this script (editing the `# configure` section as needed):
    ```sh
@@ -36,14 +49,14 @@ To deploy a tool from scratch:
    toolName=stalktoy
 
    # add required folders
-   mkdir -p bin cache logs public_html
+   mkdir --parents bin cache logs public_html
 
    # add tool files
    git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
-   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
-   ln -s git/wikimedia-contrib/tool-labs/backend public_html/backend --relative
-   ln -s git/wikimedia-contrib/tool-labs/content public_html/content --relative
-   ln -s git/wikimedia-contrib/tool-labs/$toolName public_html/tool --relative
+   ln --symbolic git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
+   ln --symbolic git/wikimedia-contrib/tool-labs/backend public_html/backend --relative
+   ln --symbolic git/wikimedia-contrib/tool-labs/content public_html/content --relative
+   ln --symbolic git/wikimedia-contrib/tool-labs/$toolName public_html/tool --relative
    cp /usr/bin/kubectl bin/kubectl # scheduled jobs (jobs.yaml) can only access home folder
 
    # launch server
@@ -53,26 +66,10 @@ To deploy a tool from scratch:
    toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
    ```
 
-To deploy an update:
-1. [Connect to Toolforge via SSH](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts).
-2. Run this script (editing the `# configure` section as needed):
-   ```sh
-   # configure
-   become stalktoy
-
-   # update tool
-   git -C git/wikimedia-contrib pull
-   cp --update /usr/bin/kubectl bin/kubectl
-   toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
-
-   # (optional) restart service to bypass caching, or if .lighttpd.conf changed
-   webservice restart
-   ```
-
 ### User scripts
 The user scripts are deployed to the shared [`meta`](https://meta.toolforge.org) account, and made available through the Toolforge static CDN (via `https://tools-static.wmflabs.org/meta/scripts/*.js`).
 
-To deploy the `meta` account from scratch:
+To set up `meta`:
 1. [Connect to Toolforge via SSH](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts).
 2. Run this script:
    ```sh
@@ -80,16 +77,16 @@ To deploy the `meta` account from scratch:
    become meta
 
    # add required folders
-   mkdir -p bin logs
+   mkdir --parents bin logs
 
    ## add tool files
    git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
-   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
+   ln --symbolic git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
    cp /usr/bin/kubectl bin/kubectl # scheduled jobs (jobs.yaml) can only access home folder
 
    # set up script CDN
-   mkdir -p www/static
-   ln -s git/wikimedia-contrib/user-scripts www/static/scripts --relative
+   mkdir --parents www/static
+   ln --symbolic git/wikimedia-contrib/user-scripts www/static/scripts --relative
 
    ## launch server
    toolforge webservice php8.2 start --cpu 2 --mem 2Gi
@@ -98,14 +95,12 @@ To deploy the `meta` account from scratch:
    toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
    ```
 
-To deploy an update, follow the [same process as other tools](#tool-accounts).
-
 ### Legacy redirects
 The tools were previously hosted in three shared tool accounts (`meta`, `meta2`, and `meta3`). These still exist to redirect requests to the new per-tool accounts.
 
-To deploy `meta`, see [_user scripts_](#user-scripts-1) above.
+To set up `meta`, see [_user scripts_](#user-scripts-1) above.
 
-To deploy `meta2` or `meta3` from scratch:
+To set up `meta2` or `meta3`:
 1. [Connect to Toolforge via SSH](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts).
 2. Run this script (editing the `# configure` section as needed):
    ```sh
@@ -114,8 +109,8 @@ To deploy `meta2` or `meta3` from scratch:
 
    ## set up tool files
    git clone https://github.com/Pathoschild/Wikimedia-contrib.git git/wikimedia-contrib
-   mkdir -p bin logs public_html
-   ln -s git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
+   mkdir --parents bin logs public_html
+   ln --symbolic git/wikimedia-contrib/tool-labs/.lighttpd.conf .lighttpd.conf
    cp /usr/bin/kubectl bin/kubectl # scheduled jobs (jobs.yaml) can only access home folder
 
    ## launch server
@@ -125,7 +120,43 @@ To deploy `meta2` or `meta3` from scratch:
    toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
    ```
 
-To deploy an update, follow the [same process as other tools](#tool-accounts).
+## Deploy an update
+To update one tool account:
+1. [Connect to Toolforge via SSH](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Tool_Accounts).
+2. Run this script (editing the `# configure` section as needed):
+   ```sh
+   # configure
+   become stalktoy
+
+   # update tool
+   git -C git/wikimedia-contrib pull --ff-only
+   cp --update /usr/bin/kubectl bin/kubectl
+   toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
+
+   # (optional) restart service to bypass caching, or if .lighttpd.conf changed
+   webservice restart
+   ```
+
+To update every tool account at once:
+1. Connect to Toolforge via SSH.
+2. Run this script from your main account (not a tool account) which has access to all the tools:
+   ```sh
+   for toolName in accounteligibility catanalysis crossactivity globalgroups gusersearch magicredirect stalktoy stewardry userpages meta meta2 meta3; do
+       echo "=============== $toolName ==============="
+       become "$toolName" bash -s <<'EOF'
+           set -o errexit -o nounset
+
+           # update tool
+           git -C "$HOME/git/wikimedia-contrib" pull --ff-only
+           cp --update /usr/bin/kubectl "$HOME/bin/kubectl"
+           toolforge jobs load "$HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml"
+
+           # (optional) restart service to bypass caching, or if .lighttpd.conf changed
+           webservice restart
+   EOF
+       [ $? -eq 0 ] || echo "FAILED: $toolName"
+   done
+   ```
 
 ## Web logs
 With the above setup, these logs are created automatically on each tool account:
