@@ -131,6 +131,9 @@ To update one tool account:
    # update tool
    git -C git/wikimedia-contrib pull --ff-only
    cp --update /usr/bin/kubectl bin/kubectl
+
+   # update scheduled jobs
+   toolforge jobs flush
    toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
 
    # (optional) restart service to bypass caching, or if .lighttpd.conf changed
@@ -149,6 +152,9 @@ To update every tool account at once:
            # update tool
            git -C "$HOME/git/wikimedia-contrib" pull --ff-only
            cp --update /usr/bin/kubectl "$HOME/bin/kubectl"
+
+           # update scheduled jobs
+           toolforge jobs flush
            toolforge jobs load "$HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml"
 
            # (optional) restart service to bypass caching, or if .lighttpd.conf changed

@@ -1,15 +1,18 @@
 #
 # The scheduled jobs registered for a tool account. See README.md for usage.
 #
-# Running `toolforge jobs load` replaces the account's entire job list, so any tool-specific jobs
-# should be here too.
+# Implementation notes:
+#   - The deploy steps in `README.md` will delete any scheduled jobs that aren't in this file.
+#   - The @daily schedule runs once per day, at a fixed time that's deterministically randomized for
+#     each tool account + job name. For example, that means (a) logs probably won't rotate at 00:00
+#     and (b) two @daily jobs will probably run at different times.
 #
 
 # daily: rotate logs into ~/logs, with one week of backups
 - name: rotate-lighttpd-logs
   command: logrotate -v $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/logrotate.conf --state $HOME/logrotate.state
   image: mariadb     # default image doesn't have logrotate installed
-  schedule: "@daily" # @daily randomizes the time of day to avoid a usage spike at midnight UTC, but doesn't change it when reloaded
+  schedule: "@daily"
   emails: onfailure
   filelog-stdout: logs/job-rotate-lighttpd-logs.log # relative to the tool's home directory
   filelog-stderr: logs/job-rotate-lighttpd-logs.err
@@ -17,7 +20,7 @@
 # daily: send an email summary of any new messages in `error.log`
 - name: report-errors
   command: bash $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/report-errors.sh
-  image: mariadb
+  image: mariadb     # just for consistency with `rotate-lighttpd-logs`
   schedule: "@daily"
   emails: onfailure
   filelog-stdout: logs/job-report-errors.log
