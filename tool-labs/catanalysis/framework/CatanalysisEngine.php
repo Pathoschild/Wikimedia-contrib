@@ -132,9 +132,9 @@ class CatanalysisEngine extends Base
      * @param Database $db The connected database instance.
      * @param string|null $namespace The namespace to search.
      * @param string $title The page prefix to search.
-     * @return Database The Database instance to chain query methods.
+     * @return Database|false The Database instance to chain query methods, or false if the query failed.
      */
-    public function getEditsByPrefix(Database $db, ?string $namespace, string $title): Database
+    public function getEditsByPrefix(Database $db, ?string $namespace, string $title): Database|false
     {
         /* build initial query */
         $sql = '
@@ -184,77 +184,56 @@ class CatanalysisEngine extends Base
      * Get a SQL query that fetches all the edits to pages in a category or its subcategories.
      * @param Database $db The connected database instance.
      * @param string $title The category title to search.
-     * @return Database The Database instance to chain query methods.
+     * @return Database|false The Database instance to chain query methods, or false if the query failed.
      */
-    public function getEditsByCategory(Database $db, string $title): Database
+    public function getEditsByCategory(Database $db, string $title): Database|false
     {
-        /* fetch list of subcategories */
-        $cats = [];
-        $queue = [$title];
-        while (count($queue)) {
-            /* fetch subcategories of currently-known categories */
-            $dbCatQuery = 'SELECT page_title FROM page JOIN categorylinks ON page_id=cl_from WHERE page_namespace=14 AND cl_to IN (';
-            $dbCatValues = [];
-            while (count($queue)) {
-                if (!in_array($queue[0], $cats)) {
-                    $dbCatQuery .= '?,';
-                    $dbCatValues[] = str_replace(' ', '_', $queue[0]);
-                    $cats[] = array_shift($queue);
-                } else
-                    array_shift($queue);
-            }
-            $dbCatQuery = rtrim($dbCatQuery, ',') . ')';
+        return $db->query(
+            '
+                WITH
+                    RECURSIVE tree (lt_id) AS (
+                        -- the requested category
+                        SELECT lt_id
+                        FROM linktarget
+                        WHERE
+                            lt_namespace = 14
+                            AND lt_title = ?
 
-            /* queue subcategories */
-            if (count($dbCatValues) == 0)
-                continue;
-            $subcats = $db->query($dbCatQuery, $dbCatValues)->fetchAllAssoc();
-            foreach ($subcats as $subcat) {
-                $queue[] = $subcat['page_title'];
-            }
-        }
+                        UNION
 
-        /* build initial SQL query */
-        $sql = '
-            SELECT
-                page.page_namespace,
-                page.page_title,
-                page.page_is_redirect,
-                page.page_is_new,
-                revision.rev_minor_edit,
-                revision.rev_actor,
-                revision.rev_timestamp,
-                revision.rev_len,
-                revision.rev_page
-            FROM
-                revision
-                INNER JOIN page ON page.page_id = revision.rev_page
-                INNER JOIN (
-                    SELECT DISTINCT cl_from
-                    FROM categorylinks
-                    WHERE cl_to IN (
-        ';
-
-        /* add category values */
-        $values = [];
-        foreach ($cats as $cat) {
-            $sql .= '?,';
-            $values[] = str_replace(' ', '_', $cat);
-        }
-        $sql = rtrim($sql, ', ');
-        
-        /* finish query */
-        $sql .= '
+                        -- recursive subcategories
+                        SELECT subcat.lt_id
+                        FROM
+                            tree
+                            JOIN categorylinks ON categorylinks.cl_target_id = tree.lt_id
+                            JOIN page ON page.page_id = categorylinks.cl_from AND page.page_namespace = 14
+                            JOIN linktarget AS subcat ON subcat.lt_namespace = 14 AND subcat.lt_title = page.page_title
                     )
-                ) AS catlink ON page.page_id = catlink.cl_from
-            WHERE
-                revision.rev_actor IS NOT NULL
-                AND revision.rev_len IS NOT NULL -- ignore suppressed revisions
-            ORDER BY revision.rev_timestamp
-        ';
-
-        /* fetch results */
-        return $db->query($sql, $values);
+                SELECT
+                    page.page_namespace,
+                    page.page_title,
+                    page.page_is_redirect,
+                    page.page_is_new,
+                    revision.rev_minor_edit,
+                    revision.rev_actor,
+                    revision.rev_timestamp,
+                    revision.rev_len,
+                    revision.rev_page
+                FROM
+                    revision
+                    INNER JOIN page ON page.page_id = revision.rev_page
+                    INNER JOIN (
+                        SELECT DISTINCT cl_from
+                        FROM categorylinks
+                        WHERE cl_target_id IN (SELECT lt_id FROM tree)
+                    ) AS catlink ON page.page_id = catlink.cl_from
+                WHERE
+                    revision.rev_actor IS NOT NULL
+                    AND revision.rev_len IS NOT NULL -- ignore suppressed revisions
+                ORDER BY revision.rev_timestamp
+            ',
+            [str_replace(' ', '_', $title)]
+        );
     }
 
     /**

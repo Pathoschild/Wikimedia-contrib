@@ -118,6 +118,8 @@ do {
         ? $engine->getEditsByCategory($db, $title)
         : $engine->getEditsByPrefix($db, $namespace, $title);
     $backend->profiler->stop('build revisions query');
+    if ($query === false)
+        break; // error is shown automatically
 
     // get metrics
     $backend->profiler->start('fetch revision metadata');
