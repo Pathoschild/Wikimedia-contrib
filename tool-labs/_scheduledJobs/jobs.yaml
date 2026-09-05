@@ -5,10 +5,20 @@
 # should be here too.
 #
 
-- name: rotate-logs
+# daily: rotate logs into ~/logs, with one week of backups
+- name: rotate-lighttpd-logs
   command: logrotate -v $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/logrotate.conf --state $HOME/logrotate.state
   image: mariadb     # default image doesn't have logrotate installed
   schedule: "@daily" # @daily randomizes the time of day to avoid a usage spike at midnight UTC, but doesn't change it when reloaded
   emails: onfailure
-  filelog-stdout: logs/rotate-logs.out # relative to the tool's home directory
-  filelog-stderr: logs/rotate-logs.err
+  filelog-stdout: logs/job-rotate-lighttpd-logs.log # relative to the tool's home directory
+  filelog-stderr: logs/job-rotate-lighttpd-logs.err
+
+# daily: send an email summary of any new messages in `error.log`
+- name: report-errors
+  command: bash $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/report-errors.sh
+  image: mariadb
+  schedule: "@daily"
+  emails: onfailure
+  filelog-stdout: logs/job-report-errors.log
+  filelog-stderr: logs/job-report-errors.err

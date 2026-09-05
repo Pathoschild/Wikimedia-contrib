@@ -447,7 +447,7 @@ class Database
             $debugInfo = $this->getQueryDebugData();
 
             // write to `error.log`
-            $this->logger->error("Database error: $errorMessage $debugInfo Exception: {$exception->getMessage()}");
+            $this->logger->error("Database error: $errorMessage | Exception: {$exception->getMessage()} | $debugInfo");
 
             // write to page output
             if ($this->errorMode & self::ERROR_PRINT) {

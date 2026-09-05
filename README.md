@@ -131,7 +131,10 @@ To deploy an update, follow the [same process as other tools](#tool-accounts).
 With the above setup, these logs are created automatically on each tool account:
 - `~/error.log` logs Lighttpd errors (enabled by default).
 - `~/logs/access.log` logs each incoming request via Lighttpd (configured via `~/.lighttpd.conf`).
-- `~/logs/rotate-logs.out` + `~/logs/rotate-logs.err` logs output from the log rotation job.
+- `~/logs/job-*.log` + `~/logs/job-*.err` logs output from scheduled jobs.
 
-The log files are rotated daily, with one week of backups in `~/logs`. Toolforge runs `@daily` tasks at a randomized
-time of day for each tool, so logs likely don't switch at midnight.
+Two jobs run on each tool (set in `tool-labs/_scheduledJobs/jobs.yaml`):
+- The log files are rotated daily, with one week of backups in `~/logs`. (Toolforge runs `@daily` tasks at a randomized
+  time of day for each tool, so logs likely don't switch at midnight.)
+- If messages were written to `error.log`, a daily task sends a summary email for the last 24 hours to the tool
+  maintainers (i.e. `tools.<tool>@toolforge.org`).

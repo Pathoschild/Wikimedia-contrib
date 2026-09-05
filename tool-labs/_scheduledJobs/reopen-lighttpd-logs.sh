@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Notifies Lighttpd to reopen its log file handles after log rotation.
@@ -13,11 +13,11 @@ if [ ! -x "$KUBECTL" ]; then
 fi
 
 # find pod running the Lighttpd webservice
-POD=$("$KUBECTL" get pod --selector app.kubernetes.io/component=web --output name | head -1)
+POD=$("$KUBECTL" get pod --selector app.kubernetes.io/component=web --output name | head --lines=1)
 if [ -z "$POD" ]; then
     echo "Can't reopen the Lighttpd logs: the webservice wasn't found. Is it running?" >&2
     exit 1
 fi
 
 # send SIGHUP to Lighttpd (PID 1), so it reopens log handles without restarting the service itself
-"$KUBECTL" exec "$POD" -- kill -HUP 1
+"$KUBECTL" exec "$POD" -- kill --signal HUP 1
