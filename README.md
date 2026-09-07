@@ -12,6 +12,7 @@
 * [Server maintenance](#server-maintenance)
   * [Background jobs](#background-jobs)
   * [Web logs](#web-logs)
+  * [Deferred requests](#deferred-requests)
 
 ## For users
 ### Tools
@@ -168,12 +169,13 @@ To update every tool account at once:
 
 ## Server maintenance
 ### Background jobs
-Each tool account runs two background jobs, configured in `tool-labs/_scheduledJobs/jobs.yaml`. The [deploy steps](#deploy-an-update) delete any background job that isn't defined in that file.
+Each tool account runs three background jobs, configured in `tool-labs/_scheduledJobs/jobs.yaml`. The [deploy steps](#deploy-an-update) delete any background job that isn't defined in that file.
 
-task            | schedule   | description
---------------- | ---------- | -----------
-`rotate-logs`   | daily¹     | Move each [log file](#web-logs) into a dated and compressed `~/logs/old` backup, and delete backups older than a week.
-`report-errors` | daily¹     | Read `error.log` files covering the preceding 24 hours, and send an email notification to tool maintainers for any errors found.
+task                | schedule   | description
+------------------- | ---------- | -----------
+`rotate-logs`       | daily¹     | Move each [log file](#web-logs) into a dated and compressed `~/logs/old` backup, and delete backups older than a week.
+`track-server-load` | continuous | Maintains a `server-load.json` file with Lighttpd connection metrics, used for [request deferral](#deferred-requests).
+`report-errors`     | daily¹     | Read `error.log` files covering the preceding 24 hours, and send an email notification to tool maintainers for any errors found.
 
 <small>¹ Toolforge runs each daily job at a random time of day. The random time can be different for each job (even within one tool), but it's fixed for a given tool + job name across deploys.</small>
 
@@ -184,3 +186,15 @@ These logs are created automatically on each tool account:
 - `~/logs/job-*.log` + `~/logs/job-*.err` logs output from scheduled jobs.
 
 The log files are [rotated into `~/logs/old` daily](#background-jobs).
+
+### Deferred requests
+Each tool supports 'deferring' a request, which means that the user must submit the form to confirm before the results are shown.
+
+This happens in two cases:
+
+1. The URL has a `defer=1` query argument.
+
+   The tools add the argument when outputting HTML links to expensive requests, and JavaScript removes it when a user interacts with the link element. Since bots usually read URLs directly from the HTML and don't submit forms, that prevents bots from triggering a cascade of expensive queries.
+2. The tool account is overloaded (i.e. too many requests are getting queued), usually due to an excessive spike in bot traffic.
+
+   In that case, some requests get deferred automatically to prevent a death spiral. The deferred portion is proportional to the queue size.

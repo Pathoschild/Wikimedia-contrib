@@ -27,7 +27,7 @@ $user = $backend->getRouteValue() ?? $backend->getString('user', allowBlank: fal
 if ($user !== null)
     $user = $backend->formatUsername($user);
 $showAll = $backend->getBool('show_all') ?? false;
-$deferRun = !empty($user) && $backend->isDeferRequested();
+$deferRun = !empty($user) && $backend->defer->shouldDefer();
 
 
 ##########
@@ -45,7 +45,7 @@ echo "
 if ($deferRun) {
     echo "
         <div class='result-box'>
-            {$backend->getDeferredHtml("Analyze »")}
+            {$backend->defer->getConfirmHtml("Analyze »")}
         </div>
     ";
 }

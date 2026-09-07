@@ -17,7 +17,7 @@ if ($user)
     $user = $backend->formatUsername($user);
 $showAll = $backend->getBool('all') ?? false;
 $showDetached = $backend->getBool('show_detached') ?? false;
-$deferRun = !empty($user) && $backend->isDeferRequested();
+$deferRun = !empty($user) && $backend->defer->shouldDefer();
 
 
 ##########
@@ -41,7 +41,7 @@ echo "
 if ($deferRun) {
     echo "
         <div class='result-box'>
-            {$backend->getDeferredHtml("Analyze »")}
+            {$backend->defer->getConfirmHtml("Analyze »")}
         </div>
     ";
 }

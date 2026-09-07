@@ -6,6 +6,15 @@
 #     logrotate, and by the other jobs just for consistency.
 #
 
+# continuous: maintain a `server-load.json` file for automatic deferral (see README)
+- name: track-server-load
+  command: bash $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/track-server-load.sh
+  image: mariadb
+  continuous: true
+  emails: onfailure
+  filelog-stdout: logs/job-track-server-load.log
+  filelog-stderr: logs/job-track-server-load.err
+
 # daily: rotate logs into ~/logs/old, with one week of backups
 - name: rotate-logs
   command: logrotate -v $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/logrotate.conf --state $HOME/logrotate.state

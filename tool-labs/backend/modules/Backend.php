@@ -5,6 +5,7 @@ require_once('__config__.php');
 require_once('Base.php');
 require_once('Logger.php');
 require_once('Cacher.php');
+require_once('Defer.php');
 require_once('Database.php');
 require_once('Toolserver.php');
 require_once('Wikimedia.php');
@@ -42,6 +43,11 @@ class Backend extends Base
      * Reads and writes data to a cache with expiry dates.
      */
     public Cacher $cache;
+
+    /**
+     * Decides whether to defer expensive requests, and renders the prompts which confirm them.
+     */
+    public Defer $defer;
 
     /**
      * The global tool settings.
@@ -87,6 +93,9 @@ class Backend extends Base
         /* build cache */
         $purge = $this->getBool('purge') ?? false;
         $this->cache = new Cacher(CACHE_PATH, $this->logger, $purge);
+
+        /* handle deferred requests */
+        $this->defer = new Defer($this);
     }
 
     /**
@@ -175,28 +184,6 @@ class Backend extends Base
     public function getInt(string $name): ?int
     {
         return $this->getRaw($name, FILTER_VALIDATE_INT);
-    }
-
-    /**
-     * Get whether the request has a 'defer' marker, so it should prefill the form instead of
-     * accepting the submission directly.
-     *
-     * This is used to avoid automatically triggering submissions when web crawlers follow links
-     * between tools.
-     */
-    public function isDeferRequested(): bool
-    {
-        return $this->getBool('defer') ?? false;
-    }
-
-    /**
-     * Get an HTML box which asks the user to submit the form to run a deferred action.
-     *
-     * @param string $buttonLabel The label of the button which needs to be clicked.
-     */
-    public function getDeferredHtml(string $buttonLabel): string
-    {
-        return "<div class='neutral' data-is-deferred='1'>Click <em>{$this->formatValue($buttonLabel)}</em> above to show the results.</div>\n";
     }
 
     /**

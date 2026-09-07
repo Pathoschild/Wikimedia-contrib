@@ -38,7 +38,7 @@ $target = $route
     : $backend->getString('target', allowBlank: false);
 
 # initialise
-$deferRun = !empty($target) && $backend->isDeferRequested();
+$deferRun = !empty($target) && $backend->defer->shouldDefer();
 $engine = new StalktoyEngine($backend, $deferRun ? null : $target);
 $engine->showAllWikis = $backend->getBool('show_all_wikis') ?? false;
 $engine->showDetached = $backend->getBool('show_detached') ?? false;
@@ -79,7 +79,7 @@ echo "
 if ($deferRun) {
     echo "
         <div class='result-box'>
-            {$backend->getDeferredHtml("Analyze »")}
+            {$backend->defer->getConfirmHtml("Analyze »")}
         </div>
     ";
 }

@@ -22,7 +22,7 @@ $name = $backend->getRouteValue() ?? $backend->getString('name');
 $useRegex = $backend->getBool('regex') ?? false;
 $showLocked = $backend->getBool('show_locked') ?? false;
 $caseInsensitive = $backend->getBool('icase') ?? false;
-$deferRun = $backend->isDeferRequested();
+$deferRun = $backend->defer->shouldDefer();
 
 /* add user name filter */
 if ($name != null) {
@@ -151,7 +151,7 @@ if ($deferRun) {
         ";
     }
     else
-        echo $backend->getDeferredHtml("Search »");
+        echo $backend->defer->getConfirmHtml("Search »");
 }
 
 ##########
