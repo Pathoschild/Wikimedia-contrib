@@ -223,13 +223,13 @@ class HasGroupDurationRule implements LocalRule
 
     /**
      * Parse the log_params field for a log entry.
-     * @param string $params The log_parse value.
+     * @param string|null $params The log_params value which encodes the group changes for a log entry, or null if it was hidden.
      * @param string $group The group key to find.
      * @return array<string, array<string, mixed>>|null A representation of the log metadata for the given log entry, with three keys: old_group (whether the user had the group before the log entry), new_group (whether the user had it after the log entry), and expiry (the date when the permission will auto-expire, if applicable).
      */
-    private function parseLogParams(string $params, string $group): ?array
+    private function parseLogParams(?string $params, string $group): ?array
     {
-        if (empty(trim($params)))
+        if (!$params || !trim($params))
             return null;
 
         // 2005 to 2012 (comma-separated values on two lines, old then new)
