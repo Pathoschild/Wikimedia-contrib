@@ -15,6 +15,7 @@ $backend = Backend::Create('Stewardry', 'Estimates which users in a group are av
 ##########
 $engine = new StewardryEngine($backend);
 $data = [];
+$deferRun = $engine->dbname && count($engine->groups) && $backend->defer->shouldDefer();
 
 
 ##########
@@ -56,6 +57,12 @@ do {
     // form not filled
     if (!$engine->dbname || !count($engine->groups))
         break;
+
+    // deferred request
+    if ($deferRun) {
+        echo $backend->defer->getConfirmHtml("Analyze");
+        break;
+    }
 
     // invalid input
     if (!$engine->wiki) {

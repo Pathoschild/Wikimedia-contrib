@@ -8,6 +8,7 @@ require_once('../backend/modules/Form.php');
 require_once('../backend/modules/IPAddress.php');
 $backend = Backend::create('Catanalysis', 'Analyzes edits to pages in the category tree rooted at the specified category (or pages rooted at a prefix). This is primarily intended for test project analysis by the Wikimedia Foundation <a href="https://meta.wikimedia.org/wiki/Language_committee" title="language committee">language committee</a>.')
     ->link('/tool/stylesheet.css')
+    ->link('/content/undefer.js')
     ->header();
 spl_autoload_register(function ($className) {
     foreach (["framework/$className.php", "framework/models/$className.php"] as $path) {
@@ -38,6 +39,7 @@ $fullTitle = $backend->formatInitialCapital($backend->getString('title'));
 $database = $backend->getString('wiki', allowBlank: false) ?? $backend->getString('db', allowBlank: false) ?? 'incubatorwiki';
 $cat = $backend->getBool('cat') ?? true;
 $listPages = $backend->getBool('listpages') ?? false;
+$deferRun = !empty($fullTitle) && $backend->defer->shouldDefer();
 
 /* normalise database */
 if ($database && substr($database, -2) == '_p')
@@ -64,8 +66,8 @@ $db = $backend->getDatabase();
     <form action="/" method="get">
         <fieldset>
             <p>Enter a category name to analyse members of, or a prefix to analyze subpages of (see <a
-                        href="/?title=Wp/kab&cat=0&db=incubatorwiki" title="example">prefix</a> and <a
-                        href="/?title=Af+Afrikaans+(Afrikaans)&cat=1&db=sourceswiki" title="example">category</a> examples).</p>
+                        href="/?title=Wp/kab&cat=0&db=incubatorwiki&defer=1" title="example" data-undefer>prefix</a> and <a
+                        href="/?title=Af+Afrikaans+(Afrikaans)&cat=1&db=sourceswiki&defer=1" title="example" data-undefer>category</a> examples).</p>
 
             <input type="text" id="title" name="title" value="<?= $backend->formatValue($fullTitle) ?>"/>
             (this is a <?= Form::select('cat', $cat, [1 => 'category', 0 => 'prefix']) ?> on <select name="wiki" id="wiki">
@@ -95,6 +97,12 @@ do {
     // missing data (break)
     if (!$title)
         break;
+
+    // deferred request (break)
+    if ($deferRun) {
+        echo $backend->defer->getConfirmHtml("analyze");
+        break;
+    }
 
     // category mode (warn)
     if ($cat) {

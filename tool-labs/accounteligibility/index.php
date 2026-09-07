@@ -22,6 +22,8 @@ $backend = Backend::create('AccountEligibility', 'Analyzes a given user account 
 ############################
 ## Initialize
 ############################
+$backend->profiler->start('init');
+
 $route = $backend->getRoute();
 if ($route) {
     $eventId = ctype_digit($route[0]) ? (int)$route[0] : null;
@@ -31,9 +33,11 @@ if ($route) {
 $eventId = $eventId ?? $backend->getInt('event');
 $user = $user ?? $backend->getString('user', allowBlank: false) ?? '';
 $wiki = $backend->getString('wiki');
-$backend->profiler->start('init engine');
+$deferRun = !empty($user) && $backend->defer->shouldDefer();
+
 $engine = new AccountEligibilityEngine($backend, $user, $eventId, $wiki);
-$backend->profiler->stop('init engine');
+
+$backend->profiler->stop('init');
 
 ############################
 ## Input form
@@ -83,6 +87,11 @@ if ($engine->username)
     echo '<div class="result-box">';
 
     do {
+        if ($deferRun) {
+            echo $backend->defer->getConfirmHtml("Analyze »");
+            break;
+        }
+
         /* validate event */
         if (!$engine->event) {
             echo '<div class="error">There is no event matching the given ID.</div>';
