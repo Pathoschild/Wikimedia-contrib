@@ -2,25 +2,23 @@
 # The scheduled jobs registered for a tool account. See README.md for usage.
 #
 # Implementation notes:
-#   - The deploy steps in `README.md` will delete any scheduled jobs that aren't in this file.
-#   - The @daily schedule runs once per day, at a fixed time that's deterministically randomized for
-#     each tool account + job name. For example, that means (a) logs probably won't rotate at 00:00
-#     and (b) two @daily jobs will probably run at different times.
+#   - The mariadb image is used by the log rotation job because the other images don't have
+#     logrotate, and by the other jobs just for consistency.
 #
 
-# daily: rotate logs into ~/logs, with one week of backups
-- name: rotate-lighttpd-logs
+# daily: rotate logs into ~/logs/old, with one week of backups
+- name: rotate-logs
   command: logrotate -v $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/logrotate.conf --state $HOME/logrotate.state
-  image: mariadb     # default image doesn't have logrotate installed
+  image: mariadb
   schedule: "@daily"
   emails: onfailure
-  filelog-stdout: logs/job-rotate-lighttpd-logs.log # relative to the tool's home directory
-  filelog-stderr: logs/job-rotate-lighttpd-logs.err
+  filelog-stdout: logs/job-rotate-logs.log # relative to the tool's home directory
+  filelog-stderr: logs/job-rotate-logs.err
 
 # daily: send an email summary of any new messages in `error.log`
 - name: report-errors
   command: bash $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/report-errors.sh
-  image: mariadb     # just for consistency with `rotate-lighttpd-logs`
+  image: mariadb
   schedule: "@daily"
   emails: onfailure
   filelog-stdout: logs/job-report-errors.log

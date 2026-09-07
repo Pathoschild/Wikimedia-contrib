@@ -3,8 +3,8 @@
 #
 # Emails a summary of errors logged to `error.log` in the last 24 hours.
 #
-# This reads `~/error.log` and the most recent rotated `~/logs/error.log-*` backup, groups similar
-# messages, and sends an email with the top 10.
+# This reads `~/error.log` and the most recent rotated `~/logs/old` backup, groups similar messages,
+# and sends an email with the top 10.
 #
 set -o errexit -o nounset -o pipefail
 
@@ -31,7 +31,7 @@ logs=()
 if [ -f "$HOME/error.log" ]; then
     logs+=("$HOME/error.log")
 fi
-newestPath=$(ls --format=single-column --sort=time "$HOME/logs/"error.log-* 2>/dev/null | head --lines=1 || true)
+newestPath=$(ls --format=single-column --sort=time "$HOME"/logs/old/error.log-* 2>/dev/null | head --lines=1 || true)
 if [ -n "$newestPath" ]; then
     logs+=("$newestPath")
 fi
@@ -120,7 +120,7 @@ head --lines="$top_count" "$work/counted" > "$work/top"
     echo
     awk '{ count = $1; sub(/^ *[0-9]+ /, ""); printf "%7d x %s\n", count, $0 }' "$work/top" # "$count x $message"
     echo
-    echo "See ~/error.log and ~/logs/error.log-* on the server for the full error info."
+    echo "See ~/error.log and ~/logs/old/* on the server for the full error info."
 } > "$work/body"
 
 cat "$work/body"

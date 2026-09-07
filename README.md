@@ -9,7 +9,9 @@
   * [User scripts](#user-scripts-1)
   * [Legacy redirects](#legacy-redirects)
 * [Deploy an update](#deploy-an-update)
-* [Web logs](#web-logs)
+* [Server maintenance](#server-maintenance)
+  * [Background jobs](#background-jobs)
+  * [Web logs](#web-logs)
 
 ## For users
 ### Tools
@@ -144,7 +146,7 @@ To update every tool account at once:
 1. Connect to Toolforge via SSH.
 2. Run this script from your main account (not a tool account) which has access to all the tools:
    ```sh
-   for toolName in accounteligibility catanalysis crossactivity globalgroups gusersearch magicredirect stalktoy stewardry userpages meta meta2 meta3; do
+   for toolName in accounteligibility catanalysis crossactivity globalgroups gusersearch magicredirect stalktoy stewardry userpages meta meta2 meta3 meta-dev; do
        echo "=============== $toolName ==============="
        become "$toolName" bash -s <<'EOF'
            set -o errexit -o nounset
@@ -164,14 +166,21 @@ To update every tool account at once:
    done
    ```
 
-## Web logs
-With the above setup, these logs are created automatically on each tool account:
+## Server maintenance
+### Background jobs
+Each tool account runs two background jobs, configured in `tool-labs/_scheduledJobs/jobs.yaml`. The [deploy steps](#deploy-an-update) delete any background job that isn't defined in that file.
+
+task            | schedule   | description
+--------------- | ---------- | -----------
+`rotate-logs`   | daily¹     | Move each [log file](#web-logs) into a dated and compressed `~/logs/old` backup, and delete backups older than a week.
+`report-errors` | daily¹     | Read `error.log` files covering the preceding 24 hours, and send an email notification to tool maintainers for any errors found.
+
+<small>¹ Toolforge runs each daily job at a random time of day. The random time can be different for each job (even within one tool), but it's fixed for a given tool + job name across deploys.</small>
+
+### Web logs
+These logs are created automatically on each tool account:
 - `~/error.log` logs Lighttpd errors (enabled by default).
 - `~/logs/access.log` logs each incoming request via Lighttpd (configured via `~/.lighttpd.conf`).
 - `~/logs/job-*.log` + `~/logs/job-*.err` logs output from scheduled jobs.
 
-Two jobs run on each tool (set in `tool-labs/_scheduledJobs/jobs.yaml`):
-- The log files are rotated daily, with one week of backups in `~/logs`. (Toolforge runs `@daily` tasks at a randomized
-  time of day for each tool, so logs likely don't switch at midnight.)
-- If messages were written to `error.log`, a daily task sends a summary email for the last 24 hours to the tool
-  maintainers (i.e. `tools.<tool>@toolforge.org`).
+The log files are [rotated into `~/logs/old` daily](#background-jobs).
