@@ -22,6 +22,18 @@ toolName=$(basename "$HOME")
 statsUrl="http://$toolName:8000/server-statistics" # call webservice's Kubernetes service directly to avoid extra HTTP overhead and rate limits
 path="$HOME/server-load.json"
 tempPath="$path.tmp"
+logPath="$HOME/logs/job-track-server-load.log"
+
+
+##########
+## Define helpers
+##########
+# Write a message to the log.
+#
+# This appends without a persistent file handle, to allow for log rotation.
+log() {
+    printf '%s: %s\n' "$(date --utc '+%Y-%m-%d %H:%M:%S')" "$1" >> "$logPath"
+}
 
 
 ##########
@@ -38,14 +50,14 @@ while true; do
     # on error, pause until next try
     if [[ ! "$active" =~ ^[0-9]+$ ]]; then
         if [ "$lastReadFailed" -eq 0 ]; then
-            echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): can't read $statsUrl. Keeping $path as-is; will retry every $pollSeconds seconds until it succeeds." >&2
+            log "can't read $statsUrl. Keeping $path as-is; will retry every $pollSeconds seconds until it succeeds."
             lastReadFailed=1
         fi
         sleep "$pollSeconds"
         continue
     fi
     if [ "$lastReadFailed" -eq 1 ]; then
-        echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): reading $statsUrl succeeded, resuming normally."
+        log "reading $statsUrl succeeded, resuming normally."
         lastReadFailed=0
     fi
 
@@ -57,11 +69,12 @@ while true; do
     if [ "$queued" -ne "$lastQueued" ] || [ $(( now - lastWrite )) -ge "$heartbeatSeconds" ]; then
         # overwrite file atomically (so tools can never read it mid-write)
         content=$(printf '{"queued": %d, "active": %d, "generated": %d}' "$queued" "$active" "$now")
-        if printf '%s\n' "$content" > "$tempPath" && mv --force "$tempPath" "$path"; then
+        if error=$({ printf '%s\n' "$content" > "$tempPath" && mv --force "$tempPath" "$path"; } 2>&1); then
             lastQueued=$queued
             lastWrite=$now
         else
-            echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): couldn't write to $path." >&2
+            error=${error//$'\n'/ } # keep log entry on one line
+            log "couldn't write to $path. Error: ${error:-(no output from failed commands)}"
         fi
     fi
 

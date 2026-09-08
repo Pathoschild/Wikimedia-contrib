@@ -12,8 +12,11 @@
   image: mariadb
   continuous: true
   emails: onfailure
-  filelog-stdout: logs/job-track-server-load.log
-  filelog-stderr: logs/job-track-server-load.err
+
+  # Log output just in case (to a different file path), but the task appends its output to
+  # `logs/job-track-server-load.log` manually to allow for log rotation.
+  filelog-stdout: logs/default-job-track-server-load.log
+  filelog-stderr: logs/default-job-track-server-load.err
 
 # daily: rotate logs into ~/logs/old, with one week of backups
 - name: rotate-logs
