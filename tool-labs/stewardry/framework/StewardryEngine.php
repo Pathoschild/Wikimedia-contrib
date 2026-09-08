@@ -86,24 +86,20 @@ class StewardryEngine extends Base
         // fetch users
         $users = $this->db->query('
             SELECT
-                user_id,
                 user_name,
-                GROUP_CONCAT(ug_group SEPARATOR ",") AS user_groups
+                actor_id,
+                GROUP_CONCAT(ug_group SEPARATOR ",") AS user_groups,
+                (SELECT rev_timestamp FROM revision_userindex WHERE rev_actor = actor_id ORDER BY rev_timestamp DESC LIMIT 1) AS last_edit
             FROM
                 user
                 INNER JOIN user_groups ON user_id = ug_user AND ug_group IN(\'' . implode('\',\'', $groupNames) . '\')
+                INNER JOIN actor ON actor_user = user_id
             GROUP BY user_name
         ')->fetchAllAssoc();
 
         // fetch user info
         foreach ($users as &$user)
         {
-            // actor ID/name
-            $user['actor_id'] = $this->db->query('SELECT actor_id FROM actor WHERE actor_user = ? LIMIT 1', [$user['user_id']])->fetchValue();
-
-            // last edit
-            $user['last_edit'] = $this->db->query('SELECT rev_timestamp FROM revision_userindex WHERE rev_actor = ? ORDER BY rev_id DESC LIMIT 1', [$user['actor_id']])->fetchValue();
-
             // prefill group values
             foreach ($groupNames as $groupName)
             {
@@ -118,7 +114,7 @@ class StewardryEngine extends Base
                 $user["user_has_$groupName"] = true;
 
                 if ($rights[$groupName])
-                    $user["last_$groupName"] = $this->db->query('SELECT log_timestamp FROM logging_userindex WHERE log_actor = ? AND log_type IN (\'' . implode('\',\'', $rights[$groupName]) . '\') ORDER BY log_id DESC LIMIT 1', [$user['actor_id']])->fetchValue();
+                    $user["last_$groupName"] = $this->fetchLastLogTimestamp($user['actor_id'], $rights[$groupName]);
             }
         }
 
@@ -143,5 +139,33 @@ class StewardryEngine extends Base
         }
 
         return '<td style="background:#FCC;">never</td>';
+    }
+
+
+    ##########
+    ## Private methods
+    ##########
+    /**
+     * Get the timestamp of the user's most recent action for the given log types.
+     *
+     * @param int|string $actorId The actor ID whose log entries to search.
+     * @param string[] $logTypes The log types to match.
+     */
+    private function fetchLastLogTimestamp(int|string $actorId, array $logTypes): mixed
+    {
+        // note: a separate subquery per log type seems inefficient, but it's faster than `WHERE IN`
+        // since each subquery can use the `log_actor_type_time` index.
+
+        $subqueries = [];
+        $values = [];
+        foreach ($logTypes as $logType) {
+            $subqueries[] = '(SELECT log_timestamp AS timestamp FROM logging_userindex WHERE log_actor = ? AND log_type = ? ORDER BY log_timestamp DESC LIMIT 1)';
+            $values[] = $actorId;
+            $values[] = $logType;
+        }
+
+        return $this->db
+            ->query('SELECT MAX(timestamp) FROM (' . implode(' UNION ALL ', $subqueries) . ') AS matches', $values)
+            ->fetchValue();
     }
 }
