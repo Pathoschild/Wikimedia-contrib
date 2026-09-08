@@ -172,7 +172,7 @@ class AccountEligibilityEngine extends Base
         $this->user = null;
 
         /* connect & fetch user details */
-        if ($dbname) {
+        if ($dbname && isset($this->wikis[$dbname])) {
             $this->wiki = $this->wikis[$dbname];
             $this->db->connect($dbname);
         }

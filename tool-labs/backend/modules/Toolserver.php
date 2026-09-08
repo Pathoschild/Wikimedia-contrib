@@ -99,9 +99,9 @@ class Toolserver extends Database
     /**
      * Connect to a database server.
      * @param string $host The server address to connect to.
-     * @param string $database The name of the database to connect to.
-     * @param string $username The username to use when authenticating to the database, or null to authenticate with the default username.
-     * @param string $password The password to use when authenticating to the database, or null to authenticate with the default password.
+     * @param string|null $database The name of the database to connect to.
+     * @param string|null $username The username to use when authenticating to the database, or null to authenticate with the default username.
+     * @param string|null $password The password to use when authenticating to the database, or null to authenticate with the default password.
      * @return bool Whether the connection was successfully established.
      */
     public function connect(string $host, ?string $database = null, ?string $username = null, ?string $password = null): bool
@@ -113,7 +113,34 @@ class Toolserver extends Database
             $host = $this->dbnHosts[$dbname];
         }
 
+        /* validate */
+        else if ($database === null) {
+            $error = "There's no wiki matching the database name \"$host\".";
+            return $this->handleException(new InvalidArgumentException($error), $error);
+        }
+
         return parent::connect($host, $database, $username, $password);
+    }
+
+    /**
+     * Connect to a database server, but treat a connection failure as a handled exception. This
+     * will reuse an existing server connection if it has been previously opened.
+     *
+     * @param string $host The server address to connect to.
+     * @param string|null $database The name of the database to connect to.
+     * @param string|null $username The username to use when authenticating to the database, or null to authenticate with the default username.
+     * @param string|null $password The password to use when authenticating to the database, or null to authenticate with the default password.
+     * @return bool Whether the connection was successfully established.
+     */
+    public function tryConnect(string $host, ?string $database = null, ?string $username = null, ?string $password = null): bool
+    {
+        try {
+            return $this->connect($host, $database, $username, $password);
+        }
+        catch (PDOException $exc) {
+            $name = $database ?? $host;
+            return $this->handleException($exc, "Could not connect to database \"$name\".");
+        }
     }
 
     /**

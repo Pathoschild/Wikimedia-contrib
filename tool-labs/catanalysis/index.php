@@ -117,7 +117,8 @@ do {
     ##########
     ## Collect revision metrics
     ##########
-    $db->connect($database);
+    if (!$db->connect($database))
+        break; // error is shown automatically
     $engine = new CatanalysisEngine();
 
     // build query

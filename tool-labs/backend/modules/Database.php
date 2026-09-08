@@ -212,15 +212,15 @@ class Database
     /**
      * Open a database connection. This will reuse an existing server connection if it has been previously opened.
      * @param string $host The server address to connect to.
-     * @param string|null $database The name of the database to connect to.
+     * @param string $database The name of the database to connect to.
      * @param string|null $username The username to use when authenticating to the database, or null to authenticate with the default username.
      * @param string|null $password The password to use when authenticating to the database, or null to authenticate with the default password.
      * @return bool Whether the connection was successfully established.
      */
-    public function connect(string $host, ?string $database = null, ?string $username = null, ?string $password = null): bool
+    public function connect(string $host, string $database, ?string $username = null, ?string $password = null): bool
     {
         /* normalize database name for Toolforge */
-        if (isset($database) && substr($database, -2) != '_p')
+        if (substr($database, -2) != '_p')
             $database .= '_p';
         if (FORCE_DB_HOST)
             $host = FORCE_DB_HOST;
@@ -264,33 +264,12 @@ class Database
     }
 
     /**
-     * Open a database connection, but treat a connection failure as a handled exception. This will
-     * reuse an existing server connection if it has been previously opened.
-     *
-     * @param string $host The server address to connect to.
-     * @param string|null $database The name of the database to connect to.
-     * @param string|null $username The username to use when authenticating to the database, or null to authenticate with the default username.
-     * @param string|null $password The password to use when authenticating to the database, or null to authenticate with the default password.
-     * @return bool Whether the connection was successfully established.
-     */
-    public function tryConnect(string $host, ?string $database = null, ?string $username = null, ?string $password = null): bool
-    {
-        try {
-            return $this->connect($host, $database, $username, $password);
-        }
-        catch (PDOException $exc) {
-            $name = $database ?? $host;
-            return $this->handleException($exc, "Could not connect to database \"$name\".");
-        }
-    }
-
-    /**
      * Reopen the previous connection. This is typically used after establishing a temporary connection to a different database.
      * @return bool Whether the connection was successfully established.
      */
     public function connectPrevious(): bool
     {
-        if ($this->prevHost)
+        if ($this->prevHost && $this->prevDatabase)
             return $this->connect($this->prevHost, $this->prevDatabase, $this->prevUsername, $this->prevPassword);
         return false;
     }
