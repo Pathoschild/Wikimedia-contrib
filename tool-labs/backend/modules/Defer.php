@@ -37,16 +37,17 @@ class Defer
     private const MAX_QUEUE_SIZE = 32;
 
     /**
-     * The age of '~/server-load.json' in seconds before it's considered stale and unreliable, when
-     * the file indicates the server is processing requests.
+     * The minimum age of '~/server-load.json' in seconds before it's considered stale and
+     * unreliable.
+     *
+     * When requests are queued, the file is updated continuously; so an old file means it's not
+     * getting updated anymore (e.g. the background job failed). In that case, we don't want to
+     * keep deferring requests automatically for all users based on old data.
+     *
+     * When the request queue is empty, the file is only updated periodically (e.g. every 5 minutes).
+     * It's fine to treat a valid empty-queue file as stale though, since the behavior is identical.
      */
-    private const STALE_SECONDS_WHEN_BUSY = 15;
-
-    /**
-     * The age of '~/server-load.json' in seconds before it's considered stale and unreliable, when
-     * the file indicates the server has zero queued requests.
-     */
-    private const STALE_SECONDS_WHEN_IDLE = 600;
+    private const STALE_SECONDS = 60;
 
     /**
      * A value indicating that the request doesn't need to be deferred.
@@ -196,10 +197,7 @@ class Defer
 
         // ignore stale data
         $age = time() - $data['generated'];
-        $maxAge = $data['queued'] > 0
-            ? self::STALE_SECONDS_WHEN_BUSY
-            : self::STALE_SECONDS_WHEN_IDLE;
-        if ($age < 0 || $age > $maxAge)
+        if ($age < 0 || $age > self::STALE_SECONDS)
             return null;
 
         // get queued count

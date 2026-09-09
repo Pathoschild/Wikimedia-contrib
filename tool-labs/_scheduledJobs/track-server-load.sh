@@ -65,8 +65,12 @@ while true; do
     queued=$(( active > workerCount ? active - workerCount : 0 ))
 
     # update file as needed
+    #  - When requests are queued, the file is updated on every tick so tools can defer requests
+    #    automatically based on the latest data.
+    #  - When the queue is empty, tools don't apply automatic deferral so it's only updated
+    #    periodically to indicate the job is still running.
     now=$(date '+%s')
-    if [ "$queued" -ne "$lastQueued" ] || [ $(( now - lastWrite )) -ge "$heartbeatSeconds" ]; then
+    if [ "$queued" -ne "$lastQueued" ] || [ "$queued" -gt 0 ] || [ $(( now - lastWrite )) -ge "$heartbeatSeconds" ]; then
         # overwrite file atomically (so tools can never read it mid-write)
         content=$(printf '{"queued": %d, "active": %d, "generated": %d}' "$queued" "$active" "$now")
         if error=$({ printf '%s\n' "$content" > "$tempPath" && mv --force "$tempPath" "$path"; } 2>&1); then
