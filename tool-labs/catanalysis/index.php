@@ -165,11 +165,11 @@ do {
                 <li>
                     <a href="#Lists">Lists</a>
                     <ol>
-                        <li><a href="#list_editors">editors</a></li>
+                        <li><a href="#list_editors">Editors</a></li>
                         <?php
                         if ($listPages) {
                             ?>
-                            <li><a href="#list_pages">pages</a></li>
+                            <li><a href="#list_pages">Pages</a></li>
                             <?php
                         }
                         ?>
@@ -177,10 +177,10 @@ do {
                 </li>
                 <li><a href="#Overview">Overview</a>
                     <ol>
-                        <li><a href="#edits_per_month">edits per month</a></li>
-                        <li><a href="#new_pages_per_month">new pages per month</a></li>
-                        <li><a href="#bytes_added_per_month">bytes added per month</a></li>
-                        <li><a href="#editors_per_month">editors per month</a></li>
+                        <li><a href="#edits_per_month">Edits per month</a></li>
+                        <li><a href="#new_pages_per_month">New pages per month</a></li>
+                        <li><a href="#bytes_added_per_month">Bytes added per month</a></li>
+                        <li><a href="#editors_per_month">Editors per month</a></li>
                     </ol>
                 </li>
                 <li><a href="#distribution">Edit distribution per month</a>
@@ -205,7 +205,7 @@ do {
         /* user list */
         $users = $metrics->users;
         usort($users, fn($a, $b) => $b->edits - $a->edits);
-        echo '<h4 id="list_editors">editors</h4><ol>';
+        echo '<h4 id="list_editors">Editors</h4><ol>';
         foreach ($users as $user) {
             echo '<li';
             if ($user->edits < $maxEditsForInactivity || $user->isBot || $user->isAnonymous)
@@ -221,7 +221,7 @@ do {
 
         if ($listPages) {
             /* page list */
-            echo '<h4 id="list_pages">pages</h4><ol>';
+            echo '<h4 id="list_pages">Pages</h4><ol>';
             foreach ($metrics->pages as $page)
                 echo '<li', ($page->isRedirect ? ' class="redirect"' : ''), '>', $engine->getLinkHtml($url, $page->name), '</li>';
             echo '</ol>';
@@ -242,7 +242,7 @@ do {
 
         /* edits per month */
         echo '
-            <h4 id="edits_per_month">edits per month</h4>
+            <h4 id="edits_per_month">Edits per month</h4>
             <p class="bar-scale">Each <samp>|</samp> character represents ten edits.</p>
             <table>
         ';
@@ -275,7 +275,7 @@ do {
 
         /* editors per month */
         echo '
-            <h4 id="editors_per_month">editors per month</h4>
+            <h4 id="editors_per_month">Editors per month</h4>
             <p class="bar-scale">Each <samp>|</samp> character represents one editor.</p>
             <table>
         ';
