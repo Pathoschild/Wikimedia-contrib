@@ -242,29 +242,44 @@ do {
             ';
 
         /* edits per month */
-        echo "<h4 id='edits_per_month'>edits per month</h4><table>";
+        echo '
+            <h4 id="edits_per_month">edits per month</h4>
+            <p class="bar-scale">Each <samp>|</samp> character represents ten edits.</p>
+            <table>
+        ';
         foreach ($metrics->months as $month)
             echo $engine->getBarHtml($month->name, $month->edits, 10);
         echo "</table>";
         unset($month);
 
         /* new pages per month */
-        echo "<h4 id='new_pages_per_month'>New pages per month</h4><table>";
+        echo '
+            <h4 id="new_pages_per_month">New pages per month</h4>
+            <p class="bar-scale">Each <samp>|</samp> character represents ten new pages.</p>
+            <table>
+        ';
         foreach ($metrics->months as $month)
             echo $engine->getBarHtml($month->name, $month->newPages, 10);
         echo "</table>";
         unset($month);
 
         /* content added per month */
-        echo "<h4 id='bytes_added_per_month'>Bytes added per month</h4><table>";
+        echo '
+            <h4 id="bytes_added_per_month">Bytes added per month</h4>
+            <p class="bar-scale">Each <samp>|</samp> character represents 5,000 bytes.</p>
+            <table>
+        ';
         foreach ($metrics->months as $month)
             echo $engine->getBarHtml($month->name, $month->bytesAdded, 5000);
         echo '</table>';
         unset($month);
 
         /* editors per month */
-        echo '<h4 id="editors_per_month">editors per month</h4>',
-        '<table>';
+        echo '
+            <h4 id="editors_per_month">editors per month</h4>
+            <p class="bar-scale">Each <samp>|</samp> character represents one editor.</p>
+            <table>
+        ';
         foreach ($metrics->months as $month) {
             // discount those with less than edit limit
             $users = 0;
@@ -279,7 +294,10 @@ do {
         ##########
         ## Edit distribution per month
         ##########
-        echo '<h3 id="distribution">Edit distribution per month</h3>';
+        echo '
+            <h3 id="distribution">Edit distribution per month</h3>
+            <p class="bar-scale">Each <samp>|</samp> character represents ten edits.</p>
+        ';
 
         foreach ($metrics->months as $month) {
             echo '<h4 id="distribution_', $month->name, '">', $month->name, '</h4>',

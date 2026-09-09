@@ -27,6 +27,10 @@ td.bar {
     overflow-wrap: anywhere;
 }
 
+p.bar-scale {
+    font-size: 0.8em;
+}
+
 /* classes */
 .struckout a {
     text-decoration: line-through;
