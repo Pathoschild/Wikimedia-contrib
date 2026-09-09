@@ -170,7 +170,6 @@ do {
                         if ($listPages) {
                             ?>
                             <li><a href="#list_pages">pages</a></li>
-                            <li><a href="#list_redirects">redirects</a></li>
                             <?php
                         }
                         ?>
