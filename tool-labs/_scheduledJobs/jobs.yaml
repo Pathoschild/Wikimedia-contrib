@@ -4,11 +4,14 @@
 # Implementation notes:
 #   - The mariadb image is used by the log rotation job because the other images don't have
 #     logrotate, and by the other jobs just for consistency.
+#   - Continuous jobs trigger onfailure emails by default when restarted for a deploy. To avoid
+#     that, run their command with `exec` so they run in the container's main process and can handle
+#     the SIGINT/SIGTERM signals in their code.
 #
 
 # continuous: maintain a `server-load.json` file for automatic deferral (see README)
 - name: track-server-load
-  command: bash $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/track-server-load.sh
+  command: exec bash $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/track-server-load.sh
   image: mariadb
   continuous: true
   emails: onfailure

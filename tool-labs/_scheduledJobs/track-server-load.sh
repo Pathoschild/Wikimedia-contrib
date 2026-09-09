@@ -37,6 +37,13 @@ log() {
 
 
 ##########
+## Handle exit signal
+##########
+# exit gracefully when Toolforge stops the job normally (e.g. as part of a deploy)
+trap 'exit 0' TERM INT
+
+
+##########
 ## Track queue size
 ##########
 lastQueued=-1
