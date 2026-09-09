@@ -132,7 +132,7 @@ To update one tool account:
    become stalktoy
 
    # update tool
-   git -C git/wikimedia-contrib pull --ff-only
+   git -C git/wikimedia-contrib pull --ff-only --no-stat
    cp --update /usr/bin/kubectl bin/kubectl
 
    # update scheduled jobs
@@ -153,7 +153,7 @@ To update every tool account at once:
            set -o errexit -o nounset
 
            # update tool
-           git -C "$HOME/git/wikimedia-contrib" pull --ff-only
+           git -C "$HOME/git/wikimedia-contrib" pull --ff-only --no-stat
            cp --update /usr/bin/kubectl "$HOME/bin/kubectl"
 
            # update scheduled jobs
@@ -164,6 +164,7 @@ To update every tool account at once:
            webservice restart
    EOF
        [ $? -eq 0 ] || echo "FAILED: $toolName"
+       echo
    done
    ```
 
