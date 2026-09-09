@@ -26,11 +26,6 @@ spl_autoload_register(function ($className) {
  */
 $maxEditsForInactivity = 10;
 
-/**
- * The maximum number of users a test wiki can have (per month) while still being counted as inactive.
- */
-$maxUsersForInactivity = 3;
-
 ##########
 ## Properties
 ##########
@@ -106,8 +101,12 @@ do {
 
     // category mode (warn)
     if ($cat) {
-        echo '<p class="neutral" style="border-color:#C66;">You have selected category mode, which can be skewed by incorrect categorization. Please review the list of pages generated below.</p>';
-        $listPages = true;
+        echo
+            '<p class="neutral" style="border-color:#C66;">You\'re reviewing a category, which can be skewed by incorrect categorization. ',
+            $listPages
+                ? 'You can review the list of pages below if needed.'
+                : 'You can optionally enable \'list all pages and redirects\' above to review the list of pages.',
+            '</p>';
     }
     if ($namespace) {
         echo '<p class="neutral" style="border-color:#C66;">You have specified the "', $backend->formatText($namespace), '" namespace in the prefix. The details below only reflect edits in that namespace.</p>';
@@ -132,7 +131,7 @@ do {
 
     // get metrics
     $backend->profiler->start('fetch revision metadata');
-    $metrics = $engine->getEditMetrics($db, $query);
+    $metrics = $engine->getEditMetrics($query);
     $backend->profiler->stop('fetch revision metadata');
 
     // mark bots

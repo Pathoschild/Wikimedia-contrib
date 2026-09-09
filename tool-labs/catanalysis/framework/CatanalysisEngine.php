@@ -142,14 +142,13 @@ class CatanalysisEngine extends Base
                 page.page_namespace,
                 page.page_title,
                 page.page_is_redirect,
-                page.page_is_new,
-                revision.rev_minor_edit,
-                revision.rev_actor,
+                actor.actor_name,
                 revision.rev_timestamp,
                 revision.rev_len,
                 revision.rev_page
             FROM
                 revision
+                INNER JOIN actor ON actor.actor_id = revision.rev_actor
                 LEFT JOIN page ON page.page_id = revision.rev_page
         ';
         $values = [];
@@ -213,15 +212,14 @@ class CatanalysisEngine extends Base
                     page.page_namespace,
                     page.page_title,
                     page.page_is_redirect,
-                    page.page_is_new,
-                    revision.rev_minor_edit,
-                    revision.rev_actor,
+                    actor.actor_name,
                     revision.rev_timestamp,
                     revision.rev_len,
                     revision.rev_page
                 FROM
                     revision
                     INNER JOIN page ON page.page_id = revision.rev_page
+                    INNER JOIN actor ON actor.actor_id = revision.rev_actor
                     INNER JOIN (
                         SELECT DISTINCT cl_from
                         FROM categorylinks
@@ -248,30 +246,14 @@ class CatanalysisEngine extends Base
 
     /**
      * Get metadata about matching revisions.
-     * @param Database $db The connected database instance.
      * @param Database $revisionQuery The revision query.
      * @return Metrics The revision metrics.
      */
-    public function getEditMetrics(Database $db, Database $revisionQuery): Metrics {
+    public function getEditMetrics(Database $revisionQuery): Metrics {
         $metrics = new Metrics();
 
-        // fetch revisions
-        $revisions = $revisionQuery->fetchAllAssoc();
-
-        // fetch actor names
-        $actorNames = [];
-        foreach ($revisions as $row)
-            $actorNames[$row['rev_actor']] = null;
-        if (count($actorNames) > 0)
-        {
-            foreach ($db->query('SELECT actor_id, actor_name FROM actor WHERE actor_id IN (' . implode(',', array_keys($actorNames)) .')')->fetchAllAssoc() as $actor)
-                $actorNames[$actor['actor_id']] = $actor['actor_name'];
-        }
-
-        // process data
-        foreach ($revisions as $row) {
-            $row['actor_name'] = $actorNames[$row['rev_actor']];
-
+        // stream and process data
+        while ($row = $revisionQuery->fetchAssoc()) {
             $monthKey = preg_replace('/^(\d{4})(\d{2}).+$/', '$1-$2', $row['rev_timestamp']);
             $isNew = !array_key_exists($row['rev_page'], $metrics->pages);
             $isAnonymous = $this->isAnonymousUser($row['actor_name']);
@@ -344,9 +326,9 @@ class CatanalysisEngine extends Base
 
         // get flags
         $bots = [];
-        if (count($users) > 0)
+        foreach (array_chunk($users, 1000) as $userChunk)
         {
-            $query = $db->query('SELECT user_name FROM user INNER JOIN user_groups ON user_id = ug_user WHERE user_name IN (' . rtrim(str_repeat('?,', count($users)), ',') . ') AND ug_group = "bot"', $users);
+            $query = $db->query('SELECT user_name FROM user INNER JOIN user_groups ON user_id = ug_user WHERE user_name IN (' . rtrim(str_repeat('?,', count($userChunk)), ',') . ') AND ug_group = "bot"', $userChunk);
             while ($user = $query->fetchValue())
                 $bots[$user] = true;
             unset($user, $query);
