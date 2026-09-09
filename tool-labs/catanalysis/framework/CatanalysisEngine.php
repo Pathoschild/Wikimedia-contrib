@@ -12,8 +12,8 @@ class CatanalysisEngine extends Base
     /**
      * Get the HTML for a bar to show in a bar graph.
      * @param string $label The bar label.
-     * @param int $total The total value across all bars.
-     * @param int $barvalue The value of this bar.
+     * @param int $total The total value of this entry in the bar chart.
+     * @param int $barvalue The value of each 'unit' of a bar (e.g. one character in an ASCII bar chart).
      * @param bool $strike Whether to format the label as struck out.
      */
     public function getBarHtml(string $label, int $total, int $barvalue, bool $strike = false): string
@@ -24,7 +24,7 @@ class CatanalysisEngine extends Base
         $out .= '<tr><td';
         if ($strike)
             $out .= ' class="struckout"';
-        $out .= '>' . $label . '</td><td><b>';
+        $out .= '>' . $label . '</td><td class="bar"><b>';
         for ($i = 0; $i < $bars; $i++)
             $out .= '|';
         $out .= '</b></td><td><small>';

@@ -21,6 +21,12 @@ h3 {
     border-bottom: 1px dashed gray;
 }
 
+/* bar charts */
+td.bar {
+    /* wrap bar at page's right edge if needed */
+    overflow-wrap: anywhere;
+}
+
 /* classes */
 .struckout a {
     text-decoration: line-through;
