@@ -118,11 +118,9 @@ do {
                     LIMIT 1
                 ) AS last_edit,
                 (
-                    SELECT DATE_FORMAT(log_timestamp, "%Y-%m-%d %H:%i")
+                    SELECT DATE_FORMAT(MAX(log_timestamp), "%Y-%m-%d %H:%i")
                     FROM {db}.logging_userindex
                     WHERE log_actor = actor_id
-                    ORDER BY log_timestamp DESC
-                    LIMIT 1
                 ) AS last_log_action
             FROM {db}.actor
             WHERE
