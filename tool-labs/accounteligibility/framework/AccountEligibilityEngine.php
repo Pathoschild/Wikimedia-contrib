@@ -71,7 +71,7 @@ class AccountEligibilityEngine extends Base
 
     /**
      * The user's local accounts as a database name => local account lookup.
-     * @var LocalUser[]
+     * @var array<string, LocalUser|null>
      */
     public array $users = [];
 
@@ -270,14 +270,14 @@ class AccountEligibilityEngine extends Base
     }
 
     /**
-     * Get the user's local account information for the current wiki.
-     * @return LocalUser
+     * Get the user's local account information for the current wiki, if they have an account on that wiki.
+     * @return LocalUser|null
      */
-    public function getUser(): LocalUser
+    public function getUser(): ?LocalUser
     {
         $dbname = $this->wiki->dbName;
 
-        if (!isset($this->users[$dbname]))
+        if (!array_key_exists($dbname, $this->users))
             $this->users[$dbname] = $this->db->getUserDetails($dbname, $this->username);
 
         $this->user = $this->users[$dbname];

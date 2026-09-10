@@ -354,6 +354,8 @@ class Toolserver extends Database
             ');
             $query->execute([$username]);
             $user = $query->fetch(PDO::FETCH_ASSOC);
+            if (!$user)
+                return null; // the user has no local account on this wiki
 
             // fetch actor ID
             $query = $this->db->prepare('
