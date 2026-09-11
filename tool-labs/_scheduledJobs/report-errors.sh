@@ -77,16 +77,6 @@ sed "
     # strip session key added by Logger::error
     s/^\[[0-9a-f]*\] //
     s:/\*[0-9a-f]*\*/:/*key*/:g
-
-    # strip quoted values, like literals in a SQL query
-    s/'[^']*'/'?'/g
-    s/\"[^\"]*\"/\"?\"/g
-
-    # strip SQL byte-length markers like \`[119]\`
-    s/\[[0-9]\{1,\}\]/[N]/g
-
-    # strip process IDs, timestamps, row IDs, etc
-    s/[0-9]\{4,\}/N/g
 " "$work/entries" |
     # drop routine lifecycle messages (not errors)
     grep --text --invert-match --extended-regexp 'logfiles cycled|server started|server stopped|unknown config-key' |
