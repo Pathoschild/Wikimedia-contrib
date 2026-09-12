@@ -32,6 +32,8 @@ if ($name != null) {
     $searchField = 'gu_name';
     if ($caseInsensitive)
         $searchField = "CONVERT($searchField USING utf8mb4) COLLATE utf8mb4_general_ci";
+    elseif ($useRegex)
+        $searchField = "CONVERT($searchField USING utf8mb4) COLLATE utf8mb4_bin";
 
     $engine->filter(GUserSearchEngine::T_GLOBALUSER, $searchField, $operator, $name);
     $engine->describeFilter("username {$operator} {$name}");
