@@ -30,13 +30,10 @@ if ($name != null) {
     $operator = ($useRegex ? GUserSearchEngine::OP_REGEXP : GUserSearchEngine::OP_LIKE);
 
     $searchField = 'gu_name';
-    $searchValue = $name;
-    if ($caseInsensitive) {
-        $searchField = "UPPER(CONVERT($searchField USING utf8))";
-        $searchValue = strtoupper($searchValue);
-    }
+    if ($caseInsensitive)
+        $searchField = "CONVERT($searchField USING utf8mb4) COLLATE utf8mb4_general_ci";
 
-    $engine->filter(GUserSearchEngine::T_GLOBALUSER, $searchField, $operator, $searchValue);
+    $engine->filter(GUserSearchEngine::T_GLOBALUSER, $searchField, $operator, $name);
     $engine->describeFilter("username {$operator} {$name}");
 }
 
