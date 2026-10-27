@@ -63,7 +63,7 @@ To set up a tool:
    cp /usr/bin/kubectl bin/kubectl # scheduled jobs (jobs.yaml) can only access home folder
 
    # launch server
-   toolforge webservice php8.2 start --cpu 2 --mem 2Gi
+   toolforge webservice php8.4 start --cpu 2 --mem 2Gi
 
    # start scheduled jobs (e.g. log rotation)
    toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
@@ -92,7 +92,7 @@ To set up `meta`:
    ln --symbolic git/wikimedia-contrib/user-scripts www/static/scripts --relative
 
    ## launch server
-   toolforge webservice php8.2 start --cpu 2 --mem 2Gi
+   toolforge webservice php8.4 start --cpu 2 --mem 2Gi
 
    ## start scheduled jobs (e.g. log rotation)
    toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
@@ -117,7 +117,7 @@ To set up `meta2` or `meta3`:
    cp /usr/bin/kubectl bin/kubectl # scheduled jobs (jobs.yaml) can only access home folder
 
    ## launch server
-   toolforge webservice php8.2 start --cpu 2 --mem 2Gi
+   toolforge webservice php8.4 start --cpu 2 --mem 2Gi
 
    ## start scheduled jobs (e.g. log rotation)
    toolforge jobs load ~/git/wikimedia-contrib/tool-labs/_scheduledJobs/jobs.yaml
