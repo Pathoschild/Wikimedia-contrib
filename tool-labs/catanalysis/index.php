@@ -126,7 +126,7 @@ do {
         ? $engine->getEditsByCategory($db, $title)
         : $engine->getEditsByPrefix($db, $namespace, $title);
     $backend->profiler->stop('build revisions query');
-    if ($query === false)
+    if (!$query)
         break; // error is shown automatically
 
     // get metrics
@@ -147,7 +147,7 @@ do {
     ##########
     $backend->profiler->start('fetch domain');
     $db->connect('metawiki');
-    $url = $db->query('SELECT url AS domain FROM meta_p.wiki WHERE dbname=? LIMIT 1', [$database])->fetchValue();
+    $url = $db->query('SELECT url AS domain FROM meta_p.wiki WHERE dbname=? LIMIT 1', [$database])?->fetchValue() ?: '';
     $db->dispose();
     $backend->profiler->stop('fetch domain');
 

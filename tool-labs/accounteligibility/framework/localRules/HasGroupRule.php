@@ -46,7 +46,7 @@ class HasGroupRule implements LocalRule
     public function accumulate(Toolserver $db, Wiki $wiki, LocalUser $user): ?ResultInfo
     {
         // accumulate
-        $hasGroup = (bool)$db->query('SELECT COUNT(ug_user) FROM user_groups WHERE ug_user=? AND ug_group=? LIMIT 1', [$user->id, $this->group])->fetchColumn();
+        $hasGroup = (bool)$db->query('SELECT COUNT(ug_user) FROM user_groups WHERE ug_user=? AND ug_group=? LIMIT 1', [$user->id, $this->group])?->fetchColumn();
         $isMet = $hasGroup == !$this->negate;
 
         // get message

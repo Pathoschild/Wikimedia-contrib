@@ -44,7 +44,7 @@ class Wikimedia
             // build wiki list
             $wikis = [];
             $db->connect('metawiki.web.db.svc.wikimedia.cloud', 'metawiki_p');
-            foreach ($db->query('SELECT dbname, lang, family, url, size, is_closed, slice FROM meta_p.wiki WHERE url IS NOT NULL')->fetchAllAssoc() as $row)
+            foreach ($db->query('SELECT dbname, lang, family, url, size, is_closed, slice FROM meta_p.wiki WHERE url IS NOT NULL')?->fetchAllAssoc() ?: [] as $row)
             {
                 if(!in_array($row['dbname'], $ignoreDbNames))
                 {

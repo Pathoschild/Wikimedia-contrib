@@ -253,7 +253,7 @@ $db = $backend->getDatabase();
 $db->connect('metawiki');
 
 $groups = [];
-foreach ($db->query('SELECT DISTINCT ggp_group FROM centralauth_p.global_group_permissions')->fetchAllAssoc() as $groupRow) {
+foreach ($db->query('SELECT DISTINCT ggp_group FROM centralauth_p.global_group_permissions')?->fetchAllAssoc() ?: [] as $groupRow) {
     /* group name */
     $groupKey = $groupRow['ggp_group'];
     $group = [
@@ -267,17 +267,17 @@ foreach ($db->query('SELECT DISTINCT ggp_group FROM centralauth_p.global_group_p
     ];
 
     /* rights */
-    foreach ($db->query('SELECT ggp_permission FROM centralauth_p.global_group_permissions WHERE ggp_group = ?', [$groupKey])->fetchAllAssoc() as $rightsRow)
+    foreach ($db->query('SELECT ggp_permission FROM centralauth_p.global_group_permissions WHERE ggp_group = ?', [$groupKey])?->fetchAllAssoc() ?: [] as $rightsRow)
         $group['rights'][] = $rightsRow['ggp_permission'];
     sort($group['rights']);
     if (!count($group['rights']))
         continue; // groups with no rights are deleted (but still in the database)
 
     /* member count */
-    $group['members'] = $db->query('SELECT COUNT(*) FROM centralauth_p.global_user_groups LEFT JOIN centralauth_p.globaluser ON gug_user = gu_id WHERE gug_group = ? AND gu_id IS NOT NULL', [$groupKey])->fetchValue();
+    $group['members'] = $db->query('SELECT COUNT(*) FROM centralauth_p.global_user_groups LEFT JOIN centralauth_p.globaluser ON gug_user = gu_id WHERE gug_group = ? AND gu_id IS NOT NULL', [$groupKey])?->fetchValue();
 
     /* wikis */
-    $wikiset = $db->query('SELECT ws_id, ws_name, ws_type, ws_wikis FROM centralauth_p.wikiset WHERE ws_id = (SELECT ggr_set FROM centralauth_p.global_group_restrictions WHERE ggr_group = ?)', [$groupKey])->fetchAssoc();
+    $wikiset = $db->query('SELECT ws_id, ws_name, ws_type, ws_wikis FROM centralauth_p.wikiset WHERE ws_id = (SELECT ggr_set FROM centralauth_p.global_group_restrictions WHERE ggr_group = ?)', [$groupKey])?->fetchAssoc();
     if ($wikiset) {
         $group['wikiset'] = [
             'id' => $wikiset['ws_id'],

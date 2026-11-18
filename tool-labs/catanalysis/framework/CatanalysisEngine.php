@@ -132,9 +132,9 @@ class CatanalysisEngine extends Base
      * @param Database $db The connected database instance.
      * @param string|null $namespace The namespace to search.
      * @param string $title The page prefix to search.
-     * @return Database|false The Database instance to chain query methods, or false if the query failed.
+     * @return Database|null The Database instance to chain query methods, or null if the query failed.
      */
-    public function getEditsByPrefix(Database $db, ?string $namespace, string $title): Database|false
+    public function getEditsByPrefix(Database $db, ?string $namespace, string $title): ?Database
     {
         /* build initial query */
         $sql = '
@@ -183,9 +183,9 @@ class CatanalysisEngine extends Base
      * Get a SQL query that fetches all the edits to pages in a category or its subcategories.
      * @param Database $db The connected database instance.
      * @param string $title The category title to search.
-     * @return Database|false The Database instance to chain query methods, or false if the query failed.
+     * @return Database|null The Database instance to chain query methods, or null if the query failed.
      */
-    public function getEditsByCategory(Database $db, string $title): Database|false
+    public function getEditsByCategory(Database $db, string $title): ?Database
     {
         return $db->query(
             '
@@ -329,7 +329,7 @@ class CatanalysisEngine extends Base
         foreach (array_chunk($users, 1000) as $userChunk)
         {
             $query = $db->query('SELECT user_name FROM user INNER JOIN user_groups ON user_id = ug_user WHERE user_name IN (' . rtrim(str_repeat('?,', count($userChunk)), ',') . ') AND ug_group = "bot"', $userChunk);
-            while ($user = $query->fetchValue())
+            while ($user = $query?->fetchValue())
                 $bots[$user] = true;
             unset($user, $query);
         }

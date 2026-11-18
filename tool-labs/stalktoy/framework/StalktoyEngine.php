@@ -168,7 +168,7 @@ class StalktoyEngine extends Base
                 LIMIT 1
             ',
             [$target, $target]
-        )->fetchAssoc();
+        )?->fetchAssoc();
 
         // create model
         $account = new Stalktoy\GlobalAccount();
@@ -208,7 +208,7 @@ class StalktoyEngine extends Base
                 WHERE gug_user = ?
             ',
             [$id]
-        )->fetchAllAssoc();
+        )?->fetchAllAssoc() ?: [];
 
         // extract groups for each wiki
         $groups = [];
@@ -288,7 +288,7 @@ class StalktoyEngine extends Base
                 ORDER BY gb_timestamp
             ',
             [$start, $end, $start, $end]
-        )->fetchAllAssoc();
+        )?->fetchAllAssoc() ?: [];
 
         foreach ($query as $row) {
             $block = new Stalktoy\Block();

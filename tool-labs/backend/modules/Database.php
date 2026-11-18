@@ -282,14 +282,14 @@ class Database
      * Submit a parameterized SQL query to the database.
      * @param string $sql The raw SQL command to submit.
      * @param array<string, mixed> $values The values to substituted for parameterized placeholders in the SQL command.
-     * @return Database|false The Database instance for method chaining (or false if the query failed).
+     * @return Database|null The Database instance for method chaining, or null if the query failed.
      */
-    public function query(string $sql, array $values = []): self|false
+    public function query(string $sql, array $values = []): ?self
     {
         $sql .= " /*{$this->logger->key}*/";
 
         if ($this->borked)
-            return false;
+            return null;
         try {
             if ($this->db == null)
                 throw new Exception('Not connected to a database.');
@@ -303,7 +303,8 @@ class Database
 
             return $this;
         } catch (Exception $exc) {
-            return $this->handleException($exc, 'Could not perform query:', showDebugInfo: true);
+            $this->handleException($exc, 'Could not perform query:', showDebugInfo: true);
+            return null;
         }
     }
 

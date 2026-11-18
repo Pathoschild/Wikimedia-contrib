@@ -95,7 +95,7 @@ class StewardryEngine extends Base
                 INNER JOIN user_groups ON user_id = ug_user AND ug_group IN(\'' . implode('\',\'', $groupNames) . '\')
                 INNER JOIN actor ON actor_user = user_id
             GROUP BY user_name
-        ')->fetchAllAssoc();
+        ')?->fetchAllAssoc() ?: [];
 
         // fetch user info
         foreach ($users as &$user)
@@ -166,6 +166,6 @@ class StewardryEngine extends Base
 
         return $this->db
             ->query('SELECT MAX(timestamp) FROM (' . implode(' UNION ALL ', $subqueries) . ') AS matches', $values)
-            ->fetchValue();
+            ?->fetchValue();
     }
 }

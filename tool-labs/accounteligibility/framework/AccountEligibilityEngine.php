@@ -245,7 +245,7 @@ class AccountEligibilityEngine extends Base
                 if (!isset($this->wikis[$unifiedDbname]))
                     continue; // skip private wikis (not listed in meta_p.wiki)
                 $this->db->connect($unifiedDbname);
-                $this->queue[$unifiedDbname] = $this->db->query('SELECT user_editcount FROM user WHERE user_name = ? LIMIT 1', [$this->username])->fetchColumn();
+                $this->queue[$unifiedDbname] = $this->db->query('SELECT user_editcount FROM user WHERE user_name = ? LIMIT 1', [$this->username])?->fetchColumn();
             }
             $this->profiler->stop('init wiki queue: fetch edit counts');
 
