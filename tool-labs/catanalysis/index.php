@@ -93,6 +93,12 @@ do {
     if (!$title)
         break;
 
+    // invalid wiki (break)
+    if (!$db->getWiki($db->normalizeDbn($database))) {
+        echo '<div class="fail">There is no wiki matching the selected database.</div>';
+        break;
+    }
+
     // deferred request (break)
     if ($deferRun) {
         echo $backend->defer->getConfirmHtml("analyze");
