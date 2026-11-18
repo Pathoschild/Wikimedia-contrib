@@ -22,7 +22,7 @@ toolName=$(basename "$HOME")
 statsUrl="http://$toolName:8000/server-statistics" # call webservice's Kubernetes service directly to avoid extra HTTP overhead and rate limits
 path="$HOME/server-load.json"
 tempPath="$path.tmp"
-logPath="$HOME/logs/job-track-server-load.log"
+logPath="$HOME/logs/job-monitor-service.log"
 
 
 ##########

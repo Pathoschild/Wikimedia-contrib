@@ -174,8 +174,8 @@ Each tool account runs three background jobs, configured in `tool-labs/_schedule
 
 task                | schedule   | description
 ------------------- | ---------- | -----------
+`monitor-service`   | continuous | Maintains a `server-load.json` file with Lighttpd connection metrics, used for [request deferral](#deferred-requests).
 `rotate-logs`       | daily¹     | Move each [log file](#web-logs) into a dated and compressed `~/logs/old` backup, and delete backups older than a week.
-`track-server-load` | continuous | Maintains a `server-load.json` file with Lighttpd connection metrics, used for [request deferral](#deferred-requests).
 `report-errors`     | daily¹     | Read `error.log` files covering the preceding 24 hours, and send an email notification to tool maintainers for any errors found.
 
 <small>¹ Toolforge runs each daily job at a random time of day. The random time can be different for each job (even within one tool), but it's fixed for a given tool + job name across deploys.</small>

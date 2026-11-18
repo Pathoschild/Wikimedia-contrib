@@ -181,7 +181,7 @@ class Defer
     /**
      * Get the number of requests waiting for the webservice, or null if it's unknown.
      *
-     * This reads the file written by the `track-server-load` job.
+     * This reads the file written by the `monitor-service` job.
      */
     private function getQueuedRequestCount(): ?int
     {
