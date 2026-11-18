@@ -15,9 +15,8 @@ hours=24       # number of hours to scan back from the job run date
 top_count=10   # number of most common messages to list in the email
 max_length=300 # max length of each log message to compare and show
 
-smtp_url="smtp://mail.tools.wmcloud.org:25"
 toolName=$(basename "$HOME")
-address="tools.$toolName@toolforge.org"
+scriptDir=$(dirname "$0")
 
 work=$(mktemp --directory)
 trap 'rm --recursive --force "$work"' EXIT
@@ -117,24 +116,9 @@ cat "$work/body"
 
 
 ##########
-## Build the email
-##########
-{
-    echo "From: $address"
-    echo "To: $address"
-    echo "Subject: [$toolName] New errors logged in the last $hours hours"
-    echo "MIME-Version: 1.0"
-    echo "Content-Type: text/plain; charset=utf-8"
-    echo "Content-Transfer-Encoding: 8bit"
-    echo
-    cat "$work/body"
-} | sed 's/$/\r/' > "$work/message" # SMTP needs CRLF line endings
-
-
-##########
 ## Send the email
 ##########
-if ! curl --silent --show-error --url "$smtp_url" --mail-from "$address" --mail-rcpt "$address" --upload-file "$work/message"; then
+if ! bash "$scriptDir/helpers/send-email.sh" "New errors logged in the last $hours hours" < "$work/body"; then
     echo "could not send the email report" >&2
     exit 1 # job's `emails: onfailure` will send a notification
 fi

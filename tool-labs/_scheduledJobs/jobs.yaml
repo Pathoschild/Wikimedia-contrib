@@ -9,7 +9,7 @@
 #     the SIGINT/SIGTERM signals in their code.
 #
 
-# continuous: maintain a `server-load.json` file for automatic deferral (see README)
+# continuous: monitor webservice's uptime and load
 - name: monitor-service
   command: exec bash $HOME/git/wikimedia-contrib/tool-labs/_scheduledJobs/monitor-service.sh
   image: mariadb

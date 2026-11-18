@@ -174,7 +174,7 @@ Each tool account runs three background jobs, configured in `tool-labs/_schedule
 
 task                | schedule   | description
 ------------------- | ---------- | -----------
-`monitor-service`   | continuous | Maintains a `server-load.json` file with Lighttpd connection metrics, used for [request deferral](#deferred-requests).
+`monitor-service`   | continuous | Monitors the webservice's uptime and load:<ul><li>Sends an email notification when the webservice becomes unreachable.</li><li>Maintains a `server-load.json` file with Lighttpd connection metrics, used for [request deferral](#deferred-requests).</li></ul>
 `rotate-logs`       | daily¹     | Move each [log file](#web-logs) into a dated and compressed `~/logs/old` backup, and delete backups older than a week.
 `report-errors`     | daily¹     | Read `error.log` files covering the preceding 24 hours, and send an email notification to tool maintainers for any errors found.
 
