@@ -68,15 +68,23 @@ class IPAddress
         $this->isValid = $address && IP::isIPAddress($address);
         if (!$this->isValid)
             return;
+
+        // parse range
+        // This can fail for some values accepted by IP::isIPAddress (e.g. zero-padded octets like '91.027.170.240').
+        $encodedRange = IP::parseRange($address);
+        if (!is_string($encodedRange[self::START]) || !is_string($encodedRange[self::END])) {
+            $this->isValid = false;
+            return;
+        }
+
+        // analyze address
         $this->isIPv4 = IP::isIPv4($address);
         $this->isIPv6 = !$this->isIPv4 && IP::isIPv6($address);
-
-        // analyze address range
         $this->isValidRange = IP::isValidBlock($address);
-        $this->encodedRange = IP::parseRange($address);
+        $this->encodedRange = $encodedRange;
         $this->range = [
-            IP::prettifyIP(IP::formatHex($this->encodedRange[self::START])),
-            IP::prettifyIP(IP::formatHex($this->encodedRange[self::END]))
+            IP::prettifyIP(IP::formatHex($encodedRange[self::START])),
+            IP::prettifyIP(IP::formatHex($encodedRange[self::END]))
         ];
     }
 
